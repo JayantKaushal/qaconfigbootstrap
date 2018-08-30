@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_tlr_op_attr">
+    <sn_cmp_tlr_op_attr action="INSERT_OR_UPDATE">
+        <applicable_to/>
+        <attribute>StackID</attribute>
+        <data_source_type>Text</data_source_type>
+        <data_source_value/>
+        <defaultvalue/>
+        <error_text/>
+        <help_text/>
+        <mandatory>false</mandatory>
+        <operation>Cleanup</operation>
+        <order>70</order>
+        <parameter_type>1</parameter_type>
+        <regex/>
+        <sys_class_name>sn_cmp_tlr_op_attr</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-27 05:00:12</sys_created_on>
+        <sys_id>0b5626180bb113007bc4c73ef6673a87</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>StackID</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_tlr_op_attr_0b5626180bb113007bc4c73ef6673a87</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-15 19:55:36</sys_updated_on>
+        <template_type/>
+        <value/>
+        <visible>true</visible>
+    </sn_cmp_tlr_op_attr>
+</record_update>

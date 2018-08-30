@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPolicyChoiceTables</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPolicyChoiceTables</name>
+        <script><![CDATA[var CMPPolicyChoiceTables = Class.create();
+CMPPolicyChoiceTables.prototype = {
+    initialize: function() {
+    },	
+	process: function() {
+		var tableArr = ["sn_cmp_bp_blueprint", "sn_cmp_rb_resourceblock", "sn_cmp_bp_cat_item", "sn_capi_resource_type"];
+		var alertGr = new GlideRecord("em_alert");
+		if( alertGr.isValid()){
+			tableArr.push("em_alert");
+		}
+		return tableArr;	
+	},
+    type: 'CMPPolicyChoiceTables'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-28 22:04:15</sys_created_on>
+        <sys_id>b4c400ed5b313200ca17273a41f91aae</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPPolicyChoiceTables</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b4c400ed5b313200ca17273a41f91aae</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

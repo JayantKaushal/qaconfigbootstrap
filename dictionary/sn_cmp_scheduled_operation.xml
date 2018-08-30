@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Scheduled Operations" max_length="40" name="sn_cmp_scheduled_operation" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Operation" max_length="100" name="name" type="string"/>
+        <element label="Notification" max_length="32" name="notification" reference="sysevent_email_action" reference_qual="category.name=Cloud Management" type="reference"/>
+        <element choice="1" label="Operation" max_length="40" name="operation" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Start" sequence="1" value="Start"/>
+                <element inactive_on_update="false" label="Stop" sequence="2" value="Stop"/>
+                <element inactive_on_update="false" label="Deprovision" sequence="3" value="Deprovision"/>
+            </choice>
+        </element>
+        <element label="Operation Time" mandatory="true" max_length="40" name="operation_time" type="glide_date_time"/>
+        <element choice="3" label="Operation Type" mandatory="true" max_length="40" name="operation_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Operation" sequence="1" value="Operation"/>
+                <element inactive_on_update="false" label="Notification" sequence="2" value="Notification"/>
+            </choice>
+        </element>
+        <element choice="3" label="Source" mandatory="true" max_length="40" name="source" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Business Schedule" sequence="1" value="Schedule"/>
+                <element inactive_on_update="false" label="Lease" sequence="2" value="Lease"/>
+            </choice>
+        </element>
+        <element choice="3" label="Status" mandatory="true" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Scheduled" sequence="1" value="Scheduled"/>
+                <element inactive_on_update="false" label="In Progress" sequence="2" value="In Progress"/>
+                <element inactive_on_update="false" label="Skip" sequence="3" value="Skip"/>
+                <element inactive_on_update="false" label="Completed" sequence="4" value="Completed"/>
+                <element inactive_on_update="false" label="Failed" sequence="5" value="Failed"/>
+            </choice>
+        </element>
+        <element label="Target" mandatory="true" max_length="32" name="target" reference="cmdb_ci" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="notification"/>
+        </index>
+        <index name="index2">
+            <element name="target"/>
+        </index>
+    </element>
+</database>

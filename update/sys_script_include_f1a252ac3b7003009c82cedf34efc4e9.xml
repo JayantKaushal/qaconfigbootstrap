@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPassEncrypt</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPassEncrypt</name>
+        <script><![CDATA[var CMPPassEncrypt = Class.create();
+CMPPassEncrypt.prototype = {
+    initialize: function() {
+    },
+	encryptString: function(str) {
+		var encrypterObj = new GlideEncrypter();
+		return encrypterObj.encrypt(str);
+	},
+	decryptString: function(str) {
+		var decryptObj = new GlideEncrypter();
+		return decryptObj.decrypt(str);
+	},
+
+    type: 'CMPPassEncrypt'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-22 09:00:43</sys_created_on>
+        <sys_id>f1a252ac3b7003009c82cedf34efc4e9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPPassEncrypt</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f1a252ac3b7003009c82cedf34efc4e9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-22 09:00:43</sys_updated_on>
+    </sys_script_include>
+</record_update>

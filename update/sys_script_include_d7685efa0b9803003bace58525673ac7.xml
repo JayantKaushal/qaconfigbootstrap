@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGenerateExecutionPlanAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGenerateExecutionPlanAction</name>
+        <script><![CDATA[var CMPGenerateExecutionPlanAction = Class.create();
+CMPGenerateExecutionPlanAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+   doAction: function(params) {
+		try {
+			
+			var blueprintId = params.blueprintId;
+			var operationId = params.operationId;
+			var context = params.context;
+
+			var stageModelDTO = new BlueprintServiceHelper().getStageModel(blueprintId,"");
+			var stageModelId = stageModelDTO['id'];
+			if(context == 'optimize') {
+				//If blueprintId and operation id not nill generate execution plan for a particular operation
+				if(!gs.nil(stageModelId) && !gs.nil(operationId))
+					new CMPBPExecutionPlanGenerator().generateParallelExecutionPlanForOperation(stageModelId, params.operationId);
+				//If stageModelId is not nill but operation id is blank generate execution plan for all operation
+				else if(gs.nil(operationId) && !gs.nil(stageModelId))
+					new CMPBPExecutionPlanGenerator().generateParallelExecutionPlanForAllOperation(stageModelId);
+			} else if(context == 'serial') {
+					if(!gs.nil(stageModelId) && !gs.nil(operationId))
+						new CMPBPExecutionPlanGenerator().generateSerialExecutionPlanForOperation(stageModelId, params.operationId);
+			}
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to do create execution plan."),
+				"CMPGenerateExecutionPlanAction.doAction: Failed to do create execution plan.",
+				error
+			);
+		}
+    },
+
+    type: 'CMPGenerateExecutionPlanAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-04 12:39:00</sys_created_on>
+        <sys_id>d7685efa0b9803003bace58525673ac7</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>CMPGenerateExecutionPlanAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d7685efa0b9803003bace58525673ac7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-21 08:12:58</sys_updated_on>
+    </sys_script_include>
+</record_update>

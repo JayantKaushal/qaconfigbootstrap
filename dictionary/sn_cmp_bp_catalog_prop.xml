@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Catalog Property" max_length="40" name="sn_cmp_bp_catalog_prop" type="collection">
+        <element label="Form" max_length="32" name="bp_cat_form_behavior" reference="sn_cmp_bp_form_behavior" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="DataSource" max_length="40" name="datasource" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Pools" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Text" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="CSVList" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Reference" sequence="4" value="4"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Default Value" max_length="1000" name="default_value" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Display Name" max_length="200" name="display_name" type="string"/>
+        <element label="Display Order" max_length="200" name="display_order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Validation Error(Regex)" max_length="4000" name="error_text" type="string"/>
+        <element label="Form UI Group" max_length="32" name="form_ui_group" reference="sn_cmp_bp_form_ui_group" reference_cascade_rule="delete" reference_qual="javascript:new RefQualsBlueprint().getFormUIGroups(current.bp_cat_form_behavior);" type="reference" use_reference_qualifier="advanced"/>
+        <element label="Global Property" max_length="32" name="global_prop" reference="sn_cmp_bp_global_prop" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Help Text" max_length="200" name="help_text" type="string"/>
+        <element label="Mandatory" max_length="40" name="mandatory" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" read_only="true" type="string"/>
+        <element choice="1" default="1" label="Parameter Type" max_length="40" name="parameter_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="String" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Password" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Object" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Array" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Boolean" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Integer" sequence="6" value="6"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Datasource Value" max_length="1000" name="policy" type="string"/>
+        <element label="Read Only" max_length="40" name="read_only" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Validation(Regex)" max_length="4000" name="regex" type="string"/>
+        <element choice="1" label="UI Data Type" mandatory="true" max_length="40" name="ui_data_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Grid" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Date" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="DateTime" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Password" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Select" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="TextArea" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="TextBox" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="LookupSelect" sequence="10" value="10"/>
+                <element inactive_on_update="false" label="Reference" sequence="11" value="11"/>
+                <element inactive_on_update="false" label="List Collector" sequence="12" value="12"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Unique ID" max_length="200" name="unique_id" type="string"/>
+        <element label="Visibility" max_length="40" name="visibility" type="boolean"/>
+        <index name="index">
+            <element name="global_prop"/>
+        </index>
+        <index name="index2">
+            <element name="form_ui_group"/>
+        </index>
+        <index name="index3">
+            <element name="bp_cat_form_behavior"/>
+        </index>
+    </element>
+</database>

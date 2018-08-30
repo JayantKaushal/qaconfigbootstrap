@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudTemplateResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudTemplateResponseProcessor</name>
+        <script><![CDATA[var CloudTemplateResponseProcessor = Class.create();
+CloudTemplateResponseProcessor.prototype = {
+	
+	OBJECT_ID: 'object_id',
+	NAME: 'name',
+	IGNORED_CLASS : '',
+	
+    initialize: function() {
+		this.datasource = '';
+		this.isTopLevel = true;
+		this.trailer = new sn_cmp_api.CloudTrailServiceScript();
+    },
+	
+	topLevel: function(isTopLevel) {
+		this.isTopLevel = isTopLevel;
+	},
+	
+	processResponse: function(responseObj, serviceAccount, ldc, 
+							   correlationId, step, context, stackId) {
+		this.orderId = this.fetchOrderId(stackId);
+		this.updateStackOutput(responseObj, stackId);
+		
+		var resourceTypesOperationSteps = [];
+		var cloudResources = [];
+		var cloudModelObjects = [];
+		var resourceTypesToOperateOn = this.getResourceTypesToProcess(responseObj);
+		var resourceBlockObject = this.getResourceBlockObject(responseObj,
+															  serviceAccount,
+															  ldc,
+															  stackId);
+		
+		var contextInfo = {};
+		contextInfo.serviceAccount = serviceAccount;
+		contextInfo.ldc = ldc;
+		contextInfo.step = step;
+		contextInfo.correlationId = correlationId;
+		contextInfo.requestorContext = context;
+		contextInfo.stackId = stackId;
+
+		this.responseProcessor = this.getResponseProcessor(serviceAccount, 
+																  ldc,
+																  this.datasource, 
+																  contextInfo);
+		this.cloudResourceResponseProcessor = this.getResponseProcessor(serviceAccount,
+																			   ldc,
+																			   'Cloud API', 
+																			   contextInfo);
+
+		var typesArr = Object.keys(resourceTypesToOperateOn);
+
+		this.log(gs.getMessage('Resource types: {0}',
+							   [typesArr.join()]), '1');
+
+		this.log(gs.getMessage('Resources: {0}', [global.JSON.stringify(resourceTypesToOperateOn)]), '1');
+
+		// Discovery of resources in order may matter if one resource looks up values from
+		// another - for example, in Azure, NIC discovery will look at public IP if it has one
+		// so public IP discovery should go first so the record is in CMDB if it is looked up
+		var typeGr = new GlideRecord('sn_capi_resource_type');
+		typeGr.addQuery('name', 'IN', typesArr.join());
+		typeGr.orderByDesc('dependency_sequence');
+		typeGr.query();
+
+		while (typeGr.next()) {
+			var resourceType = ('' + typeGr.name).toLowerCase();
+
+			this.log(gs.getMessage('Processing type: {0}', [resourceType]), '1');
+
+			this.addOperationStepForType(resourceType,
+										 resourceTypesToOperateOn[resourceType],
+										 resourceTypesOperationSteps,
+										 this.getStackName(responseObj),
+										 contextInfo);
+
+			this.addCloudModelObjects(resourceType,
+									  resourceTypesToOperateOn[resourceType],
+									  cloudModelObjects,
+									  contextInfo);
+			var index = typesArr.indexOf(resourceType);
+			if (index > -1) //remove processed type
+				typesArr.splice(index, 1);
+
+		}
+
+		//still has unprocessed type
+		if (typesArr.length > 0) {
+			for (var i=0; i<typesArr.length; i++) {
+				var type = typesArr[i];
+				this.addOperationStepForType(type,
+										 resourceTypesToOperateOn[type],
+										 resourceTypesOperationSteps,
+										 this.getStackName(responseObj),
+										 contextInfo);
+
+				this.addCloudModelObjects(type,
+										  resourceTypesToOperateOn[type],
+										  cloudModelObjects,
+										  contextInfo);
+			}
+		}
+
+		var orchestratorServiceScript = new sn_cmp_api.BPOrchestratorServiceScript();
+		orchestratorServiceScript.addToOrchestration(global.JSON.stringify(resourceTypesOperationSteps),
+													 correlationId);
+
+		var stepNames = [];
+		for (var i=0; i<resourceTypesOperationSteps.length; i++)
+			stepNames.push(resourceTypesOperationSteps[i].apiAliasName);
+		this.log(gs.getMessage('Adding steps: {0}', [global.JSON.stringify(stepNames)]),
+			'2', gs.getMessage('Step details: {0}', [global.JSON.stringify(resourceTypesOperationSteps)]));
+
+		if (!this._isEmpty(resourceBlockObject))
+			cloudModelObjects.push(resourceBlockObject);
+
+		return cloudModelObjects;
+	},
+
+	/**
+	 * Extending classes should override this and return the name of the stack if it in a
+	 * field other than name
+	 */
+	getStackName: function(response) {
+		return response.name;
+	},
+	
+	/**
+	 * Extending classes should override this and put the template output
+	 * into short_description field of sn_cmp_stack record
+	 */
+	updateStackOutput: function(responseObj, stackId) {
+		
+	},
+
+	/**
+	 * Extending classes should provide an implementation for this method that returns
+	 * a Javascript object - the object contains a property for each type found, with the value
+	 * for that property being an array containing pertinent info about the resource that was
+	 * provisioned and need to be dynamically discovered
+	 * The resource type property would be the name in sn_capi_resource_type if natively supported
+	 */
+	getResourceTypesToProcess: function(response) {
+		return {};
+	},
+
+	/**
+	 * Extending classes should provide an implementation for this method that returns
+	 * an object to send to the cloud model API if desired
+	 */
+	getResourceBlockObject: function(response) {
+		return {};
+	},
+
+	/**
+	 * Add disco step for type, if there is support for the type
+	 */
+	addOperationStepForType: function(type, resourcesInfo, resourceTypesDiscoSteps,
+									  name, contextInfo, opMessage) {
+		var discoOpGr = this.getOperationGR(type);
+
+		if (!gs.nil(discoOpGr)) {
+			var stepPrefix = '';
+			if (!this.isTopLevel)
+				stepPrefix = '(' + name + ') ';
+
+			var operationMessage = gs.nil(opMessage) ?
+				gs.getMessage('Discovery of resource type: {0}', [type]) : opMessage;
+
+			var stepName = stepPrefix + operationMessage;
+
+			var apiStep = {};
+
+			var stepInfo = global.JSON.parse(contextInfo.step);
+
+			apiStep.interfaceName = '' + discoOpGr.capi_interface.interface_name;
+			apiStep.methodName = '' + discoOpGr.capi_method.operation_name;
+			apiStep.provider =  '' + discoOpGr.provider;
+
+			apiStep.version = this.getAPIVersion(discoOpGr.capi_interface, discoOpGr.capi_method);
+
+			apiStep.credentialId = stepInfo.credentialId;
+			apiStep.cloudServiceAccount = contextInfo.serviceAccount;
+			apiStep.ldc = contextInfo.ldc;
+			apiStep.apiAliasName = stepName;
+			apiStep.parentStepName = stepInfo.parentStepName;
+			apiStep.opImpl = stepInfo.opImpl;
+			apiStep.type = 'CAPI';
+
+			var invocatingNode = {};
+			invocatingNode.resourceName = stepInfo.invocatingNode.parentResourceAlias;
+			invocatingNode.parentResourceAlias = stepInfo.invocatingNode.parentResourceAlias;
+
+			apiStep.invocatingNode = invocatingNode;
+
+			var parameters = [];
+			parameters.push(this.getParameter('Location', contextInfo.ldc));
+			var additionalParams = this.getStepParameters(contextInfo, resourcesInfo);
+			for (var param in additionalParams)
+				parameters.push(this.getParameter(param, additionalParams[param]));
+
+			apiStep.parameters = parameters;
+
+			var responseProcessors = [];
+			var rpGr = new GlideRecord('sn_cmp_rb_step_translator');
+			rpGr.addQuery('step', '' + discoOpGr.sys_id);
+			rpGr.query();
+
+			while (rpGr.next())
+				responseProcessors.push('' + rpGr.script.name);
+
+			apiStep.translators = responseProcessors;
+			var currentSteps = resourceTypesDiscoSteps.length;
+			if(currentSteps >= 1) {
+				apiStep.rel = {};
+				apiStep.rel.parents = [resourceTypesDiscoSteps[currentSteps-1].apiAliasName];
+			}
+			 resourceTypesDiscoSteps.push(apiStep);
+
+		}
+	},
+
+	getStepParameters: function(contextInfo, resourcesInfo) {
+		var str = [];
+
+		for (var i = 0; i < resourcesInfo.length; i++)
+			str.push(resourcesInfo.id);
+
+		return {"ObjectID": str.join()};
+	},
+
+	/**
+	 * If there is a discovery step, let that take care of populating the CI into the proper table,
+	 * connecting it to the stack, assigning it to the user, etc
+	 * Otherwise, if the type has a table, create a record in the table with just the basic stuff
+	 * populated
+	 * Lastly, if there is no table for the type, it is a generic Cloud Resource entry - create that
+	 * CI with minimal information
+	 */
+	addCloudModelObjects: function(type, resourcesInfo, cloudModelObjects, contextInfo) {
+		this.log(gs.getMessage('addCloudModelObjects, type: {0}', [type]), '1');
+
+		var discoOpGr = this.getOperationGR(type);
+		if (!gs.nil(discoOpGr))
+			return;
+
+		// If there is no table for the type, treat it as a generic Cloud Resource
+		var cloudModelObject = null;
+		var table = this.getTableForType(type);
+
+		this.log(gs.getMessage('addCloudModelObjects, table: {0}', [table]), '1');
+
+		for (var i = 0; i < resourcesInfo.length; i++) {
+			var resourceInfo = resourcesInfo[i];
+
+			var stackItemObj = {};
+			stackItemObj.correlation_id = contextInfo.correlationId;
+			stackItemObj.step = global.JSON.parse(contextInfo.step);
+			stackItemObj.cloud_account = contextInfo.serviceAccount;			
+
+			var ciUserData = {};
+			var reqContext = global.JSON.parse(contextInfo.requestorContext);
+			ciUserData.user_id = reqContext['userId'];
+			ciUserData.group_id = reqContext['groupId'];
+
+			if (gs.nil(table)) {
+				// Add to stack, assign to requesting user
+				this.cloudResourceResponseProcessor.addRelatedData(stackItemObj, 'AddCIToStack');
+				this.cloudResourceResponseProcessor.addRelatedData(ciUserData, 'SetCIUserAndGroup');
+
+				cloudModelObject =
+					this.cloudResourceResponseProcessor.processResponseObject(resourceInfo,
+																		'Cloud Resource',
+																		'cloud_resource_create_validator');
+			} else {
+				this.ensureMappings(table);
+				var validator = this.getValidatorForType(table);
+
+				this.responseProcessor.addRelatedData(stackItemObj, 'AddCIToStack');
+				this.responseProcessor.addRelatedData(ciUserData, 'SetCIUserAndGroup');
+
+				cloudModelObject =
+					this.responseProcessor.processResponseObject(resourceInfo,
+																		type,
+																		validator);
+			}
+
+			cloudModelObjects.push(cloudModelObject);
+		}
+	},
+
+	getTableForType: function(type) {
+		var table = '';
+		var gr = new GlideRecord('sn_capi_resource_type');
+		if (gr.get('name', type))
+			table = '' + gr.ci_class;
+		var ignoredClass = this.IGNORED_CLASS.split(',');
+		if (table && ignoredClass.indexOf(table) >= 0) {
+			table = '';
+			this.log(gs.getMessage('Table ignored for type \'{0}\'', [type]), '1');
+		} else
+			this.log(gs.getMessage('Table \'{0}\' for type \'{1}\'', [table, type]), '1');
+		return table;
+	},
+
+	getValidatorForType: function(table) {
+		var validator;
+
+		var insertUpdateType = '4'; // From choice table
+		var validatorGr = new GlideRecord('cmdb_cmp_cloud_model_validator');
+		validatorGr.addQuery('ci_class', table);
+		validatorGr.addQuery('validator_type', insertUpdateType);
+		validatorGr.query();
+		if (validatorGr.next()) {
+			validator = validatorGr.getValue('validator_name');
+			this.log(gs.getMessage('Validator \'{0}\' found for table \'{1}\'', [validator, table]), '1');
+		} else { // create one
+			this.log(gs.getMessage('Validator not found for table \'{0}\', creating one', [table]), '1');
+			validatorGr.initialize();
+			validatorGr.ci_class = table;
+			validatorGr.validator_type = insertUpdateType;
+
+			var parts = /cmdb_ci_(.*)/.exec(table);
+			validator = (gs.nil(parts) ? table : parts[1]) + '_create_update_validator';
+			validatorGr.validator_name = validator;
+
+			var payload = {
+				table: "INSERT,UPDATE",
+				"cmdb_ci_cloud_service_account": "UPDATE",
+				"cmdb_ci_logical_datacenter": "UPDATE_WITH_UPGRADE"
+			};
+
+			validatorGr.validator_payload = global.JSON.stringify(payload);
+			validatorGr.insert();
+		}
+
+		return validator;
+	},
+
+	getResponseProcessor: function(serviceAccount, ldc, datasource, contextInfo) {
+		return new sn_cmp.ResponseProcessor(serviceAccount,
+											ldc,
+											datasource,
+											contextInfo);
+	},
+
+	/**
+	 * For the datasource and table, if there are no mappings, create some since we're expecting
+	 * a normalized source object format (from resourceTypesToOperateOn)
+	 */
+	ensureMappings: function(table) {
+		if (gs.nil(this.datasource))
+			return;
+
+		this.log(gs.getMessage('Checking for mappings for datasource {0} and table {1}',
+							   [this.datasource, table]), '1');
+
+		// Get datasource
+		var dsGr = new GlideRecord('sn_cmp_datasource');
+		if (!dsGr.get('name', this.datasource))
+			return;
+
+		if (!this._checkMapping(dsGr, table, this.OBJECT_ID))
+			this._insertMapping(dsGr, table, true, this.OBJECT_ID, 'id');
+
+		if (!this._checkMapping(dsGr, table, this.NAME))
+			this._insertMapping(dsGr, table, false, this.NAME, 'name');
+	},
+
+	/**
+	 * Check to see if mappings has entry for table for field
+	 */
+	_checkMapping: function(dsGr, table, field) {
+		var mappingExists = false;
+
+		var mappingGr = new GlideRecord('sn_cmp_response_mapping');
+		mappingGr.addQuery('ci_class', table);
+		mappingGr.addQuery('datasource.sys_id', '' + dsGr.sys_id);
+		mappingGr.addQuery('attribute_value_type', 'mapped');
+		mappingGr.addQuery('ci_class_field', field);
+		mappingGr.query();
+
+		if (mappingGr.hasNext())
+			mappingExists = true;
+
+		return mappingExists;
+	},
+
+	_insertMapping: function(dsGr, table, isIdField, field, sourceField) {
+		var mappingGr = new GlideRecord('sn_cmp_response_mapping');
+		mappingGr.initialize();
+		mappingGr.ci_class = table;
+		mappingGr.datasource = '' + dsGr.sys_id;
+		mappingGr.attribute_value_type ='mapped';
+		mappingGr.ci_class_field = field;
+		mappingGr.source_field = sourceField;
+		mappingGr.used_for_identification = isIdField;
+		mappingGr.insert();
+	},
+
+	/**
+	 * Get GlideRecord to mapped discovery step for resource type, if there is one, otherwise
+	 * return null
+	 */
+	getOperationGR: function(type) {
+		var discoOpGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+
+		var gr = new GlideRecord('sn_cmp_resource_type_operation');
+		if (!gr.get('resource_type.name', type) ||
+				gs.nil(gr.discovery_step) ||
+				!gr.discovery_step.enabled ||
+				!discoOpGr.get('' + gr.discovery_step.sys_id)) {
+			this.log(gs.getMessage('No discovery step for type {0}', [type]), '1');
+			return null;
+		}
+
+		return discoOpGr;
+	},
+
+	getAPIVersion: function(capi_interface, method) {
+		var gr = new GlideRecord('sn_capi_method_mapper');
+		gr.addQuery('cloud_api.cloud_api_interface', capi_interface);
+		gr.addQuery('capi_interface_operation', method);
+		gr.query();
+
+		return gr.next() ? '' + gr.supported_in_version : '';
+	},
+
+	getParameter: function(name, value) {
+		var parameter = {};
+		parameter.key = name;
+		parameter.value = value;
+		return parameter;
+	},
+
+	_isEmpty: function(item) {
+		var result = false;
+
+		if (gs.nil(item))
+			return true;
+
+		for (var i in item) {
+			result = false;
+			break;
+		}
+
+		return result;
+	},
+
+	log: function(str, level, details) {
+		gs.info(str, this.type);
+
+		// Write trail message
+		var message = {};
+		message.statusMessageSummary = str;
+		message.statusMessageDetails = gs.nil(details) ? str : details;
+		message.messageType = gs.nil(level) ? '1' : level; // '1' is debug
+		message.milestone = false;
+		message.step = 'Handle Cloud API Response';
+		message.orderId = this.orderId;
+		var trailMessage = global.JSON.stringify(message);
+		this.trailer.createTrail(trailMessage);
+	},
+
+	fetchOrderId: function(stackId) {
+		var orderGr = new GlideRecord('sn_cmp_order');
+		orderGr.addQuery('stack.sys_id', stackId);
+		orderGr.query();
+
+		if (orderGr.next())
+			return '' + orderGr.sys_id;
+
+		return '';
+	},
+	
+	serializeMessage: function(msg) {
+		if (!msg)
+			msg = "";
+		if (typeof msg == "object")
+			msg = JSON.stringify(msg);
+		return msg;
+	},
+
+    type: 'CloudTemplateResponseProcessor'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-06 22:30:08</sys_created_on>
+        <sys_id>25a1039b9f80320048111f80a57fcf0d</sys_id>
+        <sys_mod_count>183</sys_mod_count>
+        <sys_name>CloudTemplateResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_25a1039b9f80320048111f80a57fcf0d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-18 21:29:00</sys_updated_on>
+    </sys_script_include>
+</record_update>

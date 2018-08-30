@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Provider Cloud Template Mapping" max_length="40" name="sn_cmp_provider_cloud_template" type="collection">
+        <element label="Cloud Script Template" max_length="32" name="cloud_script_template" reference="sn_cfg_cloud_script_template" type="reference"/>
+        <element label="Operation Template Mapping" max_length="32" name="operation_template" reference="sn_cmp_workload_provider_type" reference_cascade_rule="delete" type="reference"/>
+        <element display="true" label="Provider Operation" max_length="32" name="provider_operation" reference="sn_capi_interface_operation" type="reference"/>
+        <index name="index">
+            <element name="provider_operation"/>
+        </index>
+        <index name="index2">
+            <element name="cloud_script_template"/>
+        </index>
+        <index name="index3">
+            <element name="operation_template"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_hp_reference">
+    <sys_ui_hp_reference action="INSERT_OR_UPDATE">
+        <publisher_reference display_value="Datacenter">e7c5afc3935322004a9032bfa67ffbe6</publisher_reference>
+        <reference_field>resource.datacenter</reference_field>
+        <reference_table>sn_cmp_cost</reference_table>
+        <sys_class_name>sys_ui_hp_reference</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 23:41:47</sys_created_on>
+        <sys_id>b4d52307935322004a9032bfa67ffbff</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>e7c5afc3935322004a9032bfa67ffbe6</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_hp_reference_b4d52307935322004a9032bfa67ffbff</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-29 23:41:47</sys_updated_on>
+    </sys_ui_hp_reference>
+</record_update>

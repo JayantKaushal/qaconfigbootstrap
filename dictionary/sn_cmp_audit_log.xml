@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Audit Log" max_length="40" name="sn_cmp_audit_log" type="collection">
+        <element label="Audit Log" max_length="32" name="audit_log" reference="sys_audit" type="reference"/>
+        <element choice="1" label="Source" max_length="40" name="source" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Policy" sequence="1" value="1"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="audit_log"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_transform_script">
+    <sys_transform_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <map display_value="AWS to Cloud Cost">8f58703993b622004a9032bfa67ffbbd</map>
+        <order>100</order>
+        <script><![CDATA[(function runTransformScript(source, map, log, target /*undefined onStart*/ ) {
+
+	transformStartTime = new GlideDateTime().getDisplayValue();
+	transformUtil = new CmpBillingTransformUtil();
+
+})(source, map, log, target);]]></script>
+        <sys_class_name>sys_transform_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-31 17:20:45</sys_created_on>
+        <sys_id>0868b03993b622004a9032bfa67ffb61</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>onStart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_transform_script_0868b03993b622004a9032bfa67ffb61</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-01 08:12:56</sys_updated_on>
+        <when>onStart</when>
+    </sys_transform_script>
+</record_update>

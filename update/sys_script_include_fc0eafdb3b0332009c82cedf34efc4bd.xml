@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOrUpdateOpParamsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOrUpdateOpParamsAction</name>
+        <script><![CDATA[var CMPCreateOrUpdateOpParamsAction = Class.create();
+CMPCreateOrUpdateOpParamsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.opSignatureId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOrUpdateOpParamsAction.doAction: Undefined operation signature Id",
+					null
+				);
+			}
+			
+			var status;
+			var ErrMessage = '';
+			var postArray = [];
+			//var resourceBlocksServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+			
+			//Find duplication Operation param
+			var getParams = JSON.parse(params.postData);
+			var getParamsLength = getParams.length;
+			if(getParamsLength) {
+				for(var i = 0; i < getParamsLength; i++) {
+					var duplicateName = false;
+					var gr = new GlideRecord('sn_cmp_rb_op_param');
+					if(params.interfaceId && params.interfaceId != "")
+						gr.addQuery("interface", params.interfaceId);
+					if(params.opSignatureId && params.opSignatureId != "")
+						gr.addQuery("operation", params.opSignatureId);
+					if(getParams[i].name && getParams[i].name != "")
+						gr.addQuery("name", getParams[i].name);
+					gr.query();
+					var getSysId;
+					
+					if (gr.next()) {
+						getSysId = gr.getValue('sys_id');
+						duplicateName = true;
+						/*gr.setValue("order", getParams[i].order);*/
+						gr.setValue("type", getParams[i].type);
+						gr.update();
+					} else {
+						var grInsert = new GlideRecord('sn_cmp_rb_op_param');
+						grInsert.setValue("interface", params.interfaceId);
+						grInsert.setValue("operation", params.opSignatureId);
+						/*grInsert.setValue("order", getParams[i].order);*/
+						grInsert.setValue("type", getParams[i].type);
+						grInsert.setValue("name", getParams[i].name);
+						grInsert.insert();
+					}
+				}
+			}
+			return {status : true};
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add operations input param."),
+				"CMPCreateOrUpdateOpParamsAction.doAction(): Failed to add or update operations param",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOrUpdateOpParamsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-05 05:30:04</sys_created_on>
+        <sys_id>fc0eafdb3b0332009c82cedf34efc4bd</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPCreateOrUpdateOpParamsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fc0eafdb3b0332009c82cedf34efc4bd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-05 06:24:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

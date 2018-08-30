@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOrUpdateDcServiceAccAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOrUpdateDcServiceAccAction</name>
+        <script><![CDATA[var CMPCreateOrUpdateDcServiceAccAction = Class.create();
+CMPCreateOrUpdateDcServiceAccAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	SERVICE_ACCOUNT_TABLE : 'cmdb_ci_cloud_service_account',
+     doAction: function(params) {
+		try{
+			if (!params.providerType || !params.postData) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOrUpdateDcServiceAccAction.doAction: Undefined provider type and/or account data to insert/update",
+					null
+				);
+			}
+			
+			var accountsDataList = JSON.parse(params.postData);
+			var numOfAccounts = accountsDataList.length || 0;
+			
+			for(var i = 0; i < numOfAccounts; i++) {
+				var accountData = accountsDataList[i];
+				
+				this._ensureValidAccountId(params.providerType, accountData.accountId);
+
+				var serviceAccGrById = new GlideRecord(this.SERVICE_ACCOUNT_TABLE);
+				serviceAccGrById.addQuery('account_id', accountData.accountId);
+				serviceAccGrById.query();
+				
+				if (accountData.sysId) 
+					return this._updateServiceAccount(serviceAccGrById, accountData);
+				else {
+					accountData.providerType = params.providerType;
+					return this._insertServiceAccount(serviceAccGrById, accountData);	
+				}
+			}	
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add operations input param."),
+				"CMPCreateOrUpdateDcServiceAccAction.doAction(): Failed to add or update service accounts",
+				error
+			);
+		}
+    },
+	
+	_ensureValidAccountId: function(providerType, accountId) {
+	    var validationMessage = new global.ServiceAccountIdValidator().validateAccountId(accountId, providerType);
+		if (validationMessage != "success") {
+		    throw sn_smd.SMErrorHelper.createScriptAPIError(gs.getMessage(validationMessage), "CMPCreateOrUpdateDcServiceAccAction.doAction(): Failed to create new service account",null);
+		}
+	},
+	
+	_updateServiceAccount: function(serviceAccGrById, accountData) {
+		if (serviceAccGrById.next() && accountData.sysId != serviceAccGrById.getValue('sys_id')) {
+			// trying to update an account id that is already being used
+			return { isDuplicationAccId: true };
+		}
+		
+		var serviceAccUpdateGr = new GlideRecord(this.SERVICE_ACCOUNT_TABLE); 
+		serviceAccUpdateGr.get(accountData.sysId);
+		if (!serviceAccUpdateGr.isValidRecord())
+			throw 'Non existent service account cannot be updated'; //this is programming error; should not happen
+		
+		serviceAccUpdateGr.setValue("account_id", accountData.accountId);
+		serviceAccUpdateGr.setValue("discovery_credentials", accountData.credentials);
+		serviceAccUpdateGr.setValue("datacenter_url", accountData.datacenterURL || '');
+		if (serviceAccUpdateGr.update())
+			return { isDuplicationAccId: false }; 
+		
+		throw 'Could not update the service account wiht sys_id ' + accountData.sysId;
+	}, 
+	
+	_insertServiceAccount: function(serviceAccGr, accountData) {
+		if (serviceAccGr.hasNext()) {
+			// trying to create an account with the account ud that is already being used
+			return { isDuplicationAccId: true };
+		}
+		
+		serviceAccGr.initialize();
+		serviceAccGr.setValue("datacenter_type", accountData.providerType);
+		serviceAccGr.setValue("account_id", accountData.accountId);
+		serviceAccGr.setValue("discovery_credentials", accountData.credentials);
+		serviceAccGr.setValue("name", accountData.name);
+		serviceAccGr.setValue("datacenter_url", accountData.datacenterURL || '');
+		if (serviceAccGr.insert())
+			return { isDuplicationAccId: false }; 
+		
+		throw 'Could not update the service account wiht sys_id ' + accountData.sysId;
+	},
+    type: 'CMPCreateOrUpdateDcServiceAccAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-08 05:27:16</sys_created_on>
+        <sys_id>5a07d9003ba043009c82cedf34efc49c</sys_id>
+        <sys_mod_count>26</sys_mod_count>
+        <sys_name>CMPCreateOrUpdateDcServiceAccAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5a07d9003ba043009c82cedf34efc49c</sys_update_name>
+        <sys_updated_by>hrudananda.pattanaik</sys_updated_by>
+        <sys_updated_on>2018-05-17 10:47:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

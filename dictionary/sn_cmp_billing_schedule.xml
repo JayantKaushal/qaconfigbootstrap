@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="disable_execute_now=true" extends="sysauto_script" label="Billing Schedule" max_length="40" name="sn_cmp_billing_schedule" type="collection">
+        <element hint="Field refers to the appropriate cloud service account" label="Service Account" max_length="32" name="account" reference="cmdb_ci_cloud_service_account" reference_qual="javascript:new sn_cmp.RefQualsCmpBilling().getServiceAccountForProvider(current.provider);" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Field refers to the bucket on the amazon s3 account" label="Bucket" max_length="40" name="bucket" type="string"/>
+        <element hint="Field refers to the credential needed for billing download" label="Credential" mandatory="true" max_length="32" name="credential" reference="discovery_credentials" reference_qual="javascript:new sn_cmp.RefQualsCmpBilling().getCredentialsForProvider(current.provider);" type="reference"/>
+        <element attributes="no_truncate=true,edge_encryption_enabled=true" label="Current job details" max_length="1000" name="current_job_details" read_only="true" type="string"/>
+        <element choice="1" label="Current job status" max_length="40" name="current_job_status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="In Progress" sequence="1" value="In Progress"/>
+                <element inactive_on_update="false" label="Finish" sequence="2" value="Finish"/>
+            </choice>
+        </element>
+        <element hint="Field refers the last time this job was executed" label="Last Execution" max_length="40" name="last_executed_on" read_only="true" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" hint="Field refers the last state this job was executed" label="Last executed state" max_length="40" name="last_executed_state" read_only="true" type="string"/>
+        <element hint="Field refers the last time this job was executed successfully" label="Last Successful Execution" max_length="40" name="last_successful_on" read_only="true" type="glide_date_time"/>
+        <element label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" reference_qual="javascript:new sn_cmp.RefQualsCmpBilling().getBillingProviders();" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <index name="index">
+            <element name="credential"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+        <index name="index3">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index4">
+            <element name="account"/>
+        </index>
+    </element>
+</database>

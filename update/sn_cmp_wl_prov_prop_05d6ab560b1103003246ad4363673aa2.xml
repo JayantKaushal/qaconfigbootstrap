@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_wl_prov_prop">
+    <sn_cmp_wl_prov_prop action="INSERT_OR_UPDATE">
+        <key>Inventory</key>
+        <sys_class_name>sn_cmp_wl_prov_prop</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-21 22:10:22</sys_created_on>
+        <sys_id>05d6ab560b1103003246ad4363673aa2</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_wl_prov_prop_05d6ab560b1103003246ad4363673aa2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-10-05 06:01:50</sys_updated_on>
+        <type>pool</type>
+        <value>ServiceNow::Pools::AnsibleInventoryPool.FetchInventoryByProvider</value>
+        <workload_provider_type display_value="Ansible Tower">8c50f6020bd50300a682aac125673a2e</workload_provider_type>
+    </sn_cmp_wl_prov_prop>
+</record_update>

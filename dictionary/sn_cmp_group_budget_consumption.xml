@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Group Budget Consumption" max_length="40" name="sn_cmp_group_budget_consumption" type="collection">
+        <element label="Budget Configuration" mandatory="true" max_length="32" name="budget_configuration" reference="sn_cmp_budget" type="reference"/>
+        <element attributes="omit_sys_original=true" label="Consumed" mandatory="true" max_length="20" name="consumed" type="currency"/>
+        <element label="Consumption(%)" mandatory="true" max_length="38" name="consumption" type="decimal"/>
+        <index name="index">
+            <element name="budget_configuration"/>
+        </index>
+    </element>
+</database>

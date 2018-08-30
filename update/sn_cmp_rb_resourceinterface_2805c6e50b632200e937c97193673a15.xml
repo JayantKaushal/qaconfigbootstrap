@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourceinterface">
+    <sn_cmp_rb_resourceinterface action="INSERT_OR_UPDATE">
+        <extends_from/>
+        <is_system_defined>true</is_system_defined>
+        <name>Router Interface</name>
+        <sys_class_name>sn_cmp_rb_resourceinterface</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-07 11:03:19</sys_created_on>
+        <sys_id>2805c6e50b632200e937c97193673a15</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Router Interface</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourceinterface_2805c6e50b632200e937c97193673a15</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-06 14:53:27</sys_updated_on>
+        <type>Base</type>
+    </sn_cmp_rb_resourceinterface>
+</record_update>

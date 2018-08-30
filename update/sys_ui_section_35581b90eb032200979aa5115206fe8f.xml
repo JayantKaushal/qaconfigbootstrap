@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="" section_id="35581b90eb032200979aa5115206fe8f" sys_domain="global" table="sn_cmp_bp_blueprint" version="3" view="">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>name</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>20deac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>category</element>
+            <position>11</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>e4deac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>description</element>
+            <position>21</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>68deac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>layer</element>
+            <position>31</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>e8deac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.begin_split</element>
+            <position>41</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>6cdeac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type>.begin_split</type>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>status</element>
+            <position>51</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>ecdeac34eb032200979aa5115206fe2f</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sys_domain</element>
+            <position>61</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>60deac34eb032200979aa5115206fe30</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.split</element>
+            <position>71</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>e0deac34eb032200979aa5115206fe30</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type>.split</type>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sys_scope</element>
+            <position>81</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:06:58</sys_created_on>
+            <sys_id>a09d83ec0b1c2300d9f9ad4363673a44</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>tlr</element>
+            <position>91</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>64deac34eb032200979aa5115206fe30</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.end_split</element>
+            <position>101</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 00:19:55</sys_created_on>
+            <sys_id>e4deac34eb032200979aa5115206fe30</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_blueprint" sys_domain="global" view="Default view">35581b90eb032200979aa5115206fe8f</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type>.end_split</type>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption/>
+            <header>false</header>
+            <name>sn_cmp_bp_blueprint</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-08 23:23:36</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>35581b90eb032200979aa5115206fe8f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_bp_blueprint</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_section_35581b90eb032200979aa5115206fe8f</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-11-08 23:23:36</sys_updated_on>
+            <sys_user/>
+            <title>true</title>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

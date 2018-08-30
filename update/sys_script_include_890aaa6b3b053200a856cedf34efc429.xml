@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateRbOpInputParamAttrAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateRbOpInputParamAttrAction</name>
+        <script><![CDATA[var CMPUpdateRbOpInputParamAttrAction = Class.create();
+CMPUpdateRbOpInputParamAttrAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	
+	doAction: function(params) {
+		try {
+			if (!params.opId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPUpdateRbOpInputParamAttrAction.doAction: Undefined operation id",
+					null
+				);
+			}
+			
+			var getInputParamsAttr = JSON.parse(params.inputParamAttribute);
+			var getInputParamsAttrLength = getInputParamsAttr.length;
+			var updateStatus = false;
+			if(getInputParamsAttrLength) {
+				for(var i=0; i < getInputParamsAttrLength; i++) {
+					var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+					if(params.opId || params.opId != "")
+						gr.addQuery("operation", params.opId);
+					gr.addQuery("sys_id", getInputParamsAttr[i].id);
+					gr.query();
+					if(gr.next()) {
+						gr.setValue("datasourcevalue", getInputParamsAttr[i].datasourcevalue);
+						gr.setValue("defaultvalue", getInputParamsAttr[i].defaultvalue);
+						gr.setValue("datasource", getInputParamsAttr[i].datasource);
+						gr.setValue("visibilty", getInputParamsAttr[i].visibilty);
+						gr.setValue("value", getInputParamsAttr[i].value);
+						/*gr.setValue("ismandatory", getInputParamsAttr[i].ismandatory);*/
+						gr.update();
+					}
+					
+					updateStatus = true;
+				}
+			}
+			return updateStatus;
+			
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update the operation input param "),
+				"CMPUpdateRbOpInputParamAttrAction.doAction: Failed to update operation input param ",
+				error
+			);
+		}
+	},
+
+    type: 'CMPUpdateRbOpInputParamAttrAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-26 08:37:27</sys_created_on>
+        <sys_id>890aaa6b3b053200a856cedf34efc429</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPUpdateRbOpInputParamAttrAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_890aaa6b3b053200a856cedf34efc429</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-16 11:27:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

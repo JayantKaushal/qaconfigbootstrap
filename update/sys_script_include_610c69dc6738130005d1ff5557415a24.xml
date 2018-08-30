@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpCMDBUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CmpCMDBUtil</name>
+        <script><![CDATA[var CmpCMDBUtil = Class.create();
+CmpCMDBUtil.prototype = {
+    initialize: function() {
+    },
+	createCmdbRelationship: function(parent,child,relParentDesc,relChildDesc)
+	{
+		var gr = new GlideRecord('cmdb_rel_ci');
+		gr.addQuery('parent', parent);
+		gr.addQuery('child', child);
+		gr.addQuery('type.parent_descriptor',relParentDesc);
+		gr.addQuery('type.child_descriptor',relChildDesc);
+		gr.query();
+		if (!gr.next()) {
+    		gr.initialize();
+            gr.parent = parent;
+            gr.child = child;
+    		gr.type.setDisplayValue(relParentDesc+'::'+relChildDesc)
+            gr.insert();
+		}
+    },
+    type: 'CmpCMDBUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-08 07:45:17</sys_created_on>
+        <sys_id>610c69dc6738130005d1ff5557415a24</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>CmpCMDBUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_610c69dc6738130005d1ff5557415a24</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-08 08:02:12</sys_updated_on>
+    </sys_script_include>
+</record_update>

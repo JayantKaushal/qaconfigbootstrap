@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>0</order>
+        <script display_value="Delete_vSphere_Node_creds_and_associate_to_mgmt_creds_response_processor">a0b2ad8f67213200790a6c706785ef6c</script>
+        <step display_value="Compute Interface.Destroy a virtual machine">6cf941760b632200e937c97193673a2c</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-21 10:30:31</sys_created_on>
+        <sys_id>2c92ad8f67213200790a6c706785ef0f</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_2c92ad8f67213200790a6c706785ef0f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-21 11:46:50</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

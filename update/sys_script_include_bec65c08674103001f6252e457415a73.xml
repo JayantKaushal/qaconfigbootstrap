@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpsertPolicyRuleAndConditionAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpsertPolicyRuleAndConditionAction</name>
+        <script><![CDATA[var CMPUpsertPolicyRuleAndConditionAction = Class.create();
+CMPUpsertPolicyRuleAndConditionAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try{
+			if (!params.policy_id || !params.rule_name || !params.rule_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter/s:policy_id, rule_name, rule_id"),
+				"CMPUpsertPolicyRuleAndConditionAction.doAction: Undefined element/s policy_id, rule_name, rule_id",
+				null
+				);
+			}
+			var result = {};
+				// validate params.encoded_query
+				this.validateEncodedQueryCondition( params.encoded_query);
+				// Upsert Rule
+				if(params.rule_id == -1) // Insert rule
+					result.ruleId = this.insertRule(params.policy_id, params.rule_name);
+				else // Update Rule
+					result.ruleId = this.updateRule(params.policy_id, params.rule_id, params.rule_name);
+			    
+			     if (!result.ruleId)
+					 this.throwDuplicateNameException();
+				// Update Condition
+				this.updateCondition(params.policy_id, result.ruleId, params.encoded_query);
+				
+				
+				result.name = params.rule_name;
+				result.encodedQuery = params.encoded_query;
+				result.triggerId = this.getTriggerId(params.policy_id);
+				result.policyId = params.policy_id;
+				
+				var terms = new global.CmpSCUtil().getConditionsFromEncodedQuery(params.encoded_query);
+				var referenceDisplayNamesMap = {};
+					var value;
+					if(terms) {
+						for (var i = 0 ; i < terms.length; i++) {
+							value = terms[i].value;
+							if (terms[i].term == 'user.group') {
+								referenceDisplayNamesMap[value] = this.getGroupName(value);
+							}  else if(terms[i].term == 'user.role') {
+								referenceDisplayNamesMap[value] = this.getRoleName(value);
+							} else if (terms[i].term == 'budgetconsumption.user') {
+								referenceDisplayNamesMap[value] = this.getUserName(value);
+							} else if (terms[i].term == 'budgetconsumption.group') {
+								referenceDisplayNamesMap[value] = this.getGroupName(value);
+							}
+						}
+					}
+					var criteriaNamesMap = {};
+						var polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+						polConditionType.query();
+						while(polConditionType.next()) {
+							criteriaNamesMap[polConditionType.name + ''] = polConditionType.name + '';
+						}
+						
+						var critLabelMap = {};
+							polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+							polConditionType.query();
+							while(polConditionType.next()) {
+								critLabelMap[polConditionType.name + ''] = polConditionType.label + '';
+							}
+							referenceDisplayNamesMap.criteriaNamesMap = criteriaNamesMap;
+							referenceDisplayNamesMap.critLabelMap = critLabelMap;
+							
+							result.referenceDisplayNamesMap = referenceDisplayNamesMap;
+							return result;
+							
+						}catch(error){
+							var e = error;
+							throw sn_smd.SMErrorHelper.createScriptAPIError(
+							gs.getMessage("Failed to create rule/condition"),
+							"CMPUpsertPolicyRuleAndConditionAction.doAction(): Failed to create rule/condition",
+							error);
+						}
+					},
+					validateEncodedQueryCondition : function( paramStr){
+						if( gs.nil(paramStr.trim()))
+							return;
+						
+						var orArr = paramStr.split("^OR");
+						var paramArr = [];
+						var paramArr1 = [];
+						for( var i=0;i<orArr.length;i++){
+							var paramAndArr = orArr[i].split("^");
+							paramArr = paramArr.concat(paramAndArr);
+						}
+						for( var i=0;i<paramArr.length;i++){
+							if( !paramArr[i].startsWith('enddate')){
+								var output = paramArr[i].split(".").length - 1;
+								if( output != 1){
+									gs.error('<p>paramArr '  + paramArr[i]   +  "    "  + output + "  Error  " +  " </p>");
+									throw sn_smd.SMErrorHelper.createScriptAPIError(
+									gs.getMessage("Please select valid condition."),
+									"CMPUpsertPolicyRuleAndConditionAction.validateEncodedQueryCondition: Please select valid condition.", null);
+									break;
+								}
+							}
+							
+						}
+						
+					},
+					
+					insertRule : function(policy_id, rule_name){
+						var ruleGr = new GlideRecord("sn_cmp_pol_rule");
+						ruleGr.initialize();
+						ruleGr.policy = policy_id;
+						ruleGr.name = rule_name;
+						ruleGr.rule_order = this.generateRuleOrder(policy_id);
+						return ruleGr.insert();
+					},
+					
+					generateRuleOrder : function(policy_id){
+						var ruleGr = new GlideRecord("sn_cmp_pol_rule");
+						ruleGr.addQuery("policy", policy_id);
+						ruleGr.orderByDesc("rule_order");
+						ruleGr.query();
+						if(ruleGr.next())
+							return (ruleGr.rule_order + 100); // 100 higher than highest order for a given policy
+						else
+							return 100;
+					},
+					
+					updateRule : function(policy_id, rule_id, rule_name){
+						var ruleGr = new GlideRecord("sn_cmp_pol_rule");
+						ruleGr.addQuery("policy", policy_id);
+						ruleGr.addQuery("sys_id", rule_id);
+						ruleGr.query();
+						if(ruleGr.next()){
+							if(ruleGr.name != rule_name)
+								ruleGr.name = rule_name;
+						}else
+						return this.insertRule(policy_id, rule_name);
+						return ruleGr.update();
+					},
+					
+					updateCondition : function(policy_id, rule_id, encoded_query){
+						var arr = [];
+						var util = new global.CmpSCUtil();
+						arr = util.getConditionsFromEncodedQuery(encoded_query);
+						gs.info("Array = " + new global.JSON().encode(arr));
+						for(var i = 0; i < arr.length; ++i) {
+							var obj = {};
+								obj = arr[i];
+								var term = obj.term;
+								gs.info("Term = " + term);
+								// All condition types excpet endate should have attribute associated
+								if(term == 'enddate')
+									continue;
+								if(!term.contains(".") || gs.nil(term.split(".")[1])) {  // if there is no attribute associated throw error
+									throw sn_smd.SMErrorHelper.createScriptAPIError(
+									gs.getMessage("Invalid condition. Please select a valid attribute.") , "CMPUpsertPolicyRuleAndConditionAction.updateCondition", null);
+								}
+							}
+							
+							var ruleGr = new GlideRecord("sn_cmp_pol_rule");
+							ruleGr.addQuery("policy", policy_id);
+							ruleGr.addQuery("sys_id", rule_id);
+							ruleGr.query();
+							if(ruleGr.next()){
+								ruleGr.condition = encoded_query;
+								ruleGr.update();
+							}
+							return true;
+						},
+						
+						getTriggerId : function(policyId) {
+							var policyGr = new GlideRecord('sn_cmp_pol_policy');
+							policyGr.get(policyId);
+							return policyGr.getValue('target_entity_id');
+						},
+						
+						getGroupName : function(groupId) {
+							var gr = new GlideRecord('sys_user_group');
+							gr.get(groupId);
+							var name = gr.getValue('name');
+							return name;
+						},
+						
+						getRoleName : function(roleId) {
+							var gr = new GlideRecord('sys_user_role');
+							gr.get(roleId);
+							var name = gr.getValue('name');
+							return name;
+						},
+						
+						getUserName : function(userId) {
+							var gr = new GlideRecord('sys_user');
+							gr.get(userId);
+							var name = gr.getValue('name');
+							return name;
+						},
+	                     
+	                    throwDuplicateNameException: function() {
+							throw sn_smd.SMErrorHelper.createScriptAPIError(
+							gs.getMessage("Duplicate Rule name. Rule already exists with the same name."), "CMPUpsertPolicyRuleAndConditionAction.doAction", null);
+						},
+						
+						type: 'CMPUpsertPolicyRuleAndConditionAction'
+					});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-01 20:56:13</sys_created_on>
+        <sys_id>bec65c08674103001f6252e457415a73</sys_id>
+        <sys_mod_count>89</sys_mod_count>
+        <sys_name>CMPUpsertPolicyRuleAndConditionAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_bec65c08674103001f6252e457415a73</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-18 18:35:43</sys_updated_on>
+    </sys_script_include>
+</record_update>

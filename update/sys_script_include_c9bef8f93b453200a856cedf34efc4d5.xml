@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetResourceBlockOpStepsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetResourceBlockOpStepsAction</name>
+        <script><![CDATA[var CMPGetResourceBlockOpStepsAction = Class.create();
+CMPGetResourceBlockOpStepsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.op_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetResourceBlockOpStepsAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			//Guset Interface operation list
+			var gr = new GlideRecord('sn_cmp_rb_op_impl_step');
+			if(params.op_id || params.op_id != "")
+				gr.addQuery("operationimpl", params.op_id);
+				gr.orderBy('order');
+			gr.query();
+			var opStepsList = [];
+			while (gr.next()) {
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.name = gr.getValue('name');
+				rbObj.opId = gr.getValue('interface_operation');
+				rbObj.ownerType = gr.getValue('owner_type');
+				rbObj.condition = gr.getValue('condition');
+				rbObj.order = gr.getValue('order');
+				rbObj.enabled = (gr.getValue('enabled') == '0') ? false : true;
+				rbObj.force_async = (gr.getValue('force_async') == '0') ? false : true;
+				rbObj.order = gr.getValue('order');
+				//CAPI
+				rbObj.provider = gr.getValue('provider');
+				/** Get Provider Name **/
+				if(gr.getValue('provider') && gr.getValue('provider') != "") {
+					var grProvider = new GlideRecord('sn_capi_product');
+					grProvider.addQuery("capi_name", gr.getValue('provider'));
+					grProvider.query();
+					if(grProvider.next()) {
+						rbObj.providerName = grProvider.getValue('name');
+					}
+				}
+				rbObj.capiInterfaceId = gr.getValue('capi_interface');
+				rbObj.capiMethodId = gr.getValue('capi_method');
+				rbObj.workflowId = gr.getValue('target_entity_flow');
+				//Resource Block
+				rbObj.interfaceId = gr.getValue('interface');
+				rbObj.interfaceOpId = gr.getValue('interface_operation');
+				//get Display value
+				rbObj.capiInterfaceName = gr.getDisplayValue('capi_interface');
+				rbObj.capiMethodName = gr.getDisplayValue('capi_method');
+				//get Display value
+				rbObj.interfaceName = gr.getDisplayValue('interface');
+				rbObj.interfaceOpName = gr.getDisplayValue('interface_operation');
+				//Workflow Name
+				rbObj.workflowName = gr.getDisplayValue('target_entity_flow');
+
+				//CAPI version
+				rbObj.capiVersion = gr.getValue('capi_version');
+				opStepsList.push(rbObj);
+			}
+			return opStepsList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get resource block operations steps"),
+				"CMPGetResourceBlockOpStepsAction.doAction(): Failed to get resource block operations steps",
+				error
+			);
+		}
+    },
+    type: 'CMPGetOperationInputParamAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-20 14:11:43</sys_created_on>
+        <sys_id>c9bef8f93b453200a856cedf34efc4d5</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>CMPGetResourceBlockOpStepsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c9bef8f93b453200a856cedf34efc4d5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 13:43:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

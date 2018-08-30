@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="cmdb_ci_cloud_load_balancer" version="2" view="cmp_user_portal_view">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>name</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7e97a6f5734023006cf439282bf6a742</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>object_id</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>fe97a6f5734023006cf439282bf6a742</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>state</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7297a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>assigned_to</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>f297a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>assignment_group</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7697a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>owned_by</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>5</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>f697a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>canonical_hosted_zone_id</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>6</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7a97a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>canonical_hosted_zone_name</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>7</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>fa97a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>dns_name</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>8</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7e97a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>dns_domain</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>9</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>fe97a6f5734023006cf439282bf6a743</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>fqdn</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>10</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7297a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>ip_address</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>11</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>f297a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>snat_ip_address</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>12</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7697a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>vlan</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>13</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>f697a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>app_code</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>14</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7a97a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>component_code</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>15</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>fa97a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>env_code</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>16</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>7e97a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>ip_address_pool</element>
+            <list_id display_value="cmdb_ci_cloud_load_balancer" element="NULL" name="cmdb_ci_cloud_load_balancer" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">a697a6f5734023006cf439282bf6a742</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>17</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_id>fe97a6f5734023006cf439282bf6a744</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>cmdb_ci_cloud_load_balancer</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-21 17:17:48</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a697a6f5734023006cf439282bf6a742</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>cmdb_ci_cloud_load_balancer</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_cmdb_ci_cloud_load_balancer_cmp_user_portal_view</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-21 17:17:48</sys_updated_on>
+            <sys_user/>
+            <view display_value="cmp_user_portal_view" name="cmp_user_portal_view">50435ad0730023006cf439282bf6a7e4</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

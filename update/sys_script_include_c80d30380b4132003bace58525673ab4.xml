@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPEditBlueprintOperationStepAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPEditBlueprintOperationStepAction</name>
+        <script><![CDATA[var CMPEditBlueprintOperationStepAction = Class.create();
+CMPEditBlueprintOperationStepAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+			//update condition based on stage resource operation
+			var bpInfo = {};
+			var gr = new GlideRecord('sn_cmp_bp_stage_resource_op');
+			//gr.initialize();
+			gr.addQuery('sys_id', params.satgeResourceOperationId);
+			gr.query();
+			if (gr.next()) {
+				gr.setValue('condition_text', params.condition);
+				gr.update();
+			}
+		
+		return 'success';
+    },
+
+    type: 'CMPEditBlueprintOperationStepAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 11:29:49</sys_created_on>
+        <sys_id>c80d30380b4132003bace58525673ab4</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPEditBlueprintOperationStepAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c80d30380b4132003bace58525673ab4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-21 12:06:55</sys_updated_on>
+    </sys_script_include>
+</record_update>

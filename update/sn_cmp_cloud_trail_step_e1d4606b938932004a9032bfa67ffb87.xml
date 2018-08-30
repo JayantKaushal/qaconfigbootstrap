@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cloud_trail_step">
+    <sn_cmp_cloud_trail_step action="INSERT_OR_UPDATE">
+        <component>1</component>
+        <name>Submit Form</name>
+        <sequence>21</sequence>
+        <stage>1</stage>
+        <sys_class_name>sn_cmp_cloud_trail_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-25 22:45:09</sys_created_on>
+        <sys_id>e1d4606b938932004a9032bfa67ffb87</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>Catalog Item - Submit Form</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cloud_trail_step_e1d4606b938932004a9032bfa67ffb87</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-21 20:15:15</sys_updated_on>
+    </sn_cmp_cloud_trail_step>
+</record_update>

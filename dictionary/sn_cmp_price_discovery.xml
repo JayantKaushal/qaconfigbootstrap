@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Price discovery" max_length="40" name="sn_cmp_price_discovery" type="collection">
+        <element hint="Discovery Credential" label="Credential" max_length="32" name="credential" reference="discovery_credentials" type="reference"/>
+        <element choice="1" label="Discover" max_length="40" name="discover" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="OnDemand" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Scheduled" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="200" name="name" type="string"/>
+        <element hint="The cloud management provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <index name="index">
+            <element name="credential"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description>Showing only required fields of the table according to the action type loaded.</description>
+        <field>action_type</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Form ActionType OnLoad</name>
+        <order/>
+        <script><![CDATA[function onLoad() {
+	//Getting the action type
+	var newValue = g_form.getValue("action_type");
+	if(newValue == 1)
+		showAttributesForReload();
+	else if(newValue == 2 || newValue == 3 || newValue == 4 || newValue == 5 || newValue == 6 || newValue == 9 || newValue == 10)
+		showAttributesForMandatory();
+	else if(newValue == 7 || newValue == 8)
+		showAttributesForSetValue();
+}
+//Hiding the attributes
+function hideAll() {
+	g_form.setDisplay('datasource',false);
+	g_form.setDisplay('target_attribute_select',false);
+	g_form.setDisplay('value',false);
+}
+
+function showAttributesForReload() {
+	hideAll();
+	g_form.setDisplay('datasource',true);
+	g_form.setDisplay('target_attribute_select',true);
+}
+
+
+function showAttributesForMandatory() {
+	hideAll();
+	g_form.setDisplay('target_attribute_select',true);
+}
+
+function showAttributesForSetValue() {
+	hideAll();
+	g_form.setDisplay('target_attribute_select',true);
+	g_form.setDisplay('value',true);
+}
+
+
+
+
+]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-16 10:15:50</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>3c3bd7b20bf01300aee1c97193673a9f</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Form ActionType OnLoad</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_3c3bd7b20bf01300aee1c97193673a9f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-16 10:55:47</sys_updated_on>
+        <table>sn_cmp_bp_action</table>
+        <type>onLoad</type>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

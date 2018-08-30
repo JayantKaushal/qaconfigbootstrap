@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.GetValidHostResourcesForResourceBlock</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>GetValidHostResourcesForResourceBlock</name>
+        <script><![CDATA[var GetValidHostResourcesForResourceBlock = Class.create();
+GetValidHostResourcesForResourceBlock.prototype = {
+	initialize: function() {
+	},
+
+	getPossibleHostResourceBlocks : function(guestResourceSysId) {
+		var hostinterface = null;
+		var guestResourceGR = new GlideRecord('sn_cmp_rb_resourceblock');
+		if (guestResourceGR.get(guestResourceSysId)) {
+			hostinterface = guestResourceGR.hostinterface;
+		}
+		
+		var answer  = '';
+		if (hostinterface) {
+			var guestInterfaceGlide = new GlideRecord('sn_cmp_rb_guest_interface');
+			guestInterfaceGlide.addQuery('guestinterface', hostinterface);
+			guestInterfaceGlide.query();
+
+			while (guestInterfaceGlide.next()) {
+				if (answer.length > 0 ) {
+					answer += (',' + guestInterfaceGlide.resource); }
+				else {
+					answer  = '' + guestInterfaceGlide.resource; }
+			}
+		}
+		return 'sys_idIN' + answer;
+	},
+
+	type: 'GetValidHostResourcesForResourceBlock'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-13 11:12:30</sys_created_on>
+        <sys_id>0bbc2c450b430300bd20812f15673aa7</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>GetValidHostResourcesForResourceBlock</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0bbc2c450b430300bd20812f15673aa7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-13 11:51:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

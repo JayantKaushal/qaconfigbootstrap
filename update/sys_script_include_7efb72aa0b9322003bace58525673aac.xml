@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPAddEdgeAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPAddEdgeAction</name>
+        <script><![CDATA[var CMPAddEdgeAction = Class.create();
+CMPAddEdgeAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.layer_id || !params.source_id || !params.target_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPAddEdgeAction.doAction: Undefined element type, name, and/or layer id",
+					null
+				);
+			}
+			//this will take the checkpoints if passed.
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			
+			var newRelationship = versionObj.addRelationship(params.source_id, params.target_id, params.relType);
+			var newVersion = versionObj.getNewVersion();
+			newRelationship.checkpointId = newVersion.getCheckpointId();
+			
+			//Add stage resource.
+			//var isSourceResourceExist = blueprintServiceScript.isStageResourceExist(params.blueprint_id,params.source_name);
+			//var isTargetResourceExist = blueprintServiceScript.isStageResourceExist(params.blueprint_id,params.target_name);
+			
+			this.addStageResource(params.blueprint_id,params.source_name,params.source_resblockid,params.source_citype);
+			this.addStageResource(params.blueprint_id,params.target_name,params.target_resblockid,params.target_citype);
+			
+			//Add stage resource deployment.
+			this.addStageResourceDeployment(params.blueprint_id,params.source_name,params.source_resblockid,params.target_name,params.target_resblockid);
+			
+			//Add stage resource operation and attributes.
+			
+			blueprintServiceScript.addStageResourceOperationAndAttr(params.blueprint_id,params.source_name);
+			
+			
+			
+			gs.info("Modifying attributes for resource - "+params.source_name);
+			blueprintServiceScript.modifyAttributesForStageResource(params.blueprint_id,params.source_name);
+			
+			
+			
+			gs.info("Modifying attributes for resource - "+params.target_name);
+			blueprintServiceScript.modifyAttributesForStageResource(params.blueprint_id,params.target_name);
+			
+			return newRelationship;
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add the relationship"),
+				"CMPAddEdgeAction.doAction(): Failed to add the resource block",
+				error
+			);
+		}
+	},
+	
+		addStageResource: function(blueprint_id,aliasname,resblock_id,ci_type){
+		var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+	    //Add stage resource while adding block on canvas.
+		if(ci_type != 'cmdb_ci_logical_datacenter'){
+				blueprintServiceScript.createStageResource(blueprint_id,"Resource",aliasname,resblock_id,ci_type);
+			}else{
+				blueprintServiceScript.createStageResource(blueprint_id,"BaseHost",aliasname,null,ci_type);
+		}
+	},
+	
+	
+    addStageResourceDeployment: function(blueprint_id,sourceAliasName,sourceResBlockId,targetAliasName,targetResBlockId){
+		var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+	    blueprintServiceScript.addStageResourceDeployment(blueprint_id,sourceAliasName,sourceResBlockId,targetAliasName,targetResBlockId);
+	},
+
+    type: 'CMPAddEdgeAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 07:23:00</sys_created_on>
+        <sys_id>7efb72aa0b9322003bace58525673aac</sys_id>
+        <sys_mod_count>25</sys_mod_count>
+        <sys_name>CMPAddEdgeAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_7efb72aa0b9322003bace58525673aac</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-21 22:22:20</sys_updated_on>
+    </sys_script_include>
+</record_update>

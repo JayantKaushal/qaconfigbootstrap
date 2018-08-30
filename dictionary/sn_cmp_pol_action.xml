@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Rule Action" max_length="40" name="sn_cmp_pol_action" type="collection">
+        <element hint="Order of execution of actions." label="Order of Execution" mandatory="true" max_length="40" name="action_order" type="integer"/>
+        <element hint="Select an Action Category." label="Action Script Category" max_length="32" name="action_script_cat" reference="sn_cmp_pol_action_script_cat" type="reference"/>
+        <element hint="List of Action Scripts." label="Action Script" max_length="32" name="action_script_name" reference="sn_cmp_pol_action_script" reference_qual="javascript:new RefQualsPolicy().getActionScripts(current.action_script_cat);" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="Type of Action. List of action types depend on policy type." label="Action Type" mandatory="true" max_length="40" name="action_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Property Override" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Service Now Approval" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Execute a Script" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Execute a Workflow" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Call Cloud API" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Abort Process" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Custom Approval" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="IP Address Management" sequence="11" value="11"/>
+                <element inactive_on_update="false" label="Run an Operation" sequence="12" value="12"/>
+                <element inactive_on_update="false" label="Send a Notification" sequence="13" value="13"/>
+            </choice>
+        </element>
+        <element choice="1" label="Blueprint Operation" max_length="40" name="bp_operation" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Start" sequence="1" value="Start"/>
+                <element inactive_on_update="false" label="Stop" sequence="2" value="Stop"/>
+                <element inactive_on_update="false" label="Deprovision" sequence="3" value="Deprovision"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" hint="Comments/Notes for approval action" label="Description" max_length="4000" name="comments" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="Expression to identify credential object." label="Credentials" max_length="200" name="credentials" type="string"/>
+        <element hint="List of Credentials." label="Credentials" max_length="32" name="credential_reference" reference="discovery_credentials" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="End Point URL." label="Endpoint URL" max_length="200" name="endpoint_url" type="string"/>
+        <element hint="List of selected group ids." label="Assignment Group" max_length="32" name="group_id" reference="sys_user_group" type="reference"/>
+        <element hint="Select an Interface." label="Interface" max_length="32" name="interface_id" reference="sn_capi_interface" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="IPAM Method Name." label="IPAM Method Name" max_length="40" name="ipam_method_name" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Reserve IP Address" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Release IP Address" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Register IP Address" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPIPAMChoiceTables,show_table_names_on_label=false" label="Provider Type" max_length="80" name="ipam_provider_type" type="table_name"/>
+        <element hint="An approval can be active at a time." label="Active" max_length="40" name="is_active" type="boolean"/>
+        <element hint="Use an expression instead of reference." label="Use Expression" max_length="40" name="is_credential_expression" type="boolean"/>
+        <element hint="Is group approval required when conditions are met?" label="Group Approval" max_length="40" name="is_group_approval" type="boolean"/>
+        <element hint="Is manager approval required when conditions are met?" label="Manager Approval" max_length="40" name="is_manager_approval" type="boolean"/>
+        <element hint="Does value depend on script?" label="Is Script Based" max_length="40" name="is_script" type="boolean"/>
+        <element hint="Is user approval required when conditions are met?" label="User Approval" max_length="40" name="is_user_approval" type="boolean"/>
+        <element hint="Select an Method." label="Operation" max_length="32" name="method" reference="sn_capi_interface_operation" reference_qual="javascript:new RefQualsPolicy().getInterfaceMethods(current.interface_id);" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Name of the action" label="Action Name" max_length="100" name="name" type="string"/>
+        <element label="Notification" max_length="32" name="notification" reference="sysevent_email_action" reference_qual="category.name=Cloud Management" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Property associated with policy type." label="Property" max_length="100" name="property" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="Select a property name." label="Property Name" max_length="100" name="property_name" type="string">
+            <choice/>
+        </element>
+        <element attributes="edge_encryption_enabled=true" hint="Provider Name (Supports Expressions)." label="Provider" max_length="200" name="provider" type="string"/>
+        <element hint="Script will be executed when policy rule conditions are met." label="Script" max_length="4000" name="script" type="script"/>
+        <element attributes="no_sort=true,slushbucket_ref_no_expand=true" hint="List of selected user ids." label="User" max_length="1024" name="user_id" reference="sys_user" type="glide_list"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Value to be set on selected property." label="Value" max_length="512" name="value" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="CAPI Version." label="Version" max_length="200" name="version" type="string"/>
+        <element hint="Select a workflow." label="Workflow" max_length="32" name="workflow" reference="wf_workflow" type="reference"/>
+        <index name="index">
+            <element name="notification"/>
+        </index>
+        <index name="index2">
+            <element name="action_script_name"/>
+        </index>
+        <index name="index3">
+            <element name="interface_id"/>
+        </index>
+        <index name="index4">
+            <element name="method"/>
+        </index>
+        <index name="index5">
+            <element name="workflow"/>
+        </index>
+        <index name="index6">
+            <element name="credential_reference"/>
+        </index>
+        <index name="index7">
+            <element name="group_id"/>
+        </index>
+        <index name="index8">
+            <element name="policy_rule"/>
+            <element name="action_order"/>
+        </index>
+        <index name="index9">
+            <element name="action_script_cat"/>
+        </index>
+    </element>
+</database>

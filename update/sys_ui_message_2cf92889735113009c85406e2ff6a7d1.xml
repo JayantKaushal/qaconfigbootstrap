@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Resource Operation Output Attribute Help Text Line1</key>
+        <language>en</language>
+        <message>Each Resource Operation can specify what set of output attributes it will expose and these output attributes can then be read by subsequent steps in the same operation or subsequent operations in the blueprint.</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-04 07:21:37</sys_created_on>
+        <sys_id>2cf92889735113009c85406e2ff6a7d1</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Resource Operation Output Attribute Help Text Line1</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_2cf92889735113009c85406e2ff6a7d1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 07:36:20</sys_updated_on>
+    </sys_ui_message>
+</record_update>

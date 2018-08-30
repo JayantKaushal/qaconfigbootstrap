@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_ng_template">
+    <sp_ng_template action="INSERT_OR_UPDATE">
+        <id>cloudDropdownTreeTemplate</id>
+        <sp_widget display_value="Cloud Header">28303ae00b532200eff7ef9bb4673afd</sp_widget>
+        <sys_class_name>sp_ng_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-22 01:32:05</sys_created_on>
+        <sys_id>b342b2240b532200eff7ef9bb4673a25</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>cloudDropdownTreeTemplate</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_ng_template_b342b2240b532200eff7ef9bb4673a25</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-20 12:30:28</sys_updated_on>
+        <template><![CDATA[<a ng-if="mi.type == 'link'" title="{{mi.title}}" target="{{mi.target}}" href="{{mi.href}}">
+  {{mi.title}}
+</a>
+<a ng-if="mi.type == 'request'" title="{{mi.short_description}}" href="?id=cloud_activities&category=cloud_activities&table={{mi.__table}}&sys_id={{mi.sys_id}}&selected_card={{mi.sys_id}}">
+  <span>{{mi.short_description}}</span>
+  <span class="block color-primary text-muted">
+    <span class="block" style="float: right">
+      <sn-time-ago timestamp="mi.sys_updated_on" />
+    </span>
+    {{mi.number}}
+  </span>
+</a>
+<a ng-if="mi.type == 'menu' && mi.items.length" title="{{mi.title}}" href="javascript:void(0)" class="menu_trigger right-caret">
+  {{mi.title}}
+</a>
+<cloud-dropdown-tree ng-if="mi.type == 'menu' && mi.items.length" items="mi.items" />
+]]></template>
+    </sp_ng_template>
+</record_update>

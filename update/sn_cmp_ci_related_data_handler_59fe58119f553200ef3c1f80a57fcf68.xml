@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Saves raw CloudFormation stack event information</description>
+        <name>StoreCFEvents</name>
+        <script><![CDATA[if (related_data.stackEvents.hasOwnProperty('DescribeStackEventsResult') &&
+    related_data.stackEvents.DescribeStackEventsResult.hasOwnProperty('StackEvents') && 
+    related_data.stackEvents.DescribeStackEventsResult.StackEvents.hasOwnProperty('member')) {
+	var events = related_data.stackEvents.DescribeStackEventsResult.StackEvents.member;
+	
+	var gr = new GlideRecord('sn_cmp_cloudformation_event');
+	for (var i = 0; i < events.length; i++) {
+		var event = events[i];
+		gr.initialize();
+		gr.addQuery('event_id', event.EventId);
+		gr.addQuery('cloudformation_stack.sys_id', ci_sys_id);
+		gr.query();
+		
+		gr.event_id = event.EventId;
+		gr.timestamp = event.Timestamp;
+		gr.physical_resource_id = event.PhysicalResourceId;
+		gr.resource_status = event.ResourceStatus;
+		gr.logical_resource_id = event.LogicalResourceId;
+		gr.resource_type = event.ResourceType;
+		gr.resource_properties = event.ResourceProperties;
+		gr.resource_status_reason = event.ResourceStatusReason;
+		gr.cloudformation_stack = ci_sys_id;
+		gr.sn_stack = related_data.stackId;
+		
+		if (gr.next())
+			gr.update();
+		else
+			gr.insert();
+	}
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+if (related_data.stackEvents.hasOwnProperty('DescribeStackEventsResult') &&
+    related_data.stackEvents.DescribeStackEventsResult.hasOwnProperty('StackEvents') && 
+    related_data.stackEvents.DescribeStackEventsResult.StackEvents.hasOwnProperty('member')) {
+	var events = related_data.stackEvents.DescribeStackEventsResult.StackEvents.member;
+	
+	var gr = new GlideRecord('sn_cmp_cloudformation_event');
+	for (var i = 0; i < events.length; i++) {
+		var event = events[i];
+		gr.initialize();
+		gr.addQuery('event_id', event.EventId);
+		gr.addQuery('cloudformation_stack.sys_id', ci_sys_id);
+		gr.query();
+		
+		gr.event_id = event.EventId;
+		gr.timestamp = event.Timestamp;
+		gr.physical_resource_id = event.PhysicalResourceId;
+		gr.resource_status = event.ResourceStatus;
+		gr.logical_resource_id = event.LogicalResourceId;
+		gr.resource_type = event.ResourceType;
+		gr.resource_properties = event.ResourceProperties;
+		gr.resource_status_reason = event.ResourceStatusReason;
+		gr.cloudformation_stack = ci_sys_id;
+		gr.sn_stack = related_data.stackId;
+		
+		if (gr.next())
+			gr.update();
+		else
+			gr.insert();
+	}
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-03 08:48:50</sys_created_on>
+        <sys_id>59fe58119f553200ef3c1f80a57fcf68</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>StoreCFEvents</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_59fe58119f553200ef3c1f80a57fcf68</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-04-08 13:35:22</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

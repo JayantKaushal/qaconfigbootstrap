@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sysevent_script_action">
+    <sysevent_script_action action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition_script/>
+        <description/>
+        <event_name>VCenterVmStateUpdater.processed</event_name>
+        <name>CMP: Create cloud event</name>
+        <order>100</order>
+        <script><![CDATA[(function() {
+	var eventGr = new GlideRecord('sn_cmp_cloud_event');
+	eventGr.initialize();
+	var parm2 = global.JSON.parse(event.parm2+'');
+	var eventName = parm2.eventName;	
+	var eventData = parm2.event;
+	var statusSysId = parm2.statusSysId;
+	var ciSysId = parm2.ciSysId;
+	var ciTable = parm2.ciTable;
+	var headers = {};
+	headers["event-type"] = "VMware Event";
+	headers["eccQueueSysId"] = event.instance+'';
+	headers["eventName"] = eventName;
+	if (event.parm1)
+		headers["status"] = event.parm1 + '';
+	if (statusSysId)
+		headers["statusSysId"] = statusSysId;
+	if (ciSysId) {
+		headers["ciSysId"] = ciSysId;
+		headers["ciTable"] = ciTable;
+		eventGr.ci = ciSysId;
+	}
+	eventGr.setValue('payload',  eventData);
+	eventGr.setValue('headers', global.JSON.stringify(headers));
+	eventGr.setValue('source', "vmware");
+	eventGr.setValue('event_name',eventName);
+	eventGr.insert();
+}());]]></script>
+        <synchronous>false</synchronous>
+        <sys_class_name>sysevent_script_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-19 19:32:07</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>079cb02dd701320097eb6ccf6e61034f</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMP: Create cloud event</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sysevent_script_action_079cb02dd701320097eb6ccf6e61034f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-19 21:17:24</sys_updated_on>
+    </sysevent_script_action>
+</record_update>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudPortalResourcesPage</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudPortalResourcesPage</name>
+        <script><![CDATA[var CloudPortalResourcesPage = Class.create();
+
+CloudPortalResourcesPage.prototype = {
+    initialize: function(sp) {
+		this.sp = sp;
+		this.isAdmin = CMPUserPortalHelper.isAdmin();
+		this.isGroupAdmin = CMPUserPortalHelper.isGroupAdmin();
+		this.viewPreference = CMPUserPortalHelper.getUserPortalViewPreference();
+    },
+	
+	getLeftNavContent: function() {
+		 var content = { 
+			title: gs.getMessage('Resources'), 
+			recordWatcher: {
+				'sn_capi_resource_type' : ''
+			},
+			list: []
+		};
+		
+		var resourceTypeGAgg = new GlideAggregate('sn_capi_resource_type'); 
+		resourceTypeGAgg.addQuery('visible',true); 
+		resourceTypeGAgg.addEncodedQuery("ci_classISNOTEMPTY");
+		resourceTypeGAgg.addEncodedQuery("product.categoryISNOTEMPTY");
+		
+		resourceTypeGAgg.groupBy('product.category'); 
+		resourceTypeGAgg.groupBy('ci_class'); 
+		
+		resourceTypeGAgg.orderBy('product.category');
+		resourceTypeGAgg.query();
+		
+		var currentCategoryId = '';
+		while (resourceTypeGAgg.next()) {
+			var categoryId = resourceTypeGAgg.getValue('product.category');
+			
+			if(currentCategoryId != categoryId) {
+				var categoryObj = {};
+				categoryObj.label = resourceTypeGAgg.getDisplayValue('product.category');
+				categoryObj.id = categoryId;
+				categoryObj.children = [];
+				content.list.push(categoryObj);
+				currentCategoryId = categoryId;
+			}
+			
+			//get the latest category to fill in children info
+			var categoryObjToUpdate = content.list[content.list.length-1];			
+			var ciTypeGr = new GlideRecord(resourceTypeGAgg.getValue('ci_class')); 
+			if (ciTypeGr.isValid()) {
+				var ciTypeObj = {};
+				ciTypeObj.id = resourceTypeGAgg.getValue('ci_class');
+				ciTypeObj.label = ciTypeGr.getLabel();
+				categoryObjToUpdate.children.push(ciTypeObj);
+			}
+		}
+		
+		return content;
+	},
+	
+	getTableTitleAndFilter: function() {
+		var filter = '';
+		if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin)) 
+			filter = 'assigned_to=' + gs.getUserID() + '^ORowned_by=' + gs.getUserID();
+		else if (this.viewPreference == 'group' || !this.isAdmin)
+			filter = 'assigned_to=' + gs.getUserID() + '^ORowned_by=' + gs.getUserID() + '^ORassignment_groupIN' + CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+
+		return {
+			title: undefined,
+			filter: filter
+		};
+	},
+
+    type: 'CloudPortalResourcesPage'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-15 20:16:26</sys_created_on>
+        <sys_id>b8f6140873c063006cf439282bf6a731</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>CloudPortalResourcesPage</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b8f6140873c063006cf439282bf6a731</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-22 00:51:01</sys_updated_on>
+    </sys_script_include>
+</record_update>

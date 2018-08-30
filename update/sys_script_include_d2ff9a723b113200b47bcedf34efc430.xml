@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateOpImplementStepsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateOpImplementStepsAction</name>
+        <script><![CDATA[var CMPUpdateOpImplementStepsAction = Class.create();
+CMPUpdateOpImplementStepsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.stepId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"), "CMPUpdateOpImplementStepsAction.doAction: Undefined step Id", null);
+			}
+			
+			var response = {
+				status: false
+			};
+			
+			var gr = new GlideRecord('sn_cmp_rb_op_impl_step');
+			gr.get(params.stepId);
+			
+			if (gr.isValidRecord()) {
+				if (params.hasOwnProperty('condition'))
+					gr.setValue("condition", params.condition);
+				if (params.hasOwnProperty('enabled'))
+					gr.setValue("enabled", params.enabled);
+				if (params.hasOwnProperty('capiVersion'))
+					gr.setValue("capi_version", params.capiVersion);
+				if (gr.update())
+					response.status = true;
+			} else
+				throw 'Could not find find operation implementation step with id ' + params.stepId;
+			
+			return response;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update operations Implementaiton steps."),
+				"CMPUpdateOpImplementStepsAction.doAction(): Failed to update operations Implementaiton steps",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOpImplementStepsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-08 10:08:05</sys_created_on>
+        <sys_id>d2ff9a723b113200b47bcedf34efc430</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>CMPUpdateOpImplementStepsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d2ff9a723b113200b47bcedf34efc430</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-21 17:23:22</sys_updated_on>
+    </sys_script_include>
+</record_update>

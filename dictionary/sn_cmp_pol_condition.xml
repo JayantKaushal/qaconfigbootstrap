@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Rule Condition" max_length="40" name="sn_cmp_pol_condition" type="collection">
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Budget Consumption" max_length="100" name="budget_consumption" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Group Based" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="User Based" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element label="Order of Execution" mandatory="true" max_length="40" name="condition_order" type="integer"/>
+        <element hint="Select an Condition Category." label="Condition Script Category" max_length="32" name="condition_script_cat" reference="sn_cmp_pol_action_script_cat" type="reference"/>
+        <element hint="List of Condition Scripts." label="Condition Script" max_length="32" name="condition_script_name" reference="sn_cmp_pol_action_script" reference_qual="javascript:new RefQualsPolicy().getActionScripts(current.action_script_cat);" type="reference"/>
+        <element choice="1" label="Criteria Type" mandatory="true" max_length="40" name="criteria_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="User" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Request Form Data" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Stack Attributes" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Event" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Budget Consumption" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="End Date" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="Table Lookup" sequence="9" value="9"/>
+            </choice>
+        </element>
+        <element label="Duration" max_length="40" name="duration" type="glide_duration"/>
+        <element choice="3" default="2" label="Duration type" max_length="40" name="duration_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Before End Date" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="At End Date" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="After End Date" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <element hint="List of groups." label="Group" max_length="32" name="group_id" reference="sys_user_group" type="reference"/>
+        <element choice="1" label="Logical Operator" max_length="40" name="logical_operator" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="AND" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="OR" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element hint="List of namespaces." label="Namespace" max_length="32" name="namespace" reference="sn_cmp_pol_namespace" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Attribute" max_length="100" name="operand" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Attribute" max_length="100" name="operand_instance_name" type="string">
+            <choice/>
+        </element>
+        <element label="Rule Name" max_length="32" name="policy_rule" reference="sn_cmp_pol_rule" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="Relational Operator" mandatory="true" max_length="40" name="relational_operator" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Equals" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Not Equals" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Greater than" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Less than" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Equals Ignore Case" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Contains" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Contains Ignore Case" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="Is Empty" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="Is Not Empty" sequence="9" value="9"/>
+            </choice>
+        </element>
+        <element hint="List of roles." label="Role" max_length="32" name="role_id" reference="sys_user_role" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Condition as a script" label="Script" max_length="4000" name="script" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="User Entity" max_length="100" name="user_attribute_instance_name" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Group" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Role" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="100" name="value" type="string"/>
+        <index name="index">
+            <element name="condition_script_cat"/>
+        </index>
+        <index name="index2">
+            <element name="condition_script_name"/>
+        </index>
+        <index name="index3">
+            <element name="group_id"/>
+        </index>
+        <index name="index4">
+            <element name="role_id"/>
+        </index>
+        <index name="index5">
+            <element name="namespace"/>
+        </index>
+        <index name="index6">
+            <element name="policy_rule"/>
+            <element name="condition_order"/>
+        </index>
+        <index name="index7">
+            <element name="policy_rule"/>
+        </index>
+    </element>
+</database>

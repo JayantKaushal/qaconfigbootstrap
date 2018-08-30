@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Pack Version" max_length="40" name="sn_cmp_pack_version" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Alias" max_length="128" name="alias" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="512" name="description" type="string"/>
+        <element label="Pack" max_length="32" name="pack" reference="sn_cmp_pack" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Version" max_length="40" name="version" type="string"/>
+        <element label="Version Date" max_length="40" name="version_date" type="glide_date_time"/>
+        <index name="index">
+            <element name="pack"/>
+        </index>
+    </element>
+</database>

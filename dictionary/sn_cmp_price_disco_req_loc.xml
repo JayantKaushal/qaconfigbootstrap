@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Price discovery Request Location" max_length="40" name="sn_cmp_price_disco_req_loc" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="200" name="location" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Order Info" mandatory="true" max_length="1000" name="order_info" type="string"/>
+        <element label="Price Discovery Request" mandatory="true" max_length="32" name="price_discovery_request" reference="sn_cmp_price_discovery_request" type="reference"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Initialized" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Completed" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Error" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Completed" sequence="4" value="4"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="price_discovery_request"/>
+        </index>
+    </element>
+</database>

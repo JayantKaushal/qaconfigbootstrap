@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>true</admin_overrides>
+        <advanced>false</advanced>
+        <condition/>
+        <description/>
+        <express_security>false</express_security>
+        <name>sn_cmp_bp_form_ui_group</name>
+        <operation display_value="execute">execute</operation>
+        <script/>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-17 06:49:32</sys_created_on>
+        <sys_id>790454760b1032004210294863673a89</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>sn_cmp_bp_form_ui_group</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_security_acl_790454760b1032004210294863673a89</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-16 10:57:25</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

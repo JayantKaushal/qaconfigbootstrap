@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="inputjson" label="inputjson" language="en" table="var__m_var_dictionary_994eac268717320053c9f4bbe3e3ec2e">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>inputjson</element>
+            <help/>
+            <hint/>
+            <label>inputjson</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_994eac268717320053c9f4bbe3e3ec2e</name>
+            <plural>inputjson</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-06-14 17:15:13</sys_created_on>
+            <sys_id>1f9e60668717320053c9f4bbe3e3eccf</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>inputjson</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_994eac268717320053c9f4bbe3e3ec2e_inputjson_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-06-14 17:15:13</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope, spUtil) {
+  /* widget controller */
+
+	$scope.showValue = function(p) {
+		p.hide = !p.hide;
+	};
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.properties {&#13;
+  margin-left: 5px;&#13;
+  margin-right: 5px;&#13;
+  margin-top: 25px;&#13;
+  line-height: 1.8;&#13;
+}&#13;
+&#13;
+.property-name {&#13;
+  text-align: right;&#13;
+  vertical-align: text-top;&#13;
+  white-space: nowrap;&#13;
+  text-overflow: ellipsis;&#13;
+  overflow: hidden;&#13;
+  color: #717171;&#13;
+}&#13;
+&#13;
+.property-value {&#13;
+  color: black;&#13;
+  text-align: left;&#13;
+  word-wrap: break-word;&#13;
+}&#13;
+ &#13;
+.panel-body {&#13;
+  padding: 0px;&#13;
+  padding-bottom:20px;&#13;
+  overflow:auto;&#13;
+}&#13;
+&#13;
+.panel-body-height-with-header {&#13;
+  height:calc(100% - $header-height);&#13;
+}&#13;
+&#13;
+.panel-heading {&#13;
+  height: $header-height;&#13;
+}&#13;
+&#13;
+.panel {&#13;
+  margin-bottom: 0px;&#13;
+}&#13;
+&#13;
+hr {&#13;
+  margin-top: 10px;&#13;
+  margin-bottom: 10px;&#13;
+  border: 0;&#13;
+  border-top: 1px solid #cfcfcf;&#13;
+}&#13;
+&#13;
+.panel-title {&#13;
+  padding-top:8px;&#13;
+  padding-left:10px;&#13;
+}&#13;
+&#13;
+.property-wrapper{&#13;
+}&#13;
+&#13;
+.property-panel-wrapper{&#13;
+}&#13;
+&#13;
+.text-blue {&#13;
+   color: #428bca;&#13;
+}&#13;
+&#13;
+@media (max-width: 576px){&#13;
+  .col-xs-12 {&#13;
+    text-align: left;&#13;
+  }&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cmp_properties</id>
+        <internal>false</internal>
+        <link/>
+        <name>CMP Properties</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.propertyData = options.propertyData || [];
+	// If we want to show the main heading (title of frst element in list)
+	data.showHeading = true;
+	if (options.hasOwnProperty("showHeading") && options.showHeading === false) {
+		data.showHeading = false;
+	}
+	data.showPropertyData = true;
+	data.mainContent = data.propertyData.shift();
+	data.subContent = data.propertyData;
+	if (!data.mainContent.properties.length)
+		data.showPropertyData = false;
+	data.message = options.message || gs.getMessage('No data to display');
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-18 18:18:10</sys_created_on>
+        <sys_id>a70fa33a0b13130031a567bff6673aa3</sys_id>
+        <sys_mod_count>206</sys_mod_count>
+        <sys_name>CMP Properties</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_a70fa33a0b13130031a567bff6673aa3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 22:38:47</sys_updated_on>
+        <template><![CDATA[<div class="height100">
+  <div class="panel b height100" >
+    <!-- main heading -->
+    <div ng-if="data.showHeading" class="panel-heading">
+      <h4 class="panel-title" >{{data.mainContent.title}}</h4>
+    </div>
+    
+    <div ng-if="!data.showPropertyData" class="panel-body" ng-class="{'panel-body-height-with-header':data.showHeading,  'height100' : !data.showHeading}">
+      <div class="col-md-12"> {{data.message}}</div>
+    </div>
+    
+    <div ng-if="data.showPropertyData" class="panel-body" ng-class="{'panel-body-height-with-header':data.showHeading,  'height100' : !data.showHeading}">
+      <div class="properties">
+        <div class="property-panel-wrapper" ng-repeat="prop in data.mainContent.properties">
+          <div ng-repeat="p in prop" class="clearfix property-wrapper">
+            <div class="col-xs-12 col-sm-5 property-name"> {{p.key}} </div>
+            <div ng-if="p.hide" class="col-xs-12 col-sm-7 property-value text-blue" ng-click="showValue(p)">${Show} {{p.key}}</div>
+            <div ng-if="!p.hide" class="col-xs-12 col-sm-7 property-value"> {{p.value}}</div>
+
+          </div>
+          <hr class="separator" ng-if="!$last">
+        </div>
+        <div class="property-panel-wrapper" ng-repeat="d in data.subContent" >
+          <hr><h4 class="panel-title" style="color:#000;">{{d.title}}</h4>
+          <div ng-repeat="prop in d.properties">
+            <div ng-repeat="p in prop" class="clearfix property-wrapper">
+              <div class="col-xs-12 col-sm-5 property-name"> {{p.key}} </div>
+              <div ng-if="p.hide" class="col-xs-12 col-sm-7 property-value text-blue" ng-click="showValue(p)">${Show}  {{p.key}}</div>
+              <div ng-if="!p.hide" class="col-xs-12 col-sm-7 property-value"> {{p.value}}</div>
+            </div>
+          <hr ng-if="!$last">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

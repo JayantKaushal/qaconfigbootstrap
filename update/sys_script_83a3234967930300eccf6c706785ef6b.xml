@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_bp_rule</collection>
+        <condition/>
+        <description>This script checks if there exists any rules with same name associated to a sourceKey and if no sourceKey exists then we go by Event and name, thereby avoiding duplicate rules</description>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Unique FormLoad and FieldChange Rules</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous) {
+
+	var sourceKeyID = current.getValue('source_key');
+	var ruleName = current.getValue('name');
+	var eventName = current.getDisplayValue('event');
+
+	var ruleGR = new GlideRecord('sn_cmp_bp_rule');
+	ruleGR.addQuery('event',current.getValue('event'));
+	ruleGR.addQuery('name',ruleName);
+	if(!gs.nil(sourceKeyID))
+		ruleGR.addQuery('source_key',sourceKeyID);
+	ruleGR.query();
+
+	if (ruleGR.next()){
+		if (current.operation() == 'insert' ||
+		   ((current.operation() == 'update') && (current.getUniqueValue() != ruleGR.getUniqueValue()))){
+			current.setAbortAction(true);
+			var errorMessage = gs.getMessage("Rule with name {0} , associated to {1} event, already exists.", [ruleName, eventName]);
+			gs.addErrorMessage( errorMessage );
+		}
+	}
+	
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-26 10:53:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>83a3234967930300eccf6c706785ef6b</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_name>Unique FormLoad and FieldChange Rules</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_83a3234967930300eccf6c706785ef6b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 13:20:05</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=83a3234967930300eccf6c706785ef6b"/>
+</record_update>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>0</order>
+        <script display_value="PowerShell_Script_Response_Validator">0652626b0bd51300dbe7aac125673a9a</script>
+        <step display_value="Node Access Interface.ExecutePowershellScript">ad7346240b013200f353c9bf15673a73</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-12 10:41:20</sys_created_on>
+        <sys_id>be54e2ab0bd51300dbe7aac125673ad2</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_be54e2ab0bd51300dbe7aac125673ad2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-12 10:41:20</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

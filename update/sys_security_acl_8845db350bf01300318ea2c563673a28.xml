@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>true</admin_overrides>
+        <advanced>true</advanced>
+        <condition/>
+        <description>Allow read for records in sn_cmp_stack, if the ACL script returns true.</description>
+        <express_security>false</express_security>
+        <name>sn_cmp_stack</name>
+        <operation display_value="read">read</operation>
+        <script><![CDATA[var resourceGroupId = current.assignment_group;
+    var groupName = null;
+    //Get the group name 
+    var group = new GlideRecord('sys_user_group');
+    if (group.get(resourceGroupId))
+		groupName = group.getValue('name');      
+    var userGroup = gs.getUser().isMemberOf(groupName);
+answer = ((gs.getUser().hasRole("sn_cmp.cloud_service_user") && current.assigned_to == gs.getUserID()) ||   gs.getUser().hasRole("sn_cmp.cmp_root_admin") || (gs.getUser().hasRole("sn_cmp.cloud_group_admin") && userGroup)); 
+ ]]></script>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-13 07:13:53</sys_created_on>
+        <sys_id>8845db350bf01300318ea2c563673a28</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>sn_cmp_stack</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_security_acl_8845db350bf01300318ea2c563673a28</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-26 11:37:24</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

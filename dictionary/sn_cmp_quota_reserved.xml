@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Quota Reserved" max_length="40" name="sn_cmp_quota_reserved" type="collection">
+        <element label="Amount Reserved" max_length="100" name="amount" type="int"/>
+        <element label="Group" max_length="32" name="group" reference="sys_user_group" type="reference"/>
+        <element label="Order" max_length="32" name="order" reference="sn_cmp_order" type="reference"/>
+        <element label="Quota Definition" max_length="32" name="quota_definition" reference="sn_cmp_quota_definition" type="reference"/>
+        <element label="User" max_length="32" name="user" reference="sys_user" type="reference"/>
+        <index name="index">
+            <element name="quota_definition"/>
+        </index>
+        <index name="index2">
+            <element name="user"/>
+        </index>
+        <index name="index3">
+            <element name="group"/>
+        </index>
+        <index name="index4">
+            <element name="order"/>
+        </index>
+    </element>
+</database>

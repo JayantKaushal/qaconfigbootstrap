@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Price Discovery Property" max_length="40" name="sn_cmp_price_discovery_property" type="collection">
+        <element hint="The Cloud Pricing Resource Offer" label="Offer" mandatory="true" max_length="32" name="offer" reference="sn_cmp_pricing_resource_offer" type="reference"/>
+        <element hint="The cloud management provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="URL" max_length="200" name="url" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Version" max_length="50" name="version" type="string"/>
+        <index name="index">
+            <element name="offer"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+    </element>
+</database>

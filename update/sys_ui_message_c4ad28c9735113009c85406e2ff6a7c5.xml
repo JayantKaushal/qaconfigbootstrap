@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Resource Operation Output Attribute Help Text Line2</key>
+        <language>en</language>
+        <message>For instance - Virtual Server's Provision operation can have the following Output Attribute to expose an attribute called "'NodeId'" for other Operations or Operation</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-04 07:36:44</sys_created_on>
+        <sys_id>c4ad28c9735113009c85406e2ff6a7c5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Resource Operation Output Attribute Help Text Line2</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_c4ad28c9735113009c85406e2ff6a7c5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 07:36:44</sys_updated_on>
+    </sys_ui_message>
+</record_update>

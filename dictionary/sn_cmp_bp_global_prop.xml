@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Global Property" max_length="40" name="sn_cmp_bp_global_prop" type="collection">
+        <element label="Blueprint Stage Operation" max_length="32" name="bp_stage_operation" reference="sn_cmp_bp_stage_op" reference_cascade_rule="delete" type="reference"/>
+        <element label="Stage Resource Op Attribute" max_length="32" name="bp_stage_res_op_attr" reference="sn_cmp_bp_stage_res_op_attr" reference_cascade_rule="delete" type="reference"/>
+        <element label="Mandatory" max_length="40" name="mandatory" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element default="1000" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Operation Unique ID" max_length="200" name="resource_op_unique_id" type="string"/>
+        <element label="Resource Operation" max_length="32" name="stage_resource_operation" reference="sn_cmp_bp_stage_resource_op" type="reference"/>
+        <index name="index">
+            <element name="bp_stage_operation"/>
+        </index>
+        <index name="index2">
+            <element name="stage_resource_operation"/>
+        </index>
+        <index name="index3">
+            <element name="bp_stage_res_op_attr"/>
+        </index>
+    </element>
+</database>

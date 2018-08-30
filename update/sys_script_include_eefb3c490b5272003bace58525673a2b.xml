@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGenerateBlueprintEntitiesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGenerateBlueprintEntitiesAction</name>
+        <script><![CDATA[var CMPGenerateBlueprintEntitiesAction = Class.create();
+CMPGenerateBlueprintEntitiesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			var type = params.type;
+			var formId = params.form_id;
+			var formgr = new GlideRecord('sn_cmp_bp_form_behavior');
+				formgr.addQuery("sys_id", params.form_id);
+				formgr.query();
+				if(formgr.next()) {
+					if(type == 'PublishForm') {
+					  this.publishForm(formgr);
+					} else if(type == 'GenerateEntities' && params.context == 'preserveMapping') {
+					  this.resetFormWithPreserveMapping(formgr);
+					} else if(type == 'GenerateEntities') {
+					  this.generateEntities(formgr);
+					} else if (type == 'CreateCatItem') {
+						this.createCatalog(formgr);
+					} else if(type == 'GenerateEntitiesAndPublishForm') {
+					  this.generateEntities(formgr);
+					  this.publishForm(formgr);
+					}
+				}
+
+			return true;
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to do action on this blueprint form."),
+				"CMPGenerateBlueprintEntitiesAction.doAction: Failed to do action on this blueprint form.",
+				error
+			);
+		}
+    },
+
+	publishForm: function(current){
+		gs.info("publish form ..."+current.toString());
+		gs.info(current.toString());
+		var scItemCreator = new BlueprintSCItemCreator();
+        var formBehavior = scItemCreator.updateCatItemFromFormBehavior(current);
+        return true;
+
+	},
+
+	resetFormWithPreserveMapping : function(formgr) {
+		var formId = formgr.getUniqueValue();
+		var blueprintScript = new sn_cmp_api.BlueprintServiceScript();
+		blueprintScript.mergeFormBehavior(formId);
+
+	},
+
+
+	generateEntities: function(current){
+		gs.info("Creating entities for catalog ..."+current.toString());
+		var entitiesGenerator = new EntitiesGenerator();
+		var dto = entitiesGenerator.generateEntities(current);
+        return true;
+
+	},
+	// current is the formBehaviorGR
+	createCatalog : function(current) {
+		var blueprintSCItem =  new BlueprintSCItemCreator();
+		//calling the existing method for creating the cat item
+		blueprintSCItem.createCatItem(current);
+	},
+
+    type: 'CMPGenerateBlueprintEntitiesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-21 09:21:27</sys_created_on>
+        <sys_id>eefb3c490b5272003bace58525673a2b</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>CMPGenerateBlueprintEntitiesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_eefb3c490b5272003bace58525673a2b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-19 06:58:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

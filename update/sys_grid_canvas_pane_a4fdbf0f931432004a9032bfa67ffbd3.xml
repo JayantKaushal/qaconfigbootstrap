@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_grid_canvas_pane">
+    <sys_grid_canvas_pane action="INSERT_OR_UPDATE">
+        <grid_canvas display_value="PA My Cloud Cost">47ddbf0f931432004a9032bfa67ffb8c</grid_canvas>
+        <height>21</height>
+        <portal_widget display_value="Created 2017-01-18 23:59:40">a8fdbf0f931432004a9032bfa67ffbd0</portal_widget>
+        <posx>0</posx>
+        <posy>0</posy>
+        <sys_class_name>sys_grid_canvas_pane</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-18 18:29:40</sys_created_on>
+        <sys_id>a4fdbf0f931432004a9032bfa67ffbd3</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>47ddbf0f931432004a9032bfa67ffb8c</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_grid_canvas_pane_a4fdbf0f931432004a9032bfa67ffbd3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-18 18:43:51</sys_updated_on>
+        <width>5</width>
+    </sys_grid_canvas_pane>
+</record_update>

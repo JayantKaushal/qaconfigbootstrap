@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Check for provisioning success/failure</description>
+        <name>CheckStackSuccess</name>
+        <script><![CDATA[logEventsToTrail(related_data.stackId);
+checkStatus(ci_class, ci_sys_id);
+
+function checkStatus(table, id) {
+	if (gs.nil(id)) {
+		var noStackMsg = gs.getMessage('Stack record not found in cmdb_ci_aws_cloudformation_stack.  There may have been problems persisting stack resources.  Check system logs.');
+		return 'ERROR: ' + noStackMsg;
+	}
+	
+	var gr = new GlideRecord(table);
+	gr.get(id);
+
+	if (gr.stack_status == 'CREATE_IN_PROGRESS') {
+		var notDoneMsg = gs.getMessage('Stack provision did not finish in allowed time.');
+		return 'ERROR: ' + notDoneMsg;
+	}
+	
+	if (gr.stack_status != 'CREATE_COMPLETE') {
+		var reason = '' + gr.status_reason;
+		
+		var messages = [];
+		if (gs.nil(reason)) {
+			var eventGr = new GlideRecord('sn_cmp_cloudformation_event');
+
+			eventGr.addQuery('resource_status', 'NOT IN', ['CREATE_COMPLETE', 'CREATE_IN_PROGRESS']);
+			eventGr.addNotNullQuery('resource_status_reason');
+			eventGr.addQuery('cloudformation_stack', id);
+			eventGr.query();
+
+			while (eventGr.next()) {				
+				var statusMessage = eventGr.getValue('resource_status_reason');
+				if (statusMessage && messages.indexOf(statusMessage) < 0)
+					messages.push(statusMessage);
+			}
+		}
+		
+		return 'ERROR: ' + messages.join("\n");
+	}
+}
+
+function logEventsToTrail(stackSysId) {
+	var orderId = fetchOrderId(stackSysId);
+	var trailer = new sn_cmp_api.CloudTrailServiceScript();
+	
+	var eventGr = new GlideRecord('sn_cmp_cloudformation_event');
+	eventGr.addQuery('sn_stack', stackSysId);
+	eventGr.addQuery('resource_status_reason', '!=', 'NULL');
+	eventGr.orderBy('timestamp');
+	eventGr.addQuery('resource_status', 'NOT IN', ['CREATE_IN_PROGRESS']);
+	eventGr.query();
+
+	while (eventGr.next()) {
+		var msg = eventGr.logical_resource_id + ': ' + eventGr.resource_status_reason;
+		var status = eventGr.resource_status + '';
+		if (status.indexOf('FAILED') >= 0 || status.indexOf('ROLLBACK') >= 0)
+			writeTrailMessage(trailer, orderId, msg, '4'); //error
+		else
+			writeTrailMessage(trailer, orderId, msg, '2'); //info
+	}
+}
+
+function writeTrailMessage(trailer, orderId, str, level, details) {
+	var message = {};
+	message.statusMessageSummary = str;
+	message.statusMessageDetails = gs.nil(details) ? str : details;
+	message.messageType = gs.nil(level) ? '1' : level; // '1' is debug
+	message.milestone = false;
+	message.step = 'Handle Cloud API Response';
+	message.orderId = orderId;
+	var trailMessage = global.JSON.stringify(message);
+	trailer.createTrail(trailMessage);	
+}
+
+function fetchOrderId(stackId) {
+	var gr = new GlideRecord('sn_cmp_stack');
+
+	if (gr.get(stackId))
+		return '' + gr.order.sys_id;
+	
+	return '';
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+logEventsToTrail(related_data.stackId);
+checkStatus(ci_class, ci_sys_id);
+
+function checkStatus(table, id) {
+	if (gs.nil(id)) {
+		var noStackMsg = gs.getMessage('Stack record not found in cmdb_ci_aws_cloudformation_stack.  There may have been problems persisting stack resources.  Check system logs.');
+		return 'ERROR: ' + noStackMsg;
+	}
+	
+	var gr = new GlideRecord(table);
+	gr.get(id);
+
+	if (gr.stack_status == 'CREATE_IN_PROGRESS') {
+		var notDoneMsg = gs.getMessage('Stack provision did not finish in allowed time.');
+		return 'ERROR: ' + notDoneMsg;
+	}
+	
+	if (gr.stack_status != 'CREATE_COMPLETE') {
+		var reason = '' + gr.status_reason;
+		
+		var messages = [];
+		if (gs.nil(reason)) {
+			var eventGr = new GlideRecord('sn_cmp_cloudformation_event');
+
+			eventGr.addQuery('resource_status', 'NOT IN', ['CREATE_COMPLETE', 'CREATE_IN_PROGRESS']);
+			eventGr.addNotNullQuery('resource_status_reason');
+			eventGr.addQuery('cloudformation_stack', id);
+			eventGr.query();
+
+			while (eventGr.next()) {				
+				var statusMessage = eventGr.getValue('resource_status_reason');
+				if (statusMessage && messages.indexOf(statusMessage) < 0)
+					messages.push(statusMessage);
+			}
+		}
+		
+		return 'ERROR: ' + messages.join("\n");
+	}
+}
+
+function logEventsToTrail(stackSysId) {
+	var orderId = fetchOrderId(stackSysId);
+	var trailer = new sn_cmp_api.CloudTrailServiceScript();
+	
+	var eventGr = new GlideRecord('sn_cmp_cloudformation_event');
+	eventGr.addQuery('sn_stack', stackSysId);
+	eventGr.addQuery('resource_status_reason', '!=', 'NULL');
+	eventGr.orderBy('timestamp');
+	eventGr.addQuery('resource_status', 'NOT IN', ['CREATE_IN_PROGRESS']);
+	eventGr.query();
+
+	while (eventGr.next()) {
+		var msg = eventGr.logical_resource_id + ': ' + eventGr.resource_status_reason;
+		var status = eventGr.resource_status + '';
+		if (status.indexOf('FAILED') >= 0 || status.indexOf('ROLLBACK') >= 0)
+			writeTrailMessage(trailer, orderId, msg, '4'); //error
+		else
+			writeTrailMessage(trailer, orderId, msg, '2'); //info
+	}
+}
+
+function writeTrailMessage(trailer, orderId, str, level, details) {
+	var message = {};
+	message.statusMessageSummary = str;
+	message.statusMessageDetails = gs.nil(details) ? str : details;
+	message.messageType = gs.nil(level) ? '1' : level; // '1' is debug
+	message.milestone = false;
+	message.step = 'Handle Cloud API Response';
+	message.orderId = orderId;
+	var trailMessage = global.JSON.stringify(message);
+	trailer.createTrail(trailMessage);	
+}
+
+function fetchOrderId(stackId) {
+	var gr = new GlideRecord('sn_cmp_stack');
+
+	if (gr.get(stackId))
+		return '' + gr.order.sys_id;
+	
+	return '';
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-03 10:02:34</sys_created_on>
+        <sys_id>edbfa01d9f553200ef3c1f80a57fcf66</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>CheckStackSuccess</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_edbfa01d9f553200ef3c1f80a57fcf66</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-18 21:38:48</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_resource_type_operation">
+    <sn_cmp_resource_type_operation action="INSERT_OR_UPDATE">
+        <discovery_operation display_value="ListStacks">9b5248c19fc1320048111f80a57fcf30</discovery_operation>
+        <discovery_step display_value="Azure Stack Orchestration Interface.DescribeStack">f7294c459fc1320048111f80a57fcf93</discovery_step>
+        <resource_type display_value="Microsoft.Resources/deployments">1b5ac0859fc1320048111f80a57fcfff</resource_type>
+        <sys_class_name>sn_cmp_resource_type_operation</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-18 06:30:54</sys_created_on>
+        <sys_id>50a2c9499fc1320048111f80a57fcf30</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>1b5ac0859fc1320048111f80a57fcfff</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_resource_type_operation_50a2c9499fc1320048111f80a57fcf30</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-23 22:32:12</sys_updated_on>
+    </sn_cmp_resource_type_operation>
+</record_update>

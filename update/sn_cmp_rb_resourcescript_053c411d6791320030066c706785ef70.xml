@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_NIC_Subnet_VM_Response_Processor</name>
+        <resource display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource>
+        <script>function processResponse(response, cloudServiceAccountId,ldc) {&#13;
+	var nicInfohandler = [];&#13;
+	var vmResponse = global.JSON.parse(response);&#13;
+&#13;
+	if(vmResponse.networkInterfaces &amp;&amp; vmResponse.networkInterfaces.length &gt; 0){&#13;
+		for (var i=0; i&lt; vmResponse.networkInterfaces.length; i++){&#13;
+			var nicIdTrim = vmResponse.networkInterfaces[i].networkInterfaceId.split("/");&#13;
+			var nicId;&#13;
+			if (nicIdTrim.length == 2)&#13;
+				nicId = nicIdTrim[1];&#13;
+			else &#13;
+				nicId = nicIdTrim[0];&#13;
+			var endPointId = "nic-" + nicId + "_endpoint";&#13;
+			var nicInfo = {&#13;
+				"cmdb_ci_nic": {&#13;
+					"validator": "nic_create_validator",&#13;
+					"validator_overrides": { },&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_aws_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": ldc&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_nic":{&#13;
+							"criterion":{&#13;
+							    "object_id": nicId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes":{&#13;
+	                    "object_id": nicId,&#13;
+	                    "name": nicId,&#13;
+	                    "allocation_id":"",&#13;
+	                    "attach_time":"",&#13;
+	                    "gateway": vmResponse.networkInterfaces[i].gateway,&#13;
+	                    "host_name": vmResponse.nodeName,&#13;
+	                    "is_connected":"",&#13;
+	                    "is_static":"",&#13;
+	                    "netmask": vmResponse.networkInterfaces[i].netmask,&#13;
+	                    "owner": vmResponse.networkInterfaces[i].ownerId,&#13;
+	                    "private_dns": vmResponse.networkInterfaces[i].privateDnsName,&#13;
+	                    "private_ip": vmResponse.networkInterfaces[i].privateIPAddresses[0],&#13;
+	                    "public_dns":"",&#13;
+	                    "is_source_dest_check": vmResponse.networkInterfaces[i].sourceDestCheck,&#13;
+	                    "public_ip": vmResponse.networkInterfaces[i].publicIPAddresses[0],&#13;
+	                    "node_id":"",&#13;
+	                    "status": vmResponse.networkInterfaces[i].status&#13;
+	                },&#13;
+					"references": {&#13;
+						"cmdb_ci_cloud_subnet": {&#13;
+							"identification": {&#13;
+								"cmdb_ci_cloud_service_account": {&#13;
+									"criterion": {&#13;
+										"object_id": cloudServiceAccountId&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_aws_datacenter": {&#13;
+									"criterion": {&#13;
+										"object_id": ldc&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_network": {&#13;
+									"criterion": {&#13;
+										"object_id": vmResponse.networkInterfaces[i].networkId&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_cloud_subnet": {&#13;
+									"criterion": {&#13;
+										"object_id": vmResponse.networkInterfaces[i].subnetId&#13;
+									}&#13;
+								}&#13;
+							},&#13;
+							"attributes": {&#13;
+								"object_id": vmResponse.networkInterfaces[i].subnetId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"bindings":[&#13;
+					{&#13;
+					   "attach_to":{&#13;
+						  "implemented_by":{&#13;
+							 "endpoint_ci":"cmdb_ci_endpoint_vnic",&#13;
+							 "endpoint_identification":{&#13;
+								"object_id": endPointId&#13;
+							 },&#13;
+							 "attributes":{&#13;
+								"name": endPointId,&#13;
+								"host": vmResponse.nodeId,&#13;
+								"target_port":"",&#13;
+								"object_id": endPointId,&#13;
+								"uncertain":"",&#13;
+								"ip_address":"",&#13;
+								"region":"",&#13;
+								"dns_suffix":"",&#13;
+								"ipam_pool_id":"",&#13;
+								"port_id":""&#13;
+							}&#13;
+						  }&#13;
+					   }&#13;
+					}&#13;
+				  ]&#13;
+				}&#13;
+			};&#13;
+			nicInfohandler.push(nicInfo);&#13;
+		}&#13;
+	}&#13;
+	return global.JSON.stringify(nicInfohandler);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId,ldc) {
+	var nicInfohandler = [];
+	var vmResponse = global.JSON.parse(response);
+
+	if(vmResponse.networkInterfaces && vmResponse.networkInterfaces.length > 0){
+		for (var i=0; i< vmResponse.networkInterfaces.length; i++){
+			var nicIdTrim = vmResponse.networkInterfaces[i].networkInterfaceId.split("/");
+			var nicId;
+			if (nicIdTrim.length == 2)
+				nicId = nicIdTrim[1];
+			else 
+				nicId = nicIdTrim[0];
+			var endPointId = "nic-" + nicId + "_endpoint";
+			var nicInfo = {
+				"cmdb_ci_nic": {
+					"validator": "nic_create_validator",
+					"validator_overrides": { },
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_aws_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_nic":{
+							"criterion":{
+							    "object_id": nicId
+							}
+						}
+					},
+					"attributes":{
+	                    "object_id": nicId,
+	                    "name": nicId,
+	                    "allocation_id":"",
+	                    "attach_time":"",
+	                    "gateway": vmResponse.networkInterfaces[i].gateway,
+	                    "host_name": vmResponse.nodeName,
+	                    "is_connected":"",
+	                    "is_static":"",
+	                    "netmask": vmResponse.networkInterfaces[i].netmask,
+	                    "owner": vmResponse.networkInterfaces[i].ownerId,
+	                    "private_dns": vmResponse.networkInterfaces[i].privateDnsName,
+	                    "private_ip": vmResponse.networkInterfaces[i].privateIPAddresses[0],
+	                    "public_dns":"",
+	                    "is_source_dest_check": vmResponse.networkInterfaces[i].sourceDestCheck,
+	                    "public_ip": vmResponse.networkInterfaces[i].publicIPAddresses[0],
+	                    "node_id":"",
+	                    "status": vmResponse.networkInterfaces[i].status
+	                },
+					"references": {
+						"cmdb_ci_cloud_subnet": {
+							"identification": {
+								"cmdb_ci_cloud_service_account": {
+									"criterion": {
+										"object_id": cloudServiceAccountId
+									}
+								},
+								"cmdb_ci_aws_datacenter": {
+									"criterion": {
+										"object_id": ldc
+									}
+								},
+								"cmdb_ci_network": {
+									"criterion": {
+										"object_id": vmResponse.networkInterfaces[i].networkId
+									}
+								},
+								"cmdb_ci_cloud_subnet": {
+									"criterion": {
+										"object_id": vmResponse.networkInterfaces[i].subnetId
+									}
+								}
+							},
+							"attributes": {
+								"object_id": vmResponse.networkInterfaces[i].subnetId
+							}
+						}
+					},
+					"bindings":[
+					{
+					   "attach_to":{
+						  "implemented_by":{
+							 "endpoint_ci":"cmdb_ci_endpoint_vnic",
+							 "endpoint_identification":{
+								"object_id": endPointId
+							 },
+							 "attributes":{
+								"name": endPointId,
+								"host": vmResponse.nodeId,
+								"target_port":"",
+								"object_id": endPointId,
+								"uncertain":"",
+								"ip_address":"",
+								"region":"",
+								"dns_suffix":"",
+								"ipam_pool_id":"",
+								"port_id":""
+							}
+						  }
+					   }
+					}
+				  ]
+				}
+			};
+			nicInfohandler.push(nicInfo);
+		}
+	}
+	return global.JSON.stringify(nicInfohandler);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-03 14:14:24</sys_created_on>
+        <sys_id>053c411d6791320030066c706785ef70</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>Create_NIC_Subnet_VM_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_053c411d6791320030066c706785ef70</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-21 11:52:23</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

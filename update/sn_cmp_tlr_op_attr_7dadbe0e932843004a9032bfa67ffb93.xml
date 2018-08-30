@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_tlr_op_attr">
+    <sn_cmp_tlr_op_attr action="INSERT_OR_UPDATE">
+        <applicable_to/>
+        <attribute>LeaseEndDate</attribute>
+        <data_source_type>Text</data_source_type>
+        <data_source_value/>
+        <defaultvalue/>
+        <error_text/>
+        <help_text/>
+        <mandatory>false</mandatory>
+        <operation>ModifyLease</operation>
+        <order>75</order>
+        <parameter_type>1</parameter_type>
+        <regex/>
+        <sys_class_name>sn_cmp_tlr_op_attr</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-14 17:41:42</sys_created_on>
+        <sys_id>7dadbe0e932843004a9032bfa67ffb93</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>LeaseEndDate</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_tlr_op_attr_7dadbe0e932843004a9032bfa67ffb93</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-11 18:39:36</sys_updated_on>
+        <template_type/>
+        <value/>
+        <visible>true</visible>
+    </sn_cmp_tlr_op_attr>
+</record_update>

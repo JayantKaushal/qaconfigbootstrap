@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order/>
+        <script display_value="List_Load_Balancers_Response_Processor">3accccfa9f44320048111f80a57fcfdc</script>
+        <step display_value="ITapp Azure Load Balancer Manager.List load balancers">38ac4cfa9f44320048111f80a57fcf71</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-04 20:02:03</sys_created_on>
+        <sys_id>babcccfa9f44320048111f80a57fcfcd</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_babcccfa9f44320048111f80a57fcfcd</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-01-04 20:02:03</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

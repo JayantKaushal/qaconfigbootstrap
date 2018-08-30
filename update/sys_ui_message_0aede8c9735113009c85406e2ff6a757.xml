@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Resource Operation Output Attribute Help Text Line5</key>
+        <language>en</language>
+        <message>Once "Compute Interface.CreateNode" finishes execution, its JSON output will be parsed to look for 'nodeId' attribute, which is say 'us-west-1/i-06adfe8ef9309b5bb' and replaced into the Output Attributes. The Output Attributes will then look like this - {"NodeId":"us-west-1/i-06adfe8ef9309b5bb"}</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-04 07:37:59</sys_created_on>
+        <sys_id>0aede8c9735113009c85406e2ff6a757</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Resource Operation Output Attribute Help Text Line5</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_0aede8c9735113009c85406e2ff6a757</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 07:37:59</sys_updated_on>
+    </sys_ui_message>
+</record_update>

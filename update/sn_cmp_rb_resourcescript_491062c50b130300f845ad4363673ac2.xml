@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_Application_Profile_Template</name>
+        <resource display_value="Ansible Tower">d31e50020b510300a682aac125673aae</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) {&#13;
+			gs.info("Inside creating Application Profile Templates... ");&#13;
+			var AnsibleModelString = [];&#13;
+			var discoveryResponse = global.JSON.parse(response);&#13;
+			var respIndex =0;&#13;
+			var tableName = "";&#13;
+			&#13;
+			//payload for configInstallables&#13;
+			var jobTemplateResponse = discoveryResponse.jobTemplates;&#13;
+			for(respIndex = 0, job_size = jobTemplateResponse.length; respIndex &lt; job_size ; respIndex++){&#13;
+			var hostingTables = [];&#13;
+			&#13;
+			//hosting table = ansible_tower for configInstallables&#13;
+			var configInstallTable = {};&#13;
+			configInstallTable.name = "sn_cfg_ansible_tower";&#13;
+			configInstallTable.identifier = "object_id";&#13;
+			configInstallTable.identifierValue = discoveryResponse.objectId;&#13;
+			hostingTables.push(configInstallTable);&#13;
+			&#13;
+			tableName = "sn_cmp_cfg_installable";&#13;
+			var jobTempObjectId = jobTemplateResponse[respIndex].name +"_"+discoveryResponse.objectId;&#13;
+			var configInstallableTable = new BuildTableData(tableName, jobTempObjectId, hostingTables);&#13;
+			&#13;
+			//add attributes for table&#13;
+			configInstallableTable[tableName].attributes.name=jobTemplateResponse[respIndex].name;&#13;
+			configInstallableTable[tableName].attributes.run_list=jobTemplateResponse[respIndex].playbook;&#13;
+			AnsibleModelString.push(configInstallableTable);&#13;
+			var cloudModelScript = new sn_cmp_api.CloudModelProcessorScript();&#13;
+			var finalIdentificationOutput = global.JSON.stringify(AnsibleModelString);&#13;
+			var ciPayload = cloudModelScript.retrieveCIs(finalIdentificationOutput, "shallow");&#13;
+			var ci = global.JSON.parse(ciPayload);&#13;
+			var workloadConfigProvider = ci.sn_cfg_ansible_tower.sys_id;&#13;
+			var configInstallableSysId = ci.sn_cmp_cfg_installable.sys_id;&#13;
+			var configInstallableName = ci.sn_cmp_cfg_installable.name;&#13;
+			var configInstallableObjectId = ci.sn_cmp_cfg_installable.object_id;&#13;
+			var applicationProfileTemplate = new GlideRecord('sn_cmp_application_template');&#13;
+			&#13;
+			applicationProfileTemplate.addQuery("config_runlist",configInstallableSysId);&#13;
+			applicationProfileTemplate.query();&#13;
+			if(applicationProfileTemplate.hasNext()){&#13;
+			gs.debug("A template already exists for Installable "+configInstallableName +" with sys_id "+configInstallableSysId);&#13;
+			}else{&#13;
+			applicationProfileTemplate.initialize();&#13;
+			applicationProfileTemplate.name=configInstallableName;&#13;
+			applicationProfileTemplate.template_id=configInstallableObjectId;&#13;
+			applicationProfileTemplate.config_runlist=configInstallableSysId;&#13;
+			applicationProfileTemplate.config_runlist_provider = "sn_cmp_cfg_installable";&#13;
+			applicationProfileTemplate.provider_instance = workloadConfigProvider;&#13;
+			applicationProfileTemplate.insert();&#13;
+			gs.info("Created an Application template "+configInstallableName +" successfully");&#13;
+			}&#13;
+			AnsibleModelString.pop();&#13;
+			}&#13;
+			return [];&#13;
+			}&#13;
+			function BuildTableData(tableName, jobTempObjectId, hostingTables){&#13;
+			this[tableName] = {};&#13;
+			this[tableName].validator = "AnsibleTowerResponseValidator"  ;&#13;
+			this[tableName].validator_overrides = {};&#13;
+			this[tableName].identification = {};&#13;
+			this[tableName].identification [tableName] = {};&#13;
+			this[tableName].identification[tableName].criterion= {};&#13;
+			this[tableName].identification[tableName].criterion.object_id = jobTempObjectId.toString();&#13;
+			&#13;
+			for(var index in hostingTables){&#13;
+			//attach hosting table identification&#13;
+			this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);&#13;
+			}&#13;
+			this[tableName].attributes = {};&#13;
+			}&#13;
+			&#13;
+			function buildTableIdentification(hostingTable){&#13;
+			var identification = {};&#13;
+			identification[hostingTable.name] = {};&#13;
+			identification[hostingTable.name].criterion = {};&#13;
+			identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;&#13;
+			return identification[hostingTable.name];&#13;
+			}&#13;
+			&#13;
+		</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	gs.info("Inside creating Application Profile Templates... ");
+	var AnsibleModelString = [];
+	var discoveryResponse = global.JSON.parse(response);
+	var respIndex =0;
+	var tableName = "";
+
+	//payload for configInstallables
+	var jobTemplateResponse = discoveryResponse.jobTemplates;
+	var output = [];
+	for(respIndex = 0, job_size = jobTemplateResponse.length; respIndex < job_size ; respIndex++){
+		var hostingTables = [];
+		var configInstallTable = {};
+			configInstallTable.name = "sn_cfg_ansible_tower";
+			configInstallTable.identifier = "object_id";
+			configInstallTable.identifierValue = discoveryResponse.objectId;
+			hostingTables.push(configInstallTable);
+			tableName = "sn_cmp_cfg_installable";
+			var jobTempObjectId = jobTemplateResponse[respIndex].name +"_"+discoveryResponse.objectId;
+			var configInstallableTable = new BuildTableData(tableName, jobTempObjectId, hostingTables);
+
+			//add attributes for table
+			configInstallableTable[tableName].attributes.name=jobTemplateResponse[respIndex].name;
+			configInstallableTable[tableName].attributes.run_list=jobTemplateResponse[respIndex].playbook;
+			AnsibleModelString.push(configInstallableTable);
+			var cloudModelScript = new sn_cmp_api.CloudModelProcessorScript();
+			var finalIdentificationOutput = global.JSON.stringify(AnsibleModelString);
+			var ciPayload = cloudModelScript.retrieveCIs(finalIdentificationOutput, "shallow");
+			var ci = global.JSON.parse(ciPayload);
+			var workloadConfigProvider = ci.sn_cfg_ansible_tower.sys_id;
+			var configInstallableSysId = ci.sn_cmp_cfg_installable.sys_id;
+			var configInstallableName = ci.sn_cmp_cfg_installable.name;
+			var configInstallableObjectId = ci.sn_cmp_cfg_installable.object_id;
+			gs.info("workloadConfigProvider"+workloadConfigProvider);
+			gs.info("configInstallableSysId"+configInstallableSysId);
+			gs.info("configInstallableName"+configInstallableName);
+			gs.info("configInstallableObjectId"+configInstallableObjectId);
+			var applicationProfileTemplate = new GlideRecord('sn_cmp_application_template');
+
+			applicationProfileTemplate.addQuery("config_runlist",configInstallableSysId);
+			applicationProfileTemplate.query();
+			if(applicationProfileTemplate.hasNext()){
+				gs.debug("A template already exists for Installable "+configInstallableName +" with sys_id "+configInstallableObjectId);
+			}else{
+				applicationProfileTemplate.initialize();
+				applicationProfileTemplate.name=configInstallableName;
+				applicationProfileTemplate.template_id=configInstallableObjectId;
+				applicationProfileTemplate.config_runlist=configInstallableSysId;
+				applicationProfileTemplate.config_runlist_provider = "sn_cmp_cfg_installable";
+				applicationProfileTemplate.provider_instance = workloadConfigProvider;
+				applicationProfileTemplate.insert();
+				gs.info("Created an Application template "+configInstallableName +" successfully");
+			}
+			AnsibleModelString.pop();
+		}
+	return "[]";
+	}
+	function BuildTableData(tableName, jobTempObjectId, hostingTables){
+		this[tableName] = {};
+			this[tableName].validator = "AnsibleTowerResponseValidator"  ;
+			this[tableName].validator_overrides = {};
+				this[tableName].identification = {};
+					this[tableName].identification [tableName] = {};
+						this[tableName].identification[tableName].criterion= {};
+							this[tableName].identification[tableName].criterion.object_id = jobTempObjectId.toString();
+
+							for(var index in hostingTables){
+								//attach hosting table identification
+								this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);
+							}
+							this[tableName].attributes = {};
+							}
+
+							function buildTableIdentification(hostingTable){
+								var identification = {};
+									identification[hostingTable.name] = {};
+										identification[hostingTable.name].criterion = {};
+											identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;
+											return identification[hostingTable.name];
+										}
+
+										]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-26 05:52:07</sys_created_on>
+        <sys_id>491062c50b130300f845ad4363673ac2</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>Create_Application_Profile_Template</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_491062c50b130300f845ad4363673ac2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-15 11:59:15</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Rule" max_length="40" name="sn_cmp_bp_rule" type="collection">
+        <element label="Catalog Item" max_length="32" name="cat_item" reference="sn_cmp_bp_cat_item" type="reference"/>
+        <element label="Variable" max_length="32" name="cat_variable" reference="sn_cmp_variable" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="100" name="description" type="string"/>
+        <element label="Event" mandatory="true" max_length="32" name="event" reference="sn_cmp_bp_event" reference_cascade_rule="delete" reference_qual="javascript:new sn_cmp.BlueprintFormBehaviorCreator().filterEventsForRuleInFormBehavior(current.event.form_behavior,current.source_key);" type="reference"/>
+        <element choice="1" label="Event Type" max_length="40" name="event_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Form Load" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Field Change" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" mandatory="true" max_length="200" name="name" type="string"/>
+        <element label="Order" max_length="40" name="order" type="integer"/>
+        <element label="Source Field" max_length="32" name="source_key" reference="sn_cmp_bp_catalog_prop" reference_cascade_rule="delete" reference_qual="javascript:new sn_cmp.RefQualsCMP().getRuleSourceFilter(current.event.form_behavior,current.sys_id);" type="reference" use_reference_qualifier="advanced"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Active" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="InActive" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="cat_item"/>
+        </index>
+        <index name="index2">
+            <element name="event"/>
+        </index>
+        <index name="index3">
+            <element name="cat_variable"/>
+        </index>
+        <index name="index4">
+            <element name="source_key"/>
+        </index>
+    </element>
+</database>

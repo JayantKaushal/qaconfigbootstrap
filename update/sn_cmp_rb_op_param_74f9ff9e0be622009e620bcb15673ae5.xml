@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_param">
+    <sn_cmp_rb_op_param action="INSERT_OR_UPDATE">
+        <interface display_value="LB Server Interface">c679b35e0be622009e620bcb15673a2c</interface>
+        <name>EnvCode</name>
+        <operation display_value="Create Load Balancer">7cf9ff9e0be622009e620bcb15673abe</operation>
+        <order/>
+        <sys_class_name>sn_cmp_rb_op_param</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-21 10:26:54</sys_created_on>
+        <sys_id>74f9ff9e0be622009e620bcb15673ae5</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>EnvCode</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_param_74f9ff9e0be622009e620bcb15673ae5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-11 03:56:52</sys_updated_on>
+        <type>1</type>
+    </sn_cmp_rb_op_param>
+</record_update>

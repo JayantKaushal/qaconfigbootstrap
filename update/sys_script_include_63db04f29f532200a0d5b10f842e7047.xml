@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCheckinBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCheckinBlueprintAction</name>
+        <script><![CDATA[var CMPCheckinBlueprintAction = Class.create();
+CMPCheckinBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	
+	doAction: function(params) {
+		try {
+			if (!params.layer_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCheckinBlueprintAction.doAction: Undefined layer id",
+					null
+				);
+			}
+			
+			var versionDTO = {
+				layerId: params.layer_id,
+				checkoutId: params.checkout_id
+			};
+			var newModelVersionObj = sn_smd.SMAPI.checkinServiceDefinition(versionDTO);
+			
+			return new CMPGraphDTOTranslator().getGraphDTO(newModelVersionObj);
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to check in the current version"),
+				"CMPCheckinBlueprintAction.doAction: Failed to check in the current version",
+				error
+			);
+		}
+	},
+    type: 'CMPCheckinBlueprintAction'
+});
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 13:17:49</sys_created_on>
+        <sys_id>63db04f29f532200a0d5b10f842e7047</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPCheckinBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_63db04f29f532200a0d5b10f842e7047</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-28 13:17:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl/>
+        <http_method>GET</http_method>
+        <name>Get template</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+	
+	// Primary consumer of this web service is expected to be Microsoft Azure
+	// for linked templates - it expects to point at a URL to retrieve a template
+	// body - return codes and other proper handling for a REST API are probably
+	// less important as the body being an empty JSON will cause the deployment
+	// to not work on Azure anyway
+	
+	var params = request.queryParams;
+	var templateName = '' + params.templateName;
+	var templateBody = '{}';
+	var returnStatus = 400; // Invalid request
+
+	if (!gs.nil(templateName)) {
+		var gr = new GlideRecord('sn_cmp_cloud_template');
+		gr.addQuery('name', templateName);
+		gr.addQuery('type.name', 'ARM Template');
+		gr.query();
+		
+		if (gr.next()) {
+			templateBody = '' + gr.body;
+			returnStatus = 200;
+		} else
+			returnStatus = 404; // Not found
+	}
+	
+	response.setStatus(returnStatus);
+	response.setContentType('application/json');
+	var writer = response.getStreamWriter();
+	writer.writeString(templateBody);
+	
+})(request, response);]]></operation_script>
+        <operation_uri>/api/now/azure_arm_template</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/</relative_path>
+        <request_example/>
+        <requires_acl_authorization>false</requires_acl_authorization>
+        <requires_authentication>false</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-21 23:50:19</sys_created_on>
+        <sys_id>98f3e4d89fe8320048111f80a57fcf4a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Get template</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ws_operation_98f3e4d89fe8320048111f80a57fcf4a</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-01-22 00:21:51</sys_updated_on>
+        <web_service_definition display_value="Azure ARM Template">68d3e4d89fe8320048111f80a57fcf18</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

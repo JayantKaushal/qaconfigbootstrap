@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_order</collection>
+        <condition>current != null &amp;&amp; current.operation_name == 'Discovery Interface.ListSubscriptions'</condition>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Update Subscription Discovery Status</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	var status = current.status;
+var orderFormData = JSON.parse(current.order_form_data);
+var discoStatus = orderFormData.DiscoveryStatusId;
+
+if(status >='4' && status!='6'){
+if(discoStatus){
+var logger = new global.DiscoveryLogger(discoStatus);
+if(status =='8' ){
+logger.error(' Discovery Subscription ' + current.status.getDisplayValue() + ' : '+current.status_msg,
+'Cloud Resources Discovery'); 
+}else {
+if(previous.status != '7'){
+logger.info(' Discovery Subscription ' + current.status.getDisplayValue(),
+'Cloud Resources Discovery'); 
+}
+}
+ 
+if(status=='7' || status=='8'){
+var discoRecord=new GlideRecord('discovery_status');
+discoRecord.addQuery('sys_id',discoStatus);
+discoRecord.query();
+if(discoRecord.next()){
+discoRecord.setValue('state','Completed');
+discoRecord.update();
+}
+}
+}
+}
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-08 13:01:01</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>4bc276440ba803003503e0d425673a56</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Update Subscription Discovery Status</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_4bc276440ba803003503e0d425673a56</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-26 09:23:21</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=4bc276440ba803003503e0d425673a56"/>
+</record_update>

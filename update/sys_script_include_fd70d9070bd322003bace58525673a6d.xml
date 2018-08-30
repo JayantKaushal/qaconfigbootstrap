@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateNodeNameAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateNodeNameAction</name>
+        <script><![CDATA[var CMPUpdateNodeNameAction = Class.create();
+CMPUpdateNodeNameAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.layer_id || !params.node_id || !params.node_name) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPUpdateNodeNameAction.doAction: Undefined element type, name, and/or layer id",
+					null
+				);
+			}
+			
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var stageModelJSON = blueprintServiceScript.getStageModelForBlueprint(params.blueprintId);
+			var stageModel = JSON.parse(stageModelJSON);
+			
+			//this will take the checkpoints if passed.
+			var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+
+			var newElement = versionObj.getElement(params.node_id);
+			var oldName  = newElement.getName();
+			newElement.setName(params.node_name);
+			//update stage resource alias as well
+			var stageResGR = new GlideRecord('sn_cmp_bp_stage_resource');
+			stageResGR.addQuery('bp_stage_model',stageModel.id);
+			stageResGR.addQuery('alias_name',oldName);
+			stageResGR.query();
+			if(stageResGR.next()){
+				stageResGR.setValue('alias_name',params.node_name);
+				stageResGR.update();
+			}
+			var newVersion = versionObj.getNewVersion();
+			newElement.checkpointId = newVersion.getCheckpointId();
+			return newElement;
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update resource block name"),
+				"CMPUpdateNodeNameAction.doAction(): Failed to update resource block name",
+				error
+			);
+		}
+	},
+
+    type: 'CMPUpdateNodeNameAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 12:49:39</sys_created_on>
+        <sys_id>fd70d9070bd322003bace58525673a6d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPUpdateNodeNameAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fd70d9070bd322003bace58525673a6d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-08 09:10:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

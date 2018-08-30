@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDeleteKeyValueMappingsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDeleteKeyValueMappingsAction</name>
+        <script><![CDATA[var CMPDeleteKeyValueMappingsAction = Class.create();
+CMPDeleteKeyValueMappingsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			var gr;
+			var getRemoveList = JSON.parse(params.postData);
+			var getRemoveListLength = (getRemoveList) ? getRemoveList.length : 0;
+			for(var i=0; i < getRemoveListLength; i++) {
+				gr = new GlideRecord('sn_cmp_rb_keyvalue_mapping');
+				if(getRemoveList[i] || getRemoveList[i] != "") {
+					gr.addQuery("sys_id", getRemoveList[i]);
+					gr.query();
+					if (gr.next()) {
+						gr.deleteRecord();
+					}
+				}
+			}
+			return true;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to delete step input paramete keyvalue mappings."),
+				"CMPDeleteKeyValueMappingsAction.doAction(): Failed to delete step input paramete keyvalue mappings",
+				error
+			);
+		}
+    },
+    type: 'CMPDeleteKeyValueMappingsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-14 10:41:06</sys_created_on>
+        <sys_id>f2b339883b4403009c82cedf34efc478</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPDeleteKeyValueMappingsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f2b339883b4403009c82cedf34efc478</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-14 10:41:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

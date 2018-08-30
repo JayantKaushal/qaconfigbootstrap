@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDeleteBlueprintOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDeleteBlueprintOperationAction</name>
+        <script><![CDATA[var CMPDeleteBlueprintOperationAction = Class.create();
+CMPDeleteBlueprintOperationAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+				var operationList = JSON.parse(params.operationList);
+				var isActiveStackOp = [];
+				for (var i=0; i<operationList.length; i++) {
+					var operation = operationList[i];
+					var bpOperationId = operation.id;
+					var gr = new GlideRecord("sn_cmp_bp_stage_op");
+					gr.addQuery('sys_id',bpOperationId); //to delete one record
+					gr.query();
+					if(gr.next()) {
+						/* A blueprint operation can have multiple catalog item associated with it,
+						* if any of the catalog has the active stack we should not delete the BP operation
+						*/
+						var deleteOperation = true;
+						var formBehaviorGr = new GlideRecord("sn_cmp_bp_form_behavior");
+						formBehaviorGr.addQuery("stage_operation",bpOperationId);
+						formBehaviorGr.query();
+						while(formBehaviorGr.next()) {
+							var catalogId = formBehaviorGr.getValue("cat_item_association");
+							//if catalogItemDeleted is false means there is an active stack associated with this catalog.
+							var catalogItemDeleted = new BlueprintServiceHelper().deleteCatalogItem(catalogId);
+								if(!catalogItemDeleted) {
+									deleteOperation = false;
+									isActiveStackOp.push(operation.operationName);
+								}
+						}
+						if(deleteOperation) {
+							gr.deleteRecord();
+						}
+					}
+				}
+
+			if (isActiveStackOp.length) {
+				var errorText =  isActiveStackOp.join() + " operation(s) have atleast one 'Active' Stack associated with it. Please terminate the Stack(s) before deleting the Catalog or the Operation.";
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+								gs.getMessage('{0}', errorText),
+								"Blueprint operation catalog contain active stack. Please terminate the Stack(s) before deleting the catalog operation.",
+								null
+								);
+			} else {
+				return true;
+			}
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to delete blueprint operation."),
+			"CMPDeleteBlueprintOperationAction.doAction(): Failed to delete the blueprint operation",
+			error
+			);
+		}
+	},
+
+    type: 'CMPDeleteBlueprintOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-24 07:16:14</sys_created_on>
+        <sys_id>c115ec170b0403003bace58525673a9b</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>CMPDeleteBlueprintOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c115ec170b0403003bace58525673a9b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-16 10:45:31</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Check for provisioning success/failure</description>
+        <name>CheckDeploymentSuccess</name>
+        <script><![CDATA[checkStatus(ci_class, ci_sys_id);
+
+// Look through the deployment and operations
+function checkStatus() {
+	var success = true;
+	var messages = [];
+	
+	var gr = new GlideRecord(ci_class);
+	gr.get(ci_sys_id);
+	
+	if ('' + gr.provisioning_state != 'Succeeded') {
+		messages.push(gs.getMessage('Deployment failed'));
+		success = false;
+	}
+
+	var opGr = new GlideRecord('sn_cmp_arm_deployment_operation');
+	opGr.addQuery('deployment.sys_id', ci_sys_id);
+	opGr.query();
+
+	// These error messages are listed here:
+	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-common-deployment-errors
+	while (opGr.next())
+		if (opGr.status_code == 'BadRequest' ||
+		    opGr.status_code == 'AccountNameInvalid' ||
+		    opGr.status_code == 'DeploymentFailed' ||
+		    opGr.status_code == 'InvalidContentLink' ||
+		    opGr.status_code == 'InvalidTemplate' ||
+		    opGr.status_code == 'MissingSubscriptionRegistration' ||
+		    opGr.status_code == 'NotFound' ||
+			opGr.status_code == 'NoRegisteredProviderFound' ||
+			opGr.status_code == 'OperationNotAllowed' ||
+			opGr.status_code == 'ParentResourceNotFound' ||
+		    opGr.status_code == 'QuotaExceeded' ||
+		    opGr.status_code == 'RequestDisallowedByPolicy' ||
+		    opGr.status_code == 'ResourceNotFound' ||
+		    opGr.status_code == 'SkuNotAvailable' ||
+		    opGr.status_code == 'StorageAccountAlreadyExists' || 
+		    opGr.status_code == 'StorageAccountAlreadyTaken'||
+		    opGr.provisioning_state == 'Failed') {
+			success = false;
+			var statusMessage = opGr.status_message.toString();
+			if (statusMessage && messages.indexOf(statusMessage) < 0)
+				messages.push(statusMessage);
+		}
+
+	if (!success)
+		return 'ERROR: ' + messages.join("\n");
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+checkStatus(ci_class, ci_sys_id);
+
+// Look through the deployment and operations
+function checkStatus() {
+	var success = true;
+	var messages = [];
+	
+	var gr = new GlideRecord(ci_class);
+	gr.get(ci_sys_id);
+	
+	if ('' + gr.provisioning_state != 'Succeeded') {
+		messages.push(gs.getMessage('Deployment failed'));
+		success = false;
+	}
+
+	var opGr = new GlideRecord('sn_cmp_arm_deployment_operation');
+	opGr.addQuery('deployment.sys_id', ci_sys_id);
+	opGr.query();
+
+	// These error messages are listed here:
+	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-common-deployment-errors
+	while (opGr.next())
+		if (opGr.status_code == 'BadRequest' ||
+		    opGr.status_code == 'AccountNameInvalid' ||
+		    opGr.status_code == 'DeploymentFailed' ||
+		    opGr.status_code == 'InvalidContentLink' ||
+		    opGr.status_code == 'InvalidTemplate' ||
+		    opGr.status_code == 'MissingSubscriptionRegistration' ||
+		    opGr.status_code == 'NotFound' ||
+			opGr.status_code == 'NoRegisteredProviderFound' ||
+			opGr.status_code == 'OperationNotAllowed' ||
+			opGr.status_code == 'ParentResourceNotFound' ||
+		    opGr.status_code == 'QuotaExceeded' ||
+		    opGr.status_code == 'RequestDisallowedByPolicy' ||
+		    opGr.status_code == 'ResourceNotFound' ||
+		    opGr.status_code == 'SkuNotAvailable' ||
+		    opGr.status_code == 'StorageAccountAlreadyExists' || 
+		    opGr.status_code == 'StorageAccountAlreadyTaken'||
+		    opGr.provisioning_state == 'Failed') {
+			success = false;
+			var statusMessage = opGr.status_message.toString();
+			if (statusMessage && messages.indexOf(statusMessage) < 0)
+				messages.push(statusMessage);
+		}
+
+	if (!success)
+		return 'ERROR: ' + messages.join("\n");
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-03 23:06:28</sys_created_on>
+        <sys_id>d443a3599f993200ef3c1f80a57fcf1d</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>CheckDeploymentSuccess</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_d443a3599f993200ef3c1f80a57fcf1d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-18 21:38:34</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

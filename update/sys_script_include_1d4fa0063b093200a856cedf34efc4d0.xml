@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetOperationStepParameterAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetOperationStepParameterAction</name>
+        <script><![CDATA[var CMPGetOperationStepParameterAction = Class.create();
+CMPGetOperationStepParameterAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.op_step_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetOperationStepParameterAction.doAction: Undefined operation step Id",
+					null
+				);
+			}
+			
+			//Guset Interface operation list
+			var gr = new GlideRecord('sn_cmp_rb_keyvalue');
+			if(params.op_step_id || params.op_step_id != "")
+				gr.addQuery("step", params.op_step_id);
+			gr.orderBy('key');
+			gr.query();
+			var opStepParameterList = [];
+			
+			while (gr.next()) {
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.value = gr.getValue('value');
+				rbObj.key = gr.getValue('key');
+				rbObj.objectMapping = (gr.getValue('object_mapping') == '1')? true : false;
+				rbObj.isShowIconBtn = (gr.getValue('object_mapping') == '1')? true : false;
+				rbObj.checked = false; //Using for delete option with checkbox in the grid
+				opStepParameterList.push(rbObj);
+			}
+			return opStepParameterList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get resource block operations step parameters"),
+				"CMPGetOperationStepParameterAction.doAction(): Failed to get resource block operations step parameters",
+				error
+			);
+		}
+    },
+    type: 'CMPGetOperationStepParameterAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-21 08:02:38</sys_created_on>
+        <sys_id>1d4fa0063b093200a856cedf34efc4d0</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>CMPGetOperationStepParameterAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1d4fa0063b093200a856cedf34efc4d0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-17 10:57:38</sys_updated_on>
+    </sys_script_include>
+</record_update>

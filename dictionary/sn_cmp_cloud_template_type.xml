@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" audit="true" extends="sys_metadata" label="Cloud Template Type" max_length="40" name="sn_cmp_cloud_template_type" type="collection">
+        <element label="Cloud product" max_length="32" name="cloud_product" reference="sn_capi_product" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element label="Host resource block" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Script" max_length="8000" name="script" type="script_plain"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" label="Stack CI Type" max_length="80" name="stack_ci_type" type="table_name"/>
+        <index name="index">
+            <element name="cloud_product"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+        <index name="index3">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

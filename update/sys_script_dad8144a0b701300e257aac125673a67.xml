@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_bp_catalog_prop</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Catalog Prop Default Value Validation</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	  if(!gs.nil(current.default_value) && !gs.nil(current.regex)) {
+			  if(!current.default_value.match(current.regex)){
+
+			      // setting default error message if validation fails for the default value.
+				  var error_msg = "Default Value for "+current.name+" does not match with the validation regex.";
+
+				  // getting error message from the operation implementation if available.
+				  var error_text = current.global_prop.bp_stage_res_op_attr.rb_operation_attribute.error_text;
+				  if(!gs.nil(error_text))
+					  error_msg = "Default Value for "+current.name+" "+error_text;
+
+				  current.default_value.setError(error_msg);
+				  current.setAbortAction(true);
+			  }
+		  }
+
+	})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-13 12:09:12</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>dad8144a0b701300e257aac125673a67</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>Catalog prop default value validation </sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_dad8144a0b701300e257aac125673a67</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-14 10:44:55</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=dad8144a0b701300e257aac125673a67"/>
+</record_update>

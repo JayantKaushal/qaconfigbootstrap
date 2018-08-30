@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope){
+	var c = this;
+	
+	$scope.totalData = c.data.result.Total;
+	$scope.modelOptions = c.options;
+	
+	$scope.total = [];
+	for(var i=0; i<$scope.totalData.length; i++) {
+		$scope.total.push({
+			total: $scope.totalData[i].User_Limit,
+			used: $scope.totalData[i].User_Used,
+			type: $scope.totalData[i].Type
+		});
+	}
+	
+	$scope.total[3].seriesLabelText = "GB Used";
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.highcharts-yaxis-grid .highcharts-grid-line {&#13;
+  display: none;&#13;
+}&#13;
+&#13;
+.panel-body {&#13;
+  padding: 2px;&#13;
+  min-height: 295px;&#13;
+}&#13;
+&#13;
+#viewAllQuota {&#13;
+  background: none;&#13;
+  color: #1570bd;&#13;
+  border: none;&#13;
+  padding: 0;&#13;
+}&#13;
+&#13;
+button:focus {&#13;
+  outline: 2px solid #1b75bb; &#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-quota-chart</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height() - 415) + 'px';
+		$(el).find('.panel-body').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Quota Chart</name>
+        <option_schema>[{  &#13;
+      "name":"title",&#13;
+      "default_value":"Quota Consumption Chart",&#13;
+      "label":"Title",&#13;
+      "type":"string"&#13;
+   }, {  &#13;
+      "name":"description",&#13;
+      "default_value":"Charts showing quota consumption for VM, vCPU,Storage Volume and Network resources",&#13;
+      "label":"Description",&#13;
+      "type":"string"&#13;
+   }]</option_schema>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+	data.userName = gs.getUserName();
+
+	var user = new sn_cmp_api.QuotaServiceScript();
+	data.result = global.JSON.parse(user.getQuotaUser(data.userName));
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-14 05:34:26</sys_created_on>
+        <sys_id>70e33ec80b222200eff7ef9bb4673a3a</sys_id>
+        <sys_mod_count>804</sys_mod_count>
+        <sys_name>Cloud Quota Chart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_70e33ec80b222200eff7ef9bb4673a3a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-02 18:46:46</sys_updated_on>
+        <template><![CDATA[<div class="panel b widget-container">
+  <div class="panel-heading">
+    <h4 class="panel-title">${Quota}</h4>
+  </div>
+  <div class="panel-body">
+    <div class="row first">
+      <div class="col-md-6">
+        <semi-circle-donut-chart container-id="container1" ng-model-options="modelOptions" data="total[1]" />
+      </div>
+      <div class="col-md-6">
+        <semi-circle-donut-chart container-id="container2" ng-model-options="modelOptions" data="total[0]" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <semi-circle-donut-chart container-id="container3" ng-model-options="modelOptions" data="total[3]" />
+      </div>
+      <div class="col-md-6">
+        <semi-circle-donut-chart container-id="container4" ng-model-options="modelOptions" data="total[2]" />
+      </div>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button id="viewAllQuota" class="pull-right" aria-haspopup="true" aria-label="${Click to open quota details popup}" ng-click="c.onWidget('cloud-quota-chart-popup')">${View All}</button>
+    &nbsp;
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

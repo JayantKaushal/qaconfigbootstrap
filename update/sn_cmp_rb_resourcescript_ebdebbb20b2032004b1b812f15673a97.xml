@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Azure_Create_Virtual_Server_Response_Processor</name>
+        <resource display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId,step, requestorContext) {&#13;
+	var vmBindings = [];&#13;
+	var cloudModelString = [];&#13;
+	var nodeData = global.JSON.parse(response);&#13;
+&#13;
+	var reqContext = global.JSON.parse(requestorContext);&#13;
+	var length = "PowerState/".length;&#13;
+	var vmState = nodeData.state;&#13;
+	vmState = vmState.substring(length,vmState.length);&#13;
+&#13;
+	switch (vmState){&#13;
+		case 'starting':&#13;
+			vmState = 'starting';&#13;
+			break;&#13;
+		case 'running':&#13;
+			vmState = 'on';&#13;
+			break;&#13;
+		case 'stopping':&#13;
+			vmState = 'stopping';&#13;
+			break;&#13;
+		case 'stopped':&#13;
+		case 'deallocated':&#13;
+			vmState = 'off';&#13;
+			break;&#13;
+		case 'deleted':&#13;
+			vmState = 'terminated';&#13;
+			break;&#13;
+		default:&#13;
+			vmState = 'error';&#13;
+	}&#13;
+&#13;
+	var publicIP = '';&#13;
+	if (nodeData.publicIps &amp;&amp; nodeData.publicIps.length &gt; 0)&#13;
+		publicIP = nodeData.publicIps[0];&#13;
+&#13;
+	var vmCPUs = '';&#13;
+	var memory = '';&#13;
+	var hardwareId = nodeData.hardwareId;&#13;
+	var gr = new GlideRecord('cmdb_ci_compute_template');&#13;
+	gr.addQuery('name',hardwareId);&#13;
+	gr.query();&#13;
+	if (gr.next()){&#13;
+		vmCPUs = gr.getValue('vcpus');&#13;
+		memory = gr.getValue('memory_mb');&#13;
+	}&#13;
+&#13;
+	var vmInfo ={&#13;
+		"cmdb_ci_vm_instance": {&#13;
+			"validator": "virtual_machine_create_update_validator",&#13;
+			"validator_overrides": { },&#13;
+			"identification": {&#13;
+				"cmdb_ci_cloud_service_account": {&#13;
+					"criterion": {&#13;
+						"object_id": cloudServiceAccountId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_azure_datacenter": {&#13;
+					"criterion": {&#13;
+						"object_id": ldc&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_vm_instance": {&#13;
+					"criterion": {&#13;
+						"object_id": nodeData.nodeId&#13;
+					}&#13;
+				}&#13;
+			},&#13;
+			"attributes": {&#13;
+				"name": nodeData.nodeName,&#13;
+				"object_id": nodeData.nodeId,&#13;
+				"state": vmState,&#13;
+				"cpus": vmCPUs,&#13;
+				"memory": memory,&#13;
+				"disks": nodeData.volumes.length,&#13;
+				"disks_size": "",&#13;
+				"nics": nodeData.networkInterfaces.length,&#13;
+				"terminated_on": "",&#13;
+				"termination_protection": "",&#13;
+				"ip_address":publicIP,&#13;
+				"assigned_to":reqContext.userId,&#13;
+				"assignment_group":reqContext.groupId&#13;
+			},&#13;
+			"references": {&#13;
+				"cmdb_ci_os_template": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_azure_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": ldc&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_os_template": {&#13;
+							"criterion": {&#13;
+								"object_id": nodeData.imageId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id": nodeData.imageId,&#13;
+						"name": nodeData.imageId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_compute_template": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_azure_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": ldc&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_compute_template": {&#13;
+							"criterion": {&#13;
+								"object_id": hardwareId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id": hardwareId,&#13;
+						"name" : hardwareId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_resource_group": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_azure_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": ldc&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_resource_group": {&#13;
+							"criterion": {&#13;
+								"object_id": nodeData.resourceGroup&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id":  nodeData.resourceGroup&#13;
+					}&#13;
+				}&#13;
+			},&#13;
+			"bindings": vmBindings&#13;
+		}&#13;
+	};&#13;
+&#13;
+	var endPointId;&#13;
+	if(nodeData.networkInterfaces &amp;&amp; nodeData.networkInterfaces.length &gt; 0){&#13;
+		for (var i=0; i&lt; nodeData.networkInterfaces.length; i++){&#13;
+			var nic = nodeData.networkInterfaces[i];&#13;
+			var nicId = nic.networkInterfaceId;&#13;
+			endPointId = nicId;&#13;
+&#13;
+			var nicTemp = {&#13;
+				"attach_to": {&#13;
+					"used_by": {&#13;
+						"endpoint_ci": "cmdb_ci_endpoint_vnic",&#13;
+						"endpoint_identification": {&#13;
+							"object_id": endPointId&#13;
+						}&#13;
+					}&#13;
+				}&#13;
+			};&#13;
+			vmBindings.push(nicTemp);&#13;
+		}&#13;
+	}&#13;
+	//Volumes Defensive Code to handle Empty Volumes Info&#13;
+	if(nodeData.volumes.length&gt;0){&#13;
+		var volume = nodeData.volumes[0];&#13;
+		var volumeId = nodeData.volumes[0].volumeId;&#13;
+		endPointId = volumeId;&#13;
+		var volumeBinding = {&#13;
+			"attach_to": {&#13;
+				"used_by": {&#13;
+					"endpoint_ci": "cmdb_ci_endpoint_block",&#13;
+					"endpoint_identification": {&#13;
+						"object_id": endPointId&#13;
+					}&#13;
+				}&#13;
+			}&#13;
+		};&#13;
+		vmBindings.push(volumeBinding);&#13;
+		var endpoints = [];&#13;
+		var enpoint = {&#13;
+			"attach_to":{&#13;
+				"implemented_by":{&#13;
+					"endpoint_ci":"cmdb_ci_endpoint_block",&#13;
+					"endpoint_identification":{&#13;
+						"object_id": endPointId&#13;
+					},&#13;
+					"attributes":{&#13;
+						"attachment_info": "leased",&#13;
+						"mount_point": '',&#13;
+						"attach_time": '',&#13;
+						"host": nodeData.nodeId,&#13;
+						"name": endPointId&#13;
+					}&#13;
+				}&#13;
+			}&#13;
+		};&#13;
+		endpoints.push(enpoint);&#13;
+		var volumeData = {&#13;
+			"cmdb_ci_storage_volume": {&#13;
+				"validator": "default_storage_volume_validator",&#13;
+				"validator_overrides": { },&#13;
+				"identification": {&#13;
+					"cmdb_ci_cloud_service_account": {&#13;
+						"criterion": {&#13;
+							"object_id": cloudServiceAccountId&#13;
+						}&#13;
+					},&#13;
+					"cmdb_ci_azure_datacenter": {&#13;
+						"criterion": {&#13;
+							"object_id": ldc&#13;
+						}&#13;
+					},&#13;
+					"cmdb_ci_storage_volume": {&#13;
+						"criterion": {&#13;
+							"object_id": volumeId&#13;
+						}&#13;
+					}&#13;
+				},&#13;
+				"attributes": {&#13;
+					"object_id": volumeId,&#13;
+					"volume_id": volumeId,&#13;
+					"name": volume.name,&#13;
+					"total_size_gb":volume.diskSizeGB,&#13;
+					"size_bytes":volume.diskSizeGB*1024*1024*1024,&#13;
+					"storage_type":"PageBlob",&#13;
+					"state":"leased",&#13;
+					"volume_type":volume.accountType ? volume.accountType : "",&#13;
+					"assigned_to":reqContext.userId,&#13;
+					"assignment_group":reqContext.groupId&#13;
+				},&#13;
+				"references": {&#13;
+					"cmdb_ci_resource_group": {&#13;
+						"identification": {&#13;
+							"cmdb_ci_cloud_service_account": {&#13;
+								"criterion": {&#13;
+									"object_id": cloudServiceAccountId&#13;
+								}&#13;
+							},&#13;
+							"cmdb_ci_azure_datacenter": {&#13;
+								"criterion": {&#13;
+									"object_id": ldc&#13;
+								}&#13;
+							},&#13;
+							"cmdb_ci_resource_group": {&#13;
+								"criterion": {&#13;
+									"object_id": nodeData.resourceGroup&#13;
+								}&#13;
+							}&#13;
+						},&#13;
+						"attributes": {&#13;
+							"object_id": nodeData.resourceGroup&#13;
+						}&#13;
+					}&#13;
+				},&#13;
+				"bindings": endpoints&#13;
+			}&#13;
+		};&#13;
+&#13;
+		// Include tagValues if there are any&#13;
+		if (!gs.nil(nodeData.tags))&#13;
+			volumeData.cmdb_ci_storage_volume.tagValues= global.JSON.stringify(nodeData.tags);&#13;
+		cloudModelString.push(volumeData);&#13;
+	}&#13;
+&#13;
+	if (!gs.nil(nodeData.tags))&#13;
+		vmInfo["cmdb_ci_vm_instance"].tagValues = global.JSON.stringify(nodeData.tags);&#13;
+&#13;
+	if (!gs.nil(nodeData.availabilityZone)){&#13;
+		vmInfo.cmdb_ci_vm_instance.references["cmdb_ci_availability_zone"] = {&#13;
+			"identification": {&#13;
+				"cmdb_ci_cloud_service_account": {&#13;
+					"criterion": {&#13;
+						"object_id": cloudServiceAccountId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_azure_datacenter": {&#13;
+					"criterion": {&#13;
+						"object_id": ldc&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_availability_zone": {&#13;
+					"criterion": {&#13;
+						"object_id": nodeData.availabilityZone&#13;
+					}&#13;
+				}&#13;
+			},&#13;
+			"attributes": {&#13;
+				"object_id": nodeData.availabilityZone&#13;
+			}&#13;
+		};&#13;
+	}&#13;
+&#13;
+	cloudModelString.push(vmInfo);&#13;
+	return global.JSON.stringify(cloudModelString);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId,step, requestorContext) {
+	var vmBindings = [];
+	var cloudModelString = [];
+	var nodeData = global.JSON.parse(response);
+
+	var reqContext = global.JSON.parse(requestorContext);
+	var length = "PowerState/".length;
+	var vmState = nodeData.state;
+	vmState = vmState.substring(length,vmState.length);
+
+	switch (vmState){
+		case 'starting':
+			vmState = 'starting';
+			break;
+		case 'running':
+			vmState = 'on';
+			break;
+		case 'stopping':
+			vmState = 'stopping';
+			break;
+		case 'stopped':
+		case 'deallocated':
+			vmState = 'off';
+			break;
+		case 'deleted':
+			vmState = 'terminated';
+			break;
+		default:
+			vmState = 'error';
+	}
+
+	var publicIP = '';
+	if (nodeData.publicIps && nodeData.publicIps.length > 0)
+		publicIP = nodeData.publicIps[0];
+
+	var vmCPUs = '';
+	var memory = '';
+	var hardwareId = nodeData.hardwareId;
+	var gr = new GlideRecord('cmdb_ci_compute_template');
+	gr.addQuery('name',hardwareId);
+	gr.query();
+	if (gr.next()){
+		vmCPUs = gr.getValue('vcpus');
+		memory = gr.getValue('memory_mb');
+	}
+
+	var vmInfo ={
+		"cmdb_ci_vm_instance": {
+			"validator": "virtual_machine_create_update_validator",
+			"validator_overrides": { },
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_azure_datacenter": {
+					"criterion": {
+						"object_id": ldc
+					}
+				},
+				"cmdb_ci_vm_instance": {
+					"criterion": {
+						"object_id": nodeData.nodeId
+					}
+				}
+			},
+			"attributes": {
+				"name": nodeData.nodeName,
+				"object_id": nodeData.nodeId,
+				"state": vmState,
+				"cpus": vmCPUs,
+				"memory": memory,
+				"disks": nodeData.volumes.length,
+				"disks_size": "",
+				"nics": nodeData.networkInterfaces.length,
+				"terminated_on": "",
+				"termination_protection": "",
+				"ip_address":publicIP,
+				"assigned_to":reqContext.userId,
+				"assignment_group":reqContext.groupId
+			},
+			"references": {
+				"cmdb_ci_os_template": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_azure_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_os_template": {
+							"criterion": {
+								"object_id": nodeData.imageId
+							}
+						}
+					},
+					"attributes": {
+						"object_id": nodeData.imageId
+					}
+				},
+				"cmdb_ci_compute_template": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_azure_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_compute_template": {
+							"criterion": {
+								"object_id": hardwareId
+							}
+						}
+					},
+					"attributes": {
+						"object_id": hardwareId,
+						"name" : hardwareId
+					}
+				},
+				"cmdb_ci_resource_group": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_azure_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_resource_group": {
+							"criterion": {
+								"object_id": nodeData.resourceGroup
+							}
+						}
+					},
+					"attributes": {
+						"object_id":  nodeData.resourceGroup
+					}
+				}
+			},
+			"bindings": vmBindings
+		}
+	};
+
+	var endPointId;
+	if(nodeData.networkInterfaces && nodeData.networkInterfaces.length > 0){
+		for (var i=0; i< nodeData.networkInterfaces.length; i++){
+			var nic = nodeData.networkInterfaces[i];
+			var nicId = nic.networkInterfaceId;
+			endPointId = nicId;
+
+			var nicTemp = {
+				"attach_to": {
+					"used_by": {
+						"endpoint_ci": "cmdb_ci_endpoint_vnic",
+						"endpoint_identification": {
+							"object_id": endPointId
+						}
+					}
+				}
+			};
+			vmBindings.push(nicTemp);
+		}
+	}
+	//Volumes Defensive Code to handle Empty Volumes Info
+	if(nodeData.volumes.length>0){
+		var volume = nodeData.volumes[0];
+		var volumeId = nodeData.volumes[0].volumeId;
+		endPointId = volumeId;
+		var volumeBinding = {
+			"attach_to": {
+				"used_by": {
+					"endpoint_ci": "cmdb_ci_endpoint_block",
+					"endpoint_identification": {
+						"object_id": endPointId
+					}
+				}
+			}
+		};
+		vmBindings.push(volumeBinding);
+		var endpoints = [];
+		var enpoint = {
+			"attach_to":{
+				"implemented_by":{
+					"endpoint_ci":"cmdb_ci_endpoint_block",
+					"endpoint_identification":{
+						"object_id": endPointId
+					},
+					"attributes":{
+						"attachment_info": "leased",
+						"mount_point": '',
+						"attach_time": '',
+						"host": nodeData.nodeId,
+						"name": endPointId
+					}
+				}
+			}
+		};
+		endpoints.push(enpoint);
+		var volumeData = {
+			"cmdb_ci_storage_volume": {
+				"validator": "default_storage_volume_validator",
+				"validator_overrides": { },
+				"identification": {
+					"cmdb_ci_cloud_service_account": {
+						"criterion": {
+							"object_id": cloudServiceAccountId
+						}
+					},
+					"cmdb_ci_azure_datacenter": {
+						"criterion": {
+							"object_id": ldc
+						}
+					},
+					"cmdb_ci_storage_volume": {
+						"criterion": {
+							"object_id": volumeId
+						}
+					}
+				},
+				"attributes": {
+					"object_id": volumeId,
+					"volume_id": volumeId,
+					"name": volume.volumeName,
+					"total_size_gb":volume.diskSizeGB,
+					"size_bytes":volume.diskSizeGB*1024*1024*1024,
+					"storage_type":"PageBlob",
+					"state":"leased",
+					"volume_type":volume.accountType ? volume.accountType : "",
+					"assigned_to":reqContext.userId,
+					"assignment_group":reqContext.groupId
+				},
+				"references": {
+					"cmdb_ci_resource_group": {
+						"identification": {
+							"cmdb_ci_cloud_service_account": {
+								"criterion": {
+									"object_id": cloudServiceAccountId
+								}
+							},
+							"cmdb_ci_azure_datacenter": {
+								"criterion": {
+									"object_id": ldc
+								}
+							},
+							"cmdb_ci_resource_group": {
+								"criterion": {
+									"object_id": nodeData.resourceGroup
+								}
+							}
+						},
+						"attributes": {
+							"object_id": nodeData.resourceGroup
+						}
+					}
+				},
+				"bindings": endpoints
+			}
+		};
+
+		// Include tagValues if there are any
+		if (!gs.nil(nodeData.tags))
+			volumeData.cmdb_ci_storage_volume.tagValues= global.JSON.stringify(nodeData.tags);
+		cloudModelString.push(volumeData);
+	}
+
+	if (!gs.nil(nodeData.tags))
+		vmInfo["cmdb_ci_vm_instance"].tagValues = global.JSON.stringify(nodeData.tags);
+
+	if (!gs.nil(nodeData.availabilityZone)){
+		vmInfo.cmdb_ci_vm_instance.references["cmdb_ci_availability_zone"] = {
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_azure_datacenter": {
+					"criterion": {
+						"object_id": ldc
+					}
+				},
+				"cmdb_ci_availability_zone": {
+					"criterion": {
+						"object_id": nodeData.availabilityZone
+					}
+				}
+			},
+			"attributes": {
+				"object_id": nodeData.availabilityZone
+			}
+		};
+	}
+
+	cloudModelString.push(vmInfo);
+	return global.JSON.stringify(cloudModelString);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-30 10:11:25</sys_created_on>
+        <sys_id>ebdebbb20b2032004b1b812f15673a97</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>Azure_Create_Virtual_Server_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_ebdebbb20b2032004b1b812f15673a97</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-15 21:30:30</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

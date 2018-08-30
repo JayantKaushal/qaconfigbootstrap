@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetBlueprintDependenciesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetBlueprintDependenciesAction</name>
+        <script><![CDATA[var CMPGetBlueprintDependenciesAction = Class.create();
+CMPGetBlueprintDependenciesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+			if (!params.blueprintId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter: blueprintId"),
+				"CMPExportBlueprintAction.doAction: Undefined element blueprintId",
+				null
+				);
+			}
+			var dependencyUtil = new CMPUpdateSetDependencyUtil();
+			var policyExporter = new PolicyExporter();
+			var dependencyList = {
+				extractPoolInfo: dependencyUtil.extractPoolInfo,
+				getPoolObject: dependencyUtil.getPoolObject,
+				pools: dependencyUtil.getAllDependentPools,
+				getResourceBlockObject: dependencyUtil.getResourceBlockObject,
+				resourceBlocks: dependencyUtil.getAllDependentResourceBlocks,
+				getAllPoliciesByTarget: policyExporter.getAllPoliciesByTarget,
+				generatePolicyList: policyExporter.generatePolicyList,
+				policies: policyExporter.getAllDependentPolices,
+				cloudScripts: dependencyUtil.getAllCloudScripts,
+				cloudScriptTemplates: dependencyUtil.getAllCloudScriptTemplates,
+				scriptIncludes: dependencyUtil.getAllScriptIncludes,
+				midScript:dependencyUtil.getMidScripts,
+				getPolicyTriggerEntityIds: policyExporter.getPolicyTriggerEntityIds
+			};
+			
+			return dependencyList[params.entityType](params.blueprintId, JSON.parse(params.selectedScopeList), params.exportType);
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get script includes for blueprint"),
+			"CMPExportBlueprintAction.doAction(): Failed to get script includes for blueprint",
+			error
+			);
+		}
+	},
+
+    type: 'CMPGetBlueprintDependenciesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-30 14:06:15</sys_created_on>
+        <sys_id>3790ece40b881300d82b0bcb15673ac4</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>CMPGetBlueprintDependenciesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_3790ece40b881300d82b0bcb15673ac4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-21 22:56:04</sys_updated_on>
+    </sys_script_include>
+</record_update>

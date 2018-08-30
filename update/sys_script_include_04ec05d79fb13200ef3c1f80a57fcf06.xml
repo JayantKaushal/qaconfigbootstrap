@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudV1DiscoUpgradeUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudV1DiscoUpgradeUtil</name>
+        <script><![CDATA[var CloudV1DiscoUpgradeUtil = Class.create();
+CloudV1DiscoUpgradeUtil.prototype = {
+    initialize: function() {
+		this.accountType = '';
+		this.accountIdField = '';
+		this.regionType = '';
+		this.instanceType = '';
+		this.ldcType = '';
+		this.hostRelId = '5f985e0ec0a8010e00a9714f2a172815';
+		this.accounts = {};
+		this.ldcs = {};
+    },
+	
+	upgrade: function() {
+		gs.info('Running data upgrade of V1 disco to V2');
+		this.createServiceAccountsAndLDCs();
+		this.updateInstances();
+	},
+	
+	// Create new Jakarta service accounts and logical datacenters from all accounts and regions 
+	// in previous versions
+	createServiceAccountsAndLDCs: function() {
+		var gr = new GlideRecord(this.accountType);
+		
+		// If the account table is not there, don't do anything
+		if (!gr.isValid()) {
+			gs.info('Skipping creation of service accounts and LDCs');
+			return;
+		}
+		
+		gr.query();
+		while (gr.next()) {
+			var accountId = '' + gr[this.accountIdField];
+			
+			if (!this.accounts.hasOwnProperty(accountId))			
+				this.accounts[accountId] = this.createServiceAccountFromOldAccount(gr);
+
+			var regionGr = new GlideRecord(this.regionType);
+			regionGr.query();
+			
+			while (regionGr.next()) {
+				var regionAccount = regionGr.region + '|' + accountId;
+				if (!this.ldcs.hasOwnProperty(regionAccount))
+					this.ldcs[regionAccount] = this.createLDC(regionGr.name, 
+															  regionGr.region, 
+															  this.accounts[accountId]);
+			}
+		}
+	},
+	
+	updateInstances: function() {
+		this.updateTable(this.instanceType, 'cmdb_ci_vm_instance');
+	},
+	
+	updateTable: function(v1Table, v2Table) {
+		var gr = new GlideRecord(v1Table);
+		
+		// If the table is not there, don't do anything
+		if (!gr.isValid()) {
+			gs.info('Skipping update of ' + v1Table);
+			return;
+		}
+		
+		gr.query();
+
+		while (gr.next()) {
+			var accountId = this.getAccountId(gr);
+			
+			// If there is no account id or region, skip this record
+			if (gs.nil(accountId) || gs.nil(gr.region))
+				continue;
+			
+			var regionAccount = gr.region.region + '|' + accountId;
+
+			var ldc = null;
+
+			// We've already created the LDC for this - use it to create the relationship on this record
+			if (this.ldcs.hasOwnProperty(regionAccount)) {
+				ldc = this.ldcs[regionAccount];
+			} else { // Create service account (if needed) & LDC, add it to the map, then use it to create the relationship on this record
+				var serviceAccountGr = null;
+
+				if (!this.accounts.hasOwnProperty(accountId))
+					this.accounts[accountId] = this.createServiceAccount(accountId);
+
+				ldc = this.createLDC(gr.region.name, 
+									 gr.region.region, 
+									 this.accounts[accountId]);
+				this.ldcs[regionAccount] = ldc;
+			}
+
+			// Create relationship between v2 table record and service account
+			var v2Gr = new GlideRecord(v2Table);
+			v2Gr.get('' + gr.sys_id);
+			this.createRelationship(v2Gr.sys_id, ldc, this.hostRelId);
+
+			// Copy old Id into object_id
+			gr.object_id = gr.correlation_id;
+			gr.update();
+		}
+	},
+	
+	getAccountId: function(gr) {
+		return '';
+	},
+	
+	createLDC: function(name, region, serviceAccountGr) {
+		var regionIds = [];
+		var regionGr = new GlideRecord(this.ldcType);
+		regionGr.addQuery('object_id', region);
+		regionGr.query();
+
+		while (regionGr.next())
+			regionIds.push('' + regionGr.sys_id);
+
+		var relId = '5f985e0ec0a8010e00a9714f2a172815'; // Hosted on::Hosts
+		// Check for existing
+		var gr = new GlideRecord('cmdb_rel_ci');
+		gr.addQuery('child.sys_class_name', 'cmdb_ci_cloud_service_account');
+		gr.addQuery('child.sys_id', '' + serviceAccountGr.sys_id);
+		gr.addQuery('type.sys_id', relId);
+		gr.addQuery('parent.sys_class_name', this.ldcType);
+		gr.addQuery('parent.sys_id', 'IN', regionIds.join());
+		gr.query();
+
+		if (gr.next()) {
+			gs.info('Already has LDC ' + region + ' for account ' + serviceAccountGr.account_id);
+			return '' + gr.sys_id;
+		}
+
+		gs.info('Creating LDC ' + region + ' in service account ' + serviceAccountGr.account_id);
+		var awsLdcGr = new GlideRecord(this.ldcType);
+		awsLdcGr.name = name;
+		awsLdcGr.region = region;
+		awsLdcGr.object_id = region;
+		var ldcSysId = awsLdcGr.insert();
+
+		this.createRelationship(ldcSysId, '' + serviceAccountGr.sys_id, this.hostRelId);
+
+		return ldcSysId;
+	},
+
+	createServiceAccount: function(accountId) {
+		var oldAcct = this.getV1Account(accountId);
+		return this.createServiceAccountFromOldAccount(oldAcct);
+	},
+	
+	createServiceAccountFromOldAccount: function(oldAcct) {
+		var accountId = oldAcct[this.accountIdField];
+		var serviceAccountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+		serviceAccountGr.addQuery('object_id', accountId);
+		serviceAccountGr.query();
+
+		// If we already have this, don't create it again
+		if (serviceAccountGr.next()) {
+			gs.info('Already has service account id: ' + accountId);
+			return serviceAccountGr;
+		}
+
+		gs.info('Creating service account: ' + accountId);
+		serviceAccountGr.name = oldAcct.name;
+		serviceAccountGr.account_id = accountId;
+		serviceAccountGr.object_id = accountId;
+		serviceAccountGr.datacenter_type = this.ldcType;
+		serviceAccountGr.discovery_credentials = this.getCred(oldAcct);	
+		serviceAccountGr.insert();
+		return serviceAccountGr;
+	},
+
+	createRelationship: function(parent, child, typeSysId) {
+		var relGr = new GlideRecord('cmdb_rel_ci');
+		relGr.parent = parent;
+		relGr.child = child;
+		relGr.type = typeSysId;
+		relGr.insert();
+	},
+	
+	v1InsertCreateRel: function(current) {	
+		var regionSysId = '';
+		var accountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+		if (accountGr.get('account_id', this.getAccountId(current))) {
+			var regionGr = new GlideRecord(this.ldcType);
+			regionGr.addQuery('region', '' + current.region.region);
+			regionGr.query();
+
+			var regions = [];
+			while (regionGr.next())
+				regions.push('' + regionGr.sys_id);
+
+			var relGr = new GlideRecord('cmdb_rel_ci');
+			relGr.addQuery('child.sys_id', '' + accountGr.sys_id);
+			relGr.addQuery('parent.sys_id', 'IN', regions.join());
+			relGr.addQuery('type.sys_id', '5f985e0ec0a8010e00a9714f2a172815');
+			relGr.query();
+
+			if (relGr.next())
+				regionSysId = '' + relGr.parent.sys_id;
+		}
+
+		if (!gs.nil(regionSysId)) {
+			// Create relationship
+			var newRelGr = new GlideRecord('cmdb_rel_ci');
+			newRelGr.parent = '' + current.sys_id;
+			newRelGr.type = '5f985e0ec0a8010e00a9714f2a172815'; // Hosted relationship
+			newRelGr.child = regionSysId;
+			newRelGr.insert();
+		} else
+			gs.info(getMessage('cmdb_ci_azure_datacenter not found for {0}', current.region.region));	
+	},
+
+	getV1Account: function(accountId) {
+		return null;
+	},
+
+	getCred: function(oldAcct) {
+		return '';
+	},
+
+    type: 'CloudV1DiscoUpgradeUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-03 13:49:08</sys_created_on>
+        <sys_id>04ec05d79fb13200ef3c1f80a57fcf06</sys_id>
+        <sys_mod_count>34</sys_mod_count>
+        <sys_name>CloudV1DiscoUpgradeUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_04ec05d79fb13200ef3c1f80a57fcf06</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-18 06:00:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

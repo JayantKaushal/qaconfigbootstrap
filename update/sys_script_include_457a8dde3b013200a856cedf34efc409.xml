@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOpImplementStepsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOpImplementStepsAction</name>
+        <script><![CDATA[var CMPCreateOpImplementStepsAction = Class.create();
+CMPCreateOpImplementStepsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.opImpleId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOpImplementStepsAction.doAction: Undefined operation implementation Id",
+					null
+				);
+			}
+
+			var status;
+			var ErrMessage = '';
+			var postArray = [];
+			var resourceBlocksServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+			switch(params.ownerTypeID) {
+				case '1':
+					//CAPI
+					var providerCapiName ='';
+					var grProvider = new GlideRecord('sn_capi_product');
+					if(params.capiProviderId && params.capiProviderId != "")
+						grProvider.addQuery("sys_id", params.capiProviderId);
+					grProvider.query();
+					if(grProvider.next()) {
+						providerCapiName = grProvider.getValue('capi_name');
+					}
+					var postCloudData = {
+						'name': params.capiInterface +'.'+params.capiInterfaceOp,
+						'ownerType': params.ownerTypeName,
+						'operationImpl': params.opImpleId,
+						'capiInterface': params.capiInterface,
+						'capiMethod': params.capiInterfaceOp,
+						'provider': providerCapiName,
+						'condition': params.condition,
+						'enabled': true,
+						'capiVersion': params.capiVersion
+					};
+					//postArray.push(postCloudData);
+
+					var rbCloudJSON = resourceBlocksServiceScript.createOpImplStep(JSON.stringify(postCloudData));
+					status = new global.JSON().decode(rbCloudJSON);
+
+					break;
+				case '2':
+					//Resource
+					var postResourceData = {
+						'name': params.resInterface +'.'+params.interfaceOp,
+						'ownerType' : params.ownerTypeName,
+						'operationImpl' : params.opImpleId,
+						'resourceInterface' : params.resInterface,
+						'interfaceOperation' : params.interfaceOp,
+						'condition': params.condition,
+						'enabled': true
+					};
+					//postArray.push(postResourceData);
+					var rbResJSON = resourceBlocksServiceScript.createOpImplStep(JSON.stringify(postResourceData));
+					status = new global.JSON().decode(rbResJSON);
+					break;
+				case '5':
+					//Scriptinclude
+					//Find duplication Operation steps
+
+					var duplicateName = false;
+					var gr = new GlideRecord('sn_cmp_rb_op_impl_step');
+					if(params.opImpleId && params.opImpleId != "")
+						gr.addQuery("operationimpl", params.opImpleId);
+					if(params.scriptName && params.scriptName != "")
+						gr.addQuery("name", params.scriptName);
+					gr.query();
+
+					while (gr.next()) {
+						duplicateName = true;
+						ErrMessage = "Step name already exists for this operation.";
+					}
+					var scriptName = (duplicateName) ? params.scriptName + '.script' : params.scriptName;
+					var grInsert = new GlideRecord('sn_cmp_rb_op_impl_step');
+					if(params.opImpleId && params.opImpleId != "")
+						grInsert.setValue("operationimpl", params.opImpleId);
+					if(params.ownerTypeID && params.ownerTypeID != "")
+						grInsert.setValue("owner_type", params.ownerTypeID);
+					grInsert.setValue("name", scriptName);
+					grInsert.setValue("condition", params.condition);
+					grInsert.setValue("enabled", true);
+					grInsert.setValue("force_async", params.force_async);
+					grInsert.insert();
+					duplicateName = false;
+
+					break;
+              case '6':
+                    status = new global.JSON().decode(resourceBlocksServiceScript.createOpImplStep(JSON.stringify(this.getWorkflowPayload(params))));
+                    if (!gs.nil(status))
+                        new sn_cmp.CMPFlowDesignAPI().addInputParams(status.workflowId, status.operationImpl, status.id);
+                    break;
+            }
+
+			return {isDuplicatedName: duplicateName, status : status, ErrMessage : ErrMessage};
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add operations Implementaiton steps."),
+				"CMPCreateOpImplementStepsAction.doAction(): Failed to add operations Implementaiton steps",
+				error
+			);
+		}
+    },
+
+    getWorkflowPayload: function (params) {
+        var wfTypeSysId;
+        var wfTypeName;
+        var wfName;
+        var dbObject = new GlideRecord("sys_db_object");
+        dbObject.addQuery("name", "wf_workflow");
+        dbObject.query();
+        if (dbObject.next()) {
+            wfTypeSysId = dbObject.getUniqueValue();
+            wfTypeName = dbObject.getValue("label");
+        }
+        this.validateParameter(wfTypeSysId, "CMPCreateOpImplementStepsAction.doAction: Could not find sys_id of Workflow from sys_db_object.");
+        this.validateParameter(wfTypeName, "CMPCreateOpImplementStepsAction.doAction: Could not find label of Workflow from sys_db_object.");
+        var wfRecord = new GlideRecord("wf_workflow");
+        if (wfRecord.get(params.workflowId))
+            wfName = wfRecord.getValue("name");
+        this.validateParameter(wfName, "CMPCreateOpImplementStepsAction.doAction: Could not find the details of Workflow from wf_workflow.");
+        return {
+            'name': wfTypeName + '.' + wfName,
+            'ownerType': params.ownerTypeName,
+            'operationImpl': params.opImpleId,
+            'workflowType': wfTypeSysId,
+            'workflowId': params.workflowId,
+            'condition': params.condition,
+            'enabled': true
+        };
+    },
+
+    validateParameter: function (param, errMsg) {
+        if (!param)
+            throw sn_smd.SMErrorHelper.createScriptAPIError(gs.getMessage("Illegal parameter"), errMsg, null);
+    },
+
+    type: 'CMPCreateOpImplementStepsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-22 04:40:53</sys_created_on>
+        <sys_id>457a8dde3b013200a856cedf34efc409</sys_id>
+        <sys_mod_count>25</sys_mod_count>
+        <sys_name>CMPCreateOpImplementStepsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_457a8dde3b013200a856cedf34efc409</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-07 16:01:01</sys_updated_on>
+    </sys_script_include>
+</record_update>

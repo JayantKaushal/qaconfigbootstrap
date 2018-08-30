@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyConditionCriteriaAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllPolicyConditionCriteriaAction</name>
+        <script><![CDATA[var CMPGetAllPolicyConditionCriteriaAction = Class.create();
+CMPGetAllPolicyConditionCriteriaAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.trigger_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAllPolicyConditionCriteriaAction.doAction: Undefined element Id",
+				null
+				);
+			}
+			
+			var trigrCritMap = {};
+			// Mapping between trigger value and condition value
+			trigrCritMap["2"] = ["user", "formdata"];
+			
+			trigrCritMap["4"] = ["user", "formdata", "budgetconsumption"];
+			
+			trigrCritMap["6"] = ["user", "formdata"];
+			
+			trigrCritMap["8"] = ["user", "formdata"];
+			
+			trigrCritMap["9"] = ["user", "formdata"];
+			
+			trigrCritMap["3"] = ["user", "formdata"];
+			
+			trigrCritMap["5"] = ["user", "formdata"];
+			
+			trigrCritMap["10"] = ["user", "formdata"];
+			
+			trigrCritMap["13"] = ["user", "formdata"];
+			
+			trigrCritMap["7"] = []; // TODO: ResourceAtributes
+			trigrCritMap["14"] = []; // TODO: AlertAttributes 
+			trigrCritMap["12"] = ["enddate"];
+				
+			
+			var conditionMap = {};
+			var grCondType = new GlideRecord('sn_cmp_pol_condition_type');
+			grCondType.query();
+			while(grCondType.next()) {
+			   conditionMap[grCondType.name + ''] = grCondType.label + '';
+			}
+			
+		/*	conditionMap["1"] = "User";
+			conditionMap["2"] = "Request Form Data";
+			conditionMap["3"] = "Stack Attributes";
+			conditionMap["4"] = "Event";
+			conditionMap["5"] = "Property";
+			conditionMap["6"] = "Budget Consumption";
+			conditionMap["7"] = "Script";
+			conditionMap["8"] = "End Date";*/
+						
+			// retrieve correct criteria for given trigger id
+			var arr = [];
+			var criteriaArr = [];
+			var criteria = {};
+			var criteriaObj = {};
+			arr = trigrCritMap[params.trigger_id]; // Get all criteria for given tigger
+			var type = "reference";
+			for (var i = 0; i < arr.length; i++) {
+				// form object specific for condition builder
+			/*	if (arr[i] == "1") // User
+					type = "reference";
+				else
+					type = "string";*/
+				var name  = arr[i] + '';
+				var label = conditionMap[name];
+				if(name == 'enddate')
+					type = 'datetime';
+				criteriaObj = this.FormConditionBuilderObject(name,label, type);
+				//criteria[name] = criteriaObj[name];
+				for(var key in criteriaObj) {
+					criteria[key] = criteriaObj[key];
+				}
+			}
+			
+			var responseObj = criteria;
+			
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy criteria."),
+				"CMPGetAllPolicyConditionCriteriaAction.doAction(): Failed to get all policy criteria",
+				error
+			);
+		}
+    },
+	
+	FormConditionBuilderObject : function(name, label, type) {
+		var outerObj = {};
+		var innerObj = {};
+		innerObj.type = type;
+		if(type == "string")
+			innerObj.base_type = type;
+		else if (type == "reference")
+			innerObj.base_type = "GUID";
+		else if(type == "datetime") {
+			innerObj.base_type = "datetime";
+			innerObj.type = 'glide_date_time';
+		}
+		innerObj.column_type = "element";
+		//innerObj.default1 = '';
+		innerObj.filterable = true;
+		innerObj.hint = "";
+		innerObj.label = label;
+		innerObj.mandatory = false;
+		innerObj.max_length = 32;
+		innerObj.max_unit = "days";
+		innerObj.name = name;
+		innerObj.read_only  = false;
+		if(type == "reference") {
+			innerObj.reference = "dummy";
+			innerObj.reference_attributes = {display_field: "name", ref_ac_columns: Array(0), ref_ac_columns_search: "", ref_ac_display_value: true, ref_auto_completer: ""}; // Call method here
+			innerObj.reference_display_field =  "name";
+		}
+		innerObj.operators = [];
+		if(type == 'datetime')
+			innerObj.operators = this.BuildOperatorArrayDate();
+		else
+			innerObj.operators = this.BuildOperatorArray(type);
+			
+		outerObj[name] = innerObj;
+		return outerObj;
+	},
+	
+	BuildOperatorArray : function (type) {
+		var arr = [];
+		arr[0] = {label: "is", operator: "=", editor: "field", advancedEditor: "string"};
+		arr[1] = {label: "is not", operator: "!=", editor: "field", advancedEditor: "string"};
+		arr[2] = {label: "is anything", operator: "ANYTHING", editor: "none", advancedEditor: "none"};
+		arr[3] = {label: "starts with", operator: "STARTSWITH", editor: "string", advancedEditor: "string"};
+		arr[4] = {label: "ends with", operator: "ENDSWITH", editor: "string", advancedEditor: "string"};
+		arr[5] = {label: "contains", operator: "LIKE", editor: "string", advancedEditor: "string"};
+		arr[6] = {label: "does not contain", operator: "NOT LIKE", editor: "string", advancedEditor: "string"};
+		arr[7] = {label: "is empty", operator: "ISEMPTY", editor: "none", advancedEditor: "none"};
+		arr[8] = {label: "is not empty", operator: "ISNOTEMPTY", editor: "none", advancedEditor: "none"};
+		arr[9] = {label: "is empty string", operator: "EMPTYSTRING", editor: "none", advancedEditor: "none"};
+		arr[10] = {label: "is same as", operator: "SAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		arr[11] = {label: "is different from", operator: "NSAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		if(type == "string") {
+			arr[12]  = {label: "is one of", operator: "IN", editor: "field_multiple", advancedEditor: "textarea"};
+			arr[13] = {betweenType: "string", label: "between", operator: "BETWEEN", editor: "between_field", advancedEditor: "between_field"};
+			arr[14] = {label: "greater than or is", operator: ">=", editor: "field", advancedEditor: "string"};
+			arr[15] = {label: "less than or is", operator: "<=", editor: "field", advancedEditor: "string"};
+		}
+		if(type == "reference") {
+			arr[12] = {label: "is (dynamic)", operator: "DYNAMIC", editor: "field", advancedEditor: "choice_dynamic"};	
+		}
+		return arr;
+	},
+	
+	BuildOperatorArrayDate : function () {
+		var arr = [];
+		/*arr[0] = {editor: "field", operator: "ON", label: "on", advancedEditor: "glide_date_choice"};
+		arr[1] = {editor: "field", operator: "NOTON", label: "not on", advancedEditor: "glide_date_choice"};
+		arr[2] = {editor: "field", operator: "<", label: "before", advancedEditor: "glide_date_choice"};
+		arr[3] = {editor: "field", operator: "<=", label: "at or before", advancedEditor: "glide_date_choice"};
+		arr[4] = {editor: "field", operator: ">", label: "after", advancedEditor: "glide_date_choice"};
+		arr[5] = {editor: "field", operator: ">=", label: "at or after", advancedEditor: "glide_date_choice"};
+		arr[6] = {betweenType: "glide_date_choice", editor: "between_field", operator: "BETWEEN", label: "between", advancedEditor: "between_field"};
+		arr[7] = {editor: "trend_field", operator: "DATEPART", label: "trend", advancedEditor: "trend_field"};*/
+		arr[0] = {editor: "relative_field", operator: "RELATIVE", label: "relative", advancedEditor: "relative_field"};
+	/*	arr[9] = {editor: "none", operator: "ISEMPTY", label: "is empty", advancedEditor: "none"};
+		arr[10] = {editor: "none", operator: "ISNOTEMPTY", label: "is not empty", advancedEditor: "none"};
+		arr[11] = {editor: "none", operator: "ANYTHING", label: "is anything", advancedEditor: "none"};
+		arr[12]  = {editor: "glide_date_equivalent", operator: "SAMEAS", label: "is same", advancedEditor: "glide_date_equivalent"};
+		arr[13] = {editor: "date_field", operator: "NSAMEAS", label: "is different", advancedEditor: "glide_date_equivalent"};
+		arr[14] = {editor: "date_field", operator: "MORETHAN", label: "is more than", advancedEditor: "glide_date_comparative"};
+		arr[15] = {editor: "date_field", operator: "LESSTHAN", label: "is less than", advancedEditor: "glide_date_comparative"};*/
+		return arr;
+	},
+	
+/*	BuildOperatorArrayReference : function (type) {
+		var arr = [];
+			arr[0] = {label: "is", operator: "=", editor: "field", advancedEditor: "string"};
+			arr[1]  = {label: "is not", operator: "!=", editor: "field", advancedEditor: "string"};
+			arr[2] = {label: "is empty", operator: "ISEMPTY", editor: "none", advancedEditor: "none"};
+			arr[3] = {label: "is not empty", operator: "ISNOTEMPTY", editor: "none", advancedEditor: "none"};																	
+			arr[4] = {label: "starts with", operator: "STARTSWITH", editor: "string", advancedEditor: "string"};
+			arr[5] = {label: "ends with", operator: "ENDSWITH", editor: "string", advancedEditor: "string"};
+			arr[6] = {label: "contains", operator: "LIKE", editor: "string", advancedEditor: "string"};
+			arr[7] = {label: "does not contain", operator: "NOT LIKE", editor: "string", advancedEditor: "string"};
+			arr[8] = {label: "is anything", operator: "ANYTHING", editor: "none", advancedEditor: "none"};
+			arr[9] = {label: "is same as", operator: "SAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+			arr[10] = {label: "is different from", operator: "NSAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		arr[11] = {label: "is empty string", operator: "EMPTYSTRING", editor: "none", advancedEditor: "none"};																
+		arr[12] = {label: "is (dynamic)", operator: "DYNAMIC", editor: "field", advancedEditor: "choice_dynamic"};	
+		return arr;
+	},*/
+    type: 'CMPGetAllPolicyConditionCriteriaAction'
+																		
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-28 22:55:35</sys_created_on>
+        <sys_id>9ccb847e8770030053c9f4bbe3e3ec29</sys_id>
+        <sys_mod_count>43</sys_mod_count>
+        <sys_name>CMPGetAllPolicyConditionCriteriaAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_9ccb847e8770030053c9f4bbe3e3ec29</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-08 17:50:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

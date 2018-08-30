@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Grid Detail" max_length="40" name="sn_cmp_grid_detail" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element choice="1" label="Data Source" max_length="40" name="datasource" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Pools" sequence="1" value="pools"/>
+                <element inactive_on_update="false" label="CSV" sequence="2" value="csv"/>
+                <element inactive_on_update="false" label="JSON Array" sequence="3" value="array"/>
+                <element inactive_on_update="false" label="Dynamic Payload" sequence="4" value="dyna"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Data Source Value" max_length="4000" name="datasource_value" type="string"/>
+        <element label="Grid Name" mandatory="true" max_length="32" name="grid" reference="sn_cmp_grid_definition" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Label" mandatory="true" max_length="128" name="label" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="128" name="name" type="string"/>
+        <element default="100" label="Order" max_length="40" name="order" type="integer"/>
+        <element label="Read only" max_length="40" name="read_only" type="boolean"/>
+        <element choice="1" label="Type" mandatory="true" max_length="40" name="uidatatype" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Text" sequence="1" value="text"/>
+                <element inactive_on_update="false" label="SelectBox" sequence="2" value="selectBox"/>
+                <element inactive_on_update="false" label="Dynamic" sequence="3" value="dynamic"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Validator" max_length="225" name="validator" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="128" name="value" type="string"/>
+        <element default="true" label="Visibility" max_length="40" name="visibility" type="boolean"/>
+        <index name="index">
+            <element name="grid"/>
+        </index>
+    </element>
+</database>

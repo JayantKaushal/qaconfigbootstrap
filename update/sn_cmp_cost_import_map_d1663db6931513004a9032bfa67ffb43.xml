@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cost_import_map">
+    <sn_cmp_cost_import_map action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition table="sn_cmp_imp_aws_cost">usage_typeLIKELoadBalancer^EQ<item endquery="false" field="usage_type" goto="false" newquery="false" operator="LIKE" or="false" value="LoadBalancer"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </condition>
+        <order>487</order>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <source_table>sn_cmp_imp_aws_cost</source_table>
+        <sys_class_name>sn_cmp_cost_import_map</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 23:24:03</sys_created_on>
+        <sys_id>d1663db6931513004a9032bfa67ffb43</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cost_import_map_d1663db6931513004a9032bfa67ffb43</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 23:46:33</sys_updated_on>
+        <target_field>name</target_field>
+        <target_table>sn_capi_resource_type</target_table>
+        <target_value>AWS::ElasticLoadBalancingV2::LoadBalancer</target_value>
+    </sn_cmp_cost_import_map>
+</record_update>

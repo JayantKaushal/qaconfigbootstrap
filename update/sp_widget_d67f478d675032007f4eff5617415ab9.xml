@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($location, cloudEventScope, $timeout, $scope, spUtil, i18n) {
+	var c = this;
+	
+	$scope.spUtil = spUtil;
+	$scope.cloudEventScope = cloudEventScope;
+	
+	c.filterText = "";
+	c.showFilter = false;
+	var search = $location.search();
+
+	const stackStatus = {
+		INITIALIZING: 1,
+		ACTIVE: 2,
+		ERROR: 3,
+		PROCESSING: 4,
+		TERMINATING: 5,
+		TERMINATED: 6,
+		UNMANAGED: 7,
+		RESOLVING_ERROR: 8
+	};
+	var stackFailedState = [stackStatus.TERMINATED, stackStatus.RESOLVING_ERROR, stackStatus.ERROR];
+	var stackInProgressState = [stackStatus.PROCESSING, stackStatus.UNMANAGED];
+	var stackCompletedState = [stackStatus.ACTIVE];
+	
+	const itemStatus = {
+		PROCESSING: 1,
+		PROCESSED: 2,
+		ERROR: 3
+	};
+	
+	
+	var itemFailedState = ['terminated', 'cancelled', 'retired'];
+	var itemInProgressState = ['off', 'detached'];
+	var itemCompletedState = ['on', 'available', 'attached', 'in_use', 'leased'];
+	
+	c.isItemSelected = function(sys_id) {
+		var search = $location.search();
+		return search.selected_card == sys_id;
+	};
+	
+	c.getStackClass = function() {
+		var classNames = [];
+		
+		if(c.isItemSelected(c.data.stack_sys_id))
+			classNames.push('state-selected');
+		
+		if(stackFailedState.indexOf(Number(c.data.stack.status_id)) >= 0)
+			classNames.push('card-failed');
+		
+		else if(stackInProgressState.indexOf(Number(c.data.stack.status_id)) >= 0)
+			classNames.push('card-progress');
+		
+		else if(stackCompletedState.indexOf(Number(c.data.stack.status_id)) >= 0)
+			classNames.push('card-complete');
+		
+		return classNames.join(' ');
+	};
+	
+	c.getItemClass = function(item) {
+		var classNames = [];
+		
+		if(c.isItemSelected(item.sys_id))
+			classNames.push('state-selected');
+		
+		if(item.status == itemStatus.ERROR || itemFailedState.indexOf(item.state_value) >= 0)
+			classNames.push('card-failed');
+		
+		else if(item.status == itemStatus.PROCESSING || 
+				itemInProgressState.indexOf(item.state_value) >= 0)
+			classNames.push('card-progress');
+		
+		else if(item.status == itemStatus.PROCESSED &&
+				itemCompletedState.indexOf(item.state_value) >= 0)
+			classNames.push('card-complete');
+		
+		return classNames.join(' ');
+	};
+
+	c.onClick = function($event, data) {
+		$event.stopPropagation();
+		$event.preventDefault();
+		throwEvent(data, data.url, {});
+	};
+
+	function throwEvent(item, url, action) {
+		if (url) {
+			var info = {};
+			info.item = item;
+			info.url = url;
+			info.action = action;
+			cloudEventScope.broadcast("cloudResourceCardEvent",info);
+		}
+		else {
+			var evt = {};
+			evt.url = url;
+			evt.table = c.data.table;
+			evt.sys_id = item.sys_id;
+			evt.record = item;
+			evt.rectangle_id = c.data.sys_id;
+			evt.action = action;
+			// put out the selection with simple list "sl_" prefix
+			$location.search('sl_sys_id', evt.sys_id);
+			$location.search('sl_table', evt.table);
+			$location.search('spa', 1); // spa means "I've got this"
+			cloudEventScope.broadcast('$sp.list.click', evt);
+		}
+	}
+	
+	$scope.$on("$locationChangeSuccess", function(){
+		var searchParams = $location.search();
+		if ((typeof searchParams.selected_card == 'undefined') && searchParams.id == "cloud_stack_details" && searchParams.category =="cloud_stacks" && $scope.data.list.length > 0)
+		{
+			$location.search('selected_card', $scope.data.stack_sys_id);
+		}
+		//$rootScope.$broadcast("cloudResourceCardEvent",{url: $location.search()});
+	});
+
+	$scope.setPageNum = function(num) {
+		$scope.data.p = num;
+	};
+	
+	$scope.mathMin = function(v1,v2) {
+		return Math.min(v1,v2);
+	};
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.search-request-field {	&#13;
+  color: #485563;&#13;
+  width: 100%;&#13;
+  height: 26px;&#13;
+  border-radius: 20px;&#13;
+  border: 1px solid #ddd;&#13;
+  padding-left: 10px;&#13;
+  padding-right: 10px;&#13;
+  background-image: url("/styles/thirdparty/select2/select2x2.png") !important;&#13;
+  background-repeat: no-repeat;&#13;
+  background-size: 70px 38px;&#13;
+  background-position: 100% -20px; &#13;
+}&#13;
+&#13;
+#title{&#13;
+  background-color: #343D47;&#13;
+  padding: 10px 15px;&#13;
+  border-bottom: 1px solid transparent;&#13;
+  border-top-right-radius: 3px;&#13;
+  border-top-left-radius: 3px;&#13;
+  height: 52px;&#13;
+}&#13;
+&#13;
+.m-n{&#13;
+  margin-top:6px!important;&#13;
+}&#13;
+&#13;
+.panel-heading{ &#13;
+  border-top-right-radius: 0px;&#13;
+  border-top-left-radius: 0px;&#13;
+}&#13;
+&#13;
+.panel-body {&#13;
+  padding: 10px;&#13;
+  overflow: auto;&#13;
+  min-height: 302px;&#13;
+  height: calc(100vh - calc($cloud-stacks-details-header-height + $header-height + $footer-height + $panel-margin + $search-panel));&#13;
+}&#13;
+&#13;
+.search-request-field:focus {&#13;
+  border : 1px solid #278efc;&#13;
+}&#13;
+&#13;
+.panel .panel-heading {&#13;
+  background-color: #ffffff;&#13;
+  border-bottom: 0px;&#13;
+  padding-bottom: 7px;&#13;
+  padding-top: 7px;&#13;
+  border-top-width: 0px;&#13;
+  padding-left: 5px;&#13;
+  padding-right: 5px;&#13;
+}&#13;
+&#13;
+.requested-filter-container {&#13;
+  background-color: #e7e9eb;&#13;
+  border-width: 0px 0 1px 0;&#13;
+  border-color: #bdc0c4;&#13;
+  border-style: solid;&#13;
+}&#13;
+&#13;
+.filter-cards {&#13;
+  display: flex;&#13;
+  flex-direction: column;&#13;
+  height: calc(100vh - 135px);&#13;
+}&#13;
+&#13;
+.grey{&#13;
+  border-left-color: #BDC0C4;&#13;
+}&#13;
+&#13;
+.btn-toolbar &gt; .btn-group &gt; a {&#13;
+  padding: 6px 12px;&#13;
+  font-size: 14px;&#13;
+}&#13;
+&#13;
+.card-complete .sn-card-component_accent-bar {&#13;
+	background-color: #6CE474; /* green */&#13;
+}&#13;
+&#13;
+.card-failed .sn-card-component_accent-bar {&#13;
+	background-color: #FC4E4B; /* red */&#13;
+}&#13;
+&#13;
+.card-progress .sn-card-component_accent-bar {&#13;
+	background-color: #278EFC; /* blue */&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-resource-cards</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope, el, attrs, ctrl) {
+
+	scope.ciToStackItemMap = {};
+	
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack", 'sys_id=' + scope.data.stack_sys_id, function(data){
+		scope.cloudEventScope.broadcast("cloudStackUpdated", data.data.sys_id);
+		scope.spUtil.update(scope);
+		
+	});
+	
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack_item", "stack=" + scope.data.stack_sys_id, function(data){
+		scope.cloudEventScope.broadcast("cloudStackUpdated", data.data.sys_id);
+		scope.spUtil.update(scope);
+	});
+	
+	var unsubRecordWatcher = scope.$watch('data.list', registerCIRecordWatchers);
+
+	scope.$on('destroy', function() {
+		unsubRecordWatcher();
+	});
+	
+	function registerCIRecordWatchers() {
+		var recordWatchObj = {
+			cis: {} 
+		};
+
+		scope.data.list.forEach(function(item) {
+			if (item.ci_table && item.ci_instance_id) {
+				if (!recordWatchObj.cis[item.ci_table])
+					recordWatchObj.cis[item.ci_table] = [];
+				
+				recordWatchObj.cis[item.ci_table].push(item.ci_instance_id);
+				scope.ciToStackItemMap[item.ci_instance_id] = item.sys_id;
+			}	
+		}); 
+		
+		var ciTables = Object.keys(recordWatchObj.cis);
+		ciTables.forEach(function(table) {
+			scope.spUtil.recordWatch(scope, table, "sys_idIN" + recordWatchObj.cis[table].join(), function(data) {
+										scope.cloudEventScope.broadcast("cloudStackUpdated", scope.ciToStackItemMap[data.data.sys_id]);
+										scope.spUtil.update(scope); });
+		});
+	}
+}]]></link>
+        <name>Cloud Stack Resources Cards</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	options.maximum_entries = 25;
+	options.maximum_pages = 3;
+	data.first_record = "";
+	data.p = data.p || $sp.getParameter('p') || 1;
+	data.p = parseInt(data.p);
+	data.selected_card = $sp.getParameter("selected_card");
+	data.window_size = data.window_size || 25;
+	data.page_index = data.p - 1;
+	data.window_start = data.page_index * data.window_size;
+	data.window_end = (data.page_index + 1) * data.window_size;
+	data.window_start = parseInt(data.window_start);
+	data.window_end = parseInt(data.window_end);
+	data.first_list = [];
+	data.count = 0;
+	var rownumber = 0;
+
+	data.stack_sys_id = $sp.getParameter('sys_id');
+	
+	var stackGr = new CMPStackUtil(true).getStackById(data.stack_sys_id);
+	
+	if (!stackGr)
+		return;
+
+	var req_item = [];
+	
+	var scUtil = new CMPSCUtil(true);
+	
+	var latestCatReqForStackGr = scUtil.getLatestReqItemForCI(data.stack_sys_id);
+	
+	var latestCatReqIdForStack = latestCatReqForStackGr ? latestCatReqForStackGr.getUniqueValue() : null;
+	
+	data.stack = {
+		name: stackGr.getDisplayValue('name'),
+		sys_id: data.stack_sys_id,
+		blueprint: stackGr.getDisplayValue('blueprint'),
+		status: stackGr.getDisplayValue('stack_status'),
+		status_id: stackGr.getValue('stack_status'),
+		url : {
+			id: 'cloud_stack_details', 
+			category: 'cloud_stacks', 
+			sys_id: data.stack_sys_id, 
+			selected_card : data.stack_sys_id, 
+			active_tab: 'change_requests', 
+			req_item_sys_id: latestCatReqIdForStack, 
+			req_item_card: latestCatReqIdForStack
+		}
+	};
+	
+	// for card layout 
+	data.stack.headline = data.stack.name;
+	data.stack.summary = gs.getMessage('Stack');
+	data.stack.meta = gs.getMessage('Status') + ': ' + data.stack.status;
+	data.stack.showAccentBar = true;
+
+	data.filter = _getStackItemEncodedQuery(data.stack_sys_id);
+
+	var resources = new GlideRecord("sn_cmp_stack_item");
+	data.display_field = 'alias';
+	data.secondary_fields = ['status'];
+	resources.addEncodedQuery(data.filter);
+	resources.chooseWindow(data.window_start, data.window_end);
+	resources.orderBy('alias');
+	resources.query();
+	data.count = resources.getRowCount();
+	data.num_pages = Math.ceil(data.count / data.window_size);
+	data.list = [];
+	
+	while(resources.next() && resources.canRead()){
+		var stackItem = {
+			sys_id: resources.getValue('sys_id'),
+			display_field: resources.getValue("alias"),
+			selected: false,
+			status: resources.getValue('status'),
+			ci_table: resources.ci_instance_id.getRefRecord().getValue('sys_class_name'),
+			ci_instance_id:  resources.getValue('ci_instance_id')
+		};
+
+		stackItem.secondary_fields = [];
+
+		data.secondary_fields.forEach(function(f) {
+			stackItem.secondary_fields.push(getField(resources,f));
+		});
+
+		if (stackItem.status == "2" && resources.ci_instance_id.state) {
+			
+			stackItem.state = resources.ci_instance_id.state.getDisplayValue();
+			data.resource_block_sysid = resources.getValue('resource_block_id');
+
+			var rbGr = CMPRBUtil.getRBById(resources.getValue('resource_block_id'));
+			if (rbGr)
+				data.resource_table = rbGr.getValue('refcitype');
+
+			data.ci_instance_id = resources.getValue('ci_instance_id');
+
+			if(data.resource_table && data.ci_instance_id){
+				var properties = new sn_cmp_api.CloudModelProcessorScript();
+				stackItem.state_value = global.JSON.parse(properties.getCIState(data.resource_table,data.ci_instance_id)).State;
+			}
+		}	
+
+		var resourceBlockID = resources.getDisplayValue('resource_block_id');
+		stackItem.resource_block_id = resourceBlockID;
+		
+		if (resourceBlockID == "Cloud Resource") 
+			stackItem.resource_block_id = resources.ci_instance_id.sys_class_name.getDisplayValue();
+		
+		var latStackItemReqGr = scUtil.getLatestReqItemForCI(resources.ci_instance_id);
+		
+		var latestCatReqId = latStackItemReqGr ? latStackItemReqGr.getUniqueValue() : null;
+
+		stackItem.url = {
+			id: 'cloud_stack_details', 
+			category:'cloud_stacks', 
+			sys_id: data.stack_sys_id, 
+			selected_card : stackItem.sys_id, 
+			active_tab: 'change_requests',
+			req_item_sys_id: latestCatReqId,
+			req_item_card: latestCatReqId
+		};	
+		
+		// for card layout
+		stackItem.headline = stackItem.display_field;
+		stackItem.summary = stackItem.resource_block_id;
+		stackItem.meta = gs.getMessage('Status') + ': ';
+		stackItem.meta += stackItem.state ? stackItem.state : '';
+		stackItem.showAccentBar = true;
+
+		data.list.push(stackItem);
+	}
+
+	function getField(resources,name) {
+		var f = {};
+		f.display_value = resources.getDisplayValue("status");
+		f.value = resources.getValue(name);
+		var ge = resources.getElement(name);
+		f.type = ge.getED().getInternalType();
+		f.label = ge.getLabel();
+		return f;
+	}
+	
+	function _getStackItemEncodedQuery(stackId) {
+		var stackItemGr = new GlideRecord('sn_cmp_stack_item');
+		stackItemGr.addQuery('stack', stackId);
+		stackItemGr.addQuery('resource_block_id.layer', '!=', CloudConstants.RB_LAYER_LOGICAL_DATACENTER);
+		stackItemGr.addQuery('resource_block_id.name', 'NOT LIKE', 'Blueprint Resource');
+		 // ARM Template
+		stackItemGr.addQuery('resource_block_id.type', '!=', CloudConstants.ARM_TEMPLATE_ID).addOrCondition('resource_block_id.type', null);
+		// CloudFormation Template
+		stackItemGr.addQuery('resource_block_id.type', '!=', CloudConstants.CFT_TEMPLATE_ID).addOrCondition('resource_block_id.type', null); 
+		return stackItemGr.getEncodedQuery();
+	}
+})();
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-12 09:58:47</sys_created_on>
+        <sys_id>d67f478d675032007f4eff5617415ab9</sys_id>
+        <sys_mod_count>490</sys_mod_count>
+        <sys_name>Cloud Stack Resources Cards</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_d67f478d675032007f4eff5617415ab9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-23 21:46:31</sys_updated_on>
+        <template><![CDATA[<div class="panel b">
+  <div class="requested-filter-container">
+    <div class="panel-heading" id="title">
+      <h2 class="panel-title" style="padding-top:8px;">${Resources}</h2>
+    </div>
+    <div class="panel-heading" >
+      <div>
+        <label for="resources-search" class="sr-only">${Filter Visible Resources}</label>
+        <input id="resources-search" ng-model="c.filterText" sn-focus="c.showFilter" class="search-request-field " placeholder="${Filter Visible Resources}">
+      </div>
+    </div>
+  </div>
+  <div class="panel-body" ng-style="{height: body_height}">
+    <cloud-card data="c.data.stack" card-class="c.getStackClass()" card-click="c.onClick($event, c.data.stack)" />
+    
+	<cloud-card data="item" card-class="c.getItemClass(item)" card-click="c.onClick($event, item)"
+                ng-repeat="item in c.data.list | filter:c.filterText track by $index" />
+  </div>
+  
+  <div class="panel-footer" style="padding-bottom:12px">
+    <div class="btn-toolbar m-r pull-left">
+      <div class="btn-group">
+        <button ng-disabled="data.p == 1" ng-click="setPageNum(data.p - 1)" class="btn btn-default" aria-label="${Previous page}"><i class="fa fa-chevron-left"></i></button>
+      </div>
+      <div class="btn-group">
+        <button ng-disabled="data.p == data.num_pages || data.num_pages == 0" ng-click="setPageNum(data.p + 1)" class="btn btn-default" aria-label="${Next page}"><i class="fa fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="m-t-xs panel-title">${{{data.window_start + 1}} - {{ mathMin(data.window_end,data.count)+1 }} of {{data.count+1}}}</div>
+  </div>
+</div>
+<now-message key="State" value="${State}"/>
+<now-message key="Stack" value="${Stack}"/>
+<now-message key="Status" value="${Status}"/>]]></template>
+    </sp_widget>
+</record_update>

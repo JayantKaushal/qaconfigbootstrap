@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sn_cmp_profile_base" label="Compute Profile" max_length="40" name="sn_cmp_compute_profile" type="collection"/>
+</database>

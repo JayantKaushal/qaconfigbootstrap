@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="sn_cmp_pol_action" version="2" view="listv3_view">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>name</element>
+            <list_id display_value="sn_cmp_pol_action" element="NULL" name="sn_cmp_pol_action" parent="NULL" relationship="NULL" sys_domain="global" view="eafb18d99f010300e78d317f842e7011">6bd5f79c9fd50300e78d317f842e70fa</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_id>afd5f79c9fd50300e78d317f842e70fa</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>action_order</element>
+            <list_id display_value="sn_cmp_pol_action" element="NULL" name="sn_cmp_pol_action" parent="NULL" relationship="NULL" sys_domain="global" view="eafb18d99f010300e78d317f842e7011">6bd5f79c9fd50300e78d317f842e70fa</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_id>23d5f79c9fd50300e78d317f842e70fb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>action_type</element>
+            <list_id display_value="sn_cmp_pol_action" element="NULL" name="sn_cmp_pol_action" parent="NULL" relationship="NULL" sys_domain="global" view="eafb18d99f010300e78d317f842e7011">6bd5f79c9fd50300e78d317f842e70fa</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_id>a3d5f79c9fd50300e78d317f842e70fb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>sys_created_by</element>
+            <list_id display_value="sn_cmp_pol_action" element="NULL" name="sn_cmp_pol_action" parent="NULL" relationship="NULL" sys_domain="global" view="eafb18d99f010300e78d317f842e7011">6bd5f79c9fd50300e78d317f842e70fa</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_id>27d5f79c9fd50300e78d317f842e70fb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>sys_updated_by</element>
+            <list_id display_value="sn_cmp_pol_action" element="NULL" name="sn_cmp_pol_action" parent="NULL" relationship="NULL" sys_domain="global" view="eafb18d99f010300e78d317f842e7011">6bd5f79c9fd50300e78d317f842e70fa</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_id>a7d5f79c9fd50300e78d317f842e70fb</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>sn_cmp_pol_action</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-15 18:05:02</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6bd5f79c9fd50300e78d317f842e70fa</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_pol_action</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_sn_cmp_pol_action_listv3_view</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-15 18:05:02</sys_updated_on>
+            <sys_user/>
+            <view display_value="listV3_view" name="listv3_view">eafb18d99f010300e78d317f842e7011</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="quota_definition_type" label="Quota Definition" language="en" table="sn_cmp_dc_cap_quota_type">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>quota_definition_type</element>
+            <help/>
+            <hint/>
+            <label>Quota Definition</label>
+            <language>en</language>
+            <name>sn_cmp_dc_cap_quota_type</name>
+            <plural>Quota Definitions</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 08:46:35</sys_created_on>
+            <sys_id>cee84b200b182300d9f9ad4363673af1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Quota Definition</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_sn_cmp_dc_cap_quota_type_quota_definition_type_en</sys_update_name>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 08:46:35</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

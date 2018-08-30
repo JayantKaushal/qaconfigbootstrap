@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sn_cmp_invocation_template" label="ResourceBlock" max_length="40" name="sn_cmp_rb_resourceblock" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="4000" name="description" type="string"/>
+        <element label="Default Interface" max_length="32" name="guestinterface" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element label="Host Interface" max_length="32" name="hostinterface" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element label="System Defined" max_length="40" name="is_system_defined" type="boolean"/>
+        <element label="Is TLR" max_length="40" name="is_tlr" type="boolean"/>
+        <element choice="1" label="Layer" max_length="40" name="layer" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Application" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Platform" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Virtual Workload" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Logical DataCenter" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Virtual Infrastructure" sequence="5" value="5"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string" unique="true"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" label="Reference CI Type" max_length="80" name="refcitype" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Template" max_length="1000" name="resource_template" type="string"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Published" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Draft" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element label="Overrides" max_length="32" name="sys_overrides" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Type" max_length="32" name="type" reference="sn_cmp_cloud_template_type" type="reference"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+        <index name="index3">
+            <element name="sys_overrides"/>
+        </index>
+        <index name="index4">
+            <element name="hostinterface"/>
+        </index>
+        <index name="index5">
+            <element name="guestinterface"/>
+        </index>
+        <index name="index6">
+            <element name="type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Supported DC Capacity Types" max_length="40" name="sn_cmp_rb_dc_capacity_type" type="collection">
+        <element label="Resource" max_length="32" name="resoure_block" read_only="true" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Supported Capacity Types" max_length="32" name="supported_capability" reference="sn_cmp_dc_capacity_type" type="reference"/>
+        <index name="index">
+            <element name="supported_capability"/>
+        </index>
+        <index name="index2">
+            <element name="resoure_block"/>
+        </index>
+    </element>
+</database>

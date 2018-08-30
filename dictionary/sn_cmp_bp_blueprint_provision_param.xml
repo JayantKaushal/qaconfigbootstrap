@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Provisioning Parameter" max_length="40" name="sn_cmp_bp_blueprint_provision_param" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Allowed values" max_length="1000" name="allowed_values" read_only="true" type="string"/>
+        <element label="Blue print" mandatory="true" max_length="32" name="blue_print" read_only="true" reference="sn_cmp_bp_blueprint" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Constraint description" max_length="1000" name="constraint_description" read_only="true" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Default value" max_length="4096" name="default_value" read_only="true" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Display Name" max_length="255" name="display_name" read_only="true" type="string"/>
+        <element label="Mandatory" max_length="40" name="mandatory" read_only="true" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="255" name="name" read_only="true" type="string"/>
+        <element choice="1" default="1" label="Parameter Type" max_length="40" name="parameter_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="String" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Password" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Object" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Array" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Boolean" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Integer" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Grid" sequence="7" value="7"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Regular Expression" max_length="100" name="regex" read_only="true" type="string"/>
+        <element choice="1" label="Regex Type" max_length="40" name="regex_type" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Regular" sequence="1" value="regular"/>
+                <element inactive_on_update="false" label="Math" sequence="2" value="math"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="blue_print"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cloud Event Handler" max_length="40" name="sn_cmp_cloud_event_handler" type="collection">
+        <element label="Active" max_length="40" name="active" type="boolean"/>
+        <element label="Handler script" max_length="32" name="handler_script" reference="sys_script_include" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Header name" max_length="255" name="header_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Header value" max_length="255" name="header_value" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="100" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="Script to process event" label="Run handler script" max_length="1000" name="run_handler_script" read_only="true" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Source" max_length="100" name="source" type="string"/>
+        <index name="index">
+            <element name="handler_script"/>
+        </index>
+    </element>
+</database>

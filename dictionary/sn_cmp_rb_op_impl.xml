@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="OperationImplementation" max_length="40" name="sn_cmp_rb_op_impl" type="collection">
+        <element label="Interface" max_length="32" name="interface" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element display="true" label="Operation" max_length="32" name="operation" reference="sn_cmp_rb_op_signature" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Output Attributes" max_length="1000" name="operation_output_attributes" type="string"/>
+        <element label="Resource" max_length="32" name="resource" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="resource"/>
+        </index>
+        <index name="index2">
+            <element name="interface"/>
+        </index>
+        <index name="index3">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

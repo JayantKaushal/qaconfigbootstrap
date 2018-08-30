@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyOperationsAction</api_name>
+        <client_callable>false</client_callable>
+        <description>Lists all policy rules</description>
+        <name>CMPGetAllPolicyOperationsAction</name>
+        <script><![CDATA[var CMPGetAllPolicyOperationsAction = Class.create();
+CMPGetAllPolicyOperationsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.target_entity_instance_id && !params.target_entity_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAllPolicyOperationsAction.doAction: Undefined element Id",
+				null
+				);
+			}
+			var optionsObj = [];
+			
+			var api = new sn_cmp.PolicyOperationsUtil();
+			optionsObj = api.fetchPolicyOperations(params.target_entity_id, params.target_entity_instance_id);
+			
+			var responseObj = {
+				policyOperationList : new global.JSON().decode(optionsObj),
+			};
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy operations."),
+				"CMPGetAllPolicyOperationsAction.doAction(): Failed to get all policy operations",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllPolicyOperationsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-24 21:17:52</sys_created_on>
+        <sys_id>860f0f1d87f0030053c9f4bbe3e3ecfb</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>CMPGetAllPolicyOperationsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_860f0f1d87f0030053c9f4bbe3e3ecfb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-24 21:35:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

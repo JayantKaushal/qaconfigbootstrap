@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_css_include">
+    <sp_css_include action="INSERT_OR_UPDATE">
+        <name>Cloud Admin Portal Stylesheet</name>
+        <source>local</source>
+        <sp_css display_value="Cloud Admin Portal Stylesheet">6f4c2e610b404300eff7ef9bb4673aac</sp_css>
+        <sys_class_name>sp_css_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-19 06:37:33</sys_created_on>
+        <sys_id>674c2e610b404300eff7ef9bb4673aad</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Cloud Admin Portal Stylesheet</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_css_include_674c2e610b404300eff7ef9bb4673aad</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-19 06:37:33</sys_updated_on>
+        <url/>
+    </sp_css_include>
+</record_update>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetWorkloadCloudScriptTemplate</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetWorkloadCloudScriptTemplate</name>
+        <script><![CDATA[var CMPGetWorkloadCloudScriptTemplate = Class.create();
+CMPGetWorkloadCloudScriptTemplate.prototype = {
+	initialize: function() {
+	},
+	fetchCloudScriptTemplateContent : function( scriptName, scriptAttributes, type, templateResolver, templateAttributes){
+		gs.info("scriptAttributes in fetchCloudScriptTemplateContent: " + JSON.stringify(scriptAttributes) + ' scriptName  = ' + scriptName);
+		var providerType = scriptAttributes["WorkloadConfigProviderType"];
+		var cloudScriptObj = this.fetchCloudScriptTemplateName( providerType, type);
+		if( cloudScriptObj != null && !gs.nil(cloudScriptObj.name)){
+			gs.info('name of the scipt is ' + cloudScriptObj.name);
+			var AgentInstaller= templateResolver.getTemplate(cloudScriptObj.name,templateAttributes);
+			return AgentInstaller;
+		}
+		return '';
+		
+	},
+	fetchCloudScriptTemplateName : function( providerId, operationName){
+		var returnVal = {};
+			var interfaceOperationGR = new GlideRecord('sn_capi_interface_operation');
+			var interfaceQuery = interfaceOperationGR.addJoinQuery('sn_capi_interface', 'cloud_api_interface', 'sys_id');
+			interfaceQuery.addCondition( 'interface_name', 'Configuration Management Interface');
+			interfaceOperationGR.addQuery('operation_name', operationName);
+			interfaceOperationGR.query();
+			if( interfaceOperationGR.next()){
+				var providerCloudTemplateGR = new GlideRecord('sn_cmp_provider_cloud_template');
+				providerCloudTemplateGR.addQuery('operation_template', providerId);
+				providerCloudTemplateGR.addQuery('provider_operation', interfaceOperationGR.getUniqueValue());
+				providerCloudTemplateGR.query();
+				if(providerCloudTemplateGR.next()){
+					returnVal.sysId = providerCloudTemplateGR.getValue('cloud_script_template');
+					returnVal.name = providerCloudTemplateGR.getDisplayValue('cloud_script_template');
+					
+					gs.info( 'Cloud Script Template ' + providerCloudTemplateGR.getDisplayValue('cloud_script_template'));
+				}
+			}
+			return returnVal;
+		},
+		
+		type: 'CMPGetWorkloadCloudScriptTemplate'
+	};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-12 19:02:53</sys_created_on>
+        <sys_id>f16d68b95b70130025c9273a41f91af8</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>CMPGetWorkloadCloudScriptTemplate</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f16d68b95b70130025c9273a41f91af8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-12 19:46:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

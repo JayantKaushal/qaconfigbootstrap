@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetStageResourceInfoAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetStageResourceInfoAction</name>
+        <script><![CDATA[var CMPGetStageResourceInfoAction = Class.create();
+CMPGetStageResourceInfoAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.stage_resource_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPAddResourceBlockAction.doAction: Undefined element type, stage_resource_id",
+					null
+				);
+			}
+
+			//GetSatge resource info action
+			var fbGr = new GlideRecord('sn_cmp_bp_stage_resource');
+			fbGr.get(params.stage_resource_id);
+			var status = {};
+			status.resourceBlockId = fbGr.resource_block+'';
+			var guestInterfaceList = [];
+			//Fetch resource block guest interface list based on resource block Id
+			if(!gs.nil(status.resourceBlockId)) {
+				var gr = new GlideRecord('sn_cmp_rb_guest_interface');
+				gr.addQuery("resource", fbGr.resource_block);
+				gr.orderBy('guestinterface');
+				gr.query();
+				while (gr.next()) {
+					var rbObj = {};
+					rbObj.id = gr.getValue('guestinterface');
+					rbObj.resource = gr.getDisplayValue('resource');
+					rbObj.guestinterface = gr.getDisplayValue('guestinterface');	
+					guestInterfaceList.push(rbObj);
+				}
+			}
+			status.guestInterfaceList = guestInterfaceList;
+			
+			return status;
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get stage resource info"),
+				"CMPGetStageResourceInfoAction.doAction(): Failed to get stage resource info",
+				error
+			);
+		}
+    },
+
+    type: 'CMPGetStageResourceInfoAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-03 06:47:08</sys_created_on>
+        <sys_id>454d80960b0032003bace58525673a07</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>CMPGetStageResourceInfoAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_454d80960b0032003bace58525673a07</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-30 06:32:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

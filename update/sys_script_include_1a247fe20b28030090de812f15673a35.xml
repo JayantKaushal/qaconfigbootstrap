@@ -1,0 +1,828 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPackUtils</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPackUtils</name>
+        <script><![CDATA[var CMPPackUtils = Class.create();
+var CMPPackDependencyUtil = new CMPPackDependencyUtil();
+var CMPPackDeployUtils = new CMPPackDeployUtils();
+
+CMPPackUtils.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+	blueprintServiceScript : new sn_cmp_api.BlueprintServiceScript(),
+	resourceBlockServiceScript : new sn_cmp_api.ResourceBlockServiceScript(),
+	capiLibraryServiceScript : new sn_cloud_api.CAPILibraryServiceScript(),
+	cloudScriptServiceScript : new sn_cfg_mgmt.CloudScriptService(),
+	policyServiceScript:new sn_cmp_api.PolicyServiceScript(),
+	poolServiceScript:new sn_cmp_api.PoolServiceScript(),
+
+	glideSysAtt : new GlideSysAttachment(),
+	packItemRecord : new GlideRecord('sn_cmp_pack_item'),
+
+
+	initialize: function() {
+		glideSysAtt = this.glideSysAtt;
+		packItemRecord = this.packItemRecord;
+		blueprintServiceScript = this.blueprintServiceScript;
+		resourceBlockServiceScript = this.resourceBlockServiceScript;
+		capiLibraryServiceScript = this.capiLibraryServiceScript;
+		cloudScriptServiceScript = this.cloudScriptServiceScript;
+		policyServiceScript=this.policyServiceScript;
+		poolServiceScript=this.poolServiceScript;
+	},
+
+	/*
+ 	*   This method is used for getting the list of pack.
+ 	*   @params : packName(search by name), currentPage, limit, selectedStatusId(publish/draft), packCategoryId(Category)
+ 	*   Update By: thiyagu
+ 	*/
+	getAllPack: function(packName, currentPage, limit, isImported, packCategoryId) {
+		var packDTOResp = {
+			totalRecords : 0,
+			packList : []
+		};
+		var currentRecordIndex = parseInt(currentPage, 10);
+		var limitRecordIndex = parseInt(limit, 10);
+		var packGR = new GlideRecordSecure("sn_cmp_pack");
+		var isImportedValue = isImported == "1" ? false : true;
+		if (!gs.nil(packName))
+			packGR.addQuery("name", "CONTAINS", packName);
+		if(isImported && !gs.nil(isImported)) {
+			packGR.addQuery("is_imported", isImportedValue);
+		}
+		if(packCategoryId && !gs.nil(packCategoryId))
+			packGR.addQuery("category", bpCategoryId);
+
+		packGR.chooseWindow(--currentRecordIndex, currentRecordIndex + limitRecordIndex, false);
+		packGR.orderBy("name");
+		packGR.query();
+		//TODO
+		//var checkPermissionObj = new CMPCheckPermission();
+		while (packGR.next()) {
+			var packDTOObj = {};
+			packDTOObj['id'] = packGR.getValue('sys_id');
+			packDTOObj['name'] = packGR.getValue('name');
+			packDTOObj['description'] = packGR.getValue('description');
+			packDTOObj['author'] = packGR.getValue('author');
+			packDTOObj['status'] = packGR.getValue('status');
+			packDTOObj['source'] = packGR.getValue('source');
+			packDTOObj['tag'] = packGR.getValue('tag');
+			packDTOObj['createdOn'] = packGR.getDisplayValue("sys_created_on");
+			packDTOObj['createdBy'] = packGR.getDisplayValue("sys_created_by");
+			packDTOObj['updatedOn'] = packGR.getDisplayValue("sys_updated_on");
+			packDTOObj['updatedBy'] = packGR.getDisplayValue("sys_updated_by");
+			packDTOObj['isImported'] = packGR.getValue("is_imported");
+			packDTOObj['editPermission'] = true;
+			packDTOObj['deletePermission'] = true;
+			//This is used for setting the permissions for each pack
+			//              var created_by = packGR.getValue('sys_created_by');
+			//              if (gs.getUserName() == 'admin' || gs.getUser().hasRole('sn_cmp.cmp_root_admin') || created_by == gs.getUserName()) {
+			//                 packDTOObj['editPermission'] = true;
+			//                 packDTOObj['deletePermission'] = true;
+			//              } else {
+			//                 var responseObj1 = checkPermissionObj.checkPermission('sn_cmp_pack', packDTOObj.id, gs.getUserID(), 'write');
+			//                 var responseObj2 = checkPermissionObj.checkPermission('sn_cmp_pack', packDTOObj.id, gs.getUserID(), 'delete');
+			//                 packDTOObj['editPermission'] = responseObj1;
+			//                 packDTOObj['deletePermission'] = responseObj2;
+			//              }
+			packDTOResp.packList.push(packDTOObj);
+		}
+		packDTOResp.totalRecords = packGR.getRowCount();
+		return packDTOResp;
+	},
+
+	/*
+ 				*   This method is used for getting pack info based on pack sysid.
+ 				*   @params : sys_id
+ 				*   Update By: thiyagu
+ 				*/
+
+	getPackInfo : function (sys_id) {
+		var packGR = new GlideRecordSecure("sn_cmp_pack");
+		var packDTOObj = {};
+		packGR.addQuery("sys_id", sys_id);
+		packGR.query();
+		if (packGR.next()) {
+			packDTOObj['id'] = packGR.getValue('sys_id');
+			packDTOObj['name'] = packGR.getValue('name');
+			packDTOObj['description'] = packGR.getValue('description');
+			packDTOObj['author'] = packGR.getValue('author');
+			packDTOObj['status'] = packGR.getValue('status');
+			packDTOObj['source'] = packGR.getValue('source');
+			packDTOObj['tag'] = packGR.getValue('tag');
+			packDTOObj['createdOn'] = packGR.getDisplayValue("sys_created_on");
+			packDTOObj['createdBy'] = packGR.getDisplayValue("sys_created_by");
+			packDTOObj['updatedOn'] = packGR.getDisplayValue("sys_updated_on");
+			packDTOObj['updatedBy'] = packGR.getDisplayValue("sys_updated_by");
+			packDTOObj['isImported'] = packGR.getValue("is_imported");
+			packDTOObj['editPermission'] = true;
+			packDTOObj['deletePermission'] = true;
+		}
+
+		return packDTOObj;
+	},
+
+	getPackItemData : function(packId, entityType, entityName){
+		packItemRecord.initialize();
+		packItemRecord.addEncodedQuery('pack=' + packId + '^entity_type=' + entityType + '^name=' + entityName);
+		packItemRecord.query();
+
+		if (packItemRecord.next()) {
+			return packItemRecord.getValue('pack_item_data');
+		}
+	},
+
+	/*
+ 					*   This method is used for getting the list of pack.
+ 					*   @params : sys_id
+ 					*   Update By: thiyagu
+ 					*/
+	deletePack : function (sys_id) {
+		var packGr = new GlideRecord('sn_cmp_pack');
+		packGr.addQuery("sys_id", sys_id);
+		packGr.query();
+		if (packGr.next()) {
+			packGr.deleteRecord();
+		}
+		return true;
+	},
+
+	/*
+ 					*   This method is used for getting the list of pack.
+ 					*   @params : name, description, category for the each pack
+ 					*   Update By: thiyagu
+ 					*/
+	updatePack : function (sys_id, name, description, category) {
+		var packGr = new GlideRecord('sn_cmp_pack');
+		packGr.addQuery("sys_id", sys_id);
+		packGr.query();
+		if (packGr.next()) {
+			packGr.setValue('name',name);
+			packGr.setValue('description',description);
+			packGr.update();
+		}
+		var packInfo = this.getPackInfo(sys_id);
+		return packInfo;
+	},
+
+	/*
+ 					*   This method is used for getting the list of pack.
+ 					*   @params : name, description, category for the each pack
+ 					*   Update By: thiyagu
+ 					*/
+	supportedEntity : function () {
+		var supportedEntity = [
+			{
+				entityName : 'Blueprint',
+				reference : 'sn_cmp_bp_blueprint',
+				referenceName : 'name',
+				statusField : 1
+			},
+			{
+				entityName : 'Resource Block',
+				reference : 'sn_cmp_rb_resourceblock',
+				referenceName : 'name',
+				statusField : 1
+			},
+			{
+				entityName : 'Cloud API',
+				reference : 'sn_capi_cloud_api',
+				referenceName : 'cloud_api_name',
+				statusField : ''
+			},
+			{
+				entityName : 'Cloud Script',
+				reference : 'sn_cfg_cloud_script',
+				referenceName : 'name',
+				statusField : ''
+			},
+			{
+				entityName : 'Cloud Script Template',
+				reference : 'sn_cfg_cloud_script_template',
+				referenceName : 'name',
+				statusField : ''
+			},
+			{
+				entityName : 'MID Script',
+				reference : '',
+				referenceName : 'name',
+				statusField : ''
+			}
+		];
+
+		return supportedEntity;
+	},
+
+	savePack : function(name,description,author,status,source,category){
+
+		if(this.doesPackExistsWithName(name)){
+		throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Cloud Solution  {0} already exists in the system.",name),
+				"CMPCsdPackCrudOperationAction.doAction(): Failed to create cloud solution."
+			);
+
+		}
+		source = gs.getProperty('instance_name');
+		var pack = new GlideRecord('sn_cmp_pack');
+		pack.setValue('name',name);
+		pack.setValue('description',description);
+		pack.setValue('author',author);
+		pack.setValue('status',status);
+		pack.setValue('source',source);
+		pack.setValue('tag',category);
+		var packId=pack.insert();
+
+		return this.getPackInfo(packId);
+	},
+
+	doesPackExistsWithName : function( packName ) {
+		var packGR = new GlideRecord('sn_cmp_pack');
+		packGR.addQuery('name',packName);
+		packGR.query();
+		if(packGR.next()){
+			return true;
+		}
+		return false;
+	},
+
+	savePackItemsFromDependencyInfo : function(packId, includeInPack){
+		var gr = new GlideRecord("sn_cmp_pack_dependency");
+		gr.addQuery('include_in_pack', includeInPack);
+		gr.addQuery('pack', packId);
+		gr.query();
+
+		//TODO : check this
+		/*while (gr.next()) {
+			var packItemExists = this.checkPackItemInPack(packId, gr.dep_entity_type, gr.dep_entity);
+			if(!packItemExists){
+				this.savePackItems(packId, gr.dep_entity_type, gr.dep_entity, "localhost", '', gr);
+			}
+		}*/
+	},
+
+	removeEntityFromPack : function (packId, packEntityId) {
+		this.removePackDependencies(packId, packEntityId);
+
+		//save pack items from dependency. saves only out-of-the-box entites from dependency to pack item.
+		this.savePackItemsFromDependencyInfo(packId, true);
+
+		return true;
+	},
+
+	removePackItem : function (packId, entityType, entityName) {
+		var packItemGR = new GlideRecord('sn_cmp_pack_item');
+		packItemGR.setValue('name',entityName);
+		packItemGR.setValue('entity_type',entityType);
+		packItemGR.setValue('pack',packId);
+		packItemGR.query();
+
+		if(packItemGR.next()) {
+			packItemGR.deleteRecord();
+		}
+	},
+
+	removePackDependencies : function (packId, packEntityId) {
+		var packDependencyGR = new GlideRecord("sn_cmp_pack_dependency");
+		packDependencyGR.addQuery('sys_id', packEntityId);
+		packDependencyGR.addQuery('pack', packId);
+		packDependencyGR.query();
+
+		if(packDependencyGR.next()) {
+			this.deleteDependentRecords(packId, packDependencyGR.tag);
+
+			return packDependencyGR.deleteRecord();
+		}
+	},
+
+	removePackDependency : function (packId, packEntityId) {
+		var packDependencyGR = new GlideRecord("sn_cmp_pack_dependency");
+		packDependencyGR.addQuery('sys_id', packEntityId);
+		packDependencyGR.addQuery('pack', packId);
+		packDependencyGR.query();
+
+		if(packDependencyGR.next()) {
+			packDependencyGR.deleteRecord();
+		}
+	},
+
+	deleteDependentRecords : function (packId, sourceTag){
+		var dependencies = [];
+		this.getDependenciesForSourceEntity(sourceTag, packId, dependencies);
+		for (var i in dependencies){
+			if (dependencies[i].includeInPack){
+				this.removePackItem (packId, dependencies[i].dependentEntityType, dependencies[i].dependentEntityName);
+			}
+			this.removePackDependency (packId, dependencies[i].id);
+		}
+	},
+
+	saveDependentEntities: function ( packId, entitiesList ){
+		CMPPackDependencyUtil.initialize();
+		var entityTypesObj = entitiesList;
+
+		for(var i in entityTypesObj){
+			var entities = entityTypesObj[i].entities;
+			for(var j in entities){
+				CMPPackDependencyUtil.getDependentEntities(packId, entityTypesObj[i].entityType, entities[j].name, entities[j].table);
+			}
+		}
+
+		for (var k in CMPPackDependencyUtil.rbDependencyDetails) {
+			for (var guestIndex in CMPPackDependencyUtil.rbDependencyDetails[k].guestResList) {
+				var guestRBObject = CMPPackDependencyUtil.getResourceBlockObject(CMPPackDependencyUtil.rbDependencyDetails[k].guestResList[guestIndex].guestResourceBlockId);
+
+				//method finds all the guest reosurces with extension and populates rbExtensionDetails JSON.
+				CMPPackDependencyUtil.updateDependenciesForGuestResources(guestRBObject, CMPPackDependencyUtil.rbDependencyDetails[k].guestResList[guestIndex].stageResourceOperationsObject, CMPPackDependencyUtil.rbDependencyDetails[k].entityType, CMPPackDependencyUtil.rbDependencyDetails[k].entityName);
+			}
+		}
+
+		//extension hosts & guests.
+		if (CMPPackDependencyUtil.rbExtensionDetails.length > 0) {
+			for (var extensionIndex in CMPPackDependencyUtil.rbExtensionDetails) {
+
+				var rbExtDetail = CMPPackDependencyUtil.rbExtensionDetails[extensionIndex];
+				var interfaceExtDetails = rbExtDetail.interfaceExtensionDetails;
+				var dependentBlueprints = rbExtDetail.dependentBlueprints;
+				var isHost = rbExtDetail.isHost ? 'true' : 'false';
+
+				//this loop is only to find the hosts on an op impl step. Each operation impl step in an operation may call different extensions on different hosts.
+				for (var extDetailIndex in interfaceExtDetails) {
+					var resourceList = interfaceExtDetails[extDetailIndex].resourceList;
+					for (var h in resourceList) {
+						var hostResourceBlockObject = CMPPackDependencyUtil.getResourceBlockObject(resourceList[h]);
+						var interfaceExtensionOperationsObject = resourceBlockServiceScript.exportExtensionImplForResourceBlockWithFilters(hostResourceBlockObject.name, JSON.stringify(interfaceExtDetails));
+
+						var extensionYaml = JSON.parse(interfaceExtensionOperationsObject).objectJSON;
+
+						CMPPackDependencyUtil.buildResourceDependencyObject (hostResourceBlockObject.layer, isHost, tableName, rbExtDetail.entityType, dependentBlueprints, 'Resource Block', hostResourceBlockObject.name, true, extensionYaml, interfaceExtDetails);
+					}
+				}
+			}
+		}
+
+		//non-extension hosts
+		for (var entityIndex in CMPPackDependencyUtil.rbDependencyDetails) {
+			for (var ldcIndex in CMPPackDependencyUtil.rbDependencyDetails[entityIndex].hostResList) {
+				var hostRBObject = CMPPackDependencyUtil.getResourceBlockObject(CMPPackDependencyUtil.rbDependencyDetails[entityIndex].hostResList[ldcIndex]);
+
+				CMPPackDependencyUtil.buildResourceDependencyObject(hostRBObject.layer, 'true', tableName, CMPPackDependencyUtil.rbDependencyDetails[entityIndex].entityType, [CMPPackDependencyUtil.rbDependencyDetails[entityIndex].entityName], 'Resource Block', hostRBObject.name, !hostRBObject.is_system_defined, '', '');
+			}
+
+
+			//save only non-tlr resource blocks as dependency
+			for (var guestIndex in CMPPackDependencyUtil.rbDependencyDetails[entityIndex].guestResList) {
+				var guestRBObject = CMPPackDependencyUtil.getResourceBlockObject(CMPPackDependencyUtil.rbDependencyDetails[entityIndex].guestResList[guestIndex].guestResourceBlockId);
+
+				//this updates the guest resource block dependency with the yaml
+				CMPPackDependencyUtil.buildResourceDependencyObject(guestRBObject.layer, 'false', tableName, CMPPackDependencyUtil.rbDependencyDetails[entityIndex].entityType, [CMPPackDependencyUtil.rbDependencyDetails[entityIndex].entityName], 'Resource Block', guestRBObject.name, !guestRBObject.is_system_defined, '', '');
+			}
+		}
+
+		//save host resource blocks dependencies
+		for (var hostResIndex in hostResourceDependencies) {
+			dep = hostResourceDependencies[hostResIndex];
+
+			CMPPackDependencyUtil.createOrUpdateDependency(dep.tableName, dep.entityType, dep.entityName, dep.dependentEntityType, dep.dependentEntityName, dep.entityName, dep.includeInPack, dep.content, dep.packItemData);
+		}
+		for (var delegatedResIndex in delegatedResourceDependencies) {
+			dep = delegatedResourceDependencies[delegatedResIndex];
+
+			CMPPackDependencyUtil.createOrUpdateDependency(dep.tableName, dep.entityType, dep.entityName, dep.dependentEntityType, dep.dependentEntityName, dep.entityName, dep.includeInPack, dep.content, dep.packItemData);
+		}
+		for (var guestResIndex in guestResourceDependencies) {
+			dep = guestResourceDependencies[guestResIndex];
+
+			CMPPackDependencyUtil.createOrUpdateDependency(dep.tableName, dep.entityType, dep.entityName, dep.dependentEntityType, dep.dependentEntityName, dep.entityName, dep.includeInPack, dep.content, dep.packItemData);
+		}
+
+		return true;
+	},
+
+	getPublishedEntitiesForType:function(entityType){
+		var publishedEntities=[];
+		var entityTable, nameColumn = 'name';
+
+		if(entityType=='Blueprint'){
+			entityTable=this.getPublishedRecord('sn_cmp_bp_blueprint');
+		}else if(entityType=='Resource Block'){
+			entityTable=this.getPublishedRecord('sn_cmp_rb_resourceblock');
+		}else if(entityType=='Cloud API'){
+			entityTable=this.getPublishedRecord('sn_capi_cloud_api');
+			nameColumn='cloud_api_name';
+		}else if(entityType=='Cloud Script'){
+			entityTable=this.getPublishedRecord('sn_cfg_cloud_script');
+		}else if(entityType=='Cloud Script Template'){
+			entityTable=this.getPublishedRecord('sn_cfg_cloud_script_template');
+		}else if(entityType=='MID Script'){
+			entityTable = this.getPublishedRecord('ecc_agent_script_include');
+			var scriptFileRecords = this.getPublishedRecord('ecc_agent_script_file');
+
+			while (scriptFileRecords.next()) {
+				var scriptFileObj = {};
+
+				scriptFileObj['name'] = scriptFileRecords.getValue(nameColumn);
+				scriptFileObj['sys_id'] = scriptFileRecords.getValue('sys_id');
+				scriptFileObj['table'] = scriptFileRecords.getValue('sys_class_name');
+				publishedEntities.push(scriptFileObj);
+			}
+		}
+
+		while(entityTable.next()){
+			var validPublishedEntity = false;
+			var entityObj={};
+
+			if (entityType == 'Resource Block'){
+				if (entityTable.getValue('is_system_defined') == true) {
+					var extensionExists = CMPPackDependencyUtil.checkIfInterfaceExtensionExistsForResource(entityTable.getValue('sys_id'));
+
+					if (extensionExists) {
+						validPublishedEntity = true;
+					}
+				} else {
+					validPublishedEntity = true;
+				}
+			} else{
+				validPublishedEntity = true;
+			}
+
+			if (validPublishedEntity) {
+				entityObj['name'] = entityTable.getValue(nameColumn);
+
+				if (entityType == 'Cloud API'){
+					entityObj['name'] = entityTable.getValue(nameColumn) + "[v" + entityTable.getValue('version') + "]";
+				}
+
+				entityObj['sys_id'] = entityTable.getValue('sys_id');
+				entityObj['table'] = entityTable.getValue('sys_class_name');
+				publishedEntities.push(entityObj);
+			}
+		}
+
+		return publishedEntities;
+	},
+
+	getPublishedRecord:function(glideRecordTable){
+		var entityTable=new GlideRecord(glideRecordTable);
+
+		if (entityTable.isValidField('status'))
+			entityTable.addQuery('status',1);
+		if (entityTable.getTableName() == 'sn_cmp_rb_resourceblock')
+			entityTable.addQuery('is_tlr',0);
+
+		entityTable.query();
+		return entityTable;
+	},
+
+	getEntitiesAndDependentsForPack : function(packSysId){
+		var entitiesList = [];
+
+		var gr = new GlideRecord("sn_cmp_pack_dependency");
+		gr.addEncodedQuery('source_entityISEMPTY^pack='+packSysId);
+
+		gr.query();
+
+		while (gr.next()) {
+			var entity = {};
+			entity['entityName'] = gr.getValue('dep_entity');
+			entity['entityType'] = gr.getValue('dep_entity_type');
+			entity['id'] = gr.getValue('sys_id');
+			var dependencies = [];
+			this.getUniqueDependenciesForSourceEntity(gr.getValue('dep_entity'), packSysId, dependencies);
+			entity['dependencies'] = dependencies;
+
+			entitiesList.push(entity);
+		}
+
+		return entitiesList;
+	},
+
+	getUniqueDependenciesForSourceEntity : function(srcEntityTag, packId, dependencies){
+		//Have to check this method. This may fail if the same source tag exists for different entity types.
+		//eg:) Blueprint Apache, Resource Block Apache.
+
+		var packOrder = ['MID Scripts', 'Cloud API', 'Resource Block', 'Blueprint', 'Pool', 'Policy', 'Cloud Script', 'Cloud Script Template'];
+
+		for (var j in packOrder) {
+			var gr = new GlideRecord("sn_cmp_pack_dependency");
+			gr.addEncodedQuery('source_entityISNOTEMPTY^pack='+packId+'^tag='+srcEntityTag+'^dep_entity_type='+packOrder[j]);
+			gr.query();
+
+			while (gr.next()) {
+				var depEntityName = gr.getValue('dep_entity');
+				var depEntityType = gr.getValue('dep_entity_type');
+				var dependentExists = false;
+				for (var i in dependencies) {
+					if (dependencies[i].dependentEntityName == depEntityName && dependencies[i].dependentEntityType == depEntityType) {
+						dependentExists = true;
+						break;
+					}
+				}
+				if (!dependentExists) {
+					var dependency = {};
+					var packItemData = this.getPackItemData(packId, depEntityType, depEntityName);
+					dependency['dependentEntityName'] = depEntityName;
+					dependency['dependentEntityType'] = depEntityType;
+					dependency['includeInPack'] = gr.getValue('include_in_pack');
+					dependency['packItemData'] = packItemData;
+					dependencies.push(dependency);
+				}
+			}
+		}
+	},
+
+	getDependenciesForSourceEntity : function(srcEntityTag, packId, dependencies){
+		//Have to check this method. This may fail if the same source tag exists for different entity types.
+		//eg:) Blueprint Apache, Resource Block Apache.
+
+		var gr = new GlideRecord("sn_cmp_pack_dependency");
+		gr.addEncodedQuery('source_entityISNOTEMPTY^pack='+packId+'^tag='+srcEntityTag);
+		gr.query();
+
+		while (gr.next()) {
+			var dependency = {};
+			dependency['dependentEntityName'] = gr.getValue('dep_entity');
+			dependency['dependentEntityType'] = gr.getValue('dep_entity_type');
+			dependency['id'] = gr.getValue('sys_id');
+			dependency['includeInPack'] = gr.getValue('include_in_pack');
+			dependencies.push(dependency);
+		}
+	},
+
+	getDependentPackItemsForSourceEntity : function(srcEntityTag, packId){
+		var dependencies = [];
+		var gr = new GlideRecord("sn_cmp_pack_dependency");
+
+		//send entity type as well here.......
+		//If the same pack has 2 different entity types and each with same entity name, get dependencies based on tag will not work (UI)
+
+		gr.addEncodedQuery('source_entityISNOTEMPTY^include_in_pack=true^pack='+packId+'^tag='+srcEntityTag);
+		gr.query();
+
+		while (gr.next()) {
+			var dependency = {};
+			dependency['dependentEntityName'] = gr.getValue('dep_entity');
+			dependency['dependentEntityType'] = gr.getValue('dep_entity_type');
+			dependency['sourceEntityName'] = gr.getValue('source_entity');
+			dependency['sourceEntityType'] = gr.getValue('source_entity_type');
+			dependencies.push(dependency);
+		}
+		return dependencies;
+	},
+
+	getAllPackItems : function(packId){
+		var pack = {};
+		var existingPackItems = [];
+		var newPackItems = [];
+		packItemRecord.addQuery("pack", packId);
+		packItemRecord.query();
+		while (packItemRecord.next()) {
+			var packItem = {};
+			var entityType = packItemRecord.getValue('entity_type');
+			var entityName = packItemRecord.getValue('name');
+			var entityExists = this.checkPackItemInTarget(entityType, entityName);
+
+			packItem['entityType'] = entityType;
+			packItem['entityName'] = entityName;
+			packItem['order'] = packItemRecord.getValue('order');
+			packItem['packItemData'] = packItemRecord.getValue('pack_item_data');
+			packItem['packItem']   = packItemRecord.getValue('sys_id');
+			packItem['entityExists'] = entityExists;
+
+			if(entityExists){
+				packItem['userAction'] = 'Skip';
+				existingPackItems.push(packItem);
+			} else {
+				packItem['userAction'] = 'Deploy';
+				newPackItems.push(packItem);
+			}
+		}
+		pack['existingPackItems'] = existingPackItems;
+		pack['newPackItems'] = newPackItems;
+		pack['pack'] = packId;
+		return pack;
+	},
+
+	checkPackItemInTarget : function(entityType, entityName){
+		var entityExists = false;
+		var entityObject;
+		if( entityType == 'Blueprint' ) {
+			entityObject = CMPPackDependencyUtil.getBlueprintObject(entityName);
+		}
+		else if( entityType == 'Resource Block' ) {
+			entityObject = CMPPackDependencyUtil.getResourceBlockObject(entityName);
+		}
+		else if( entityType == 'Cloud API' ) {
+			entityObject = CMPPackDependencyUtil.parseCAPIEntityAndGetObject(entityName);
+		}
+		else if( entityType == 'Cloud Script' ) {
+			entityObject = CMPPackDependencyUtil.getCloudScriptObject(entityName);
+		}
+		else if( entityType == 'Cloud Script Template' ) {
+			entityObject = CMPPackDependencyUtil.getCloudScriptTemplateObject(entityName);
+		}
+		else if( entityType == 'Pool' ) {
+			entityObject = CMPPackDependencyUtil.getPoolObject(entityName);
+		}
+		else if( entityType == 'Policy' ) {
+			entityObject = CMPPackDependencyUtil.getPolicyObject(entityName);
+		}
+		else if( entityType == 'MID Script' ) {
+			entityObject = CMPPackDependencyUtil.getMidScriptObjectByName(entityName);
+		}
+
+		if(entityObject){
+			entityExists = true;
+		}
+
+		return entityExists;
+	},
+
+	validateDeploy : function(json, summary, deploy){
+		// find the dependent entities for each pack items that has to be saved from the pack_item table which is not whitelisted.
+		// user should select atleast one action for apache resource override/skip if exists
+		// deploy if the entity doesn't exists on target and user didn't select any action
+
+		deploy = true;
+
+		var deploymentJSON = json.packItems;
+		var pack = json.pack;
+		var output = {};
+		output['deploy'] = deploy;
+		output['summary'] = summary;
+		for( var item in deploymentJSON ) {
+			output = this.checkDependenciesInDeploymentJSON(deploymentJSON[item].entityName, deploymentJSON, pack, output.summary, output.deploy, output);
+		}
+
+		return output;
+	},
+
+	deployPack : function (packJson) {
+		var deployObj = CMPPackDeployUtils.deployPack(packJson);
+		return deployObj;
+	},
+
+	createDepRecord : function (packJson) {
+		var depSysId = CMPPackDeployUtils.createDepRecord(packJson);
+		return depSysId;
+	},
+
+
+	getDeploymentRecords : function (packSysId) {
+		var record = CMPPackDeployUtils.getDeploymentRecords(packSysId);
+		return record;
+	},
+
+
+	ifDeploymentInProgress : function (packSysId) {
+		return CMPPackDeployUtils.ifDeploymentInProgress(packSysId);
+	},
+
+
+	  checkDependenciesInDeploymentJSON : function(deploymentEntity, deploymentJSON, pack, summary, deploy, output){
+		  var dependencies = this.getDependentPackItemsForSourceEntity(deploymentEntity, pack);
+
+			  for( var i in dependencies) {
+				  var deploymentEntityExists = false;
+				  for( var j in deploymentJSON){
+					  if( dependencies[i].dependentEntityName == deploymentJSON[j].entityName ){
+						  if(deploymentJSON[j].entityExists) {
+						summary += "Entity "+dependencies[i].sourceEntityName+" of type "+dependencies[i].dependentEntityName+" exists in this system. User action selected for this entity is +"+deploymentJSON[j].userAction+". Entity behaviour may change based on the your selected option.\n";
+					}
+								  deploymentEntityExists = true;
+								  break;
+							  }
+		  }
+
+			if(!deploymentEntityExists){
+				summary += "Entity "+ dependencies[i].sourceEntityName +" depends on "+ dependencies[i].dependentEntityName+" of type "+dependencies[i].dependentEntityType+".";
+
+				//if the user selection does not have the dependent entities and the same doesn't exits in the target machine, show all the dependencies to the user and deploy the same in target machine.
+
+				var entityExistsInTarget = this.checkPackItemInTarget(dependencies[i].dependentEntityType, dependencies[i].dependentEntityName);
+
+				if(entityExistsInTarget){
+
+					summary += " An entity with the same name exists in this system. Please select an option weather to override / skip. Deployment will not proceed until an option on dependent entity is selected. \n";
+			  deploy = false;
+				}else {
+					summary += " This entity needed for the deployment doesn't not exists in this system. This entity will be deployed as part of the pack. \n";
+				}
+			}
+		  }
+
+		  output['deploy'] = deploy;
+		  output['summary'] = summary;
+		  return output;
+	  },
+
+
+	getPackVersion:function(packId){
+		var packVersionList=[];
+		var packVersion=new GlideRecord('sn_cmp_pack_version');
+		packVersion.addQuery('pack',packId);
+		packVersion.orderByDesc('version_date');
+		packVersion.query();
+
+		while(packVersion.next()){
+			var packVersionObj={};
+			packVersionObj['version']= packVersion.getValue('version');
+			packVersionObj['alias']=packVersion.getValue('alias');
+			packVersionObj['versionDate']=packVersion.getDisplayValue('version_date');
+			packVersionObj['author']=packVersion.getValue('sys_created_by');
+			var attachment=new GlideRecord('sys_attachment');
+			attachment.addEncodedQuery('table_name=sn_cmp_pack_version^table_sys_id='+packVersion.getValue('sys_id'));
+			attachment.query();
+			if(attachment.next()){
+				packVersionObj['link'] = attachment.getLink();
+			} else {
+				packVersionObj['link'] = '';
+			}
+
+			packVersionList.push(packVersionObj);
+		}
+		return packVersionList;
+	},
+
+
+	getAccessValidationForPack : function (entityType, entityName){
+		var isPublished = false;
+		var havePermission = true;
+		var accessJSON ={};
+		if(entityType == 'Blueprint' | entityType == 'Resource Block') {
+			var tableObject = this.getTableDetailsForEntities(entityType);
+			var tableRecord = new GlideRecord (tableObject.tableName);
+			if (tableRecord.isValid()) {
+				tableRecord.initialize();
+				tableRecord.addQuery(tableObject.columnName,entityName);
+				tableRecord.addQuery(tableObject.status,tableObject.statusValue);
+				tableRecord.query();
+				isPublished = tableRecord.next();
+			}
+
+			gs.info ('Is the record published --'+ isPublished);
+			if (entityType == 'Blueprint') {
+				var tableRecordSecure = new GlideRecordSecure(tableObject.tableName);
+				if (tableRecordSecure.isValid()) {
+					tableRecordSecure.initialize();
+					tableRecordSecure.addQuery(tableObject.columnName,entityName);
+					tableRecordSecure.query();
+
+					if (tableRecordSecure.next()) {
+						havePermission = tableRecordSecure.canWrite();
+					}
+				}
+			}
+		}
+		accessJSON['isPublished'] = isPublished;
+		accessJSON['havePermission'] = havePermission;
+		return accessJSON;
+	},
+
+	getTableDetailsForEntities : function (entityType){
+		var entityName ;
+		var tableName ;
+		var entityTableName ='';
+		var entityJSON = {};
+		var status ='status';
+		var statusValue='1';
+		var entityColumnName ='name';
+		if (entityType == 'Cloud API'){
+			entityTableName='sn_capi_cloud_api';
+			entityColumnName = 'cloud_api_name';
+		} else if (entityType == 'Resource Block') {
+			entityTableName = 'sn_cmp_rb_resourceblock';
+		} else if (entityType == 'Blueprint'){
+			entityTableName='sn_cmp_bp_blueprint';
+		} else if (entityType == 'Cloud Script') {
+			entityTableName='sn_cfg_cloud_script';
+		} else if (entityType == 'Cloud Script Template') {
+			entityTableName='sn_cfg_cloud_script_template';
+		}
+
+		entityJSON['tableName'] = entityTableName;
+		entityJSON['columnName']=entityColumnName;
+		entityJSON['status']=status;
+		entityJSON['statusValue']=statusValue;
+		return entityJSON;
+
+	},
+
+	type: 'CMPPackUtils'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 10:57:02</sys_created_on>
+        <sys_id>1a247fe20b28030090de812f15673a35</sys_id>
+        <sys_mod_count>195</sys_mod_count>
+        <sys_name>CMPPackUtils</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1a247fe20b28030090de812f15673a35</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 19:09:20</sys_updated_on>
+    </sys_script_include>
+</record_update>

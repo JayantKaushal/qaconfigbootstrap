@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.ResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description>Class for translating raw responses from Cloud API or cloud provider into format needed by cloud CMDB model API.  Expects the raw response to be JSON formatted string coming in.  Used in response processor scripts in the Cloud Management application.</description>
+        <name>ResponseProcessor</name>
+        <script><![CDATA[var ResponseProcessor = Class.create();
+ResponseProcessor.prototype = {
+	// Potential additional parameters
+	STEP: 'step',
+	CORRELATION_ID: 'correlationId',
+	STACK_ID: 'stackId',
+	REQUEST_CONTEXT: 'requestorContext',
+	USER_ID: 'userId',
+	GROUP_ID: 'groupId',
+
+	// additionalValues expected to be object
+    initialize: function(cloudAccount, ldc, datasource, additionalValues) {
+		this.cloudAccount = cloudAccount;
+		this.ldc = ldc;
+		this.datasource = gs.nil(datasource) ? 'Cloud API' : datasource;
+		this.additionalValues = additionalValues || {};
+		this.relatedData = [];
+		this.useJavaProcessor = gs.getProperty('sn_cmp.response_mapping.use_java_processor', 'true');
+	},
+
+	addRelatedData: function(relatedData, handler) {
+		var relatedDataHandler = {};
+		relatedDataHandler.data = relatedData;
+		relatedDataHandler.relatedDataHandler = handler;
+		this.relatedData.push(relatedDataHandler);
+	},
+
+	/**
+	 * Use when have an array of objects all of the same type
+	 * type must be defined in the sn_cmp_resource_type table
+	 */
+	processResponseArray: function(responseArray, type, validator, validator_overrides, table, parentObj) {
+		if (this.useJavaProcessor == 'true') {
+			responseArray = [].concat(responseArray);
+			//delegate to java processor
+			var ret = new sn_cmp_api.ResponseMappingScript().processResponseArray(JSON.stringify(responseArray), this.cloudAccount, this.ldc, type, table, this.datasource, JSON.stringify(this.additionalValues), JSON.stringify(this.relatedData));
+			this.relatedData = []; // reset relatedData
+			return JSON.parse(ret);
+		}
+		
+		var response = [];
+		if (gs.nil(responseArray))
+			return response;
+
+		if (gs.nil(type) && gs.nil(table)) {
+			gs.error(gs.getMessage('Type/table is not supplied'));
+			return response;
+		}
+
+		responseArray = [].concat(responseArray);
+
+		for (var i = 0; i < responseArray.length; i++) {
+			var responseObject = responseArray[i];
+			if (new ResponseMapping()._isObject(responseObject)) {
+				if (parentObj) {
+					var sourceObject = {};
+					//do a deep copy of the original object
+					for (var key in responseObject)
+						sourceObject[key] = responseObject[key];
+					sourceObject.$parent_object = parentObj; //adding parentObject into payload
+					responseObject = sourceObject;
+				}
+			}			
+			
+			var responseObj = this.processResponseObject(responseObject, type, validator, validator_overrides, table);
+
+			// Something went wrong here - skip it
+			//if (global.JSUtil.isEmpty(responseObj))
+			if (this._isEmpty(responseObj))
+				continue;
+
+			response.push(responseObj);
+		}
+		return response;
+	},
+
+	processResponseForBindings : function(response, bindingObject, bindingType, endpointTable) {
+		var objects = [];
+
+		if (gs.nil(response))
+			return objects;
+
+		response = [].concat(response);
+		for (var i = 0; i < response.length; i++) {
+			var obj = {};
+			obj.attach_to = {};
+			var attachObject = obj.attach_to;
+
+			var responseObject = response[i];
+			var sourceObject = {};
+			//do a deep copy of the original object
+			for (var key in responseObject)
+				sourceObject[key] = responseObject[key];
+			sourceObject.$binding_object = bindingObject; //adding bindingObject into payload
+
+			var endpointObject = this.processResponseObject(sourceObject, null, null, null, endpointTable);
+			endpointObject = endpointObject[endpointTable];
+			// Something went wrong here - skip it
+			if (this._isEmpty(endpointObject))
+				continue;
+			if (endpointObject.identification && endpointObject.identification[endpointTable]) {
+				var criterion = endpointObject.identification[endpointTable].criterion;
+				if (!criterion)
+					continue;
+				var endpointIdentification = {};
+				for (var ID in criterion) 
+					endpointIdentification[ID] = criterion[ID];
+				
+				delete endpointObject.identification;
+				endpointObject.endpoint_ci = endpointTable;
+				endpointObject.endpoint_identification = endpointIdentification;
+				if (bindingType == 'use')
+					attachObject.used_by = endpointObject;
+				else if (bindingType == 'implement')
+					attachObject.implemented_by = endpointObject;
+				else
+					continue;
+
+				objects.push(obj);
+			}
+		}
+		return objects;
+	},
+
+	processResponseObject: function(responseObj, type, validator, validator_overrides, table) {
+		if (this.useJavaProcessor == 'true') {
+			//delegate to java processor
+			var ret = new sn_cmp_api.ResponseMappingScript().processResponseObject(JSON.stringify(responseObj), this.cloudAccount, this.ldc, type, table, this.datasource, JSON.stringify(this.additionalValues), JSON.stringify(this.relatedData));
+			this.relatedData = []; // reset relatedData
+			ret = JSON.parse(ret);
+			if (ret && typeof ret === 'object')
+				return ret;
+			else
+				return {};
+		}
+		var response = {};
+
+		if (gs.nil(responseObj))
+			return response;
+
+		if (gs.nil(type) && gs.nil(table)) {
+			gs.error(gs.getMessage('Type/table is not supplied'));
+			return response;
+		}
+
+		if (gs.nil(table)) {
+			table = this._getTable(type);
+
+			if (gs.nil(table)) {
+				gs.error(gs.getMessage('Table not found for type {0}',[type]));
+				return response;
+			}
+		}
+
+		var tableObj = this.processObject(responseObj, type, validator, validator_overrides, table);
+		if (this._isEmpty(tableObj))
+			return {};
+
+		response[table] = tableObj;
+
+		return response;
+	},
+
+	processObject: function(responseObj, type, validator, validator_overrides, table) {
+		if (gs.nil(type) && gs.nil(table)) {
+			gs.error(gs.getMessage('Type/table is not supplied'));
+			return {};
+		}
+
+		if (gs.nil(table)) {
+			table = this._getTable(type);
+			if (gs.nil(table)) {
+				gs.error(gs.getMessage('Table not found for type {0}',[type]));
+				return {};
+			}
+		}
+
+		var tableObj = {};
+
+		if (gs.nil(responseObj))
+			return tableObj;
+
+		this.responseMapping = new sn_cmp.ResponseMapping(this.datasource, table);
+		var attributes = this.responseMapping.getAttributes(responseObj);
+
+		if (this._isEmpty(attributes))
+			return {};
+
+		if (!gs.nil(validator)) {
+			tableObj.validator = validator;
+			tableObj.validator_overrides = validator_overrides || {};
+		}
+
+		var identification = this._getIdentification(table, attributes);
+		if (this._isEmpty(identification))
+			return {};
+		tableObj.identification = identification;
+		delete attributes['$additional_identifier'];//remove addtional attributes
+		tableObj.attributes = attributes;
+
+		var relatedObjects = this.responseMapping.getRelatedObjects(responseObj,
+														  this.cloudAccount,
+														  this.ldc);
+		if (!this._isEmpty(relatedObjects))
+			tableObj.relationships = relatedObjects;
+
+		var bindingObjects = this.responseMapping.getBindingObjects(responseObj,
+														  this.cloudAccount,
+														  this.ldc);
+		if (!this._isEmpty(bindingObjects))
+			tableObj.bindings = bindingObjects;
+
+		if (type) {
+			var tagValues = this.responseMapping.getTagValues(responseObj, type);
+			if (!gs.nil(tagValues))
+				tableObj.tagValues = tagValues;
+		}
+
+		// If we are processing the response of a dynamic discovery step (injected for
+		// provisioning of a cloud template), we want to put some information that will
+		// later be used to add the generated CI to the stack, assign it, etc
+		if ((this.additionalValues.hasOwnProperty(this.STEP) &&
+			!gs.nil(this.additionalValues[this.STEP])) &&
+			(this.additionalValues.hasOwnProperty(this.CORRELATION_ID) &&
+			 !gs.nil(this.additionalValues[this.CORRELATION_ID])) &&
+			(this.additionalValues.hasOwnProperty(this.STACK_ID) &&
+			 !gs.nil(this.additionalValues[this.STACK_ID]))) {
+
+			var stepObj = global.JSON.parse(this.additionalValues[this.STEP]);
+
+			if (stepObj.dynamicOrc) {
+				var stackItemObj = {};
+				stackItemObj.correlation_id = this.additionalValues[this.CORRELATION_ID];
+				stackItemObj.step = stepObj;
+				stackItemObj.cloud_account = this.cloudAccount;
+				this.addRelatedData(stackItemObj, 'AddCIToStack');
+
+				if (this.additionalValues.hasOwnProperty(this.REQUEST_CONTEXT)) {
+					var ciUserData = {};
+					var reqContext = global.JSON.parse(this.additionalValues[this.REQUEST_CONTEXT]);
+					ciUserData.user_id = reqContext[this.USER_ID];
+					ciUserData.group_id = reqContext[this.GROUP_ID];
+					this.addRelatedData(ciUserData, 'SetCIUserAndGroup');
+				}
+			}
+		}
+
+		// Only put this in and reset it if there is data
+		if (!gs.nil(this.relatedData) && this.relatedData.length > 0) {
+			tableObj.ciRelatedData = this.relatedData;
+
+			// reset for next object
+			this.relatedData = [];
+		}
+
+		return tableObj;
+	},
+
+	_getTable: function(type) {
+		var gr = new GlideRecord('sn_capi_resource_type');
+		gr.addQuery('name', type);
+		gr.query();
+
+		if (gr.next() && gr.isValidField(('ci_class')))
+			return '' + gr.ci_class;
+
+		return '';
+	},
+
+	_getIdentification: function(table, attributes) {
+		var id = {};
+		if (this.cloudAccount)
+		id.cmdb_ci_cloud_service_account = this._getCloudAccountId();
+		if (this.ldc)
+			id[this._getLDCClassName()] = this._getLDCId();
+		var typeId = this._getTypeId(table, attributes);
+		if (this._isEmpty(typeId))
+			return {};
+		for (var tableName in typeId)
+			id[tableName] = typeId[tableName];
+
+		return id;
+	},
+
+	_getCloudAccountId: function() {
+		var id = {};
+		var criterion = {};
+		criterion.object_id = this.cloudAccount;
+		id.criterion = criterion;
+		return id;
+	},
+
+	_getLDCId: function() {
+		var id = {};
+		var criterion = {};
+		criterion.object_id = this.ldc;
+		id.criterion = criterion;
+		return id;
+	},
+
+	_getLDCClassName: function() {
+		var className = 'cmdb_ci_logical_datacenter';
+
+		var acctGr = new GlideRecord('cmdb_ci_cloud_service_account');
+		acctGr.addQuery('object_id', this.cloudAccount);
+		acctGr.query();
+
+		var ldcGr = new GlideRecord('cmdb_ci_logical_datacenter');
+		ldcGr.addQuery('object_id', this.ldc);
+		ldcGr.query();
+
+		var ids = [];
+		while (ldcGr.next())
+			ids.push('' + ldcGr.sys_id);
+
+		if (acctGr.next()) {
+			var gr = new GlideRecord('cmdb_rel_ci');
+			gr.addQuery('child.sys_id', '' + acctGr.sys_id);
+			gr.addQuery('type.name', 'Hosted on::Hosts');
+			gr.addQuery('parent.sys_id', 'IN', ids.toString());
+			gr.query();
+
+			if (gr.next())
+				className = '' + gr.parent.sys_class_name;
+		}
+
+		return className;
+	},
+
+	_getTypeId: function(table, attributes) {
+		var id = {};
+
+		var idAttributes = this.responseMapping.getIdAttributes();
+
+		for (var tableName in idAttributes) {
+			var attributeNames = idAttributes[tableName];
+			id[tableName] = {};
+			var criterion = {};
+			var attributeName;
+			var index;
+
+			if (table == tableName){//identifier is for its own type
+				for (index=0; index<attributeNames.length; index++) {
+					attributeName = attributeNames[index];
+
+					// Check to make sure there is an attribute value
+					if (!attributes.hasOwnProperty(attributeName) || !attributes[attributeName]) {
+						// this is an error - abort
+						return {};
+					} else
+						criterion[attributeName] = attributes[attributeName];
+				}
+			} else {//identifier is for different type
+				for (index=0; index<attributeNames.length; index++) {
+					attributeName = attributeNames[index];
+
+					// Check to make sure there is an attribute value
+					if (!attributes.$additional_identifier[tableName] || !attributes.$additional_identifier[tableName].hasOwnProperty(attributeName) || !attributes.$additional_identifier[tableName][attributeName]) {
+						// this is an error - abort
+						return {};
+					} else
+						criterion[attributeName] = attributes.$additional_identifier[tableName][attributeName];
+				}
+			}
+
+			id[tableName].criterion =criterion;
+		}
+		return id;
+	},
+
+	_isArray: function(testObject) {
+		return !gs.nil(testObject) && !(testObject.propertyIsEnumerable('length')) &&
+			typeof testObject === 'object' && typeof testObject.length === 'number';
+	},
+
+	_isEmpty: function(item) {
+		var result = true;
+
+		if (gs.nil(item))
+			return true;
+
+		for (var i in item) {
+			result = false;
+			break;
+		}
+
+		return result;
+	},
+
+    type: 'ResponseProcessor'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-11-13 17:25:45</sys_created_on>
+        <sys_id>d93bc3359fc3220048111f80a57fcf30</sys_id>
+        <sys_mod_count>159</sys_mod_count>
+        <sys_name>ResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d93bc3359fc3220048111f80a57fcf30</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-01 01:31:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

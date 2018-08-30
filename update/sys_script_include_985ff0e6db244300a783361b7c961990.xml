@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureAlertHandlerV2</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureAlertHandlerV2</name>
+        <script><![CDATA[var AzureAlertHandlerV2 = Class.create();
+AzureAlertHandlerV2.prototype = Object.extendsObject(CloudEventHandler, {
+	_initValidation: function(activityLog, subscriptionId, credential, response) {
+		var action = activityLog.operationName;
+		if (action){
+			response.event_name = action;
+		} else {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot get action from event');
+			return false;
+		}
+		
+		this.resourceType = this.getResourceType(activityLog);
+		if (!this.resourceType) {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot get resource type from event: {0}', [action]);
+			return false;
+		}
+		
+		this.resourceTypeGr = this._getResourceTypeGr(this.resourceType);
+		if (!this.resourceTypeGr) {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot get resource type record from resource type: {0}', [this.resourceType]);
+			return false;
+		}
+		
+		if (!credential) {
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('Cannot get credential for service account: {0}', [subscriptionId]);
+				return false;
+		}		
+		return true;
+	},	
+
+	_invokePattern: function(configObj, response) {
+		//Initialize the response
+		response.state = 'processing';
+		response.discovery_status = null;
+		response.error_message = "";
+	
+		var cloudPatternInvocation = new sn_cmp.CloudPatternInvocation();
+		var result = cloudPatternInvocation.eventBasedDiscovery(configObj, response);
+
+		if (result){
+			//For sucess invocation the state | error_mesaage will be update in HorizontalDiscoveryResultHandler.finalizeCloudChangeEvent() 
+			//Will be determine if the pattern is success or not										
+		}else {
+			response.state = (response.state) ? response.state : 'error';
+			response.error_message =  (response.error_message) ? response.error_message : gs.getMessage('Cannot invoke pattern discovery for: {0}', [JSON.stringify(configObj , null, 2)]);
+		}							
+	},
+	
+	processEvent : function(headersStr, bodyStr, queryParamsStr, eventId) {
+		var response = {};
+		var json = new global.JSON();
+		var headers = json.decode(headersStr);
+		var body = json.decode(bodyStr);
+		var queryParams = json.decode(queryParamsStr);
+		
+		var context = body.data.context;
+		var activityLog = context.activityLog;
+		var action = activityLog.operationName;
+		var subscriptionId = activityLog.subscriptionId;
+		var status = activityLog.status;
+		var resourceGroup = activityLog.resourceGroupName;
+		var resourceId = activityLog.resourceId;
+		var timestamp = activityLog.eventTimestamp;
+		var credential = this._verifyCredential(subscriptionId);
+		
+		var isValid = this._initValidation(activityLog, subscriptionId, credential, response);
+		if (!isValid) {
+			return response;
+		}
+		
+		var resourceType = this.resourceType;
+		var resourceTypeGr = this.resourceTypeGr;
+		var invocationPatternId = this._getPatternId(resourceType);
+		var ciClassType = this._getClassTypeId(resourceType);
+		var actionType = action.substring(action.lastIndexOf("/")+1).toUpperCase();		
+
+		if (invocationPatternId) {	
+			//Prepare the mandatory parameters to pass to the pattern context
+			var configObj = {
+				changeType : actionType,
+				classType: ciClassType,
+				accountId: subscriptionId,
+				ldc: "westus", //region of the rules doesn't matter, set it to westus,
+				inputObjectId: resourceId,
+				cloudId: resourceId,
+				patternId: invocationPatternId,
+				eventId: eventId,
+				eventType: "AZURE",
+				eventData: JSON.stringify(context)
+			};	
+			this._invokePattern(configObj, response);
+		} else {
+			if (action.indexOf('delete') > 0) {
+				response.ci = this.markCITerminated(resourceId, resourceTypeGr.ci_class);
+				response.state = "processed";
+			} else {
+				var gr = new GlideRecord('sn_cmp_resource_type_operation');
+				if (!gr.get('resource_type.name', resourceType) || gs.nil(gr.discovery_operation)) {
+					response.state = 'skipped';
+					response.error_message = gs.getMessage('Cannot get discovery operation for resource type: {0}', [resourceType]);
+					return response;
+				}
+
+				var operation = gr.discovery_operation;
+				if (!operation) {
+					response.state = 'skipped';
+					response.error_message = gs.getMessage('Cannot get discovery operation for resource type: {0}', [resourceType]);
+					return response;
+				}
+				var operationName = operation.name+'';
+				var interfaceName = operation["interface"].name+'';
+
+				this.executeCAPI(subscriptionId, interfaceName, operationName, resourceId, credential, eventId, resourceTypeGr.ci_class+'');
+				//set state to processing, wait for sn_cmp_order to update event
+				response.state = "processing";
+			}		
+		}	
+			
+		response.resource_id = resourceId;
+		if (resourceTypeGr)
+			response.resource_type = resourceTypeGr.getUniqueValue();
+		response.resource_block = this._getResourceblock(resourceTypeGr.getUniqueValue());
+		return response;
+	},
+	
+	getResourceType: function(activityLog) {
+		var type = '';
+		var action = activityLog.operationName;
+		
+		//in case of delete event, the resource type from activity can be Microsoft.Resources/subscriptions/resourceGroups
+		//event though the actual resource being deleted can be something else "i.e. Microsoft.Network/publicIPAddresses"
+		//this is becuase the resource is deleted through resource group deletion
+		//then we need to derive the actual resource type from action
+		if (action.indexOf('delete') > 0) {
+			var regex = /(.+)\//;
+			var match = regex.exec(action);
+			if (match && match.length > 0)
+				type = match[1];
+		} else
+			type = activityLog.resourceType;
+		
+		return type;
+	},
+	
+	markCITerminated : function(resourceId, ciClass) {
+		var ciGR;
+		if (ciClass) 
+			ciGR = new GlideRecord(ciClass);
+		else
+			ciGR = new GlideRecord('cmdb_ci_vm_object');
+		if (ciGR.get('object_id', resourceId)) {			
+			new CMPReconciler().retireCI(ciGR);
+			return ciGR.getUniqueValue();			
+		}
+		return '';
+	},
+	
+	executeCAPI : function(subscriptionId, interfaceName, operationName, resourceId, credential, eventId, resourceTable) {
+		//var region = "westus"; //region of the rules doesn't matter, set it to westus
+		var result = {};
+		result.userId = gs.getUserID();
+		result.operationName = interfaceName+'.'+operationName;
+		result.entityType = "Resource";
+		result.resource = "Azure Datacenter";
+		result.status = "Initialized";
+		result.ownerTable = "sn_cmp_cloud_event";
+		result.ownerInstanceId = eventId;
+		result.contextTable = "sn_cmp_rb_resourceblock";
+		result.contextInstance = "ddf5cd6bd722220097eb6ccf6e610346";//azure DC
+		var date = new GlideDateTime();
+		result.orderDate = date.getValue();
+		var orderFormData = {};
+		orderFormData.CloudServiceAccountId = subscriptionId;
+		//orderFormData.ResourceGroup = resourceGroupName;
+		//orderFormData.Location = region;
+		orderFormData.Interface = interfaceName;
+		orderFormData.Credential = credential;
+		orderFormData.ObjectID = resourceId;
+		orderFormData.resourceTable = resourceTable;
+		
+		result.orderFormData = orderFormData;
+		var os = new sn_cmp_api.OrderServiceScript();
+		var order = os.submitOrder(new global.JSON().encode(result));
+	},
+		
+	type: 'AzureAlertHandlerV2'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>yuedong.huang@snc</sys_created_by>
+        <sys_created_on>2017-08-15 21:46:41</sys_created_on>
+        <sys_id>985ff0e6db244300a783361b7c961990</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>AzureAlertHandlerV2</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_985ff0e6db244300a783361b7c961990</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-28 22:51:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_policy_action">
+    <sys_ui_policy_action action="INSERT_OR_UPDATE">
+        <cleared>false</cleared>
+        <disabled>true</disabled>
+        <field>body</field>
+        <mandatory>false</mandatory>
+        <sys_class_name>sys_ui_policy_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-21 07:04:23</sys_created_on>
+        <sys_id>30de64d00bb403004d93294863673a9b</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>body</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_policy_action_30de64d00bb403004d93294863673a9b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-26 05:51:59</sys_updated_on>
+        <table>sn_cmp_cloud_template</table>
+        <ui_policy display_value="Hide body when URL selected">72eeee7b0ba003004d93294863673a2f</ui_policy>
+        <visible>true</visible>
+    </sys_ui_policy_action>
+</record_update>

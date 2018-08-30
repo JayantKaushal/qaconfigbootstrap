@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sn_cmp_wl_cfg_mgmt_provider" label="Chef Server" max_length="40" name="sn_cfg_chef_server" type="collection">
+        <element label="Default" max_length="40" name="is_default" type="boolean"/>
+    </element>
+</database>

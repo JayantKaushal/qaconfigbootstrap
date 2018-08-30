@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Order Step Result Chunk" max_length="40" name="sn_cmp_order_step_result_chunk" type="collection">
+        <element label="Chunk Number" max_length="40" name="chunk_number" type="integer"/>
+        <element label="Is Error" max_length="40" name="is_error" type="boolean"/>
+        <element label="Order Step" max_length="32" name="order_step" reference="sn_cmp_order_step_status" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Output Chunk" max_length="4000" name="output_chunk" type="string"/>
+        <element label="Total Chunks" max_length="40" name="total_chunks" type="integer"/>
+        <index name="index">
+            <element name="order_step"/>
+        </index>
+        <index name="index2">
+            <element name="order_step"/>
+            <element name="chunk_number"/>
+        </index>
+    </element>
+</database>

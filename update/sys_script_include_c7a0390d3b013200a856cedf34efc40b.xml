@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetResourceBlockGuestInterfaceAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetResourceBlockGuestInterfaceAction</name>
+        <script><![CDATA[var CMPGetResourceBlockGuestInterfaceAction = Class.create();
+CMPGetResourceBlockGuestInterfaceAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.rb_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetResourceBlockGuestInterfaceAction.doAction: Undefined resource block Id",
+					null
+				);
+			}
+			var rbServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			//var guestInterfaceJSON = rbServiceScript.getGuestInterfaceByResourceBlockName(params.rb_name);
+			////var guestInterfaceList = new global.JSON().decode(guestInterfaceJSON);
+			
+			
+			var gr = new GlideRecord('sn_cmp_rb_guest_interface');
+			if(params.rb_id || params.rb_id != "")
+				gr.addQuery("resource", params.rb_id);
+			gr.orderBy('guestinterface');
+			gr.query();
+			var guestInterfaceList = [];
+			while (gr.next()) {
+				var rbObj = {};
+				rbObj.id = gr.getValue('guestinterface');
+				rbObj.resource = gr.getDisplayValue('resource');
+				rbObj.guestinterface = gr.getDisplayValue('guestinterface');	
+				rbObj.interfaceType = gr.guestinterface.type+"";
+				guestInterfaceList.push(rbObj);
+			}
+			return guestInterfaceList;
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all guest interface."),
+				"CMPGetResourceBlockGuestInterfaceAction.doAction(): Failed to get all guest interface",
+				error
+			);
+		}
+    },
+    type: 'CMPGetResourceBlockGuestInterfaceAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-18 10:03:15</sys_created_on>
+        <sys_id>c7a0390d3b013200a856cedf34efc40b</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>CMPGetResourceBlockGuestInterfaceAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c7a0390d3b013200a856cedf34efc40b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-11-21 10:14:08</sys_updated_on>
+    </sys_script_include>
+</record_update>

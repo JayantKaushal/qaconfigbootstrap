@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_param">
+    <sn_cmp_rb_op_impl_param action="INSERT_OR_UPDATE">
+        <applicable_to/>
+        <datasource/>
+        <datasourcevalue>${parameter.ClusterDatastore}</datasourcevalue>
+        <defaultvalue/>
+        <error_text/>
+        <help_text/>
+        <host/>
+        <ismandatory>true</ismandatory>
+        <name>ClusterDatastore</name>
+        <operation display_value="ConnectAndCreateVirtualMachine">d5c905360b632200e937c97193673aec</operation>
+        <order/>
+        <read_only>false</read_only>
+        <regex/>
+        <step/>
+        <sys_class_name>sn_cmp_rb_op_impl_param</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-16 11:50:57</sys_created_on>
+        <sys_id>197f08e667d03200790a6c706785ef04</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ClusterDatastore</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_param_197f08e667d03200790a6c706785ef04</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-16 11:50:57</sys_updated_on>
+        <ui_data_type/>
+        <value/>
+        <visibilty>false</visibilty>
+    </sn_cmp_rb_op_impl_param>
+</record_update>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_tlr_op_attr">
+    <sn_cmp_tlr_op_attr action="INSERT_OR_UPDATE">
+        <applicable_to/>
+        <attribute>BusinessService</attribute>
+        <data_source_type>Reference</data_source_type>
+        <data_source_value>cmdb_ci_service</data_source_value>
+        <defaultvalue>${parameter.BusinessService}</defaultvalue>
+        <error_text/>
+        <help_text/>
+        <mandatory>false</mandatory>
+        <operation>Provision</operation>
+        <order>121</order>
+        <parameter_type>1</parameter_type>
+        <regex/>
+        <sys_class_name>sn_cmp_tlr_op_attr</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-05 07:32:11</sys_created_on>
+        <sys_id>eaca263a930832004a9032bfa67ffbac</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>BusinessService</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_tlr_op_attr_eaca263a930832004a9032bfa67ffbac</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-12 10:11:03</sys_updated_on>
+        <template_type/>
+        <value/>
+        <visible>true</visible>
+    </sn_cmp_tlr_op_attr>
+</record_update>

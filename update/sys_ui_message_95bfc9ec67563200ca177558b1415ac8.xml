@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Policy Condition Info Message</key>
+        <language>en</language>
+        <message>Condition is not editable in published mode.</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-19 21:30:40</sys_created_on>
+        <sys_id>95bfc9ec67563200ca177558b1415ac8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Policy Condition Info Message</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_95bfc9ec67563200ca177558b1415ac8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-19 21:30:40</sys_updated_on>
+    </sys_ui_message>
+</record_update>

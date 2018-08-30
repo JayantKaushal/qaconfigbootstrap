@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>cloudHttpRestService</name>
+        <script><![CDATA[function cloudHttpRestService($http, $q){
+	
+	function get(url, data) {		
+		return callRest(url, data, "GET");
+	}
+	
+	function post(url, data) {
+		return callRest(url, data, "POST");
+	}
+	
+	function callRest(url, data, method) {
+		if(!method || !url) {
+			return;
+		}
+		data = data || {};
+		if(method.toUpperCase() == "GET") {
+			var keys = Object.keys(data);
+			if(keys.length > 0) {
+				url += "?"+keys[0]+"="+data[keys[0]];
+			
+				for(var i = 1; i < keys.length; i++) {
+					url += "&"+keys[i]+"="+data[keys[i]];
+				}
+			}
+			return _getAnyCall(url);
+		}
+		return _postPutAnyCall(url, data, "application/json", method);
+	}
+	
+	function _postPutAnyCall(url, data, contentType, postOrPut) {	
+		var req = {
+				method: postOrPut,
+				url: url,
+				headers: {
+					"Content-Type": contentType
+				},
+				data: data
+		};
+		return _request(req);
+	}
+	
+	function _getAnyCall(url) {
+		var req  = {
+				method: "GET",
+				url: url,
+				headers: {
+					"Cache-Control": "no-cache, no-store, must-revalidate",
+					"Pragma": "no-cache",
+					"Expires" : "0"
+				}
+		};
+		return _request(req);
+	}
+
+	function _request(req) {
+		var defer = $q.defer();
+		$http(req)
+		.success(function(response) {
+			handleSuccessResponse(response, req.url, defer);
+		})
+		.error(function(response, status) {
+			defer.reject(response, status);
+		});
+
+		return defer.promise;
+	}
+
+	function handleSuccessResponse(response, url, defer) {
+		if (hasError(response, url)) {
+			if (response.result.error)
+				defer.reject(angular.fromJson(response.result.error));
+			else
+				defer.reject(response.result.error_message);
+		} else {
+			defer.resolve(response.data || response.result);
+		}
+	}
+
+	function hasError(response, url) {
+		if (typeof response === "string" && response.lastIndexOf("<!DOCTYPE html>", 0) === 0) {
+			return true;
+		}
+
+		if(response.hasOwnProperty("result") && response.result.status == "failure")
+			return true;
+
+        return response.hasOwnProperty("error");
+	}
+
+	function encodePostData(obj) {
+		var encodedDataArray = [];
+		for (var key in obj) {
+			encodedDataArray.push(key + "=" + encodeURIComponent(obj[key]));
+		}
+		return encodedDataArray.join("&");
+	}
+	
+	return {
+		get: get,
+		post: post,
+		callRest:callRest
+	};	
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-19 05:05:11</sys_created_on>
+        <sys_id>a96e7dcf0b97130034a02f15d6673a24</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>cloudHttpRestService</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_a96e7dcf0b97130034a02f15d6673a24</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-19 17:49:33</sys_updated_on>
+        <type>service</type>
+    </sp_angular_provider>
+</record_update>

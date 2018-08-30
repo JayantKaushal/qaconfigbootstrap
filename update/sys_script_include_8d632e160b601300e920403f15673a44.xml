@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCredentialChoices</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCredentialChoices</name>
+        <script><![CDATA[var CMPCredentialChoices = Class.create();
+CMPCredentialChoices.prototype = {
+    initialize: function() {
+    },
+
+	process: function() {
+		var childTables = [];
+
+		this.getChildTables('discovery_credentials',childTables);
+		this.getChildTables('cloud_credential',childTables);
+
+		return childTables;
+	},
+
+	getChildTables: function(parentTableName,childTables) {
+		var parentTableGR = new GlideRecord('sys_db_object');
+		parentTableGR.query('name', parentTableName);
+		if( parentTableGR.next()) {
+			var childTableGR = new GlideRecord('sys_db_object');
+			childTableGR.addQuery( 'super_class', parentTableGR.getUniqueValue());
+			childTableGR.query();
+			while( childTableGR.next()){
+				childTables.push( childTableGR.getValue('name'));
+			}
+		}
+		return childTables;
+	},
+	
+    type: 'CMPCredentialChoices'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-02 06:39:27</sys_created_on>
+        <sys_id>8d632e160b601300e920403f15673a44</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPCredentialChoices</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_8d632e160b601300e920403f15673a44</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 21:46:41</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="discovery_probes">
+    <discovery_probes action="INSERT_OR_UPDATE">
+        <cache_results>false</cache_results>
+        <classic_mode>false</classic_mode>
+        <description>This an cloud management billing probe that executes the CmpBillingProbe MID Server script include.</description>
+        <ecc_queue_name>CmpBillingProbe</ecc_queue_name>
+        <ecc_queue_source/>
+        <ecc_queue_topic>JavascriptProbe</ecc_queue_topic>
+        <host_classification>false</host_classification>
+        <major_version>1</major_version>
+        <minor_version>0</minor_version>
+        <name>CMP - Billing</name>
+        <post_processor_script/>
+        <script/>
+        <sys_class_name>discovery_probes</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 18:11:51</sys_created_on>
+        <sys_id>f30e8b23935a22004a9032bfa67ffbf8</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CMP - Billing</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>discovery_probes_f30e8b23935a22004a9032bfa67ffbf8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-05 23:05:02</sys_updated_on>
+        <type>Java</type>
+        <used_by_discovery>false</used_by_discovery>
+        <used_by_runbook>true</used_by_runbook>
+    </discovery_probes>
+</record_update>

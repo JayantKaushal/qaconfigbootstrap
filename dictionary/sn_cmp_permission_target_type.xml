@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="CMP Permission Target Type" max_length="40" name="sn_cmp_permission_target_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Table name for permission entities" label="Table Name" mandatory="true" max_length="100" name="table_name" type="string" unique="true"/>
+        <index name="index">
+            <element name="table_name"/>
+        </index>
+    </element>
+</database>

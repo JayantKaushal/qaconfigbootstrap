@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getObjectsByLDC</name>
+        <resource_pool display_value="NetworkPool">493012d00b003200e937c97193673adb</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var filteredRecords = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		
+		var networkDC = getDC(map.Location);
+		
+		if (networkDC == 'cmdb_ci_azure_datacenter') {
+		filteredRecords = new sn_cmp_api.ExpressionResolverUtilScript().getValueTypesForMetaDataRelation(map.Location,'Hosts','cmdb_ci_network', 'flat', 1,'name'); 
+		}
+		else {
+			filteredRecords = new sn_cmp_api.ExpressionResolverUtilScript().getValueTypesForMetaDataRelation(map.Location,'Hosts','cmdb_ci_network', 'flat', 1,'object_id');
+		}
+		
+	} else{
+		gs.error("input json is blank - "+json);
+	}
+	return filteredRecords;
+}
+
+function getDC(network_SysId) {
+	var grLdc = new GlideRecord('cmdb_ci_logical_datacenter');
+	    grLdc.addQuery('sys_id',network_SysId);
+        grLdc.query();
+		if (grLdc.next()) {
+        return grLdc.getValue('sys_class_name');
+	  }
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-10-10 10:24:57</sys_created_on>
+        <sys_id>1d0cbe900b7103005556294863673a0e</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>getObjectsByLDC</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_1d0cbe900b7103005556294863673a0e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-05 07:57:16</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

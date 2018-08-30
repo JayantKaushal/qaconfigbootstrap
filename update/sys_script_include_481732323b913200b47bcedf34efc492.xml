@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetCapiInterfaceIdAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetCapiInterfaceIdAction</name>
+        <script><![CDATA[var CMPGetCapiInterfaceIdAction = Class.create();
+CMPGetCapiInterfaceIdAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.capiProductId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetCapiInterfaceIdAction.doAction: Undefined CAPI Product Id",
+					null
+				);
+			}
+			
+			var grCapiProduct = new GlideRecord('sn_capi_product');
+			var getProductId = params.capiProductId;
+			var getCategoryId = '';
+			if(params.capiProductId || params.capiProductId != "")
+				grCapiProduct.addQuery("sys_id", params.capiProductId);
+			grCapiProduct.query();
+			
+			if(grCapiProduct.next()) {
+				getCategoryId = grCapiProduct.getValue('category');
+			}
+			
+			var gr = new GlideRecord('sn_capi_cloud_api');
+				//Using for add operation steps
+				if(!gs.nil(getProductId))
+					gr.addQuery("provider", getProductId);
+			    if(!gs.nil(getCategoryId))
+					gr.addQuery("category", getCategoryId);
+			gr.query();
+			var getMatchedCapiList = [];
+			while(gr.next()) {
+				var capiCloudAPI = {};
+				capiCloudAPI.cloudApiId = gr.getValue('sys_id');
+				capiCloudAPI.cloudApiName = gr.getValue('cloud_api_name');
+				capiCloudAPI.cloudApiInterfaceId = gr.getValue('cloud_api_interface');
+				capiCloudAPI.categoryId = gr.getValue('category');
+				capiCloudAPI.providerId = gr.getValue('provider');
+				getMatchedCapiList.push(capiCloudAPI);
+			}
+			return getMatchedCapiList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get CAPI Info"),
+				"CMPGetCapiInterfaceIdAction.doAction(): Failed to get CAPI Info",
+				error
+			);
+		}
+    },
+    type: 'CMPGetCapiInterfaceIdAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-08 11:50:30</sys_created_on>
+        <sys_id>481732323b913200b47bcedf34efc492</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPGetCapiInterfaceIdAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_481732323b913200b47bcedf34efc492</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-25 06:25:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

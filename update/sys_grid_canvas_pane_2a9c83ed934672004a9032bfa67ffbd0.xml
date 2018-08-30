@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_grid_canvas_pane">
+    <sys_grid_canvas_pane action="INSERT_OR_UPDATE">
+        <grid_canvas display_value="PA Top Spends">10528325934672004a9032bfa67ffb48</grid_canvas>
+        <height>3</height>
+        <portal_widget display_value="Created 2017-04-11 04:23:04">2a9c83ed934672004a9032bfa67ffbce</portal_widget>
+        <posx>10</posx>
+        <posy>0</posy>
+        <sys_class_name>sys_grid_canvas_pane</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-10 22:53:04</sys_created_on>
+        <sys_id>2a9c83ed934672004a9032bfa67ffbd0</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>10528325934672004a9032bfa67ffb48</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_grid_canvas_pane_2a9c83ed934672004a9032bfa67ffbd0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-10 22:57:36</sys_updated_on>
+        <width>2</width>
+    </sys_grid_canvas_pane>
+</record_update>

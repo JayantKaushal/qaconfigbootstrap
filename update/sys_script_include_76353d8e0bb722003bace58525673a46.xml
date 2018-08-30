@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateStageResourceAttributeAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateStageResourceAttributeAction</name>
+        <script><![CDATA[var CMPUpdateStageResourceAttributeAction = Class.create();
+CMPUpdateStageResourceAttributeAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+			if (!params.operation_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameters"),
+					"CMPUpdateStageResourceAttributeAction.doAction: Undefined element operation_id and stageResourceAttribute",
+					null
+				);
+			}
+			//Update stage resource operation
+			// based on operation id
+			//return this object to service.
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var stageResourceOperationAttribute = JSON.parse(params.stageResourceAttribute);
+			var newStageResourceAttributeList = JSON.parse(params.newStageResourceAttribute);
+			var blueprintTemplateValidator = new BlueprintTemplateValidator();
+
+			//Validate the newly created attributes has some duplicate or not
+			for (var k=0; k<newStageResourceAttributeList.length; k++) {
+
+				var operationName = blueprintTemplateValidator._validateUniqueParamAttribute(newStageResourceAttributeList[k].name, params.operationImplId);
+				if (operationName)
+					throw sn_smd.SMErrorHelper.createScriptAPIError(
+						gs.getMessage("A parameter with the name {0} already exists for {1} operation.", [newStageResourceAttributeList[k].name, operationName]),
+						"CMPUpdateStageResourceAttributeAction.doAction(): Failed to update stage resource attributes", ""
+					);
+			}
+
+			//If the attributes contains any stack expressions flip the execution plan flag
+			for(var j=0; j<stageResourceOperationAttribute.length; j++) {
+				var defaultValueExpression = stageResourceOperationAttribute[j].defaultValue;
+				if(defaultValueExpression.includes("Stack.items")) {
+					new sn_cmp.CMPBPExecutionPlanGenerator().updateExecutionPlanSyncFlag(params.stageOperationId,"flip");
+					break;
+				}
+			}
+
+			var bpOperationSteps = '';
+			//This condition is for updating the stagreResourceOperation attribute
+			if (params.stageResourceAttribute && JSON.parse(params.stageResourceAttribute).length) {
+				var bpOperationStepStr=blueprintServiceScript.updateStageResourceAttributes(params.operation_id, params.stageResourceAttribute);
+				bpOperationSteps=new global.JSON().decode(bpOperationStepStr);
+			}
+
+			var newStageResourceAttributeList = JSON.parse(params.newStageResourceAttribute);
+
+			//This condition is for creating the stagreResourceOperation attribute
+			if (params.newStageResourceAttribute && newStageResourceAttributeList.length) {
+				var resourceBlockId = params.resourceBlockId;
+				var operationImplId = params.operationImplId;
+
+				for (var i=0; i < newStageResourceAttributeList.length; i++) {
+					var newStageResourceAttribute = newStageResourceAttributeList[i];
+					var paramsGr = new GlideRecordSecure('sn_cmp_rb_op_impl_param');
+					paramsGr.setValue('name', newStageResourceAttribute.name);
+					paramsGr.setValue('defaultvalue', newStageResourceAttribute.defaultValue);
+					paramsGr.setValue('visibilty', newStageResourceAttribute.useInOperation);
+					paramsGr.setValue('datasource', 1);
+					paramsGr.setValue('operation', operationImplId);
+					paramsGr.setValue('host', resourceBlockId);
+					paramsGr.setValue('applicable_to', resourceBlockId);
+					var sys_id = paramsGr.insert();
+					newStageResourceAttributeList[i]['rbOpImplParamId'] = sys_id;
+					newStageResourceAttributeList[i]['stageResourceOperationId'] = params.operation_id;
+				}
+				var responseObj =  blueprintServiceScript.updateStageResourceAttributes(params.operation_id, JSON.stringify(newStageResourceAttributeList));
+				bpOperationSteps=new global.JSON().decode(responseObj);
+			}
+
+			var removeStageResourceAttributeList = JSON.parse(params.removeStageResourceAttribute);
+
+			// This condition is for deleting the sn_cmp_rb_op_param (BusinessRule deletes the
+			//  sn_cmp_rb_op_impl_param) and stagResourceOperation attribute
+			if (params.removeStageResourceAttribute && removeStageResourceAttributeList.length) {
+
+				for (var z = 0; z < removeStageResourceAttributeList.length; z++) {
+					var deleteStageResourceAttribute = removeStageResourceAttributeList[z];
+					var rbOperationParamGr = new GlideRecordSecure('sn_cmp_rb_op_param');
+					var rbOperationImplJoinQuery = rbOperationParamGr.addJoinQuery('sn_cmp_rb_op_impl_param', 'operation', 'operation.operation');
+					rbOperationImplJoinQuery.addCondition('sys_id', deleteStageResourceAttribute.rbOpImplParamId);
+					rbOperationParamGr.addQuery('name', deleteStageResourceAttribute.name);
+					rbOperationParamGr.query();
+					rbOperationParamGr.next();
+					gs.info("deleting following resource attribute : <" + rbOperationParamGr.name + "> with id: <"+ rbOperationParamGr.sys_id + ">");
+					rbOperationParamGr.deleteRecord();
+					blueprintServiceScript.deleteStageResourceAttribute(params.operation_id, JSON.stringify(deleteStageResourceAttribute));
+
+				}
+				var responseObj =  blueprintServiceScript.getStageResourceByOperation(params.operation_id);
+                bpOperationSteps=new global.JSON().decode(responseObj);
+			}
+			return bpOperationSteps;
+
+
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all steps for operation."),
+				"CMPUpdateStageResourceAttributeAction.doAction(): Failed to get all steps for operation",
+				error
+			);
+		}
+    },
+
+    type: 'CMPUpdateStageResourceAttributeAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-21 09:32:56</sys_created_on>
+        <sys_id>76353d8e0bb722003bace58525673a46</sys_id>
+        <sys_mod_count>49</sys_mod_count>
+        <sys_name>CMPUpdateStageResourceAttributeAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_76353d8e0bb722003bace58525673a46</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-20 23:41:22</sys_updated_on>
+    </sys_script_include>
+</record_update>

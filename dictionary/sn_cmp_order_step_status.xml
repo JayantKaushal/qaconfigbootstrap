@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Orchestration Step" max_length="40" name="sn_cmp_order_step_status" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="API Step" max_length="4000" name="api_step" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Correlation Id" max_length="4000" name="correlation_id" type="string"/>
+        <element label="End Time" max_length="40" name="end_time" type="glide_date_time"/>
+        <element label="Execution Order" max_length="40" name="execution_order" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="4000" name="name" type="string"/>
+        <element label="ExecutionID" max_length="32" name="order" reference="sn_cmp_order" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Parent Step" max_length="4000" name="parent_step" type="string"/>
+        <element label="Operation Implementation" max_length="32" name="rb_op_impl" reference="sn_cmp_rb_op_impl" type="reference"/>
+        <element choice="1" label="Runtime Step Type" max_length="40" name="runtime_step_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Resource Operation" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="API" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Policy" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Instance Script" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Workflow" sequence="5" value="6"/>
+            </choice>
+        </element>
+        <element label="Start Time" max_length="40" name="start_time" type="glide_date_time"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Not Started" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Processing" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Completed" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Waiting for Approval" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Approved" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Rejected" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Cancelled" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="Error" sequence="8" value="8"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Step Input" max_length="1000" name="step_input" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Step Output" max_length="1000" name="step_output" type="string"/>
+        <element choice="1" label="Type" max_length="40" name="type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Stack" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Runtime" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Policy" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="InstanceScript" sequence="4" value="4"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="rb_op_impl"/>
+        </index>
+        <index name="index2">
+            <element name="order"/>
+        </index>
+        <index name="index3">
+            <element name="order"/>
+            <element name="name"/>
+        </index>
+    </element>
+</database>

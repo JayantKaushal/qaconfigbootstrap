@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy" max_length="40" name="sn_cmp_pol_policy" type="collection">
+        <element attributes="edge_encryption_enabled=true" hint="Policy description." label="Description" max_length="4000" name="description" type="string"/>
+        <element hint="End date for Policy." label="End Date" max_length="40" name="end_date" type="glide_date_time"/>
+        <element hint="Policy group associated with policy." label="Policy Group" max_length="32" name="group_id" reference="sn_cmp_pol_policy_group" type="reference"/>
+        <element hint="Is script global?" label="Global" max_length="40" name="is_global" type="boolean"/>
+        <element hint="Is the policy system defined?" label="System Defined" max_length="40" name="is_system" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="When should policy be executed?" label="Moment" max_length="40" name="moment" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Pre Operation" sequence="1" value="pre"/>
+                <element inactive_on_update="false" label="Post Operation" sequence="3" value="post"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Name of the policy." label="Policy Name" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" hint="Sys id of Operation." label="Operation" max_length="40" name="operation_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="Name of the operation." label="Operation" max_length="100" name="operation_name" type="string">
+            <choice/>
+        </element>
+        <element hint="Policy execution order. Policies are executed in ascending order." label="Order of Execution" mandatory="true" max_length="40" name="policy_order" type="integer"/>
+        <element hint="Generated/User defined script used for policy execution." label="Script" max_length="4000" name="script" type="script"/>
+        <element hint="Start date for policy." label="Start Date" max_length="40" name="start_date" type="glide_date_time"/>
+        <element choice="1" hint="Status of the policy." label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Published" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Draft" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element choice="1" hint="Policy/Trigger Type" label="Policy Trigger" mandatory="true" max_length="40" name="target_entity_id" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="on Blueprint provision" value="2"/>
+                <element inactive_on_update="false" label="on Blueprint provision approval" value="4"/>
+                <element inactive_on_update="false" label="on Catalog item launch" value="6"/>
+                <element inactive_on_update="false" label="on Catalog item request end" value="9"/>
+                <element inactive_on_update="false" label="on Catalog item request start" value="8"/>
+                <element inactive_on_update="false" label="on Lease end" value="12"/>
+                <element inactive_on_update="false" label="on Resource operation" value="3"/>
+                <element inactive_on_update="false" label="on Stack operation approval" value="5"/>
+                <element inactive_on_update="false" label="on Stack resource operation approval" value="10"/>
+                <element inactive_on_update="false" label="on Task Remediation" value="13"/>
+            </choice>
+        </element>
+        <element dependent="target_entity_table" dependent_on_field="target_entity_table" hint="Sys id of the policy type selected" label="Target Entity" max_length="32" name="target_entity_instance_id" type="document_id" use_dependent_field="true"/>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPPolicyChoiceTables,show_table_names_on_label=true" hint="List of tables associated with policy types." label="Target Table" max_length="80" name="target_entity_table" type="table_name"/>
+        <index name="index">
+            <element name="group_id"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+        <index name="index3">
+            <element name="target_entity_instance_id"/>
+        </index>
+    </element>
+</database>

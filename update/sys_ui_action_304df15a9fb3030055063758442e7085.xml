@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>true</client>
+        <client_script_v2/>
+        <comments>Runs AWS member accounts discovery pattern</comments>
+        <condition>(current.is_master_account == true) &amp;&amp; (current.datacenter_type == "cmdb_ci_aws_datacenter")</condition>
+        <form_action>true</form_action>
+        <form_button>false</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>true</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <keyboard_shortcut/>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <name>Refresh Member Accounts</name>
+        <onclick>discoverMemberAccounts()</onclick>
+        <order>100</order>
+        <script><![CDATA[function discoverMemberAccounts() {
+	 triggerMemberAccountsDiscovery();
+}
+
+function showStatusDialog(awsMemberAccountsDiscoveryStatus, inputEccQueueSysId, agent) {
+	// Had to change the condition cause window.GlideModal returns an error, so I will support the 2 cases
+	var dialogClass = (GlideModal || window.GlideModal) ? GlideModal : GlideDialogWindow;
+	var statusDialog = new dialogClass('aws_member_accounts_discovery');
+
+	statusDialog.setTitle(new GwtMessage().getMessage('Account Discovery'));
+	statusDialog.setSize(350,300);
+	statusDialog.setPreference('sysparm_discovery_status_sysid', awsMemberAccountsDiscoveryStatus);
+	statusDialog.setPreference('sysparm_input_ecc_sysid', inputEccQueueSysId);
+	statusDialog.setPreference('sysparm_agent', agent);
+	statusDialog.setNologValue(true);
+	statusDialog.render();
+}
+
+function triggerMemberAccountsDiscovery() {
+
+	var glideAjax = new GlideAjax('global.AwsMemberAccountsDiscoveryAjax');
+	glideAjax.addParam('sysparm_name', 'triggerMemberAccountsDiscovery');
+	glideAjax.addParam('sysparm_service_account_id', g_form.getValue('account_id'));
+	glideAjax.addParam('sysparm_service_account_credential_sys_id',
+				g_form.getValue('discovery_credentials'));
+
+	glideAjax.getXML(handleResponse);
+}
+
+function handleResponse(response) {
+	var answerObject = JSON.parse(response.responseXML.documentElement.getAttribute('answer'));
+
+	if (!answerObject)
+		g_form.addErrorMessage(new GwtMessage().getMessage('Response body is empty'));
+	if (answerObject.errorMessage)
+		g_form.addErrorMessage(answerObject.errorMessage);
+	else
+		showStatusDialog(answerObject.discoveryStatus, answerObject.inputEccQueueSysId, answerObject.agent);
+}]]></script>
+        <show_insert>true</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>oron.subayi</sys_created_by>
+        <sys_created_on>2018-01-23 21:03:47</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>304df15a9fb3030055063758442e7085</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>Refresh Member Accounts</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_action_304df15a9fb3030055063758442e7085</sys_update_name>
+        <sys_updated_by>brandon.chiem</sys_updated_by>
+        <sys_updated_on>2018-05-25 17:18:01</sys_updated_on>
+        <table>cmdb_ci_cloud_service_account</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>true</ui16_compatible>
+    </sys_ui_action>
+</record_update>

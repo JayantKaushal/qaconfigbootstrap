@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetBlueprintCatalogAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetBlueprintCatalogAction</name>
+        <script><![CDATA[var CMPGetBlueprintCatalogAction = Class.create();
+CMPGetBlueprintCatalogAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+			var blueprintId = params.blueprintId;
+			var catalogGr = new GlideRecordSecure('sn_cmp_bp_cat_item');
+			catalogGr.addQuery("blue_print", blueprintId);
+			
+			catalogGr.query();
+			var catalogItems = [];
+			while (catalogGr.next()) {
+				var catalogInfo = {};
+				
+				var formBehaviourGr = new GlideRecord('sn_cmp_bp_form_behavior');
+				formBehaviourGr.addQuery('cat_item_association', catalogGr.getValue('sys_id'));
+				formBehaviourGr.query();
+				if (formBehaviourGr.next()) {
+					catalogInfo['blueprintOperationId'] = formBehaviourGr.getValue('stage_operation');
+					catalogInfo['blueprintOperationName'] = formBehaviourGr.getDisplayValue('stage_operation');
+					catalogInfo['formId'] = formBehaviourGr.getValue('sys_id');
+				}
+				
+				catalogInfo['id'] = catalogGr.getValue('sys_id');
+				catalogInfo['name'] = catalogGr.getValue('name');
+				catalogInfo['blueprintName'] = catalogGr.getDisplayValue('blue_print');
+				catalogInfo['active'] = catalogGr.getValue('active');
+				catalogInfo['catalogsId'] = catalogGr.getValue('sc_catalogs');
+				catalogInfo["catalogs"] = CMPUtil.getEnglishTextFromTranslated("sc_catalog", catalogGr.getDisplayValue("sc_catalogs"));
+				/*
+				*   if catalogs type string is not present in the someother language
+				*      then we are checking with sys_id and adding the english text
+				*/
+				if (!catalogInfo["catalogs"]) {
+					if (catalogGr.getValue("sc_catalogs") == "b029d6da0b212200eff7ef9bb4673a42")
+						catalogInfo["catalogs"] = "Cloud Service Catalog";
+					else if (catalogGr.getValue("sc_catalogs") == "c1b81478678232005ca552e457415a6e")
+						catalogInfo["catalogs"] = "Cloud Operation Catalog";
+				}
+				catalogInfo['category'] = catalogGr.getDisplayValue('category');
+				catalogInfo['description'] = catalogGr.getValue('description');
+				catalogInfo['workflow'] = catalogGr.getDisplayValue('workflow');
+				//catalogInfo['roles'] = catalogGr.getValue('');
+				catalogInfo['updatedOn'] = catalogGr.getValue('sys_updated_on');
+				catalogInfo['createdBy'] = catalogGr.getValue('sys_created_by');
+				catalogItems.push(catalogInfo);
+			}
+			
+			return catalogItems;
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all blueprints."),
+				"CMPGetBlueprintCatalogAction.doAction(): Failed to get all blueprints catalog",
+				error
+			);
+		}
+		
+		
+    },
+
+    type: 'CMPGetBlueprintCatalogAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-11 07:58:19</sys_created_on>
+        <sys_id>53fad5c90ba003003bace58525673a4d</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>CMPGetBlueprintCatalogAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_53fad5c90ba003003bace58525673a4d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-10 09:14:32</sys_updated_on>
+    </sys_script_include>
+</record_update>

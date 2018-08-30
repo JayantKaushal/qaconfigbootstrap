@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDiscoverVcenterAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDiscoverVcenterAction</name>
+        <script><![CDATA[var CMPDiscoverVcenterAction = Class.create();
+CMPDiscoverVcenterAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		
+		 var cloudServiceAccountId='';
+         var credentialName='';
+		 var resource='';
+         var gr = new GlideRecord('cmdb_ci_cloud_service_account');
+         gr.addQuery('sys_id',params.serviceAccountId);
+         gr.query();
+          if(gr.next()){
+               cloudServiceAccountId=gr.account_id;
+               credential=gr.discovery_credentials.sys_id;
+			  	var resourceGR = new GlideRecord('sn_cmp_rb_resourceblock');
+				resourceGR.addQuery('refcitype', gr.datacenter_type);
+				resourceGR.query();
+				if (resourceGR.next())
+				resource = resourceGR.name+'';
+		  }
+
+          var json={"resource":resource+"","operationName":"Discovery Interface.ListDatacenters","entityType":"Resource",
+					'userId':gs.getUserID(), "orderFormData":{"CloudServiceAccountId":cloudServiceAccountId+"","Credential":credential+""}};
+
+          var orderScript = new sn_cmp_api.OrderServiceScript();
+          // execute the api call
+          order = orderScript.submitOrder(new global.JSON().encode(json));
+          //return order;
+		  return new global.JSON().decode(order);
+     },
+
+    type: 'CMPDiscoverVcenterAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-31 11:43:12</sys_created_on>
+        <sys_id>d4cb511f0b2032003bace58525673aa9</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>CMPDiscoverVcenterAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d4cb511f0b2032003bace58525673aa9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-20 12:23:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

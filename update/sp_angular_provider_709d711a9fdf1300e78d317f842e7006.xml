@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>cloudEventScope</name>
+        <script><![CDATA[function($rootScope) {
+	"use strict";
+	
+	//new isolated scope
+	//var scope = $rootScope.$new(true);
+	var scope = $rootScope;
+	
+	return {
+		/* Registers listener for event with specified name.
+		 * Once the specified localScope destroys, the listener will be removed.
+		 * Returns function that can be called manually to unregister the listener.
+		 */
+		registerListener: function (name, listener, localScope) {
+			var destroy = scope.$on(name, listener);
+			//deregister
+			if (localScope) {
+				localScope.$on("$destroy", destroy);
+			}
+
+			return destroy;
+		},
+
+		// Broadcasting event on cloudEventScope
+		// Function signature matches the Angular $scope.$broadcast call.
+		broadcast: function () {
+			scope.$broadcast.apply(scope, arguments);
+		},
+	};	
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-16 20:44:16</sys_created_on>
+        <sys_id>709d711a9fdf1300e78d317f842e7006</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>cloudEventScope</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_709d711a9fdf1300e78d317f842e7006</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-16 20:50:21</sys_updated_on>
+        <type>factory</type>
+    </sp_angular_provider>
+</record_update>

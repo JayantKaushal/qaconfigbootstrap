@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Policy Execution Actions" max_length="40" name="sn_cmp_pol_execution_action" type="collection">
+        <element attributes="edge_encryption_enabled=true" hint="Policy Attributes associated with this action." label="Attributes" max_length="4000" name="attributes" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="Completed Actions." label="Completed Actions" max_length="4000" name="completed_actions" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="Correlation Id." label="External Correlation Id" max_length="100" name="ext_correlation_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Name of the action." label="Action Name" max_length="100" name="name" type="string"/>
+        <element hint="Policy associated with action." label="Policy" max_length="32" name="policy" reference="sn_cmp_pol_policy" type="reference"/>
+        <element hint="Policy Execution Id." label="Policy Execution" max_length="32" name="policy_execution" reference="sn_cmp_pol_execution" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Response Object." label="Response" max_length="4000" name="response" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="Status" label="Status" mandatory="true" max_length="100" name="status" type="string"/>
+        <index name="index">
+            <element name="policy_execution"/>
+        </index>
+        <index name="index2">
+            <element name="policy"/>
+        </index>
+    </element>
+</database>

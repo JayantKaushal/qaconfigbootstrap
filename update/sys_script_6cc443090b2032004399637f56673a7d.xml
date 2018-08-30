@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>false</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_ca_assc_datacenter</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>capacitycheck</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+var dcCapabilties = new GlideRecord("sn_cmp_rb_dc_capacity_type");
+var resoceblockID = current.getValue("resource_block");
+var sysId = current.getUniqueValue();
+var defaultValue = 0;
+// Get supported Capabilities	
+dcCapabilties.addQuery("resoure_block",resoceblockID);
+dcCapabilties.query();
+// For each supported capability get resource Type.	
+while(dcCapabilties.next()){
+  var quotaType = new GlideRecord("sn_cmp_dc_cap_quota_type");
+  var capability = dcCapabilties.getValue("supported_capability");
+  quotaType.addQuery("capacity_type_id",capability);
+  quotaType.query();
+ // For each resource Type get QuotaDefinitionType.
+  while(quotaType.next()){
+	  var datacenterCapacity = new GlideRecord("sn_cmp_ca_assc_dc_quota_type");
+	  var definition = quotaType.getValue("quota_definition_type");
+	  // Insert record to sn_cmp_ca_assc_dc_quota_type with Capacity
+	  datacenterCapacity.addQuery("associated_datacenter",sysId);
+	  datacenterCapacity.addQuery("associated_datacenter",definition);
+      datacenterCapacity.query();
+	  // Check Definition type for this DC is already exist.
+	  if(!(datacenterCapacity.next())){
+		  // Get default capacity from sn_cmp_capacity_default
+		  var defaultCapacity = new GlideRecord("sn_cmp_capacity_default");
+		  defaultCapacity.addQuery('quota_definition_type',definition);
+		  defaultCapacity.query();
+		  if(defaultCapacity.next())
+			  defaultValue = defaultCapacity.getValue("limit");
+		  datacenterCapacity.setValue("associated_datacenter",sysId);
+          datacenterCapacity.setValue("limit",defaultValue);
+		  datacenterCapacity.setValue("quota_type",definition);
+          datacenterCapacity.insert();
+	  }
+   }					 
+ }	
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-24 19:29:43</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>6cc443090b2032004399637f56673a7d</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>capacitycheck</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_6cc443090b2032004399637f56673a7d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-26 13:22:17</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=6cc443090b2032004399637f56673a7d"/>
+</record_update>

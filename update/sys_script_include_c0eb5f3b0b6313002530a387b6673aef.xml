@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.WorkFlowInvoker</api_name>
+        <client_callable>false</client_callable>
+        <description>Script to invoke 'Cloud Operation Step Workflow Launcher' workflow which launches another workflow through parallel flow launcher activity.</description>
+        <name>WorkFlowInvoker</name>
+        <script><![CDATA[var WorkFlowInvoker = Class.create();
+WorkFlowInvoker.prototype = Object.extendsObject(FlowInvoker,{
+	CLOUD_OPERATION_STEP_WORKFLOW_NAME: 'Cloud Operation Step Workflow Launcher',
+
+	initialize: function() {
+		FlowInvoker.prototype.initialize.call(this);
+	},
+
+	/**
+	  input structure:
+		var keyValues = {
+			subflow: {
+				name: workflow_name,
+				inputs: workflow_inputs
+			},
+			contextObj: {
+				stackId: ..
+			}
+		}
+		output: invoked workflow context_id
+	 **/
+	invokeFlow: function(params) {
+		var wfContextId = '';
+		try {
+			var keyValues = global.JSON.parse(params);
+			var subflow = keyValues.subflow;
+			var contextObj = keyValues.contextObj;
+
+			var stringifiedInput = global.JSON.stringify(subflow.inputs);
+			var stringifiedContextObj = global.JSON.stringify(contextObj);
+
+			gs.info('***[CMP WorkFlowInvoker]Subflow Inputs: {0}', stringifiedInput);
+			gs.info('***[CMP WorkFlowInvoker]Workflow Context: {0}', stringifiedContextObj);
+
+			if (this.isSubflowExist(subflow.name)) {
+				var wfInputs = {
+					subflow_name: subflow.name,
+					subflow_inputs: stringifiedInput,
+					ordercontext: stringifiedContextObj
+				};
+
+				var wf = new global.Workflow();
+				var workflowId = wf.getWorkflowFromName(this.CLOUD_OPERATION_STEP_WORKFLOW_NAME);
+				var context = wf.startFlow(workflowId, '', '', wfInputs);
+				wfContextId = context.getUniqueValue();
+				this.auditTrail(wfContextId, contextObj, '');	
+			} else {
+				gs.error("The flow [" + subflow.name + "] is not found in the system");
+				this.auditTrail(wfContextId, contextObj, "The flow [" + subflow.name + "] is not found in the system");	
+			}
+		} catch (error) {
+			gs.error("An error occurred while executing flow: " + error);
+			this.auditTrail(wfContextId, contextObj, "An error occurred while executing flow: " + error);	
+		}
+		return wfContextId;
+	},
+
+	auditTrail : function(wfContextId, orderContextObject, errMsg){
+		var orderDTO = orderContextObject.sn_cmp_order;
+		var catalogItemId = orderDTO.catalogItemId;
+		var requestItemId = orderDTO.requestItem;
+		var orderId = orderDTO.id;
+		var contextKey = orderDTO.contextKey;
+		var stackId = orderDTO.stack;
+		var invocationTemplateId = orderContextObject.resourceBlockId;
+		var targetInstanceId = orderDTO.ownerInstanceId;
+		var messageType;
+		var messageDetails = '';
+		var messageSummary = '';
+
+		if (wfContextId) {
+			messageType = '2';
+			var url = gs.getProperty('glide.servlet.uri') + 'wf_context.do?sys_id=' + wfContextId;
+			messageDetails = gs.getMessage('To see more details for the Workflow activity and logs, please ') + "[code]<a target='new' href=\"" + url + "\"> click here </a>[/code]";
+			messageSummary = messageDetails;
+		} else {
+			messageType = '4';
+			if (errMsg)
+				messageDetails = errMsg;
+			messageSummary = 'Failed to execute the flow operation.';
+		}
+
+		var milestone = false;
+		// Added step 'Starting Flow Operation Step' from table sn_cmp_cloud_trail_step
+		var step = '57340d9473c02300d013da96fbf6a7d1';
+		var userId = orderDTO.userId;
+		var groupId = '';
+
+		new AddCloudTrail().createTrailRecord(catalogItemId, requestItemId, orderId, contextKey, stackId, invocationTemplateId, targetInstanceId, messageType, milestone, messageDetails, messageSummary, step, userId, groupId);
+	},
+
+	isSubflowExist: function(subflowName) {
+		var wfGlideRecord = new GlideRecord("wf_workflow");
+		wfGlideRecord.addQuery("name", subflowName);
+		wfGlideRecord.query();
+		return wfGlideRecord.hasNext();
+	},
+
+	type: 'WorkFlowInvoker'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-03 05:44:35</sys_created_on>
+        <sys_id>c0eb5f3b0b6313002530a387b6673aef</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>WorkFlowInvoker</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c0eb5f3b0b6313002530a387b6673aef</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 12:23:48</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>In cloud operation, when approval is required, change request is created which is to be approved. Out of box, change request type is 'normal'. </description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>sn_cmp.cloud_change_type_for_approval</name>
+        <read_roles/>
+        <suffix>sn_cmp.cloud_change_type_for_approval</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-10-09 18:29:59</sys_created_on>
+        <sys_id>04b1a7c087f1430064a9f4bbe3e3ecdb</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>sn_cmp.cloud_change_type_for_approval</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_properties_04b1a7c087f1430064a9f4bbe3e3ecdb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-10-09 18:30:52</sys_updated_on>
+        <type>string</type>
+        <value>normal</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=04b1a7c087f1430064a9f4bbe3e3ecdb"/>
+</record_update>

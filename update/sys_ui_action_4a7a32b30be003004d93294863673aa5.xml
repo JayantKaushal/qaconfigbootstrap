@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>false</client>
+        <client_script_v2/>
+        <comments/>
+        <condition>current.body==''&amp;&amp;current.use_template_body==false</condition>
+        <form_action>true</form_action>
+        <form_button>false</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>true</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <keyboard_shortcut/>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <name>Get Template</name>
+        <onclick/>
+        <order>5</order>
+        <script><![CDATA[getTemplate();
+
+function getTemplate() {
+	
+ //let's check if we have a valid mid server
+ var capiSvrScript = new sn_cloud_api.CAPIOrchestratorServiceScript(); 
+ try {
+     capiSvrScript.resolveMid('', 'AWS', '');
+ } catch(e) {
+       gs.addErrorMessage(e.message);
+       action.setRedirectURL(current);
+    return;
+ } 
+ var resource = "AWS Datacenter";
+ var order = {'resource':resource, 'entityType':'Resource', 'operationName':'Stack Orchestration Interface.GetCloudTemplate',orderFormData:{'TemplateURL':current.template_url+'','TemplateName':current.name+'','TemplateType':current.type+''}};
+var orderScript = new sn_cmp_api.OrderServiceScript();
+orderScript.submitOrder(new global.JSON().encode(order));
+wait(9000);	
+action.setRedirectURL(current);
+gs.addInfoMessage(gs.getMessage('Getting the Cloud Template for : {0}', current.name));
+}]]></script>
+        <show_insert>true</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-20 03:58:23</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>4a7a32b30be003004d93294863673aa5</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>Get Template</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_action_4a7a32b30be003004d93294863673aa5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-30 05:30:51</sys_updated_on>
+        <table>sn_cmp_cloud_template</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>false</ui16_compatible>
+    </sys_ui_action>
+</record_update>

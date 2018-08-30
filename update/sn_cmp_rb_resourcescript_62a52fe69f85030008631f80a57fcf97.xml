@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Start_Stop_Stack</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, &#13;
+						  correlationId, step, requestorContext, stackId) {&#13;
+	var rps = new sn_cmp_api.ResponseProcessorScript();&#13;
+	var responseToProcess = rps.extractResponse(response);&#13;
+	var responseObject = global.JSON.parse(responseToProcess);	&#13;
+&#13;
+	var responseProcessor = new sn_cmp.ResponseProcessor(cloudServiceAccountId, &#13;
+												  ldc,&#13;
+												  'AWS EC2 API');&#13;
+	&#13;
+	var cloudModelObject = &#13;
+		responseProcessor.processResponseArray(responseObject,&#13;
+											   'AWS::EC2::Instance',&#13;
+											   'virtual_machine_create_update_validator');&#13;
+	&#13;
+	responseObject = [].concat(responseObject);&#13;
+	for (var index=0; index&lt;responseObject.length; index++) {&#13;
+		var object = responseObject[index];&#13;
+		if (object.hasOwnProperty('networkInterfaceSet') &amp;&amp; object.networkInterfaceSet) {&#13;
+			var networkInterfaces = object.networkInterfaceSet.item;&#13;
+			if (networkInterfaces) {&#13;
+				networkInterfaces = [].concat(networkInterfaces);&#13;
+				var nicObject = responseProcessor.processResponseArray(networkInterfaces,&#13;
+												   'AWS::EC2::NetworkInterface',&#13;
+												   'nic_create_validator');&#13;
+				cloudModelObject = cloudModelObject.concat(nicObject);&#13;
+			}&#13;
+		}&#13;
+	}&#13;
+	&#13;
+	return global.JSON.stringify(cloudModelObject);&#13;
+ }&#13;
+	</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId) {
+	var rps = new sn_cmp_api.ResponseProcessorScript();
+	var responseToProcess = rps.extractResponse(response);
+	var responseObject = global.JSON.parse(responseToProcess);	
+
+	var responseProcessor = new sn_cmp.ResponseProcessor(cloudServiceAccountId, 
+												  ldc,
+												  'AWS EC2 API');
+	
+	var cloudModelObject = 
+		responseProcessor.processResponseArray(responseObject,
+											   'AWS::EC2::Instance',
+											   'virtual_machine_create_update_validator');
+	
+	responseObject = [].concat(responseObject);
+	for (var index=0; index<responseObject.length; index++) {
+		var object = responseObject[index];
+		if (object.hasOwnProperty('networkInterfaceSet') && object.networkInterfaceSet) {
+			var networkInterfaces = object.networkInterfaceSet.item;
+			if (networkInterfaces) {
+				networkInterfaces = [].concat(networkInterfaces);
+				var nicObject = responseProcessor.processResponseArray(networkInterfaces,
+												   'AWS::EC2::NetworkInterface',
+												   'nic_create_validator');
+				cloudModelObject = cloudModelObject.concat(nicObject);
+			}
+		}
+	}
+	
+	return global.JSON.stringify(cloudModelObject);
+ }
+	]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-09-10 06:25:37</sys_created_on>
+        <sys_id>62a52fe69f85030008631f80a57fcf97</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>Start_Stop_Stack</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_62a52fe69f85030008631f80a57fcf97</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-09-12 19:10:13</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

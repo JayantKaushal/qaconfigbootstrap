@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Stage Operation" max_length="40" name="sn_cmp_bp_stage_op" type="collection">
+        <element label="Blueprint Stage Model" max_length="32" name="blueprint_stage_model" reference="sn_cmp_bp_stage_model" reference_cascade_rule="delete" type="reference"/>
+        <element default="1" label="Is Plan Customized" max_length="40" name="is_plan_customized" type="boolean"/>
+        <element default="0" label="Is Excecution Plan Synced" max_length="40" name="is_plan_synced" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element label="Resource Operation Impl" max_length="32" name="operation_impl" reference="sn_cmp_rb_op_impl" type="reference"/>
+        <element default="0" label="Parallel Plan Generated" max_length="40" name="parallel_plan_generated" type="boolean"/>
+        <index name="index">
+            <element name="blueprint_stage_model"/>
+        </index>
+        <index name="index2">
+            <element name="operation_impl"/>
+        </index>
+    </element>
+</database>

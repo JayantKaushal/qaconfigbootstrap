@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_search_source">
+    <sp_search_source action="INSERT_OR_UPDATE">
+        <advanced_typeahead_config>false</advanced_typeahead_config>
+        <condition/>
+        <data_fetch_script><![CDATA[(function(query) {
+	var results = [];
+
+	if (!gs.isLoggedIn())
+		return results;
+
+	var userRoles = gs.getUser().getUserRoles();
+	var is_admin = false;
+	var is_group_admin = false;
+	
+	if(!gs.nil(userRoles)) {
+		if(userRoles.indexOf('admin')>-1 || userRoles.indexOf('sn_cmp.cmp_root_admin')>-1)
+			is_admin = true;
+		if(userRoles.indexOf('sn_cmp.cloud_group_admin')>-1)
+			is_group_admin = true;
+	}
+	
+	var view = gs.getUser().getPreference('cloud_user_portal_view') || 'mine';
+
+	var group_ids = [];
+	
+	if(is_group_admin || is_admin) {
+		var grm_rec = new GlideRecord('sys_user_grmember');  
+		grm_rec.addQuery('user',gs.getUserID());  
+		grm_rec.query();  
+		while(grm_rec.next())
+			group_ids.push(grm_rec.group.sys_id);  
+	}
+	
+	var sc = new GlideRecord('sn_cmp_stack');
+	
+	if(view == 'mine')
+		sc.addEncodedQuery('assigned_to='+gs.getUserID());
+	else if(view == 'group' && (is_admin || is_group_admin))
+		sc.addEncodedQuery('assigned_to='+ gs.getUserID()+'^ORowner_groupIN'+ group_ids.join(','));
+						   
+	sc.addQuery("name","STARTSWITH",query);
+	sc.query();
+	while (sc.next()) {
+		if (!$sp.canReadRecord(sc))
+			continue;
+
+		var item = {};
+		item.name = sc.getDisplayValue("name");
+		item.sys_id = sc.getUniqueValue();
+		item.url = "?id=cloud_stack_details&category=cloud_stacks&sys_id=" + sc.getUniqueValue() +  "&selected_card="+ sc.getUniqueValue() +"&spa=1&active_tab=change_requests";
+		item.primary = item.name;
+		results.push(item);
+	}
+
+	return results;
+})(query);]]></data_fetch_script>
+        <display_fields>name</display_fields>
+        <enable_typeahead>true</enable_typeahead>
+        <facet_generation_script><![CDATA[(function(query, facetService, searchResults) {
+})(query, facetService, searchResults);]]></facet_generation_script>
+        <id>stacks</id>
+        <is_scripted_source>true</is_scripted_source>
+        <name>Stacks</name>
+        <page display_value="cloud_stack_details">efb9cb4e0bf62200eff7ef9bb4673a81</page>
+        <pagination_supported>false</pagination_supported>
+        <primary_display_field>name</primary_display_field>
+        <roles/>
+        <search_page_template><![CDATA[<div>
+  <a href="?id=cloud_stack_details&category=cloud_stacks&sys_id={{item.sys_id}}&selected_card={{item.sys_id}}&spa=1&active_tab=change_requests" class="h4 text-primary m-b-sm block">
+    <span ng-bind-html="highlight(item.primary, data.q)"></span>
+  </a>
+  <span class="text-muted" ng-repeat="f in item.fields | limitTo: 4">
+    <span class="m-l-xs m-r-xs" ng-if="!$first"> &middot; </span>
+    {{f.label}}: <span ng-bind-html="highlight(f.display_value, data.q)"></span>
+  </span>
+</div>]]></search_page_template>
+        <source_table>sn_cmp_stack</source_table>
+        <sys_class_name>sp_search_source</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-28 16:23:14</sys_created_on>
+        <sys_id>5d5ec93c0b322200eff7ef9bb4673a8f</sys_id>
+        <sys_mod_count>43</sys_mod_count>
+        <sys_name>Stacks</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_search_source_5d5ec93c0b322200eff7ef9bb4673a8f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 21:45:20</sys_updated_on>
+        <typeahead_glyph>cubes</typeahead_glyph>
+        <typeahead_template/>
+    </sp_search_source>
+    <sys_translated_text action="delete_multiple" query="documentkey=5d5ec93c0b322200eff7ef9bb4673a8f"/>
+</record_update>

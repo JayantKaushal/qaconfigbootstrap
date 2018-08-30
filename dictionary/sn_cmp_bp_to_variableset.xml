@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Variable Set for blue print" max_length="40" name="sn_cmp_bp_to_variableset" type="collection">
+        <element label="Blue print" mandatory="true" max_length="32" name="blue_print" reference="sn_cmp_bp_blueprint" reference_cascade_rule="delete" type="reference"/>
+        <element label="Variable set" mandatory="true" max_length="32" name="variable_set" reference="item_option_new_set" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="variable_set"/>
+        </index>
+        <index name="index2">
+            <element name="blue_print"/>
+        </index>
+    </element>
+</database>

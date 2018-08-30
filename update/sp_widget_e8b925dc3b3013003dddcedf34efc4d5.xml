@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope,$timeout) {
+	var c = this;
+	$scope.timeout = $timeout;
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.sn-welcome {
+  border: 1px solid #e7e9eb;
+  border-radius: 10px;
+  font: 18px "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif;
+  max-width: 700px;
+  padding: 40px 40px 20px;
+  position: relative;
+}
+
+.sn-welcome-title {
+  font: 34px "SourceSansPro", "Helvetica Neue", "Helvetica", Arial, sans-serif;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 25px;
+}
+
+.sn-welcome-content {
+  color: #485563;
+  width: 100%;
+}
+
+.sn-welcome-wrapper {
+  margin-left: 18%;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #ffffff;
+  color: #343d47;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  padding: 15vh 20px 20px;
+  overflow: auto;
+  z-index: 1;
+}
+
+.sn-welcome-badge {
+  top: -38px;
+  left: 50%;
+  position: absolute;
+  height: 72px;
+  width: 72px;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #278efc;
+  border-radius: 100%;
+  color: #ffffff;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 40px;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  margin-left: -36px;
+  text-align: center;
+}
+
+.aws-msg {
+  text-align: center;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cap_credentials</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+	var panel_height;
+
+	scope.timeout(function(){
+		resize_window();
+	});
+
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 106) + 'px';
+		$(elem).find('#credentials').css('height',panel_height);
+
+	}
+}
+]]></link>
+        <name>CAP Credentials</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.table = $sp.getParameter('listName');
+	data.src = data.table + "_list.do";
+
+})(); ]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-08 07:32:21</sys_created_on>
+        <sys_id>e8b925dc3b3013003dddcedf34efc4d5</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CAP Credentials</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_e8b925dc3b3013003dddcedf34efc4d5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-08 12:18:37</sys_updated_on>
+        <template><![CDATA[<iframe id="credentials" ng-src="{{data.src}}" scrolling="yes" frameborder="0" class="height-100"></iframe>
+
+
+
+]]></template>
+    </sp_widget>
+</record_update>

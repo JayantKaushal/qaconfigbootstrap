@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_cmp_rb_resourceblock">
+    <sn_cmp_rb_resourceblock action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <guestinterface display_value="NIC Interface">d493163c0b9932000747a387b6673afa</guestinterface>
+        <hostinterface display_value="Network Service Container Interface">7579b35e0be622009e620bcb15673a28</hostinterface>
+        <is_system_defined>true</is_system_defined>
+        <is_tlr>false</is_tlr>
+        <layer>3</layer>
+        <name>Network Interface Card</name>
+        <refcitype>cmdb_ci_nic</refcitype>
+        <resource_template/>
+        <status>1</status>
+        <sys_class_name>sn_cmp_rb_resourceblock</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-02 04:02:38</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>0023123c0b9932000747a387b6673a47</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>Network Interface Card</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourceblock_0023123c0b9932000747a387b6673a47</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-16 06:46:14</sys_updated_on>
+        <type/>
+    </sn_cmp_rb_resourceblock>
+</record_update>

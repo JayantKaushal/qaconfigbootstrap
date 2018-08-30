@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="DC Capablity Quota Mappings" max_length="40" name="sn_cmp_dc_cap_quota_type" type="collection">
+        <element label="Capacity Type" max_length="32" name="capacity_type_id" reference="sn_cmp_dc_capacity_type" type="reference"/>
+        <element label="Quota Definition" max_length="32" name="quota_definition_type" reference="sn_cmp_quota_definition" type="reference"/>
+        <index name="index">
+            <element name="quota_definition_type"/>
+        </index>
+        <index name="index2">
+            <element name="capacity_type_id"/>
+        </index>
+    </element>
+</database>

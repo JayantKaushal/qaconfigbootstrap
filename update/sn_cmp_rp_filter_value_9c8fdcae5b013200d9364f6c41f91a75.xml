@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter_value">
+    <sn_cmp_rp_filter_value action="INSERT_OR_UPDATE">
+        <field>Location</field>
+        <filter display_value="getByLDC">0d973d075320320085d1620143dc3411</filter>
+        <mr_name/>
+        <operator>or</operator>
+        <order>100</order>
+        <sys_class_name>sn_cmp_rp_filter_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-22 19:48:11</sys_created_on>
+        <sys_id>9c8fdcae5b013200d9364f6c41f91a75</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_value_9c8fdcae5b013200d9364f6c41f91a75</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-27 20:51:30</sys_updated_on>
+        <type>query</type>
+        <value>${Location}</value>
+    </sn_cmp_rp_filter_value>
+</record_update>

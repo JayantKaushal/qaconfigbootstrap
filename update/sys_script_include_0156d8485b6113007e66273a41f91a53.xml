@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPResponseProcessorUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPResponseProcessorUtil</name>
+        <script><![CDATA[var CMPResponseProcessorUtil = Class.create();
+CMPResponseProcessorUtil.prototype = {
+	vars : {},
+	initialize: function(resourceName, resourceScriptName, routeId, cloudServiceAccountId, ldc,correlationId,step, userId, groupId, shouldUpsertCI) {
+		var usageStr = 'var responseProcessorUtil = new CMPResponseProcessorUtil(resourceName, resourceScriptName, routeId, cloudServiceAccountId, ldc, correlationId, step, userId, groupId, shouldUpsertCI);\n';
+		usageStr += 'responseProcessorUtil.processResponse();\n';
+		if( gs.nil(resourceName))
+			throw "Resource name is not specified. " + usageStr;		
+		this.resourceName = resourceName;
+		if( gs.nil(resourceScriptName))
+			throw "Resource script is not specified. " + usageStr;		
+		this.resourceScriptName = resourceScriptName;
+		if( gs.nil(routeId))
+			throw "RouteID is not specified. " + usageStr;
+		this.routeId = routeId;
+		if(gs.nil(cloudServiceAccountId))
+			throw "Service Account is not specified. "  + usageStr ;
+		this.cloudServiceAccountId = this.vars.cloudServiceAccountId = cloudServiceAccountId;
+		if( ldc == null)
+			throw "Ldc cannot be undefined. Empty string is a valid. "  + usageStr;
+		this.ldcId = this.vars.ldc = ldc;
+		if( correlationId == null)
+			throw "Correlation id is null. Empty string is valid. "  + usageStr;
+		this.correlationId = this.vars.correlationId = correlationId;
+		if( step == null)
+			throw "Step id is null. Empty object {} is valid. "  + usageStr;		
+		if( step == '')
+			step = {};
+		else
+			step = JSON.parse(step);
+		this.step = this.vars.step = step;
+		if( gs.nil(userId))
+			throw "User id is null or empty. "  + usageStr;				
+		this.userId = userId;
+		if( gs.nil(groupId))
+			throw "group id is null or empty. " + usageStr;						
+		this.groupId = groupId;
+		this.shouldUpsertCI = (gs.nil(shouldUpsertCI) || typeof shouldUpsertCI != 'boolean')?false:shouldUpsertCI;
+		this.requestorContext = {};
+		this.requestorContext.userId = userId;
+		this.requestorContext.groupId = groupId;
+		this.vars.requestorContext = this.requestorContext;
+    },
+	
+	processResponse : function(){
+		var responseProcessorInput = this.fetchResponseProcessorInput( this.routeId);
+		if( gs.nil(responseProcessorInput))
+			throw "Response processor input is empty or route id is invalid";
+		var scriptGR = this.fetchScriptGR( this.resourceName, this.resourceScriptName);
+		if( scriptGR == null)
+			throw "scriptGR cannot be null";
+		var output = "";
+		while(scriptGR.next()){
+			gs.info('CMPResponseProcessorUtil::processResponse::ScriptId ' + scriptGR.getUniqueValue());
+			this.vars.response = responseProcessorInput;
+			script = scriptGR.getValue('script_js');
+			script += 'processResponse(response, cloudServiceAccountId, ldc,correlationId,step, requestorContext);'; 
+			scriptGR.setValue('script_js', script);
+			gs.info('script =  ' + scriptGR.getValue('script_js'));
+			var evaluator = new GlideScopedEvaluator();
+			output = evaluator.withReturnError(true).evaluateScript(scriptGR, "script_js", this.vars);
+			gs.info('output = ' + output);
+			break;
+		}
+		return output;
+	},
+	
+	evaluate : function(scriptGR){
+		var evaluator = new GlideScopedEvaluator();
+		var output = evaluator.withReturnError(true).evaluateScript(scriptGR, "script_js", this.vars);		
+	},
+	fetchScriptGR : function( resourceName, resourceScript){
+		if(gs.nil(resourceScript))
+			throw "Response processor script name is not specified.";
+		var scriptGR = new GlideRecord("sn_cmp_rb_resourcescript");
+		scriptGR.addQuery('name', resourceScript);
+		resourceSysId = this.fetchResourceSysId( resourceName);
+		if( gs.nil(resourceSysId)){
+			throw "Resource is not found!";
+		}
+		scriptGR.addQuery('resource', resourceSysId);
+		scriptGR.query();
+		return scriptGR;
+	},
+	fetchResourceSysId : function(resourceName){
+		if( gs.nil(resourceName))
+			throw "Resource name is not specified";
+		var resourceSysId = '';
+		var resourceBlockGR = new GlideRecord('sn_cmp_rb_resourceblock');
+		if( resourceBlockGR.get( 'name', resourceName)){
+			resourceSysId = resourceBlockGR.getUniqueValue();
+		}
+		return resourceSysId;
+	},
+	fetchResponseProcessorInput : function( routeId){
+		if( gs.nil(routeId))
+			throw "RouteID is not specified";
+		var responseProcessorInput = '';
+		var apiTrailGR = new GlideRecord('sn_capi_api_trail');
+		apiTrailGR.addQuery('dynamic_route_id', routeId);
+		apiTrailGR.query();
+		if(apiTrailGR.next()){
+			var trailLogGr = new GlideRecord('sn_capi_api_trail_log');
+			trailLogGr.addQuery('capi_trail', apiTrailGR.getUniqueValue());
+			trailLogGr.addQuery('log_key', 'route_result');
+			trailLogGr.query();
+			if(trailLogGr.next()){
+				responseProcessorInput = trailLogGr.getValue('log_value');
+			}
+		}
+		return responseProcessorInput;
+	},
+	createUpdateCI : function(input){
+		var modelProcessor = new sn_cmp_api.CloudModelProcessorScript();
+		var output = modelProcessor.createOrUpdateCI(this.cloudServiceAccountId, this.ldcId, input);
+		gs.info('CMPResponseProcessorUtil::createUpdateCI::output = ' + JSON.stringify(output));
+	},
+    type: 'CMPResponseProcessorUtil'
+};
+
+/*var responseProceesorUtil = new CMPResponseProcessorUtil(routeId, cloudServiceAccountId, ldc,correlationId,step, userId, groupdId, shouldUpsertCI);
+responseProceesorUtil.processResponse();
+*/]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-13 14:22:06</sys_created_on>
+        <sys_id>0156d8485b6113007e66273a41f91a53</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>CMPResponseProcessorUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0156d8485b6113007e66273a41f91a53</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-07 20:08:03</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Audit Type" max_length="40" name="cmp_audit_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Audit Text" max_length="1000" name="audit_text" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Audit Type" max_length="100" name="audit_type" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="External Module Name" max_length="100" name="external_module_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Module Name" max_length="100" name="module_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Severity" max_length="100" name="severity" type="string"/>
+    </element>
+</database>

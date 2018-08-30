@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.RefQualsPoolFilter</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>RefQualsPoolFilter</name>
+        <script><![CDATA[var RefQualsPoolFilter = Class.create();
+RefQualsPoolFilter.prototype = {
+	TABLE_RESOURCE_POOL : 'sn_cmp_resource_pool',
+	TABLE_RESOURCE_POOL_FILTER : 'sn_cmp_rp_filter',
+	TABLE_RESOURCE_POOL_FILTER_VALUE : 'sn_cmp_rp_filter_value',
+	
+    initialize: function() {
+    },
+
+	getQualifiedRecords : function(resourcePool, filterName) {
+		var answer = 'sys_id=none';
+		var validRecords = [];
+		var tableName = this.getReferenceTable(resourcePool);
+		if (!tableName) {
+			gs.error("Can not find table for resourcePool " + resourcePool);
+			return answer;
+		}
+		var filterGr = this.getFilterGr(resourcePool, filterName);
+		
+		if (!filterGr) {
+			gs.error("Can not find filter " + filterName);
+			return answer;
+		}
+		if (filterGr.type == 'query'){
+			var filters = this.getQueryFilters(filterGr);
+			var gr = new GlideRecord(tableName);
+			var qc, variableName;
+			var regex = /^\${(.*)}$/;
+			for (var i = 0; i < filters.length; i++) {
+				var filter = filters[i];
+				if (regex.test(filter.value)) {
+					variableName = filter.value.match(regex)[1];
+					if (filter.operator == 'and') {
+						qc = gr.addQuery(filter.field, current.variables[variableName]);
+					} else {
+						qc.addOrCondition(filter.field, current.variables[variableName]);
+					}
+					
+				} else {
+					if (filter.operator == 'and') {
+						qc = gr.addQuery(filter.field, filter.value);
+					} else {
+						qc.addOrCondition(filter.field, filter.value);
+					}
+				}
+			}			
+			gr.query();
+			while(gr.next()) {
+				validRecords.push('' + gr.sys_id);
+			}
+		}
+		if (validRecords.length > 0) {
+			answer = 'sys_idIN' + validRecords.toString();
+		}
+		return answer;
+	},
+	getReferenceTable : function(resourcePool) {
+		var rpGr = new GlideRecord(this.TABLE_RESOURCE_POOL);
+		rpGr.addQuery("name", resourcePool);
+		rpGr.query();
+		if (rpGr.next()) {
+			return rpGr.lookup_table;
+		}
+	},
+	getFilterGr : function(resourcePool,filterNanme) {
+		var filterGr = new GlideRecord(this.TABLE_RESOURCE_POOL_FILTER);
+		filterGr.addQuery("resource_pool.name", resourcePool);
+		filterGr.addQuery("name", filterNanme);
+	
+		filterGr.query();
+		if (filterGr.next()) {
+			return filterGr;
+		}
+	},
+	
+	getQueryFilters : function(filterGr) {
+		var filters = [];
+		var filterValueGr = new GlideRecord(this.TABLE_RESOURCE_POOL_FILTER_VALUE);
+		filterValueGr.addQuery('filter', filterGr.sys_id);
+		filterGr.addQuery("type", 'query');
+		filterValueGr.orderBy('order');
+		filterValueGr.query();
+		while (filterValueGr.next()) {
+			var filter = {};
+			filter.operator = filterValueGr.operator + '';
+			filter.field = filterValueGr.field + '';
+			filter.value = filterValueGr.value + '';
+			filters.push(filter);
+		}
+		return filters;
+	},
+	
+    type: 'RefQualsPoolFilter'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-11 23:16:52</sys_created_on>
+        <sys_id>f1e8b293931e22007472f23a767ffb89</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>RefQualsPoolFilter</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f1e8b293931e22007472f23a767ffb89</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-13 00:33:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyActionAction</api_name>
+        <client_callable>false</client_callable>
+        <description>Lists all policy rules</description>
+        <name>CMPGetAllPolicyActionAction</name>
+        <script><![CDATA[var CMPGetAllPolicyActionAction = Class.create();
+CMPGetAllPolicyActionAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.inputId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAllPolicyActionAction.doAction: Undefined element Id",
+				null
+				);
+			}
+			var ruleId = params.inputId;
+			//Get policy rule list
+			var policyActionGr = new GlideRecord('sn_cmp_pol_action');
+			policyActionGr.addQuery('policy_rule', ruleId);
+			policyActionGr.query();
+			var object = {};
+			var list = [];
+			while(policyActionGr.next()) {
+				object = {};
+				object.id = policyActionGr.sys_id + '';
+				list.push(object);
+			}
+			var responseObj = {
+				policyActionList : list,
+			};
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy conditions."),
+				"CMPGetAllPolicyActionAction.doAction(): Failed to get all policy conditions",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllPolicyActionAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-24 17:21:43</sys_created_on>
+        <sys_id>fef81ad987b0030053c9f4bbe3e3ec03</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPGetAllPolicyActionAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fef81ad987b0030053c9f4bbe3e3ec03</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-24 17:23:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

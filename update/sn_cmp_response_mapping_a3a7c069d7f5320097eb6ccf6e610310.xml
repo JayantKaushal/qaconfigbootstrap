@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_response_mapping">
+    <sn_cmp_response_mapping action="INSERT_OR_UPDATE">
+        <additional_identifier>false</additional_identifier>
+        <array_field/>
+        <attribute_value_type>scripted</attribute_value_type>
+        <binding_endpoint/>
+        <binding_type/>
+        <ci_class>cmdb_ci_endpoint_vnic</ci_class>
+        <ci_class_field>object_id</ci_class_field>
+        <datasource display_value="NIC Payload">87574069d7f5320097eb6ccf6e610388</datasource>
+        <datasource_for_mappings/>
+        <fixed_value/>
+        <identifier_ci_class/>
+        <identifier_ci_class_field/>
+        <relationship_ci_class/>
+        <script><![CDATA[// Do not remove function declaration
+/** Input parameters
+* @param rawObject - the full unprocessed data item (Javascript object)
+* @param sourceFieldValue - the value of the source field defined on the mapping
+* 
+* @returns value to assign to mapped table field
+*/
+getValue(global.JSON.parse(rawObject), global.JSON.parse(sourceFieldValue));
+function getValue(rawObject, sourceFieldValue) {
+	var nicId = sourceFieldValue.split('/');
+	if (nicId.length == 2)
+		nicId = nicId[1];
+	else if (nicId.length > 2)
+		nicId = sourceFieldValue;
+	else
+		nicId = nicId[0];
+	return nicId;
+}]]></script>
+        <source_field>networkInterfaceId</source_field>
+        <sys_class_name>sn_cmp_response_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-28 22:18:07</sys_created_on>
+        <sys_id>a3a7c069d7f5320097eb6ccf6e610310</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_response_mapping_a3a7c069d7f5320097eb6ccf6e610310</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-19 23:14:00</sys_updated_on>
+        <translation_key/>
+        <used_for_identification>true</used_for_identification>
+    </sn_cmp_response_mapping>
+</record_update>

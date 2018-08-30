@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function (snAttachmentHandler, $timeout, $http, $uibModal, $scope, $location, $rootScope, spUtil) {
+	
+	var c = this;
+	c.data.description = c.data.description || "";
+	c.stack = c.data.stack || "";
+	c.guid = c.data.guid || "";
+	c.businessImpact = "";
+	c.type = c.data.type || "";
+	c.usersAffected = "";
+	//c.category = c.data.category || "";
+	c.resource = c.data.resource || "";
+	c.submitted = false;
+	
+	c.data.attachments = c.data.attachments || [];
+	$scope.iconBackground = "irp-icon-background-success";
+	$scope.popupIcon = "fa-check"; //fa-times
+	$scope.isIncidentCreated = false;
+	$scope.isIRPConfirmation = false;
+	
+	var parms = $location.search();
+	
+	$scope.$watch('c.type', function(newValue, oldValue) {
+		if(newValue) {
+			var input = {
+				control: "type",
+				updateIncidentMetric: true,
+				metricID: c.data.metricId,
+				type: newValue
+			//	useML: !c.categoryShown()
+			};
+			
+			spUtil.get($scope, input).then(function (response) {
+				angular.extend(input, response.data);
+			});
+		}
+	});
+	
+	
+	
+	$scope.$watch('c.stack', function(newValue, oldValue) {
+		if(newValue) {
+			var input = {
+				stack : newValue
+			};
+			c.data.stack = newValue;
+			
+			spUtil.get($scope, input).then(function (response) {
+				angular.extend(input, response.data);
+			});
+			
+			c.server.update();
+		}
+	});
+	
+	c.isMandatory = function () {
+		//	if (c.type === 'outage' || c.type === 'performance')
+		//	return true;
+	};
+	
+	
+	c.addAttachment = function ($files) {
+		$files.forEach(function (file) {
+			var index = c.data.attachments.push({
+				file_name: file.name,
+				loading: true
+			}) - 1;
+			c.attachmentHandler = snAttachmentHandler.create("incident", c.data.guid);
+			c.attachmentHandler.uploadAttachment(file).then(function (response) {
+				c.data.attachments[index] = response;
+			});
+		});
+	};
+	
+	c.removeAttachment = function (index) {
+		//debugger;
+		var removed = c.data.attachments.splice(index, 1);
+		
+		var removeData = {
+			removeAttachment: true,
+			sys_id: removed[0].sys_id
+		};
+		
+		spUtil.get($scope, removeData).then(function (response) {
+			angular.extend(removeData, response.data);
+		});
+		
+		snAttachmentHandler.deleteAttachment(removed.sys_id).then(function (response) {
+			console.log("Attachment deleted", response);
+		});
+	};
+	
+	
+	function appendError(error) {
+		c.errorMessages.push(error);
+	}
+	
+	function setAttachments(attachments, action) {
+		c.data.attachments = attachments;
+		if (!action)
+			return;
+	}
+	
+	
+	c.updateDescInIncidnetMetric = function(desc) {
+		if(desc) {
+			var input = {
+				control: "description",
+				updateIncidentMetric: true,
+				metricID: c.data.metricId,
+				description: desc,
+				useML: !c.categoryShown()
+			};
+			
+			spUtil.get($scope, input).then(function (response) {
+				angular.extend(input, response.data);
+			});
+		}
+	};
+	
+	
+	c.updateDesc = function () {
+		c.updateMetric({
+			u_short_description: c.data.description,
+			sys_id: c.data.metricId
+		});
+	};
+	
+	
+	c.error = function (msg) {
+		$scope.$emit('$$uiNotification', [{
+			message: msg,
+			type: 'error'
+		}]);
+	};
+	
+	c.validateInputs = function () {
+		if (!c.type) {
+			c.error("Type cannot be left blank.");
+			return false;
+		}
+		
+		
+		if (!c.data.description.trim()) {
+			c.error("Description cannot be left blank.");
+			return false;
+		}
+		
+		// Ensure that Category is set to blank in case of type is Outage/Performance.
+		if (!c.stack) {
+			c.error("Please select a Stack.");
+			return false;
+		}
+		
+		return true;
+	};
+	
+	c.createIncident = function () {
+		// Setting submitted to true to avoid multiple clicks on the Submit button.
+		c.submitted = true;
+	
+		
+		c.data.createIncident = {
+			sys_id: c.data.guid,
+			type: c.type,
+			description: c.data.description.trim().substring(0, 250),
+			details: c.data.description.trim(),
+			caller: c.data.userID,
+			businessImpact: c.businessImpact,
+			attachments: c.data.attachments,
+			stack: c.stack,
+			resource: c.resource
+		};
+		
+		c.data.action = "createIncident";
+		c.server.update().then(function () {
+			// Set the value true for confirmation popup
+			$scope.isIncidentCreated = true;
+			var inc = c.data.incident;
+			
+			c.data.action = '';
+			// Create the incident URL based on the logged in user.
+		//	c.data.intUrl = "?id=cloud_resource_details&category=cloud_resources&sys_id="+parms.sys_id+"&view=sp&resource_table="+parms.resource_table+"&active_tab=incidents"; //"?id=cloud_activities&category=cloud_activities&sub_category=form&table=incident&sys_id="+ inc.incidentsysid;
+			
+			//$location.url(c.data.intUrl);
+				$location.search('new_inc',null).replace();
+			
+				var input = {
+					intSysID: inc.incidentsysid,
+					value: "done"
+				};
+				
+				spUtil.get($scope, input).then(function (response) {
+					angular.extend(input, response.data);
+				});
+			});
+		};
+		
+		c.submit = function () {
+			
+			// Validate inputs
+			if (!c.validateInputs())
+				return;
+			c.createIncident();
+		};
+		
+		var instance;
+	
+		c.cancelSubmission = function () {
+		$location.search('new_inc',null).replace();
+		};
+
+	}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>textarea {
+	max-width: 100%;
+}
+
+.report-incident-button {
+	width: 150px;
+	max-width: 100%;
+}
+
+.m-n{
+margin-top:7px!important;
+}
+
+.affected-instance-list-item {
+	cursor: pointer;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	&amp;.selected {
+		border-left: 3px solid #357ebd;
+	}
+}
+
+.attachment-list-item {
+	display: flex;
+	flex-direction: row;
+	.delete-attachment {
+		flex: 0 0 auto;
+		width: 30px;
+		font-size: 36px;
+		line-height: 36px;
+		span {
+			cursor: pointer;
+		}
+	}
+	.attachment-icon {
+		flex: 0 0 auto;
+		width: 40px;
+		font-size: 30px;
+		line-height: 36px;
+	}
+	.attachment-details {
+		flex: 1 1 auto;
+	}
+}
+
+.sp-attachments {
+	height: 40px;
+	border: 1px dashed #ddd;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.sp-loading-indicator {
+	color: #717171;
+	line-height: 50px;
+}
+
+#reportIssue{
+min-height: 353px;
+}
+
+.affectedInstance .dropdown-menu {
+	max-height:300px !important;
+    width: 300px !important;;
+	overflow-y: auto;
+}
+label p {
+	font-weight: 500;
+}
+
+.panel-body, .btn-default {
+  color: #2e2e2e;
+}
+
+a, .fa-shopping-cart, .cat-label  {
+  color: #0096EC;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #278efc;
+}
+
+.panel-heading {
+  background-color: #343D47;
+  color: #fff;
+  height: 52px;
+  border : 1px;
+}
+
+.radio{
+ margin-bottom: 0px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud_resource_incident_form</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope, elem, attr) {
+	scope.openAttachFileDialog = function($event) {
+		$event.stopPropagation();
+		
+		$injector.get('$timeout')(function() {
+			elem.find('#attach-file-dialog').click();
+		});
+	};
+	
+	$(document).ready(function(){
+			resize_window();	
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 353) + 'px';
+		$(elem).find('#reportIssue').css('height',panel_height);
+	}
+	
+}]]></link>
+        <name>Cloud Resource Incident Form</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function () {
+	var searchTerm = $sp.getParameter('description');
+	if (searchTerm) {
+		data.description = searchTerm;
+	}
+
+
+	if(input && input.removeAttachment) {
+		var readAttachmentGR = new GlideRecordSecure('sys_attachment');
+		if(readAttachmentGR.get(input.sys_id)) {
+			var attachmentGR = new GlideRecord('sys_attachment');
+			attachmentGR.addQuery('sys_id=' + input.sys_id);
+			attachmentGR.query();
+
+			if (attachmentGR.next()) {
+				attachmentGR.deleteRecord();
+			}
+		}
+
+		return;
+	}
+
+
+	var resouceGR = new GlideRecord('sn_cmp_stack_item');
+	resouceGR.addQuery("ci_instance_id",$sp.getParameter('sys_id'));
+	resouceGR.query();
+	if (resouceGR.next()) {
+		data.resource = resouceGR.getValue('sys_id');
+		data.resource_name = resouceGR.getDisplayValue('ci_instance_id');
+		data.stack =  resouceGR.getValue('stack');
+		data.stack_name =  resouceGR.getDisplayValue('stack');
+
+	}
+	
+	// Generating a guid for our new incident record right off the bat so that
+	// we can use it for the attachments.
+	if(!input)
+	{
+		
+		data.guid = gs.generateGUID();	
+	}	
+
+
+
+	if (input && input.action === "createIncident") {
+
+		data.incident = new CreateCloudIncidentUtil().createIncident(input.createIncident);
+		return;
+	}
+
+	data.userID = gs.getUserID();
+	data.consumerEndpointURL = options.consumer_endpoint_url;
+	data.businessImpactQuestion = [];
+	data.categories = [];
+
+	// Populating the Business Impact question values
+	var businessImpactQuestionName = 'Business Impact';
+	var businessQuestionGR = new GlideRecord('question_choice');
+	businessQuestionGR.addEncodedQuery('question.name=' + businessImpactQuestionName);
+	businessQuestionGR.orderBy('order');
+	businessQuestionGR.query();
+
+	while (businessQuestionGR.next()) {
+		data.businessImpactQuestion.push({
+			value: businessQuestionGR.getDisplayValue('value'),
+			label: businessQuestionGR.getDisplayValue('text')
+		});
+	}
+
+
+
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-14 09:43:02</sys_created_on>
+        <sys_id>9558c1b3677032007f4eff5617415a39</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>Cloud Resource Incident Form</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_9558c1b3677032007f4eff5617415a39</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-18 10:20:37</sys_updated_on>
+        <template><![CDATA[<div>
+  <div class="panel panel-default" style="margin-bottom:0px">
+    <!-- BEGIN header -->
+    <!--div class="panel-heading">
+<h4 class="panel-title m-n">${Report an Incident}</h4>
+</div-->
+    <!-- END header -->
+    <!-- BEGIN body -->
+    <div class="panel-body" id="reportIssue" style="overflow-y: auto;height:551px">
+      <div class="m-r-none m-l-none">
+        <!-- BEGIN type -->
+        <div class="m-b-xs">
+          <label>${Incident Type} 
+            <span style="color: #e51b24">(Required)</span>
+          </label>
+          <div class="panel panel-default" style="margin-bottom: 0px;">
+            <div class="panel-body" style="padding-top: 0px;padding-bottom: 0px;">
+              <div class="sp-row-content row">
+                <div class="col-md-6">
+                  <div class="radio">
+                    <label>
+                      <input id="question" ng-model="c.type" type="radio" value="Question" class="text-lg">
+                      <strong>${Question}</strong>
+                      <p>${If you want more information on using or administering your instance.}</p>
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input id="request" ng-model="c.type" type="radio" value="Request" class="text-lg">
+                      <strong>${Request}</strong>
+                      <p>If you need the support team to perform a task in your instance not available as a service.</p>
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input id="broken" ng-model="c.type" type="radio" value="Something is broken" class="text-lg">
+                      <strong>${Something is broken}</strong>
+                      <p>If you experience unexpected behaviour in your instance.</p>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="radio">
+                    <label>
+                      <input id="performance" ng-model="c.type" type="radio" value="Performance Issue" class="text-lg">
+                      <strong>${Performance issue}</strong>
+                      <p>If you experience slowness with your instance.</p>
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input id="outage" ng-model="c.type" type="radio" value="Outage" class="text-lg">
+                      <strong>${Outage}</strong>
+                      <p>If you cannot access or use your instance.</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="m-b-xs" id='e613615bdbd9aa04c626750aaf961918' ng-hide="c.isMandatory()">
+          <div class="row">
+            <div class="col-md-6">
+              <label>Stack
+              </label>
+              <input ng-model="data.stack_name" ng-readonly="true" id="sp_formfield_classification" data-type="string" placeholder="" class="form-control ng-pristine ng-valid ng-scope ng-empty ng-valid-maxlength ng-touched" readonly="readonly">
+            </div>
+            <div class="col-md-6">
+              <label>Resource
+              </label>
+              <input ng-model="data.resource_name" ng-readonly="true" id="sp_formfield_classification" data-type="string" placeholder="" class="form-control ng-pristine ng-valid ng-scope ng-empty ng-valid-maxlength ng-touched" readonly="readonly">
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- END type -->
+      <!-- BEGIN description -->
+      <div class="m-b-xs">
+        <label>${Describe the issue} 
+          <span style="color: #e51b24">(Required)</span>
+        </label>
+        <textarea id="short-description" ng-model="c.data.description" class="form-control" style="padding-top: 0px; padding-bottom: 0px;" rows="2" placeholder="Recommended details.">{{data.description}}</textarea>
+      </div>
+      <!-- END description -->
+
+      <!-- START impact -->
+      <div class="m-b-none">
+        <!--label>${Select impact}</label-->
+        <!--div class="panel panel-default" style="margin-bottom: 5px;"-->
+        <!---div class="panel-body padder-t-none padder-b-none"-->
+        <div class="row m-t-xs">
+          <div class="col-md-6">
+            <fieldset class="form-group" style="margin-bottom: 5px;">
+              <label>${What is the business impact?}
+
+                <span style="color: #e51b24" ng-if="c.isMandatory()">(Required)</span>
+              </label>
+              <sn-choice-list id="severity-dropdown" sn-model="c.businessImpact" sn-text-field="label" sn-value-field="value" sn-items="data.businessImpactQuestion" sn-options="{placeholder:'Select business impact'}"></sn-choice-list>
+            </fieldset>
+          </div>
+        </div>
+
+        <!--/div-->
+        <!--/div-->
+      </div>
+      <!-- END impact -->
+      <!-- START Attachment Handler -->
+      <div ng-multiple="true" ng-file-drop="c.addAttachment($files)" class="m-b-none" id="attachments">
+        <label>${Attach screenshots, logs, etc.}</label>
+        <div ng-click="openAttachFileDialog($event)" class="sp-attachments m-b-xs">
+          <div class="sp-no-attachments text-center text-italic text-muted">
+            <em>${Click or drop to add files}</em>
+          </div>
+        </div>
+        <input style="display: none;" type="file" ng-file-select="c.addAttachment($files)" aria-hidden="true" tabindex="-1" ng-click="$event.stopPropagation();" multiple="" id="attach-file-dialog" />
+        <ul ng-if="c.data.attachments.length > 0" class="list-group">
+          <li ng-repeat="attachment in c.data.attachments track by $index" class="list-group-item attachment-list-item">
+            <div class="delete-attachment">
+              <span ng-if="!attachment.loading" ng-click="c.removeAttachment($index)" id="remove-attachment">&times;</span>
+              <div ng-if="attachment.loading" class="sp-loading-indicator la-sm">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <div class="attachment-icon">
+              <span class="fa" ng-class="{'fa-file-o': !attachment.isImage, 'fa-file-image-o': attachment.isImage}"></span>
+            </div>
+            <div class="attachment-details">
+              <a href>{{attachment.file_name}}</a>
+              <p ng-hide="attachment.loading" class="text-muted m-b-none">{{attachment.size}} &middot; {{attachment.content_type}}</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <!-- END Attachment Handler -->
+      <div class="row" style="padding-top:5px">
+        <div class="col md-12 text-center">
+          <button ng-click="c.cancelSubmission()" type="button" class="btn btn-default report-incident-button" id="buttonCancel">${Cancel}</button>
+          <button ng-click="c.submit()" type="button" class="btn btn-primary m-l report-incident-button" ng-disabled="c.submitted" id="expert_next">${Submit}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END body -->
+</div>
+
+<script type="text/ng-template" id="instance-search.html">
+									<a class="ta-item">
+										<span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+  </a>
+</script>
+
+]]></template>
+    </sp_widget>
+</record_update>

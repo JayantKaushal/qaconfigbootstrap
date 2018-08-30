@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Rule Action Script" max_length="40" name="sn_cmp_pol_action_script" type="collection">
+        <element hint="Select an Action Category." label="Action Script Category" max_length="32" name="action_script_cat" reference="sn_cmp_pol_action_script_cat" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Policy description." label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Name of the policy." label="Name" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element hint="Script to be executed for Policy" label="Script" max_length="4000" name="script" type="script"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+        <index name="index2">
+            <element name="action_script_cat"/>
+        </index>
+    </element>
+</database>

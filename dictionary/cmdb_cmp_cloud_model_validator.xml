@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cloud Model Validator" max_length="40" name="cmdb_cmp_cloud_model_validator" type="collection">
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" choice="1" label="CI Class" max_length="80" name="ci_class" type="table_name">
+            <choice/>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Validator Name" max_length="100" name="validator_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Payload" max_length="4000" name="validator_payload" type="string"/>
+        <element choice="1" label="Validator" max_length="40" name="validator_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="INSERT" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="UPDATE" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="LOOKUP" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="INSERT/UPDATE" sequence="4" value="4"/>
+            </choice>
+        </element>
+    </element>
+</database>

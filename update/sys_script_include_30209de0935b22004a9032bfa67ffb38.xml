@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpTagUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CmpTagUtil</name>
+        <script><![CDATA[var CmpTagUtil = Class.create();
+/* eslint-disable no-dupe-keys, no-new-wrappers */
+CmpTagUtil.prototype = {
+
+	CMDB_KEY_VALUE_TABLE: 'cmdb_key_value',
+	COST_TABLE: 'sn_cmp_cost',
+	EMPTY_TAG_VALUE_SET_ID: 'cf35ebb5936c32004a9032bfa67ffbc8',
+	INTERACTIVE_FILTER_REF_TABLE: 'sys_ui_hp_reference',
+	INTERACTIVE_FILTER_TABLE: 'sys_ui_hp_publisher',
+	ORDER_TABLE: 'sn_cmp_order',
+	POOL_FILTER_TABLE: 'sn_cmp_rp_filter',
+	POOL_TABLE: 'sn_cmp_resource_pool',
+	PROVIDER_PROPERTY_TABLE : 'sn_capi_provider_property',
+	RESOURCE_TAG_HISTORY_TABLE: 'sn_cmp_rsrc_tag_history',
+	TAG:'[CmpTagUtil]',
+	TAG_NAME_TABLE: 'sn_cmp_tag_name',
+	TAG_VALUE_SET_TABLE: 'sn_cmp_tag_value_set',
+	TAG_VALUE_TABLE: 'sn_cmp_tag_value',
+	TLR_OP_ATTR_TABLE: 'sn_cmp_tlr_op_attr',
+	EMPTY: '(empty)',
+
+	tagNames: {},
+	tagLabels: {},
+	
+    initialize: function() {
+		
+		// Keep tag names in memory for repeated use
+		var gr = new GlideRecord(this.TAG_NAME_TABLE);
+		gr.query();
+		while (gr.next()) {
+			if (gr.active && (gr.tag_type == 'ServiceNow' || gr.tag_type == 'Custom'))
+				this.tagNames[gr.getValue('name').toLowerCase()] = {'label': gr.getValue('label'),
+													  'table': gr.getValue('table'),
+													  'id': gr.getValue('sys_id')};
+			this.tagLabels[gr.getValue('label')] = true;
+		}
+	},
+	
+	associateStackTagValuesWithCi: function(stackId, ciId) {
+		var stackHistGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+		stackHistGr.addQuery('cmdb_ci', stackId);
+		stackHistGr.addQuery('current', true);
+		stackHistGr.query();
+		if (stackHistGr.next()) {
+			var ciHistGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+			ciHistGr.addQuery('cmdb_ci', ciId);
+			ciHistGr.addQuery('current', true);
+			ciHistGr.query();
+			if (ciHistGr.next()) {
+				// if CI already has a more or equally recent tag set, do not replace
+				if (ciHistGr.tag_values.tag_id >= stackHistGr.tag_values.tag_id) {
+					return ciHistGr.getUniqueValue();
+				}
+				ciHistGr.current = false;
+				ciHistGr.update();
+			}
+			var histGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+			histGr.initialize();
+			histGr.current = true;
+			histGr.cmdb_ci = ciId+'';
+			histGr.tag_values = stackHistGr.tag_values;
+			return histGr.insert();
+		}
+	},
+
+	associateTagValuesWithCi: function(tagValues, ciId) {
+		var tagValuesObj = global.JSON.parse(tagValues);
+		if (Array.isArray(tagValuesObj))
+			tagValuesObj = this.flatten(tagValuesObj);
+		this.setCiKeyValuePairs(tagValuesObj, ciId);
+		var tagValueSetId = this.getOrCreateTagValueSet(tagValuesObj);
+		
+		if (gs.nil(tagValueSetId) || gs.nil(ciId)) {
+			return;
+		}
+		var histGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+		histGr.addQuery('cmdb_ci', ciId);
+		histGr.addQuery('current', true);
+		histGr.query();
+		if (histGr.next()) {
+			if (histGr.tag_values == tagValueSetId) {
+				return histGr.getUniqueValue();
+			} else {
+				var tagId = this.getOrGenerateTagId(tagValuesObj);
+				
+				// Do not replace if tag id indicates that the instance-side tags are more or equally recent
+				var histTagId = histGr.tag_values.tag_id+'';
+				if (tagId.substring(0,8) != '10000000' && histTagId.substring(0,8) != '10000000'
+					&& histGr.tag_values.tag_id+'' >= tagId)
+					return histGr.getUniqueValue();					
+				
+				histGr.current = false;
+				histGr.update();
+			}
+		}
+		histGr.initialize();
+		histGr.current = true;
+		histGr.cmdb_ci = ciId+'';
+		histGr.tag_values = tagValueSetId;
+		return histGr.insert();				
+	},
+	
+	flatten: function(tagValuesArray) {
+		var tagValues = {};
+		for (var i=0; i<tagValuesArray.length; i++)
+			tagValues[tagValuesArray[i].key] = tagValuesArray[i].value;
+		return tagValues;
+	},
+	
+	setCiKeyValuePairs: function(tagValues, ciId) {
+		var kvGr = new GlideRecord(this.CMDB_KEY_VALUE_TABLE);
+		var keyVals = {};
+		kvGr.addQuery('configuration_item', ciId);
+		kvGr.query();
+		
+		while (kvGr.next()) {
+			var key = kvGr.getValue('key');
+			if (this._hasOwnPropertyCaseInsensitive(tagValues, key)) {
+				// update value for keys that already exist
+				var tagVal = this._getPropertyCaseInsensitive(tagValues, key);
+				if (tagVal != kvGr.getValue('value')) {
+					kvGr.value = tagVal;
+					kvGr.update();
+				}
+				keyVals[key] = tagVal;
+			} else {
+				// clear value in kv records for keys no longer on the resource
+				kvGr.deleteRecord();
+			}
+		}
+		// add kv records for new keys
+		for (var k in tagValues) {
+			if (!this._hasOwnPropertyCaseInsensitive(keyVals, k)) {
+				kvGr.initialize();
+				kvGr.configuration_item = ciId;
+				kvGr.key = k;
+				kvGr.value = tagValues[k];
+				kvGr.insert();
+			}
+			if (!this._hasOwnPropertyCaseInsensitive(this.tagLabels, k)) {
+				this.createUserDefinedTag(k);
+			}
+		}
+	},
+	
+	createUserDefinedTag: function(label) {
+		var tagGr = new GlideRecord(this.TAG_NAME_TABLE);
+		tagGr.initialize();
+		tagGr.label = label;
+		tagGr.name = "u_"+ label.toLowerCase().replace(/[ :-]/g, "_");
+		tagGr.tag_type = 'User-defined';
+		tagGr.active = false;
+		tagGr.visible = false;
+		tagGr.insert();
+	},
+	
+	associateEmptyTagValuesWithCi: function(ciId) {
+		var histGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+		histGr.initialize();
+		histGr.current = true;
+		histGr.cmdb_ci = ciId;
+		histGr.tag_values = this.EMPTY_TAG_VALUE_SET_ID;
+		return histGr.insert();				
+	},
+	
+	getOrCreateTagValueSet: function(tagValues) {
+		var tagId = this.getOrGenerateTagId(tagValues);	
+		
+		var tvsGr = new GlideRecord(this.TAG_VALUE_SET_TABLE);
+		if (!tvsGr.get('tag_id', tagId)) {
+			tvsGr.initialize();
+			tvsGr.tag_id = tagId;
+		}
+		this.matchGroupUserStack(tvsGr, tagValues, tagId);
+		for (var tagName in this.tagNames) {
+			if (gs.nil(tvsGr[tagName]) && this._hasOwnPropertyCaseInsensitive(tagValues, this.tagNames[tagName].label)) {
+				tvsGr[tagName] = this.getOrCreateTagValue(tagName,
+									this._getPropertyCaseInsensitive(tagValues, this.tagNames[tagName].label));
+			}
+		}
+		tvsGr.update();
+		return tvsGr.getUniqueValue();		
+	},
+
+	
+	getOrCreateTagValue: function(tagName, strValue, sysId) {
+		var tvGr = new GlideRecord(this.TAG_VALUE_TABLE);
+		tvGr.addQuery('display_value', strValue);
+		tvGr.addQuery('tag', this.tagNames[tagName].id);
+		if (!gs.nil(this.tagNames[tagName].table))
+			tvGr.addQuery('value_table', this.tagNames[tagName].table);
+		else
+			tvGr.addNullQuery('value_table');
+		if (sysId == this.EMPTY)
+			tvGr.addNullQuery('value_id');
+		else if (!gs.nil(sysId))
+			tvGr.addQuery('value_id', sysId);
+		
+		tvGr.query();
+		if (!tvGr.next()) {
+			tvGr.initialize();
+			tvGr.display_value = strValue;
+			if (!gs.nil(this.tagNames[tagName].table)) {
+				tvGr.value_table = this.tagNames[tagName].table;
+				var refGr = new GlideRecord(tvGr.value_table);
+				if (refGr.isValid() && sysId != this.EMPTY) {
+					// Get by display name.
+					// First record is chosen if multiple records have the same name
+					if (refGr.get(strValue))
+						tvGr.value_id = refGr.getUniqueValue();
+				}
+			}
+			tvGr.tag = this.tagNames[tagName].id;
+			tvGr.insert();
+
+		}
+		return tvGr.getUniqueValue();
+	},
+	
+	/**
+	 * Given a new tag value set record and a map of discovered tag value strings,
+	 * try to set the User, User Group, and Stack tags appropriately given the
+	 * existing User, Group, and Stack assignments in ServiceNow.
+	 */
+	matchGroupUserStack: function(tvsGr, tagValues, tagId) {
+		if (this._hasOwnPropertyCaseInsensitive(tagValues, 'User') && this._hasOwnPropertyCaseInsensitive(tagValues, 'User Group')) {
+			var ugmGr = new GlideRecord('sys_user_grmember');
+			var tagValUser = this._getPropertyCaseInsensitive(tagValues, 'User');
+			var tagValUserGroup = this._getPropertyCaseInsensitive(tagValues, 'User Group');
+
+			ugmGr.addQuery('user.name', tagValUser);
+			ugmGr.addQuery('group.name', tagValUserGroup);
+			ugmGr.query();
+			if (ugmGr.next()) {
+				tvsGr.user = this.getOrCreateTagValue('user', tagValUser, ugmGr.getValue('user'));
+				tvsGr.user_group = this.getOrCreateTagValue('user_group', tagValUserGroup,
+															ugmGr.getValue('group'));
+			} else {
+				if (ugmGr.get('user.name', tagValUser))
+					tvsGr.user = this.getOrCreateTagValue('user', tagValUser, ugmGr.getValue('user'));
+				tagValues['User Group'] = 'Unmanaged';
+			}
+		}
+		
+		// If User and/or User Group is set but Stack isn't, set a Stack name from those.
+		if (!this._hasOwnPropertyCaseInsensitive(tagValues, 'Stack')) { 
+			if (this._hasOwnPropertyCaseInsensitive(tagValues, 'User')) {
+				tagValues['Stack'] = this._getPropertyCaseInsensitive(tagValues, 'User');
+				if (this._hasOwnPropertyCaseInsensitive(tagValues, 'User Group'))
+					tagValues['Stack'] += ' (' + this._getPropertyCaseInsensitive(tagValues, 'User Group') + ')';
+			} else if (this._hasOwnPropertyCaseInsensitive(tagValues, 'User Group'))
+				tagValues['Stack'] = this._getPropertyCaseInsensitive(tagValues, 'User Group');
+		}
+		
+		if (this._hasOwnPropertyCaseInsensitive(tagValues, 'Stack')) {
+			var stackGr = new GlideRecord('sn_cmp_stack');
+ 			if (stackGr.isValid()) {
+				var tagValStack = this._getPropertyCaseInsensitive(tagValues, 'Stack');
+				stackGr.addQuery('tag_values.tag_id', tagId);
+				stackGr.addQuery('name', tagValStack);
+				stackGr.query();
+				if (stackGr.next())
+					tvsGr.stack = this.getOrCreateTagValue('stack', tagValStack, stackGr.getUniqueValue());
+				else
+					tvsGr.stack = this.getOrCreateTagValue('stack', tagValStack, this.EMPTY);
+			}
+		}
+	},
+	
+	setCustomTagValuesDisplay: function(tvsGr) {
+		var tagGr = new GlideRecord(this.TAG_NAME_TABLE);
+		tagGr.addQuery('tag_type', 'Custom');
+		tagGr.query();
+		tvsGr.custom_values = '';
+		while (tagGr.next()) {
+			var tagName = tagGr.getValue('name').toLowerCase();
+			if (!gs.nil(tvsGr[tagName])) {
+				var tagVal = tvsGr[tagName].display_value;
+				if (!gs.nil(tagVal)) {
+					if (!gs.nil(tvsGr.custom_values))
+						tvsGr.custom_values += ', ';
+					tvsGr.custom_values += tagGr.label+':'+tagVal;
+				}
+			}
+		}
+	},
+	
+	supportCustomTag: function(tagGr) {
+		this.tagNames[tagGr.getValue('name')] = {
+			'label': tagGr.getValue('label'),
+			'table': tagGr.getValue('table'),
+			'id': tagGr.getValue('sys_id')
+		};
+		
+		this.setCustomTagColumn(tagGr.name, tagGr.label);
+		if (tagGr.value_type == 'Variable')
+			this.setTLROperationAttribute(tagGr);
+		if (GlidePluginManager.isActive("com.snc.pa.premium"))
+			this.setInteractiveFilter(tagGr);
+	},
+		
+	setCustomTagColumn: function(name, label) {
+		var updater = new global.CmpImportHelper();
+		updater.setCustomTagColumn(name, label);
+		
+		this.migrateKeyValuesToTagColumn(name, label);
+	},
+	
+	migrateKeyValuesToTagColumn: function(name, label) {
+		var kvGr = new GlideRecord(this.CMDB_KEY_VALUE_TABLE);
+		kvGr.addQuery('key', label);
+		kvGr.query();
+		
+		while (kvGr.next()) {
+			var tagHistGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+			tagHistGr.addQuery('cmdb_ci', kvGr.getValue('configuration_item'));
+			tagHistGr.addQuery('current', true);
+			tagHistGr.query();
+			if (tagHistGr.next()) {
+				var tvSet = new GlideRecord(this.TAG_VALUE_SET_TABLE);
+				if (tvSet.get(tagHistGr.getValue('tag_values')) && tvSet.getValue('tag_id') > '01') {
+					var val = this.getOrCreateTagValue(name, kvGr.getValue('value'));
+					tvSet.setValue(name, val);
+					tvSet.update();
+				}		
+			}
+		}
+	},
+
+	removeTLROperationAttribute: function(varName) {
+		var opAttrGr = new GlideRecord(this.TLR_OP_ATTR_TABLE);
+		if (opAttrGr.isValid()) {
+			opAttrGr.addNullQuery('template_type');
+			opAttrGr.addQuery('operation', 'Provision');
+			opAttrGr.addQuery('attribute', varName);
+			opAttrGr.query();
+
+			if (opAttrGr.next()) {
+				opAttrGr.deleteRecord();
+				
+				// remove parameter from existing blueprints				
+				var oiParamGr = new GlideRecord('sn_cmp_rb_op_impl_param');
+				oiParamGr.addQuery('name', varName);
+				oiParamGr.addQuery('operation.operation.name', 'Provision');
+				oiParamGr.addQuery('operation.resource.is_tlr', true);
+				oiParamGr.query();
+				while (oiParamGr.next()) {
+					oiParamGr.deleteRecord();
+				}
+				
+				var attrGr = new GlideRecord('sn_cmp_bp_stage_res_op_attr');
+				attrGr.addQuery('name', varName);
+				attrGr.addQuery('stage_resource_operation.alias_name',
+								'Blueprint Container Resource.Provision');
+				attrGr.query();
+				while (attrGr.next()) {
+					var attrID = attrGr.getUniqueValue();
+					
+					var propGr = new GlideRecord('sn_cmp_bp_global_prop');
+					propGr.addQuery('bp_stage_res_op_attr', attrID);
+					propGr.query();
+					if (propGr.next())
+						propGr.deleteRecord();
+					
+					attrGr.deleteRecord();
+				}
+			}
+		}		
+	},
+	
+	setTLROperationAttribute: function(tagGr) {
+		var opAttrGr = new GlideRecord(this.TLR_OP_ATTR_TABLE);
+		if (opAttrGr.isValid()) {
+			opAttrGr.addNullQuery('template_type');
+			opAttrGr.addQuery('operation', 'Provision');
+			opAttrGr.addQuery('attribute', tagGr.variable_name+'');
+			opAttrGr.query();
+
+			// If not found, create new one.
+			if (!opAttrGr.next()) {
+				opAttrGr.initialize();
+				opAttrGr.operation = 'Provision';
+				opAttrGr.attribute = tagGr.variable_name+'';
+				opAttrGr.mandatory = false;
+				opAttrGr.visible = true;
+				opAttrGr.defaultvalue = '${parameter.'+opAttrGr.attribute+'}';
+			}
+
+			if (gs.nil(tagGr.table))
+				opAttrGr.data_source_type = 'Text';
+			else {
+				opAttrGr.data_source_type = 'Pools';
+				opAttrGr.data_source_value = this.getOrCreatePool(tagGr.table, opAttrGr.attribute);
+			}
+			opAttrGr.update();
+		}
+	},
+
+	getOrCreatePool: function(table, varName) {
+		var poolGr = new GlideRecord(this.POOL_TABLE);
+		if (poolGr.get('lookup_table', table)) {
+		    var filterGr = new GlideRecord(this.POOL_FILTER_TABLE);
+                    filterGr.addQuery('resource_pool',poolGr.getUniqueValue());
+		    filterGr.addQuery('name',"All");
+		    filterGr.query();
+
+		    if (!filterGr.next()) {
+			filterGr = new GlideRecord(this.POOL_FILTER_TABLE);
+			filterGr.initialize();
+			filterGr.name = 'All';
+			filterGr.resource_pool = poolGr.getUniqueValue();
+			filterGr.type = 'query';
+			filterGr.insert();
+		    }
+		    var datasourceValue = 'ServiceNow::Pools::'+poolGr.getValue('name')+'.'+filterGr.getValue('name');
+		    return datasourceValue;
+		}
+		
+		// If no resource pool is found for the table,
+		// create a new one along with an 'All' filter
+		poolGr.initialize();
+		poolGr.name = varName+'Pool';
+		poolGr.lookup_table = table;
+		poolGr.lookup_value = 'sys_id';
+		
+		// Get display field (scope friendly)
+		var dictGr = new GlideRecord('sys_dictionary');
+		dictGr.addQuery('name', table);
+		dictGr.addQuery('display', true);
+		dictGr.query();
+		if (dictGr.next())
+			poolGr.lookup_label = dictGr.getValue('element');
+		else
+			poolGr.lookup_label = 'name';
+
+		poolGr.type = 'static';
+		var poolId = poolGr.insert();
+		
+		var filterGr = new GlideRecord(this.POOL_FILTER_TABLE);
+		filterGr.initialize();
+		filterGr.name = 'All';
+		filterGr.resource_pool = poolId;
+		filterGr.type = 'query';
+		filterGr.insert();
+		
+		return 'ServiceNow::Pools::'+poolGr.getValue('name')+'.'+filterGr.getValue('name');
+	},
+	
+	setInteractiveFilter: function(tagGr) {
+		var ifGr = new GlideRecord(this.INTERACTIVE_FILTER_TABLE);
+		var lookUpName = 'Cloud Cost '+tagGr.label+' - Single';
+		if (!ifGr.get('look_up_name', lookUpName)) {
+			ifGr.initialize();
+			ifGr.type = 2;
+			ifGr.name = tagGr.label;
+			ifGr.look_up_name = lookUpName;
+			ifGr.ui_control_type = 2;
+			ifGr.reference_table = 'sn_cmp_tag_value';
+			ifGr.reference_conditions = 'tag='+tagGr.sys_id+'^EQ';
+			
+			var updater = new global.CmpImportHelper();
+			var ifId = updater.updateRecord(ifGr);
+			
+			var ifRefGr = new GlideRecord(this.INTERACTIVE_FILTER_REF_TABLE);
+			ifRefGr.initialize();
+			ifRefGr.publisher_reference = ifId;
+			ifRefGr.reference_table = this.COST_TABLE;
+			ifRefGr.reference_field = 'tag_values.'+tagGr.name;
+			updater.updateRecord(ifRefGr);
+		}
+	},
+	
+	getProviderProperty: function(providerId, propKey) {
+		var ppGr = new GlideRecord(this.PROVIDER_PROPERTY_TABLE);
+		ppGr.addQuery('provider', providerId);
+		ppGr.addQuery('key', propKey);
+		ppGr.query();
+		if(ppGr.next()) {
+			return ppGr.value+'';
+		}
+		return '';
+	},
+	
+	getTagValuesFromOrder: function(orderId) {
+		
+		var result = {};
+		
+		var orderGr = new GlideRecord(this.ORDER_TABLE);
+		if (orderGr.get(orderId+'')) {
+			if (!gs.nil(orderGr.tag_values)) {
+				return orderGr.getValue('tag_values');
+			}
+		
+			var formData = global.JSON.parse(orderGr.order_form_data+'');
+			result["Tag Id"] = this.generateTagId();
+			
+			var tagNameGr = new GlideRecord(this.TAG_NAME_TABLE);
+			tagNameGr.addQuery('active', true);
+			tagNameGr.query();
+			while (tagNameGr.next()) {
+				if (tagNameGr.value_type == 'Variable') {
+					var varName = tagNameGr.variable_name+'';
+					if (!gs.nil(formData[varName])) {
+						var opAttrGr = new GlideRecord(this.TLR_OP_ATTR_TABLE);
+						opAttrGr.addNullQuery('template_type');
+						opAttrGr.addQuery('operation', 'Provision');
+						opAttrGr.addQuery('attribute', varName);
+						opAttrGr.query();
+					
+						// If value is from a pool or direct reference, convert from ref 
+						// to display name. Otherwise assume the name is already given
+						if (opAttrGr.next() 
+							&& (opAttrGr.data_source_type=='Pools' 
+								|| opAttrGr.data_source_type=='Reference'))
+						{
+							var valRefGr = new GlideRecord(tagNameGr.table+'');
+							if (valRefGr.get(formData[varName]+''))
+								result[tagNameGr.label] = valRefGr.getDisplayValue();
+						} else {
+							result[tagNameGr.label] = formData[varName]+'';
+						}
+					}
+				} else if (tagNameGr.value_type == 'Order Field') {
+					var fieldName = tagNameGr.order_field+'';
+					if (!gs.nil(orderGr.getElement(fieldName)))
+						result[tagNameGr.label] = orderGr.getElement(fieldName)+'';
+				} else if (tagNameGr.value_type == 'Script') {
+					var script = tagNameGr.script+'';
+					var evaluator = new GlideScopedEvaluator();
+					var res = evaluator.evaluateScript(tagNameGr, 'script', null);
+					if (!gs.nil(res))
+						result[tagNameGr.label] = res;
+				}
+			}
+			orderGr.tag_values = global.JSON.stringify(result);
+			orderGr.update();
+		}
+		return global.JSON.stringify(result);
+	},
+
+	/**
+	 * Given a new resource-tag association (sn_cmp_rsrc_tag_history), make sure the
+	 * resource's owned_by and assigned_to user fields are set to the user in the
+	 * resource's "User" tag, and the assignment_group and/or owner_group fields are set
+	 * to the user group matching the "User Group" tag.
+	 *
+	 * Also, find or create a stack for this resource that matches the Stack tag.
+	 */
+	setOwnersFromTags: function(current) {
+		var ciGr = new GlideRecord(current.cmdb_ci.sys_class_name);
+		if (ciGr.get(current.cmdb_ci)) {
+			var updated = false;
+			
+			// Assign a user based on "User" tag value
+			if (!gs.nil(current.tag_values.user) && !gs.nil(current.tag_values.user.value_id)
+					&& ciGr.owned_by != current.tag_values.user.value_id) {
+				ciGr.assigned_to = current.tag_values.user.value_id;
+				ciGr.owned_by = current.tag_values.user.value_id;
+				updated = true;
+			}
+			
+			// Assign a user group based on "User Group" tag value
+			if (!gs.nil(current.tag_values.user_group) && !gs.nil(current.tag_values.user_group.value_id)
+					&& ciGr.assignment_group != current.tag_values.user_group.value_id) {
+				ciGr.assignment_group = current.tag_values.user_group.value_id;
+				// Also assign owner group (for stacks)
+				if (ciGr.getRecordClassName() == 'sn_cmp_stack') {
+					ciGr.owner_group = current.tag_values.user_group.value_id;
+				}
+				updated = true;
+			}
+			
+			// Assign a stack based on "Stack" tag value
+			if (!gs.nil(current.tag_values.stack) && current.cmdb_ci.sys_class_name != 'sn_cmp_stack') {
+				var stackId = this.setStackFromTags(current);
+				this.setStackItem(current.cmdb_ci, stackId);
+			}
+
+			if (updated)
+				ciGr.update();
+		}
+	},	
+
+	/**
+	 * Given a new resource-tag association (sn_cmp_rsrc_tag_history),
+	 * Find or create a stack to for this resource that matches the Stack tag.
+	 * If a new stack must be created, make it unmanaged since no blueprint
+	 * is available.
+	 */
+	setStackFromTags: function(current) {
+		var stackGr = new GlideRecord('sn_cmp_stack');
+
+		// ignore in discovery-only environments
+		if (!stackGr.isValid())
+			return '';
+
+		var stackId = current.tag_values.stack.value_id;
+		
+		if (gs.nil(stackId)) {
+			if (stackGr.get('tag_values.tag_id', current.tag_values.tag_id))
+				stackId = stackGr.getUniqueValue();
+			
+			if (gs.nil(stackId)) {
+				// Create stack
+				stackGr.initialize();
+				stackGr.name = current.tag_values.stack.display_value;
+				stackGr.stack_type = 1;   // Workload
+				stackGr.stack_tier = 1;   // Simple
+				stackGr.stack_status = 7; // Unmanaged
+
+				// Get Cloud Account for this CI
+				var relGr = new GlideRecord('cmdb_rel_ci');
+				relGr.addQuery('type.name','Hosted on::Hosts');
+				relGr.addQuery('parent', current.cmdb_ci);
+				relGr.query();
+				if (relGr.next()) {
+					var asscGr = new GlideRecord('sn_cmp_ca_assc_datacenter');
+					asscGr.addQuery('ldc_id', relGr.child);
+					asscGr.query();
+					if (asscGr.getRowCount == 1 && asscGr.next()) {
+						stackGr.cloud_account = asscGr.cloud_account;
+					}
+				}
+				stackId = stackGr.insert();
+
+				// Associate the resource's tag values to its stack 
+				var tagHistoryGr = new GlideRecord('sn_cmp_rsrc_tag_history');
+				tagHistoryGr.initialize();
+				tagHistoryGr.cmdb_ci = stackId;
+				tagHistoryGr.current = true;
+				tagHistoryGr.tag_values = current.tag_values;
+				tagHistoryGr.insert();			
+			}
+		
+			// Fix tag value to include ref to the new stack
+			var tagValueGr = new GlideRecord(this.TAG_VALUE_TABLE);
+			tagValueGr.initialize();
+			tagValueGr.tag = current.tag_values.stack.tag;
+			tagValueGr.display_value = current.tag_values.stack.display_value;
+			tagValueGr.value_table = 'sn_cmp_stack';
+			tagValueGr.value_id = stackId;
+			var newStackTv = tagValueGr.insert();
+			var tagValueSetGr = new GlideRecord(this.TAG_VALUE_SET_TABLE);
+			if (tagValueSetGr.get(current.tag_values)) {
+				tagValueSetGr.stack = newStackTv;
+				tagValueSetGr.update();
+			}
+		}
+		return stackId;
+	},
+
+	/**
+	 * Given a cmdb_ci resource  and a stack, find or create a stack item connecting
+	 * this resource to the stack. If a new stack must be created, make it unmanaged
+	 * since no blueprint is available.
+	 */
+	setStackItem: function(cmdb_ci, stackId) {
+		var itemGr = new GlideRecord('sn_cmp_stack_item');
+
+		// ignore in discovery-only environments
+		if (!itemGr.isValid())
+			return;
+
+		if(itemGr.get('ci_instance_id', cmdb_ci)) {
+			if (itemGr.stack != stackId) {
+				itemGr.stack = stackId;
+				itemGr.update();
+			}
+		} else {
+			// create item only if Stack is 'Unmanaged'
+			var stackGR = new GlideRecord('sn_cmp_stack');
+			if(stackGR.get(stackId) && stackGR.stack_status != 7){
+				return;
+			}
+
+			itemGr.initialize();
+			itemGr.ci_instance_id = cmdb_ci;
+			itemGr.stack = stackId;
+			itemGr.status = 2;
+			itemGr.alias = cmdb_ci.name;
+			var rbGr = new GlideRecord('sn_cmp_rb_resourceblock');
+			if (rbGr.get('refcitype', cmdb_ci.sys_class_name)) {
+				itemGr.resource_block_id = rbGr.getUniqueValue();
+			}
+			var relGr = new GlideRecord('cmdb_rel_ci');
+			relGr.addQuery('type.name','Hosted on::Hosts');
+			relGr.addQuery('parent', cmdb_ci);
+			relGr.query();
+			if (relGr.next()) {
+				itemGr.parent_ci_instance_id = relGr.child;
+				if (rbGr.get('refcitype', relGr.child.sys_class_name))
+					itemGr.parent_block_id = rbGr.sys_id;
+			}
+			itemGr.setWorkflow(false);
+			itemGr.insert();
+		}
+	},
+
+	/**
+	 * Generate an 11-character hex-code from the current time (in ms), and append 13 more
+	 * random hex digits to reduce any same-millisecond collisions to near zero (1 in 450 trillion)
+	 */
+	generateTagId: function() {
+		var timeStamp = new Date().getTime().toString(16);
+		var counter = Math.floor(Math.random() * 0xfffffffffffff).toString(16);
+		var paddedCounter = Array(Math.max(13 - counter.length + 1, 0)).join(0) + counter;
+		return timeStamp + paddedCounter;
+	},
+
+	/**
+	 * For tagValues that don't include a Tag Id, generate one based on a hash of the tag values
+	 */
+	getOrGenerateTagId: function(tagValues) {
+		if (this._hasOwnPropertyCaseInsensitive(tagValues, 'Tag Id'))
+			return this._getPropertyCaseInsensitive(tagValues, 'Tag Id');
+
+		var tvStr = new global.JSON().encode(tagValues);
+		var hash = 0;
+		for (i = 0; i < tvStr.length; i++) {
+			var ch = tvStr.charCodeAt(i);
+			hash = ((hash<<5)-hash)+ch;
+			hash = hash & hash; // Convert to 32bit integer
+		}
+		hash += 2147483648;
+		var tagId = '1000000000000000'+hash.toString(16);
+		return tagId;
+	},
+	
+	_hasOwnPropertyCaseInsensitive: function(obj, prop) {
+		return Object.keys(obj).filter(function (v) {
+             return v.toLowerCase() === prop.toLowerCase();
+		}).length > 0;
+	},	
+
+	_getPropertyCaseInsensitive: function(obj, prop) {
+		for (var i in obj)
+			if (i.toLowerCase() === prop.toLowerCase())
+				return obj[i];
+		return null;
+	},		
+	
+    type: 'CmpTagUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-21 18:22:42</sys_created_on>
+        <sys_id>30209de0935b22004a9032bfa67ffb38</sys_id>
+        <sys_mod_count>221</sys_mod_count>
+        <sys_name>CmpTagUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_30209de0935b22004a9032bfa67ffb38</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-26 19:22:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Stage Resource Operation Graph" max_length="40" name="sn_cmp_bp_stage_res_op_graph" type="collection">
+        <element label="Blueprint Stage Operation" max_length="32" name="blueprint_stage_op" reference="sn_cmp_bp_stage_op" reference_cascade_rule="delete" type="reference"/>
+        <element label="Child Stage Resource Operation" max_length="32" name="child_operation" reference="sn_cmp_bp_stage_resource_op" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="In Degree" max_length="40" name="in_degree" type="string"/>
+        <element label="Parent Stage Resource Operation" max_length="32" name="parent_operation" reference="sn_cmp_bp_stage_resource_op" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Status" max_length="40" name="status" type="string"/>
+        <index name="index">
+            <element name="child_operation"/>
+        </index>
+        <index name="index2">
+            <element name="blueprint_stage_op"/>
+        </index>
+        <index name="index3">
+            <element name="parent_operation"/>
+        </index>
+    </element>
+</database>

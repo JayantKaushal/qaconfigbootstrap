@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_db_view_table">
+    <sys_db_view_table action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <left_join>true</left_join>
+        <order>200</order>
+        <sys_class_name>sys_db_view_table</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-09 04:34:04</sys_created_on>
+        <sys_id>96890aa46770130005d1ff5557415ab3</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>cmdb_rel_ci</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_db_view_table_96890aa46770130005d1ff5557415ab3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-10 19:29:02</sys_updated_on>
+        <table>cmdb_rel_ci</table>
+        <variable_prefix>relci</variable_prefix>
+        <view display_value="sn_cmp_cmdb_ci_volume_template_location">06e886a46770130005d1ff5557415a90</view>
+        <where_clause>volume_sys_id=relci_parent</where_clause>
+    </sys_db_view_table>
+</record_update>

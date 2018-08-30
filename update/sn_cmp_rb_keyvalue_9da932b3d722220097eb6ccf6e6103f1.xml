@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_keyvalue">
+    <sn_cmp_rb_keyvalue action="INSERT_OR_UPDATE">
+        <action/>
+        <key>AdditionalParameters</key>
+        <object_mapping>false</object_mapping>
+        <owner_instance/>
+        <owner_table/>
+        <step display_value="Compute Interface.CreateNode">51a932b3d722220097eb6ccf6e6103e6</step>
+        <sys_class_name>sn_cmp_rb_keyvalue</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2017-03-01 07:55:31</sys_created_on>
+        <sys_id>9da932b3d722220097eb6ccf6e6103f1</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>AdditionalParameters</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_keyvalue_9da932b3d722220097eb6ccf6e6103f1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-28 06:08:59</sys_updated_on>
+        <value>{"HostName":"${parameter.Host}","ResourceGroup":"${parameter.ResourceGroup}","StorageAccount" : "$(ci.cmdb_ci_cloud_storage_account[${parameter.StorageAccount}].name)","StorageContainer" : "${parameter.StorageContainer}","SubscriptionID":"$(context.ServiceAccountID)","StorageAccountType":"${parameter.StorageAccountType}","ManagedDisk":"${parameter.ManagedDisk}"}</value>
+    </sn_cmp_rb_keyvalue>
+</record_update>

@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPBudgetBasedNotification</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPBudgetBasedNotification</name>
+        <script><![CDATA[var CMPBudgetBasedNotification = Class.create();
+var BUDGET         = "sn_cmp_budget";
+var USER           = "sys_user";
+var GROUP          = "sys_user_group";
+var GROUP_MEMBER   = "sys_user_grmember";
+var COST           = "sn_cmp_cost";
+var DEFAULT_BUDGET = "sn_cmp_budget_default";
+var HAS_ROLES      = "sys_user_has_role";
+var TAG_VALUE_SET  = "sn_cmp_tag_value_set";
+var USER_CONSUMPTION = "sn_cmp_user_budget_consumption";
+var GROUP_CONSUMPTION = "sn_cmp_group_budget_consumption";
+var BUDGET_THRESHOLD  = "sn_cmp_budget_notification";
+
+var userThresholdValue =0;
+var groupThresholdValue = 0;
+
+var groupAdmin = 'b2f7af4967b332007f4eff5617415a5f';
+CMPBudgetBasedNotification.prototype = {
+    initialize: function() {
+	},
+
+// Runtime Budget check	
+checkBudget: function(userId,groupId) {
+	
+	var groupLimit = 0;
+	var userLimit = 0;
+	var budgetPeriod = 0;
+	var currency  = 0;
+	var threshold = 0;
+	var group     = null;
+	var type      = null;
+	var sysId    = null;
+	var typeId   = null;
+	var configId = 0;
+	var glideBudget = new GlideRecord(BUDGET);
+	var budget = new GlideRecord(BUDGET);
+	
+	// Get budget period, limit for the user and group
+	glideBudget.addQuery("group_name",groupId);
+    glideBudget.query();
+	if (!(glideBudget.next()))
+	   this.createDefaultBudget(groupId);   // create record with default budget
+	
+	budget.addQuery("group_name",groupId);
+    budget.query();
+	if (budget.next()) {
+        groupLimit = budget.getValue("group_limit");
+        userLimit = budget.getValue("user_limit");
+        budgetPeriod = budget.getValue("budget_period");
+		group = budget.getUniqueValue();
+		configId = budget.getUniqueValue();
+						
+	}		
+	if (!gs.nil(userId)) {
+       // Get consumption for the user from billing
+	   var userConsumption = Math.round(this.getConsumption(userId,groupId));
+		// Compare the consumption with budget limit.If exceeds the threshold send notification.
+       var userConsumptionPercent = Math.round((userConsumption*100)/userLimit);
+		
+		// Get the threshold
+	  var glideThreshold = new GlideRecord(BUDGET_THRESHOLD); 
+	  glideThreshold.addQuery('budget_configuration',configId);
+	  glideThreshold.orderByDesc('threshold');	
+	  glideThreshold.query();
+	  while (glideThreshold.next()) {
+		   userThresholdValue = glideThreshold.getValue('threshold');
+		   typeId = glideThreshold.getUniqueValue();
+	     if (parseInt(userConsumptionPercent) >= (parseInt(glideThreshold.getValue('threshold')))) {
+		     type = glideThreshold.getValue('type');
+			 typeId = glideThreshold.getUniqueValue();
+			 break;
+	      }	   		 
+	   }	
+      	
+	sysId = this.insertUserConsumption(userId,group,userConsumption,userConsumptionPercent);
+       if (userConsumptionPercent >= userThresholdValue) {
+	   // get email id of the user
+	   var userEmail = this.getUserEmail(userId);
+	
+	   if (!gs.nil(userEmail)) {   
+	      gs.info(type + ':'+ this.getUserName(userId)+ '(' + userEmail + ') ' +': Your budget threshold reached  !!!  Your budget limit with group : ' + this.getGroupName(groupId) + ', is $' +userLimit + ' and you have spent $'+userConsumption);   
+		   
+	   // Send notification to the user
+		   
+		   gs.eventQueue('sn_cmp.UserBudgetThreshold',current,userEmail,sysId);
+	   }
+	else  
+	  gs.error("No emil Id associated with the user " + this.getUserName(userId) );			  
+     }		
+	}
+	else if (!gs.nil(groupId)) {	
+		var users = [];
+        // Get consumption for the group from billing
+	    var groupConsumption = Math.round(this.getConsumption(null,groupId));  	
+		// Compare the consumption with budget limit.If exceeds the threshold send notification.
+        var  groupConsumptionPercent = Math.round((groupConsumption*100)/groupLimit);	
+
+		// Get the threshold
+	  var groupThreshold = new GlideRecord(BUDGET_THRESHOLD);
+	  groupThreshold.addQuery('budget_configuration',configId);
+	  groupThreshold.orderByDesc('threshold');
+	  groupThreshold.query();
+	  while (groupThreshold.next()) {
+	    groupThresholdValue = groupThreshold.getValue('threshold');
+	    typeId = groupThreshold.getUniqueValue();
+	    if (parseInt(groupConsumptionPercent) >= (parseInt(groupThreshold.getValue('threshold')))) {
+		     type = groupThreshold.getValue('type');
+			 typeId = groupThreshold.getUniqueValue();
+			 break;
+	      }	   		 
+	   }
+	sysId = this.insertGroupConsumption(group,groupConsumption,groupConsumptionPercent);		
+        if (groupConsumptionPercent >= groupThresholdValue) {
+		// Find users  who has admin role for this group
+		users = this.getGroupUsers(groupId);
+	    var flag = false;
+		for (i=0;i<users.length;i++) {	
+			var adminEmail = this.getUserEmail(users[i].id);
+		if (!gs.nil(adminEmail)) {
+			flag = true;
+		     gs.info(type + ':'+ this.getUserName(users[i].id) +  '(' + adminEmail + ')' + ': The group: '+this.getGroupName(groupId) + ', budget threshold is reached !!!  The budget limit is $'+groupLimit+' and you have spent $'+groupConsumption);
+			
+			// Send notification to the group
+			gs.eventQueue('sn_cmp.GroupBudgetThreshold',current,adminEmail,sysId);
+		 }
+	   }
+	  if (!flag)
+		  gs.error("There is no group admin for this group:" + this.getGroupName(groupId));
+    }	  
+	return true;
+  }
+},
+	
+// Create Default Budget
+createDefaultBudget: function(groupId) {
+
+	// First time user fetch default limits and create the cost record
+		var budget = new GlideRecord(BUDGET);
+	    var threshold = new GlideRecord(BUDGET_THRESHOLD);
+		// Insert the record 
+		budget.setValue("group_name",groupId);	
+		budget.insert();	
+},
+	
+// Check for valid user	
+checkUserById: function(userId) {
+
+	var user = new GlideRecord(USER);
+	user.query("sys_id", userId);
+    if (user.next()) {
+	   var active = user.getValue("active");
+	   if (active == true)
+		   return true;
+	}
+	return false;
+},
+	
+// Check for valid Group	
+checkGroupById: function(groupId) {
+	
+	var group = new GlideRecord(GROUP);
+	group.query("sys_id", groupId);
+    if (group.next()) {
+	   var active = group.getValue("active");
+	   if (active == true)
+		   return true;
+	}
+	return false;
+},	
+	
+// Get associated groups for the user	
+getAssociatedGroups: function(userId) {
+	
+	var glideGroup = new GlideRecord(GROUP);
+	var groupList = [];
+	glideGroup.addQuery("name", "!=", "Unmanaged");
+	join =  glideGroup.addJoinQuery(GROUP_MEMBER, "sys_id", "group");
+    join.addCondition("user", userId);
+	glideGroup.query();
+	while (glideGroup.next()) {
+	  var obj = {
+		  "name" :glideGroup.getValue('name'),
+		  "id" : glideGroup.getUniqueValue()  
+	   };
+       groupList.push(obj);			
+	}
+	if (glideGroup.get("name", "Unmanaged")) {
+		var obj1 = {
+		    "name":glideGroup.getValue('name'),
+	        "id":glideGroup.getUniqueValue()  
+	    };
+		groupList.push(obj1);
+	 }
+   	 return groupList;	
+},
+	
+// Get all the users of given group	with group_admin role
+getGroupUsers: function(groupId) { 
+	
+	var glideUser = new GlideRecord(USER);
+	var userList = [];
+	join = glideUser.addJoinQuery(GROUP_MEMBER, "sys_id", "user");
+    join.addCondition('group', groupId);
+	
+	join1 = glideUser.addJoinQuery(HAS_ROLES, "sys_id", "user");
+	join1.addCondition('role',groupAdmin);
+
+	glideUser.query();
+	while (glideUser.next()) {
+	      var obj = {
+		      "name" :glideUser.getValue('name'),
+		      "id" : glideUser.getUniqueValue()  
+	      };
+          userList.push(obj);	   
+	}
+   	return userList;	
+},
+	
+// Get User Name	
+getUserName: function(userId) {
+
+	var user = new GlideRecord(USER);
+	user.query("sys_id",userId );
+	if (user.next())	   
+     	return (user.getValue("name"));	
+	else
+		return null;
+},	
+	
+// Get Group Name	
+getGroupName: function(groupId) {
+	
+	var group = new GlideRecord(GROUP);
+	group.query("sys_id",groupId );
+	if (group.next())	   
+     	return (group.getValue("name"));	
+	else
+		return null;
+},
+	
+// Get consumption for the user and the group 	
+getConsumption: function(userId,groupId) {
+	
+    var consumedCost = 0;
+	var budgetFrequency =0;
+	var weekly =     
+     "usage_dateONThisweek@javascript:gs.beginningOfThisWeek()@javascript:gs.endOfThisWeek()";
+	var monthly = "usage_dateONThismonth@javascript:gs.beginningOfThisMonth()@javascript:gs.endOfThisMonth()";
+	var querterly = 	"usage_dateONThisquarter@javascript:gs.beginningOfThisQuarter()@javascript:gs.endOfThisQuarter()";
+	var yearly =
+	"usage_dateONThisyear@javascript:gs.beginningOfThisYear()@javascript:gs.endOfThisYear()";
+	var cost = new GlideAggregate(COST);
+	var budget = new GlideRecord(BUDGET);
+	
+	// Get the budget frequency
+	
+	budget.addQuery('group_name',groupId);
+	budget.query();
+	if (budget.next())
+	   budgetFrequency = budget.getValue('budget_period');
+	
+    cost.addAggregate('sum','cost');
+	
+	if (userId != null)  // userId is null, when we are calculating group consumption.
+	   cost.addQuery('tag_values.user.value_id',userId);
+	if (groupId != null)
+	   cost.addQuery('tag_values.user_group.value_id',groupId);
+	
+	if (budgetFrequency == 'Weekly')
+	   cost.addQuery(weekly);
+	else if (budgetFrequency == 'Monthly')
+	   cost.addQuery(monthly);
+	else if (budgetFrequency == 'Quarterly')
+	   cost.addQuery(querterly);
+	else
+	    cost.addQuery(yearly);
+    cost.groupBy('tag_values.user');
+    cost.groupBy('tag_values.user_group');
+    cost.query();
+   while (cost.next()) {
+	   consumedCost = consumedCost+(parseFloat(cost.getAggregate('sum','cost')));
+	}
+	return consumedCost;
+},	
+	
+// Get the Budget for the user --- This is used for UI 	
+getUserBudget: function(userId) {
+
+	var totalUserBudget = 0;
+	var totalConsumption = 0;
+	var result = [];
+	var glideUser = new GlideRecord(USER_CONSUMPTION);		
+	// Get the associated groups 
+	var groupList = this.getAssociatedGroups(userId);
+	// For each group get the budget limit
+	for (i=0;i<groupList.length;i++) {
+	  var group = groupList[i];
+	  var groupName = this.getGroupName(group.id);	
+	  if ((groupName != 'Unmanaged') && (!gs.nil(group.id))) {
+		var glideBudget = new GlideRecord(BUDGET);
+		glideBudget.addQuery('group_name',group.id);
+		glideBudget.query();
+		if (glideBudget.next())
+			 totalUserBudget = totalUserBudget + parseFloat(glideBudget.getValue('user_limit'));
+		else {
+			// Get default budget
+			var glideDefaultBudget = new GlideRecord(DEFAULT_BUDGET);
+			glideDefaultBudget.query();
+			if (glideDefaultBudget.next())
+			 totalUserBudget = totalUserBudget +  
+				               parseFloat(glideDefaultBudget.getValue('user_limit'));
+			// Create Budget record
+			this.createDefaultBudget(group.id);
+		}
+	  }	  
+	}	
+        // Get the consumption
+		glideUser.addQuery('user_name',userId);
+		glideUser.query();
+		while (glideUser.next())
+			 totalConsumption = totalConsumption + parseFloat(glideUser.getValue('consumed'));
+	
+	    var obj = {
+				"User_Total" : totalUserBudget,
+				"User_Consumed" : totalConsumption
+		};
+		result.push(obj);	
+	return result;
+},
+	
+// Get the Budget for the groups the user belongs to --- This is used for UI 	
+getGroupsBudget: function(userId) {
+
+	var totalUserBudget = 0;
+	var result = {};
+	// Get the associated groups 
+	var groupList = this.getAssociatedGroups(userId);
+	// For each group get the budget limit
+	for (i=0;i<groupList.length;i++) {
+		var group = groupList[i];
+		var glideBudget = new GlideRecord(BUDGET);
+		glideBudget.addQuery('group_name',group.id);
+		glideBudget.query();
+		if (glideBudget.next()) {
+			var obj = {
+				"Group_Limit" : parseFloat(glideBudget.getValue('group_limit')),
+				"User_Limit" : parseFloat(glideBudget.getValue('user_limit')),
+				"Group_Consumed" : this.getConsumption(null,group.id),
+				"User_Consumed" : this.getConsumption(userId,group.id)
+			};
+			result[group.name] = obj;
+		}	
+		else {
+		  // Get default budget
+		  var glideDefaultBudget = new GlideRecord(DEFAULT_BUDGET);
+		  glideDefaultBudget.query();
+		  if (glideDefaultBudget.next()) {
+			var obj1 = {
+				"Group_Limit" : parseFloat(glideDefaultBudget.getValue('group_limit')),
+				"User_Limit" : parseFloat(glideDefaultBudget.getValue('user_limit')),
+				"Group_Consumed" : this.getConsumption(null,group.id),
+				"User_Consumed" : this.getConsumption(userId,group.id)
+			};
+			result[group.name] = obj1;
+			// Create Budget record
+			this.createDefaultBudget(group.id);
+		  }
+	    }
+	}
+	return result;
+},
+	
+// Get the email id of the given user 	
+getUserEmail: function(userId) {
+
+	var email = null;
+    var glideUser = new GlideRecord(USER);
+		glideUser.addQuery('sys_id',userId);
+		glideUser.query();
+		if (glideUser.next()) {
+		   email = glideUser.getValue('email');
+		}
+	
+	return email;
+},
+	
+// Check Budget limit for the given user from billing 	
+getUserBillingBudget: function() {
+
+	// Get all the distinct users and corresponding group from  sn_cmp_tag_value_set
+    var glideUser = new GlideAggregate(TAG_VALUE_SET);
+    glideUser.addAggregate('count');
+	glideUser.orderByAggregate('count'); 
+    glideUser.groupBy('user'); 
+    glideUser.groupBy('user_group');	
+    glideUser.query();
+	this.cleanUserConsumption();
+    while (glideUser.next()) { 	
+		if (!gs.nil(glideUser.user.value_id) && !gs.nil(glideUser.user_group.value_id) && (this.getGroupName(glideUser.user_group.value_id) != 'Unmanaged'))			
+           this.checkBudget(glideUser.user.value_id,glideUser.user_group.value_id); 
+    }  
+	return true;
+},	
+
+// Check Budget limit for the given user from billing 	
+getGroupBillingBudget: function() {
+
+	// Get all the distinct groups from  sn_cmp_tag_value_set
+	var glideGroup = new GlideAggregate(TAG_VALUE_SET);
+    glideGroup.addAggregate('count');
+	glideGroup.orderByAggregate('count'); 
+    glideGroup.groupBy('user_group');	
+    glideGroup.query();
+	this.cleanGroupConsumption();  
+    while (glideGroup.next()) { 	
+		if (!gs.nil(glideGroup.user_group.value_id) && (this.getGroupName(glideGroup.user_group.value_id) != 'Unmanaged'))		
+          this.checkBudget(null,glideGroup.user_group.value_id);       
+    }	
+	return true;
+},
+	
+// Insert User consumption details	
+insertUserConsumption: function(userId,groupId,consumed,consumption) {
+
+	var glideUser = new GlideRecord(USER_CONSUMPTION);
+    glideUser.setValue('user_name',userId);
+	glideUser.setValue('budget_configuration',groupId);
+	glideUser.setValue('consumed',consumed);
+	glideUser.setValue('consumption',consumption);
+    glideUser.insert(); 
+	return glideUser.getUniqueValue();
+},
+	
+// Insert Group consumption details	
+insertGroupConsumption: function(groupId,consumed,consumption) {
+
+	var glideGroup = new GlideRecord(GROUP_CONSUMPTION);
+	glideGroup.setValue('budget_configuration',groupId);
+	glideGroup.setValue('consumed',consumed);
+	glideGroup.setValue('consumption',consumption);
+    glideGroup.insert(); 
+	return glideGroup.getUniqueValue();
+},
+	
+// Clean User consumption details	
+cleanUserConsumption: function() {
+
+	var glideUser = new GlideRecord(USER_CONSUMPTION);
+    glideUser.query();
+	while (glideUser.next())
+		glideUser.deleteRecord();
+},
+	
+// Clean Group consumption details	
+cleanGroupConsumption: function() {
+
+	var glideGroup = new GlideRecord(GROUP_CONSUMPTION);
+	   glideGroup.query();
+	while (glideGroup.next())
+		glideGroup.deleteRecord();    
+},
+	
+// Get top consumer  User details based on % of consumption	--- For UI
+topUserConsumption: function() {
+
+	var glideUser = new GlideRecord(USER_CONSUMPTION);
+	var result = [];
+	glideUser.orderByDesc('consumption');
+	glideUser.query();
+	while (glideUser.next()) {
+		  var obj = {
+				"User_Name" :  glideUser.getDisplayValue('user_name'),
+				"Group_Name" : glideUser.getDisplayValue('budget_configuration.group_name'),  
+			    "Consumption" : glideUser.getValue('consumption')+'%',
+			    "Consumed" : '$'+glideUser.getValue('consumed'),
+			    "User_Limit" : glideUser.getDisplayValue('budget_configuration.user_limit')
+		  };
+		  result.push(obj);	
+	}
+	return result;	    
+},
+
+// Get top consumer Group details based on % of consumption --- For UI	
+topGroupConsumption: function() {
+
+	var glideGroup = new GlideRecord(GROUP_CONSUMPTION);
+	var result = [];
+	glideGroup.orderByDesc('consumption');
+	glideGroup.query();
+	while (glideGroup.next()) {
+		 var obj = {
+				"Group_Name" : glideGroup.getDisplayValue('budget_configuration.group_name'),  
+			    "Consumption" : glideGroup.getValue('consumption')+'%',
+			    "Consumed" : '$'+glideGroup.getValue('consumed'),
+			    "Group_Limit" : glideGroup.getDisplayValue('budget_configuration.group_limit')
+		 };
+		 result.push(obj);		
+	}
+	return result;    
+},
+	
+// Total number of users who crossed the threshold --- For UI	
+userCrossedThreshold: function() {
+
+	var glideUser = new GlideRecord(USER_CONSUMPTION);
+	var result = [];
+	var total = 0;
+	var threshold = 0;
+	glideUser.query();
+	while (glideUser.next()) {
+		var glideThreshold = new GlideRecord(BUDGET_THRESHOLD);
+		glideThreshold.addQuery('budget_configuration',glideUser.getValue('budget_configuration'));
+		glideThreshold.query();
+		if (glideThreshold.next()) {
+			threshold = glideThreshold.getValue('threshold');
+		}
+		
+		if (parseInt(glideUser.getValue('consumption')) > parseInt(threshold)) {
+			total++;
+		 var obj = {
+				"User_Name" : this.getUserName(glideUser.getValue('user_name')),
+				"Group_Name" : glideUser.getDisplayValue('budget_configuration.group_name') ,  
+			    "Consumption" : glideUser.getValue('consumption')+'%',
+			    "Consumed" : '$'+glideUser.getValue('consumed'),
+			    "User_Limit" : glideUser.getDisplayValue('budget_configuration.user_limit')
+			 
+		 };
+		 result.push(obj);	
+	   }
+	}	
+	return result;    
+},
+	
+// Total number of Groups crossed the threshold --- For UI	
+groupCrossedThreshold: function() {
+
+	var glideGroup = new GlideRecord(GROUP_CONSUMPTION);
+	var result = [];
+	var total = 0;
+	var threshold = 0;
+	glideGroup.query();
+	while (glideGroup.next()) {
+		var glideThreshold = new GlideRecord(BUDGET_THRESHOLD);
+		    		  glideThreshold.addQuery('budget_configuration',glideGroup.getValue('budget_configuration'));
+		glideThreshold.query();
+		if (glideThreshold.next()) {
+			threshold = glideThreshold.getValue('threshold');
+		}
+		if (parseInt(glideGroup.getValue('consumption')) >  parseInt(threshold)) {
+			total++;
+		 var obj = {
+				"Group_Name" : glideGroup.getDisplayValue('budget_configuration.group_name'),  
+			    "Consumption" : glideGroup.getValue('consumption')+'%',
+			    "Consumed" : '$'+glideGroup.getValue('consumed'),
+			    "Group_Limit" : glideGroup.getDisplayValue('budget_configuration.group_limit')
+		 };
+		 result.push(obj);	
+	   }
+	}	
+	return result;    
+},
+
+// Get the budget consumption percentage for User/Group  -- For policy
+getBudgetConsumptionPercentage: function(userId,groupId) {
+
+	var groupLimit ;
+    var userLimit ;
+	var userConsumptionPercent = 0;
+	var groupConsumptionPercent = 0;
+	
+	if (gs.nil(userId) || gs.nil(groupId)) {
+		gs.error('The user id '+ userId + ' or the group id ' +groupId + ' is not correct');
+		return null;
+	}
+	// Check whether user belongs to given group or not
+	var flag = false;
+	var groupList = this.getAssociatedGroups(userId);
+	// For each group get the budget limit
+	for (i=0;i<groupList.length;i++) {
+		if (groupId == groupList[i].id) {
+			flag =true;
+		    break;
+		}
+	}		
+	if (!flag) {
+	  gs.error('The given user ' + this.getUserName(userId) + ' not belongs to the group ' + this.getGroupName(groupId) );
+	  return null;		
+	}
+	
+	var budget = new GlideRecord(BUDGET);
+	
+	// Get budget period,limit for the user and group
+	
+	budget.addQuery("group_name",groupId);
+    budget.query();
+	if (budget.next()) {
+        groupLimit = budget.getValue("group_limit");
+        userLimit = budget.getValue("user_limit");  
+	}	
+	
+	if (!gs.nil(userId)) {
+       // Get consumption for the user from billing
+	   var userConsumption = Math.round(this.getConsumption(userId,groupId));
+           userConsumptionPercent = Math.round((userConsumption*100)/userLimit);
+	 }
+	 if (!gs.nil(groupId)) {
+		 // Get consumption for the group from billing
+	    var groupConsumption = Math.round(this.getConsumption(null,groupId)); 
+            groupConsumptionPercent = Math.round((groupConsumption*100)/groupLimit); 	 		 
+	 }
+	var obj = {
+				"UserPercentage" :userConsumptionPercent ,
+				"GroupPercentage" : groupConsumptionPercent  
+		 };
+	
+	return obj;
+},
+    type: 'CMPBudgetBasedNotification'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-25 16:18:07</sys_created_on>
+        <sys_id>efa823eb0b480300d763a2c563673a83</sys_id>
+        <sys_mod_count>114</sys_mod_count>
+        <sys_name>CMPBudgetBasedNotification</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_efa823eb0b480300d763a2c563673a83</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

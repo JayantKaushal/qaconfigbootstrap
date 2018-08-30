@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.ResponseMapping</api_name>
+        <client_callable>false</client_callable>
+        <description>Class to help translate a given JSON encoded string worth of raw attributes from a cloud provider / Cloud API to an collection of attributes defined by a set of mappings per type and service provider.</description>
+        <name>ResponseMapping</name>
+        <script><![CDATA[var ResponseMapping = Class.create();
+ResponseMapping.prototype = {
+    initialize: function(datasource, table) {
+		this.datasource = datasource;
+		this.table = table;
+		
+		this.shouldDebug = 'true' == gs.getProperty('cmp.response_processor.debug', 'false');
+    },
+	
+	getAttributeGr: function(idOnly) {
+		var gr = new GlideRecord('sn_cmp_response_mapping');
+		gr.addQuery('datasource.name', this.datasource);
+		gr.addQuery('ci_class', this.table);
+		if (!gs.nil(idOnly) && idOnly){
+			var qc = gr.addQuery('used_for_identification', true);
+			qc.addOrCondition('additional_identifier',true);
+		}
+			
+		gr.query();
+		
+		return gr;
+	},	
+	
+	getIdAttributes: function() {
+		var idAttributes = {};
+		var gr = this.getAttributeGr(true);
+		if (!gs.nil(gr))
+			while (gr.next()){
+				var table;
+				var table_field;
+				if (gr.used_for_identification){
+					table = gr.ci_class + '';
+					table_field = gr.ci_class_field + '';
+				}else{
+					table = gr.identifier_ci_class + '';
+					table_field = gr.identifier_ci_class_field + '';
+				}
+				if (!idAttributes[table]){
+					idAttributes[table] = [];
+				}
+					
+				idAttributes[table].push(table_field);
+			}
+		return idAttributes;
+	},
+	
+	getRelatedObjectsAttributeGr: function() {
+		var gr = new GlideRecord('sn_cmp_response_mapping');
+		gr.addQuery('datasource.name', this.datasource);
+		gr.addQuery('ci_class', this.table);
+		gr.addQuery('attribute_value_type', 'related_object');
+		gr.query();
+		
+		return gr;
+	},
+	
+	getBindingObjectsAttributeGr :function() {
+		var gr = new GlideRecord('sn_cmp_response_mapping');
+		gr.addQuery('datasource.name', this.datasource);
+		gr.addQuery('ci_class', this.table);
+		gr.addQuery('attribute_value_type', 'binding');
+		gr.query();
+		
+		return gr;
+	},
+	
+	getTagValues: function(responseObject, type) {
+		if (gs.nil(responseObject))
+			return null;
+		
+		var rtGr = new GlideRecord('sn_capi_resource_type');
+		if (rtGr.get('name',type)) {
+			var tagField = new CmpTagUtil().getProviderProperty(rtGr.product.provider,
+																	   'tag_response_field');
+			if (!gs.nil(tagField) && !gs.nil(responseObject[tagField]))
+				return global.JSON.stringify(responseObject[tagField]);
+		}
+		
+		return null;
+	},
+	
+	getAttributes: function(responseObject) {
+		var attributes = {};
+		
+		if (gs.nil(responseObject))
+			return attributes;
+		
+		attributes.$additional_identifier = {};
+		var gr = this.getAttributeGr();
+		
+		if (gr.getRowCount() == 0)
+			return {};
+
+		this.debug('Response mappings found: ' + gr.getRowCount());
+		
+		var attributeValue = '';
+		while (gr.next()) {
+			var attributeValueType = '' + gr.attribute_value_type;
+
+			this.debug('Process attribute type: ' + attributeValueType);
+
+			switch(attributeValueType){
+				case 'mapped':
+					attributeValue = this._getMappedValue(responseObject, gr);
+					break;
+				case 'fixed':
+					attributeValue = this._getFixedValue(responseObject, gr);
+					break;
+				case 'scripted':
+					attributeValue = this._getScriptedValue(responseObject, gr);
+					break;
+				case 'array_count':
+					attributeValue = this._getArrayCountValue(responseObject, gr);
+					break;
+				case 'first_array_element':
+					attributeValue = this._getFirstArrayElement(responseObject, gr);
+					break;
+				case 'mapped_first_array_element':
+					attributeValue = this._getMappedFirstArrayElement(responseObject, gr);
+					break;
+				case 'translation':
+					attributeValue = this._getTranslationValue(responseObject, gr);
+					break;
+				default:
+					continue;
+			}
+
+			// If the attribute value is null, something was wrong and we didn't
+			// find a valid value in the response object - so don't put anything
+			// into the payload
+			if (attributeValue !== null){
+				if (gr.additional_identifier) {
+					var table = '' + gr.identifier_ci_class;
+					if (!attributes.$additional_identifier[table])
+						attributes.$additional_identifier[table] = {};
+					attributes.$additional_identifier[table]['' + gr.identifier_ci_class_field] = attributeValue;
+				}		
+				else
+					attributes['' + gr.ci_class_field] = attributeValue;
+			}
+				
+		}
+		return attributes;
+	},
+	
+	getRelatedObjects: function(responseObject, cloudAccount, ldc) {
+		var relatedObjects = {};
+		if (gs.nil(responseObject))
+			return relatedObjects;
+		
+		var gr = this.getRelatedObjectsAttributeGr();
+		
+		if (gr.getRowCount() > 0)
+			this.debug('Related object mappings found: ' + gr.getRowCount());
+		
+		while (gr.next()) {
+			this.debug('Related object datasource: ' + gr.datasource_for_mappings.name);
+
+			var sourceValue = responseObject;
+			if (!gs.nil(gr.source_field)) {
+				sourceValue = this._getProperty(responseObject, '' + gr.source_field);
+				
+				// If there isn't anything in the source field, no sense to try to process
+				// anything - skip processing
+				if (gs.nil(sourceValue))
+					continue;
+			}
+			
+			var table = '' + gr.relationship_ci_class;
+			
+			var processor = new ResponseProcessor(cloudAccount, 
+												  ldc, 
+												  gr.datasource_for_mappings.name);
+
+			this.debug('Source passed to response processor for related object processing: ' +
+					   global.JSON.stringify(sourceValue));
+			
+			var obj = processor.processResponseArray(sourceValue, 
+												'',
+												null,
+											    null,
+											    table, responseObject);
+			
+			this.debug('Related object payload: ' + global.JSON.stringify(obj));
+			
+			if (!this._isArray(obj))
+				obj = [obj];
+			
+			var result = [];
+			for (var index = 0; index < obj.length; index++){
+				result.push(obj[index][table]);
+			}
+			
+			relatedObjects[table] = result;
+		}
+		
+		return relatedObjects;
+	},
+	
+	getBindingObjects : function(responseObject, cloudAccount, ldc) {
+		var bindingObjects = [];
+		if (gs.nil(responseObject))
+			return bindingObjects;
+		
+		var gr = this.getBindingObjectsAttributeGr();
+		
+		if (gr.getRowCount() > 0)
+			this.debug('Binding object mappings found: ' + gr.getRowCount());
+		
+		while (gr.next()){
+			this.debug('Binding object datasource: ' + gr.datasource_for_mappings.name);
+			
+			var sourceValue = responseObject;
+			if (!gs.nil(gr.source_field)) {
+				sourceValue = this._getProperty(responseObject, '' + gr.source_field);
+				
+				// If there isn't anything in the source field, no sense to try to process
+				// anything - skip processing
+				if (gs.nil(sourceValue))
+					continue;
+			}
+			
+			
+			var bindingType = '' + gr.binding_type;
+			var bindingEndpoint = '' + gr.binding_endpoint;
+			var processor = new ResponseProcessor(cloudAccount, 
+												  ldc, 
+												  gr.datasource_for_mappings.name);
+			
+			var obj = processor.processResponseForBindings(sourceValue, responseObject, bindingType, bindingEndpoint);
+			
+			this.debug('Binding object payload: ' + global.JSON.stringify(obj));
+			
+			bindingObjects = bindingObjects.concat(obj);
+		}
+		return bindingObjects;
+	},
+	
+	_getMappedValue: function(responseObject, gr) {
+		return this._getProperty(responseObject, '' + gr.source_field);
+	},
+	
+	_getProperty: function(responseObject, property) {	
+		var propertyKey = '' + property;
+		var value = null;
+		if (gs.nil(responseObject) || gs.nil(property))
+			return value;
+
+		var parts = propertyKey.split('.');
+		var length = parts.length;
+
+		// Walk the object until we get to the one being asked for
+		// If at any point the dot-walking fails because the property being asked to
+		// walk into doesn't exist, bail out and return null
+		var workingPart = responseObject;
+
+		for (var i = 0; i < length; i++ ) {
+			if (i == length - 1)
+				value = workingPart.hasOwnProperty(parts[i]) ? workingPart[parts[i]] : null;
+			else {
+				if (workingPart.hasOwnProperty(parts[i]) && 
+						this._isObject(workingPart[parts[i]]))
+					workingPart = workingPart[parts[i]];
+				else {
+					this.debug(gs.getMessage('Property \'{0}\' not found, or is not an object in \'{1}\'', [parts[i], global.JSON.stringify(workingPart)]));
+					return null;
+				}
+			}			
+		}
+
+		return value;
+	},
+
+	_getFixedValue: function(responseObject, gr) {
+		return '' + gr.fixed_value;
+	},
+	
+	_getArrayCountValue: function(responseObject, gr) {
+		var arrayField = '' + gr.array_field;
+		var arr = this._getProperty(responseObject, arrayField);
+		return this._isArray(arr) ? arr.length : null;
+	},
+	
+	_getFirstArrayElement: function(responseObject, gr) {
+		var arrayField = '' + gr.array_field;
+		var arr = this._getProperty(responseObject, arrayField);
+		return this._isArray(arr) ? arr[0] : '';
+	},
+	
+	_getMappedFirstArrayElement: function(responseObject, gr) {
+		var arrayField = '' + gr.array_field;
+		var sourceField = '' + gr.source_field;
+		
+		var arr = this._getProperty(responseObject, arrayField);
+		if (this._isArray(arr) && arr.length > 0) {
+			var o = arr[0];
+			if (this._isObject(o))
+				return o[sourceField];
+		}
+
+		return '';
+	},
+	
+	/**
+	 * Attempts to translate a value from the response object to another value
+	 * by looking in a translation table using the key and source value...if the
+	 * source value is not found, don't translate it to anything and just return
+	 * it as is
+	 */
+	_getTranslationValue: function(responseObject, gr) {
+		var key = '' + gr.translation_key;
+		var sourceValue = this._getProperty(responseObject, '' + gr.source_field);
+		
+		if (null === sourceValue)
+			return null;
+		
+		var translationGr = new GlideRecord('sn_cmp_response_value_mapping');
+		translationGr.addQuery('key', key);
+		translationGr.addQuery('source_value', sourceValue);
+		translationGr.query();
+		
+		return translationGr.next() ? '' + translationGr.translated_value : sourceValue;
+	},
+	
+	_getScriptedValue: function(responseObject, gr) {
+		var value;
+		try {
+			var responseStr = global.JSON.stringify(responseObject);
+			var sourceField = '' + gr.source_field;
+			var sourceValue = gs.nil(sourceField) ? '' : 
+								this._getProperty(responseObject, sourceField);
+			var sourceValueStr = global.JSON.stringify(sourceValue);
+
+			var evaluator = new GlideScopedEvaluator();
+			//evaluator = evaluator.withInterpretedMode(true);
+			evaluator.putVariable('rawObject', responseStr);
+			evaluator.putVariable('sourceFieldValue', sourceValueStr);
+			value = evaluator.evaluateScript(gr, 'script');
+		} catch(e) {
+			gs.error(gs.getMessage('Failed to evaluate scripted mapping'));
+			gs.error(e);
+		}
+
+		return value;
+	},	
+
+	_isObject: function(testObject) {
+		return !gs.nil(testObject) && typeof testObject === 'object';
+	},
+	
+	_isArray: function(testObject) {
+		return !gs.nil(testObject) && !(testObject.propertyIsEnumerable('length')) &&
+			typeof testObject === 'object' && typeof testObject.length === 'number';
+	},	
+	
+	log: function(message) {
+		gs.info(message, 'ResponseMapping');
+	},
+	
+	debug: function(message) {
+		if (this.shouldDebug)
+			gs.info('DEBUG: ' + message, 'ResponseMapping');
+	},
+
+    type: 'ResponseMapping'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-11-13 18:04:10</sys_created_on>
+        <sys_id>76ae7b319f07220048111f80a57fcf54</sys_id>
+        <sys_mod_count>175</sys_mod_count>
+        <sys_name>ResponseMapping</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_76ae7b319f07220048111f80a57fcf54</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-03 23:28:17</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintTemplateValidator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintTemplateValidator</name>
+        <script><![CDATA[var BlueprintTemplateValidator = Class.create();
+BlueprintTemplateValidator.prototype = {
+	MSG_PREFIX : " - ",
+	
+    initialize: function() {
+    },
+	
+	// Mapping of attribute names and if they are required to be defined in the template
+	PARAM_ATTRIBS : {'type':true, 'defaultValue':false, 'allowedValues':false, 'metadata':false, 'minValue':false, 'maxValue':false, 'minLength':false, 'maxLength':false},
+	VALID_TYPES : ['string', 'securestring', 'int', 'bool', 'array', 'object'],
+	VALID_LENGTH_TYPES : ["string", "securestring", "array"], //for min/max length
+	VALID_VALUE_TYPES : ["int"], // for min/max value
+	
+	validateTemplate : function(useTemplateBody, templateBody, templateURL, parametersURL) {
+		var result = {isValid:true, message: ''};		
+		if (useTemplateBody) {
+			result = this._validateTemplateBody(templateBody);
+		} else {
+			var errors = [];
+			var templateURLValid = this._validateURL(''+templateURL);
+			if (!templateURLValid) {
+				result.isValid = false;
+				errors.push(gs.getMessage("Template URL is not valid"));
+			}
+			var parametersURLValid = this._validateURL(''+parametersURL);
+			if (!parametersURLValid) {
+				result.isValid = false;
+				errors.push(gs.getMessage("Parameters URL is not valid"));
+			}
+			result.message = errors.join('<BR/>');
+		}
+		return new global.JSON().encode(result);
+	},
+	
+	_validateURL : function(url) {
+		return (url.indexOf("http://") === 0) || (url.indexOf("https://") === 0);
+	},
+	
+	_validateTemplateBody : function(templateBody) {		
+		var retVal = {isValid:true, message: ''};
+		// Do basic JSON validation
+		if (new CmpJSONUtil().isValidObject(templateBody))  {			
+			// Validate the contents to ensure the parameters have correct type/properties
+			retVal = this._validateTemplateParams(templateBody);
+		} else {
+			retVal.isValid = false;
+			retVal.message = gs.getMessage("Template body JSON is not valid");
+		}
+		return retVal;
+	},
+	
+	/**
+ 	* Validate if the template Json has the right format for the parameters
+ 	* @param templateJSONStr - the azure template json string
+ 	* @return object - with result=true if validated, result=false and message=error message if invalid
+ 	*/
+	_validateTemplateParams : function(templateJSONStr) {
+		var retVal = {isValid:true, message: ''};
+		try {
+			var templateJSON = new global.JSON().decode('' + templateJSONStr);
+			var missingFields = [];
+			if (gs.nil(templateJSON.$schema)) {
+				missingFields.push("$schema");
+			}
+			if (gs.nil(templateJSON.contentVersion)) {
+				missingFields.push("contentVersion");
+			}
+			if (gs.nil(templateJSON.resources)) {
+				missingFields.push("resources");
+			}
+			if (missingFields.length > 0) {
+				var msg = gs.getMessage('The template body is missing the required {0}: {1}', 
+										[missingFields.length > 1 ? 'fields' : 'field', missingFields.join(", ")]);
+				return {isValid:false, message: msg};
+			}
+			
+			var groups = {};
+			var parameters = templateJSON.parameters;
+			if (parameters) {				
+				var message = [];	
+				var retmsg;			
+				for (var paramName in parameters) {
+					var param = parameters[paramName];
+					var paramerrmesg = [];
+					paramerrmesg.push(gs.getMessage('For parameter {0}: ', [paramName]));
+
+				    retmsg = this._validateParamName(paramName);
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateParamAttributes(param);
+					if (retmsg) paramerrmesg.push(retmsg);
+
+                    retmsg = this._validateParamAllowedValues(param);
+                    if (retmsg) paramerrmesg.push(retmsg);
+
+                    retmsg = this._validateParamDefaultValueIsOfCorrectType(param);
+                    if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateIntValueParamAttrib(param, 'maxLength', this.VALID_LENGTH_TYPES);
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateIntValueParamAttrib(param, 'minLength',  this.VALID_LENGTH_TYPES);
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateMinMaxValues(param['minLength'],  param['maxLength'], 'minLength', 'maxLength');
+					if (retmsg) paramerrmesg.push(retmsg);
+						
+					retmsg = this._validateIntValueParamAttrib(param, 'maxValue', this.VALID_VALUE_TYPES);
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateIntValueParamAttrib(param, 'minValue', this.VALID_VALUE_TYPES);
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateMinMaxValues(param['minValue'], param['maxValue'], 'minValue', 'maxValue');
+					if (retmsg) paramerrmesg.push(retmsg);
+					
+					retmsg = this._validateParamNameConflictWithGroupName(groups, paramName);
+					if (retmsg) paramerrmesg.push(retmsg);	
+				
+					var metadata = param.metadata;
+					this._addGroupMember(metadata,groups);
+					
+					if(!this._validateReferenceTypeInMetadata(param, paramName))
+						paramerrmesg.push('Reference type is invalid');
+					
+					if (paramerrmesg.length > 1)
+						message.push(paramerrmesg.join('<BR/>'));
+				}		
+				 //Prefix of paramters which belong to same group should be the same.
+				 retmsg = this._validateGroupRefType(groups);
+			     if (retmsg) message.push(retmsg);
+				
+				if (message.length > 0) {
+					retVal.isValid = false;
+					retVal.message = message.join('<BR/>');
+				}
+			}
+		} catch(err) {
+			retVal.isValid = false;
+			retVal.message = gs.getMessage("Template body JSON is not valid");
+		}
+		return retVal;
+	},
+	
+		_validateParamNameConflictWithGroupName : function (groups, paramName) {
+		if(groups[paramName]) 
+			return "Parameter name " + paramName + " is the same as group key";
+	},
+	
+	//Add group member only if its metadata contains both referenceType and groupKey
+	_addGroupMember : function (metadata, groups) {
+		if (!gs.nil(metadata)) {
+			if (typeof(metadata) === 'object') {
+				var ref = metadata.referenceType;
+				var key = metadata.groupKey;
+				if(!gs.nil(ref) && !gs.nil(key)) {
+					if(!groups[key]) groups[key] =[];
+					groups[key].push(ref);
+				}
+			}
+		}
+	},
+	
+	_validateGroupRefType : function (groups) {
+		for(var group in groups) {
+			var referenceTypes = groups[group];
+			var prefix =  referenceTypes[0].split("::")[0];
+			
+			for(var i = 1 ; i < referenceTypes.length; i++) {
+				var parent = referenceTypes[i].split("::")[0];
+				if(parent !== prefix) return "Reference type prefix should be same for parameters with same groupKey " + group;
+			}
+		}
+	},
+	
+	
+	_validateParamName: function(paramName) {
+		var reg = /^[a-zA-Z$_][a-zA-Z0-9$_]*$/;
+		var message = this._buildErrorMessage(gs.getMessage("Parameter name must be valid JavaScript Identifier."));
+		return reg.test('' + paramName) ? null : message;
+	},
+	
+	// Validate the allowed attributes are present for each param. Also verify the required ones are present.
+	_validateParamAttributes : function(param) {
+		var msg = [];		
+		// first check if all required attributes exist
+		for (var attrib in this.PARAM_ATTRIBS) {
+			if (this.PARAM_ATTRIBS[attrib] && !param.hasOwnProperty(attrib)) {
+				msg.push(this._buildErrorMessage(gs.getMessage('{0} is required, but not found', [attrib])));
+			}
+		}
+		
+		return (msg.length > 0) ? msg.join('<BR/>') : '';
+	},
+		
+	_validateParamAttribIsOneOf : function(param, attrib, validValues)  {
+		var msg = '';
+		if (param.hasOwnProperty(attrib)) {
+			var value = param[attrib];
+			if (value === "") {
+				msg = this._buildErrorMessage(gs.getMessage('Empty value for {1}', [value, attrib]));
+				return msg;
+			}
+			msg = this._buildErrorMessage(gs.getMessage('{0} is an invalid value for {1}', [value, attrib]));
+			for (var i = 0; i < validValues.length; i++) {
+				// compare ignoring case
+				if (validValues[i].toLowerCase() === value.toLowerCase()) {
+					msg = '';
+					break;
+				}
+			}
+		}
+		return msg;
+	},
+	
+	/* Verify the allowed values list has proper formatting and values are the right kind for:
+	 * type: string/securestring - values are assumed to be string
+	 * type: int - verify values are integer
+	 * type: bool - verify values are true, false
+	 * type: array - not allowed to have allowedValues attribute
+	 * type: object - not allowed to have allowedValues attribute
+	 */
+	_validateParamAllowedValues : function(param)  {
+		var msg = [];
+		if (param.hasOwnProperty('allowedValues')) {
+			var allowedValues = param.allowedValues;
+			var type = param.type;
+			if (type === 'int') {
+				for (var i = 0; i < allowedValues.length; i++) {
+					var value = allowedValues[i];
+					if (!this._isInt(value)) {
+						msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid integer value for the allowedValues attribute", value)));
+					}
+				}
+			} else if (type === 'bool') {
+				/* eslint-disable */
+				for (var i = 0; i < allowedValues.length; i++) {
+					var value = allowedValues[i];					
+					if (!this._validateIsBoolStr(value)) {
+						msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid boolean value for the allowedValues attribute", value)));
+					}
+				}
+				/* eslint-enable */
+			} else if (type === 'array' || type === 'object') {
+				msg.push(this._buildErrorMessage(gs.getMessage("Invalid allowedValues attribute")));
+			}				
+		}
+		return msg.join('<BR/>');
+	},	
+	
+	/* Verify the default value is the right kind for:
+	 * type: string/securestring - value is assumed to be string
+	 * type: int - verify its an integer
+	 * type: bool - verify its true/false
+	 * type: array - verify its a valid array
+	 * type: object - verify its a valid json
+	 */
+	_validateParamDefaultValueIsOfCorrectType : function(param)  {
+		var msg = [];
+		if (param.hasOwnProperty('defaultValue')) {
+			var defaultValue = param.defaultValue;
+			var type = param.type;
+			if (type === 'string' || type === 'securestring') {
+				this._validateDefaultValueIsInAllowedValues(param, defaultValue, msg);
+			} else if (type === 'int') {
+				if (!this._isInt(defaultValue)) {
+					msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid integer for the defaultValue attribute", defaultValue)));
+				}
+				this._validateDefaultValueIsInAllowedValues(param, defaultValue, msg);
+			} else if (type === 'bool') {
+				if (!this._validateIsBoolStr(defaultValue)) {
+					msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid boolean for the defaultValue attribute", defaultValue)));
+				}
+				this._validateDefaultValueIsInAllowedValues(param, defaultValue, msg);
+			} else if (type === 'array') {
+				if (!this._isArray(defaultValue)) {
+					msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid array for the defaultValue attribute", defaultValue)));
+				}
+			} else if (type === 'object') {
+				if (!this._isObject(defaultValue)) {				
+					msg.push(this._buildErrorMessage(gs.getMessage("{0} is not a valid JSON object for the defaultValue attribute", defaultValue)));
+				}
+			} 
+		}
+		return msg.join('<BR/>');
+	},
+	
+	// Validate the defaultValue is in the allowedValues list
+	_validateDefaultValueIsInAllowedValues : function(param, defaultValue, msg)  {															 
+		if (param.hasOwnProperty('allowedValues')) {
+			var allowedValues = param.allowedValues;
+			if (!new global.ArrayUtil().contains(allowedValues, defaultValue)) {
+				msg.push(this._buildErrorMessage(gs.getMessage("Default value {0} is not allowed in the allowedValues attribute", defaultValue)));
+			}
+		}
+	},
+	
+	// Called from AzureMgr.validateDeploymentTemplateParameters
+	validateParameterValue : function(parameter_value, param_def) {
+		var errmsg = [];
+		// value is always required for Azure
+		if (gs.nil(parameter_value)) {
+			return gs.getMessage("Value is required.");
+		}
+		
+		if (!gs.nil(''+parameter_value) || gs.nil(param_def.default_value)) {
+			var paramValue = this.paramUtil.resolveParameterReference(parameter_value, param_def);
+			errmsg = this._validateParamValue(paramValue, param_def);
+			
+			if (errmsg.length > 0) {
+				if (param_def.constraint_description)
+					errmsg.splice(0, 0, '' + param_def.constraint_description);
+			}
+		}
+		return errmsg;
+	},
+	
+	// Called from CloudRsrcTemplateClient.validateCatItemParameterVariables which is called for each variable in the generated client script
+	validateVariableValue : function(parameter_value, variable_sys_id) {
+		var variableGr = new GlideRecord('item_option_new');
+		variableGr.get(variable_sys_id);
+		var retVal = {name: '' + variableGr.name, isValid:true, message: [], msgtype: 'info'};
+		
+		var paramGr = this._getParameterFromVariable(variableGr);
+		if (paramGr)  {			
+			if (gs.nil(''+parameter_value) && !gs.nil(paramGr.default_value) && (''+paramGr.type).toLowerCase() != 'securestring') {
+				// parameter is empty but ok since there is default
+				retVal.message.push(gs.getMessage('Default value will be used: {0}', [paramGr.default_value]));
+			} else {
+				var paramValue = this.paramUtil.resolveParameterReference(parameter_value, paramGr);
+				var errmsg = this._validateParamValue(paramValue, paramGr);
+				
+				if (errmsg.length > 0) {
+					if (paramGr.constraint_description)
+						errmsg.splice(0, 0, '' + paramGr.constraint_description);
+					retVal.isValid = false;
+					retVal.message = errmsg;
+					retVal.msgtype = 'error';
+				}
+			}
+		} else {
+			var validResult = this._validateNonParameterVariable(parameter_value, variableGr);
+			if (!gs.nil(validResult))
+				retVal = validResult;
+		}
+		return retVal;
+	},
+		
+	_validateNonParameterVariable: function(parameter_value, variableGr){
+		var retval = {name: '' + variableGr.name, isValid:true, message: [], msgtype: 'info'};
+		var validateFunctionName = "_validateVariable_" + (''+variableGr.name).replace(/ /g, '_');
+		if ( typeof this[validateFunctionName] == 'function' ){
+			return  this[validateFunctionName](parameter_value, variableGr, retval);
+		}
+		return null;
+	},
+	
+	_getParameterFromVariable : function(variableGr) {
+		if (!gs.nil(variableGr.variable_set)) {
+			var temptovarGr = new GlideRecord('cloud_rsrc_temp_to_variableset');
+			temptovarGr.addQuery('variable_set', variableGr.variable_set);
+			temptovarGr.query();
+			if (temptovarGr.next()) {
+				var paramGr = new GlideRecord('azure_template_parameter');
+				paramGr.addQuery('template', temptovarGr.template);
+				paramGr.addQuery('name', variableGr.name);
+				paramGr.query();
+				if (paramGr.next())
+					return paramGr;
+			}
+		}
+		return null;
+	},
+	
+	_validateParamValue : function(parameter_value, param_def) {
+		var paramtype = (''+param_def.type).toLowerCase();
+		var errmsg = [];
+		parameter_value = parameter_value + '';
+		
+		if (paramtype === 'string' || paramtype === 'securestring') {
+			this._validateAllowedValues(parameter_value, param_def.allowed_values, errmsg);
+			this._validateAllowedPattern(parameter_value, param_def.allowed_pattern, errmsg);
+            this._validateValueLength(parameter_value, param_def.min_length, param_def.max_length, errmsg);
+		} else if (paramtype === 'int') {			
+			if (this._isInt(parameter_value)) {
+				var numValue = parseFloat(parameter_value);
+				this._validateAllowedValues(numValue, param_def.allowed_values, errmsg);
+				this._validateValueRange(numValue, param_def.min_value, param_def.max_value, errmsg);
+			} else {
+				errmsg.push(gs.getMessage("This is not a valid integer"));
+			}
+		} else if (paramtype === 'bool') {
+			if (!this._validateIsBoolStr(parameter_value)) {
+				errmsg.push(gs.getMessage("{0} is not a valid boolean", parameter_value));
+			}
+		} else if (paramtype === 'array') {
+			if (!new global.CmpJSONUtil().isValidArray(parameter_value)) {
+				errmsg.push(gs.getMessage("This is not a valid JSON array"));
+			}else
+				this._validateArrayLength(parameter_value, param_def.min_length, param_def.max_length, errmsg);
+		} else if (paramtype === 'object') {
+			if (!new global.CmpJSONUtil().isValidObject(parameter_value)) {
+				errmsg.push(gs.getMessage("{0} is not a valid JSON object", parameter_value));
+			}
+		}
+		
+		return errmsg;
+	},
+	
+	_validateAllowedValues : function(valueToCheck, allowedValues, errmsg) {
+		if (!gs.nil(allowedValues)) {
+			var allowedlist = new global.JSON().decode(allowedValues);
+			if (!new global.ArrayUtil().contains(allowedlist, valueToCheck)) {
+				errmsg.push(gs.getMessage("Allowed values for this are: "));
+				this.buildAllowedListToMsg(allowedlist, errmsg);
+			}
+		}
+	},
+	
+	validateResourceGroupDeploymentName : function(name, fieldName) {
+		// Check for chars alphanum, period, hyphen and period (period cannot be last char)
+		// \w checks for alpha, numeric and underscores
+		var exp = /^[\-\w\.\(\)]*[\-\w\(\)]$/;
+		if (!exp.test(name)) {
+			return gs.getMessage('Name for {0} can only include alphanumeric characters, periods, underscores, hyphens and parenthesis, and cannot end in a period', fieldName);  // I18N_OK 01-18-16
+		}
+		return '';
+	},
+	
+	doesRGNameExist : function(subscription,rgName){
+		var gr = new GlideRecord("cmdb_ci_azure_resource_group");
+		gr.addQuery("stack_status", "!=","DELETE_COMPLETE");
+		gr.addQuery("subscription",subscription);
+		gr.addQuery('name',rgName);
+		gr.query();
+		return gr.hasNext();
+	},
+	
+	/* eslint-disable */
+	_validateReferenceTypeInMetadata : function(param, paramName) {
+		 var isReferenceTypeValid = true;
+		 var metadata = param.metadata;
+		 if (gs.nil(metadata)) 
+			  return isReferenceTypeValid;
+		 if (typeof(metadata) === 'object') {
+			    var sncMetadata = (metadata.hasOwnProperty('SNC::Parameter::Metadata')) ? metadata['SNC::Parameter::Metadata'] : '';
+				if(!gs.nil(sncMetadata)) {
+					if(!sncMetadata.hasOwnProperty('referenceType'))
+						return isReferenceTypeValid;
+					var ref = sncMetadata.referenceType;
+					if(!gs.nil(ref) || ref != '') {
+						// Parse the reference type from template and save into parameter table
+						isReferenceTypeValid = new CloudTemplateParameterUtil().isValidRefenceType(ref);					
+					} 
+				}
+		   } 
+		 return isReferenceTypeValid;
+	},
+	
+	_validateParamAttribTypeConstraint : function(param, attrib, typeSupported)  {
+		
+		if (param.hasOwnProperty(attrib)) {
+			for (var index = 0; index < typeSupported.length; index++){
+				if (param['type'] == typeSupported[index])
+					return '';					
+			}
+				return this._buildErrorMessage(gs.getMessage('{0} is only allowed for {1} type', [attrib, typeSupported+'']));
+		}
+		
+		return '';
+	},
+	
+	_validateAllowedPattern : function(value_tocheck, allowed_pattern, errmsg) {
+		if (!gs.nil(allowed_pattern)) {
+			//javascript regular expression check is not sticky match as default. and 'y' flag is not supported in our
+			//javascript engine. add ^ and $ if missed
+			var modified_pattern = ''+ allowed_pattern;
+			if ( modified_pattern[0] != '^' )
+				modified_pattern = '^' + modified_pattern;
+			if ( modified_pattern[modified_pattern.length-1] != '$')
+				modified_pattern = modified_pattern + "$";
+			
+			var re = new RegExp(modified_pattern);
+			if (!re.test(value_tocheck)){
+				errmsg.push(gs.getMessage("This should be in the format: {0}", [allowed_pattern]));
+			}
+		}
+	},
+	
+	_validateValueRange : function(value_tocheck, min_value, max_value, errmsg) {
+		if (!gs.nil(min_value)) {
+			if (value_tocheck < min_value)
+				errmsg.push(gs.getMessage("This value should be greater than or equal to {0}", [min_value]));
+		}
+		if (!gs.nil(max_value)) {
+			if (value_tocheck > max_value)
+				errmsg.push(gs.getMessage("This value should be less than or equal to {0}", [max_value]));
+		}
+	},
+	
+	_validateValueLength : function(value_tocheck, min_length, max_length, errmsg) {
+		var len = (''+value_tocheck).length;
+		if (!gs.nil(min_length)) {
+			if (len < min_length)
+				errmsg.push(gs.getMessage("The string length should be at least {0}", [min_length]));
+		}
+		if (!gs.nil(max_length)) {
+			if (len > max_length)
+				errmsg.push(gs.getMessage("The string length should not exceed {0}", [max_length]));
+		}
+	},
+	
+	_validateArrayLength : function(value_tocheck, min_length, max_length, errmsg) {
+		var len = new global.JSON().decode(''+value_tocheck).length;
+		if (!gs.nil(min_length)) {
+			if (len < min_length)
+				errmsg.push(gs.getMessage("This JSON array should have at least {0} elements", [min_length]));
+		}
+		if (!gs.nil(max_length)) {
+			if (len > max_length)
+				errmsg.push(gs.getMessage("This JSON array should not have more than {0} elements", [max_length]));
+		}
+	},
+	
+	_validateIsBoolStr : function(value) {
+		if (typeof value === "string") {
+			value = value.toLowerCase();
+			if (value === "true" || value === "false")
+				return true;
+		}else if (typeof value === "boolean")
+			return true;
+		return false; // not a valid bool string
+	},
+	
+	_isArray : function(array) {
+		return Object.prototype.toString.call(array) === '[object Array]';
+	},
+	
+	_isObject : function(object) {
+		return Object.prototype.toString.call(object) === '[object Object]';
+	},
+	
+	_isInt : function(value) {
+		return !isNaN(parseInt(value, 10)) && (parseInt(value, 10) == parseFloat(value));
+	},
+	
+	_validateMinMaxValues : function(minValue, maxValue, minAttrib, maxAttrib) {
+		var errorMsg = '';
+		
+		var min_value = parseFloat(minValue);
+		var max_value = parseFloat(maxValue);
+		
+		if (!isNaN(min_value) && !isNaN(max_value)){
+			if (min_value > max_value)
+				errorMsg = this._buildErrorMessage(gs.getMessage('{0} should not be less than {1}', [maxAttrib, minAttrib]));
+		}
+		
+		return errorMsg;		
+	},
+	
+	_validateIntValueParamAttrib : function(param, attrib, typeSupported)  {
+		
+		var msg = this._validateParamAttribTypeConstraint(param, attrib, typeSupported);
+		if (msg)
+			return msg;
+		
+		if (param.hasOwnProperty(attrib)) {
+			if (!(/^\-?\d+$/).test(param[attrib]))
+				msg = this._buildErrorMessage(gs.getMessage('{0} should be a valid integer', [attrib]));
+			else if(parseInt(param[attrib]) < 0 && attrib.indexOf("Length") != -1)
+				msg = this._buildErrorMessage(gs.getMessage('{0} should be a positive integer', [attrib]));
+		}
+		
+		return msg;
+	},
+
+	_validateUniqueParamAttribute : function(opImplParamName, opImplSysID) {
+		var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+		gr.addQuery('name', opImplParamName);
+		gr.addQuery('operation', opImplSysID);
+		gr.query();
+		if(gr.next())
+			return gr.operation.operation.name +'';
+		return null;
+	},
+	
+	_buildErrorMessage : function(msg)  {
+		return (this.MSG_PREFIX + msg);
+	},	
+	/* eslint-enable */
+	
+
+    type: 'BlueprintTemplateValidator'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-11 19:58:55</sys_created_on>
+        <sys_id>cfb9fd15eb832200979aa5115206fe6a</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>BlueprintTemplateValidator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cfb9fd15eb832200979aa5115206fe6a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-12 07:16:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

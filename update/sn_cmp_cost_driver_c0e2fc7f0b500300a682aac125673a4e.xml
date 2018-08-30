@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cost_driver">
+    <sn_cmp_cost_driver action="INSERT_OR_UPDATE">
+        <associated_resource_template>cmdb_ci_os_template</associated_resource_template>
+        <cost_type>single</cost_type>
+        <enabled>true</enabled>
+        <preference/>
+        <pricing_product>cmdb_ci_cmp_vm_instance_price</pricing_product>
+        <pricing_product_attribute>operating_system</pricing_product_attribute>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <resource_block display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource_block>
+        <resource_operation display_value="Provision">134a77de0be622009e620bcb15673a05</resource_operation>
+        <resource_operation_attribute display_value="OSProfile">ff4a77de0be622009e620bcb15673a79</resource_operation_attribute>
+        <resource_profile>sn_cmp_os_profile</resource_profile>
+        <resource_template_attribute>guest_os</resource_template_attribute>
+        <sys_class_name>sn_cmp_cost_driver</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-07 07:51:00</sys_created_on>
+        <sys_id>c0e2fc7f0b500300a682aac125673a4e</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cost_driver_c0e2fc7f0b500300a682aac125673a4e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-22 12:36:08</sys_updated_on>
+    </sn_cmp_cost_driver>
+</record_update>

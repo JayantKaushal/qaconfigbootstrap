@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBillingJobUtil</api_name>
+        <client_callable>true</client_callable>
+        <description>Utility for running a billing data download based upon the sn_cmp_billing_schedule record</description>
+        <name>CmpBillingJobUtil</name>
+        <script><![CDATA[var CmpBillingJobUtil = Class.create();
+CmpBillingJobUtil.prototype = {
+	
+	JOB_CONFIG_TABLE : 'sn_cmp_billing_schedule',
+	REPORT_DOWNLOAD_LOG_TABLE : 'sn_cmp_billing_job_log',
+	PROVIDER_PROPERTY_TABLE : 'sn_capi_provider_property',
+	WORKFLOW_CONTEXT_TABLE : 'wf_context',
+	WORKFLOW_HISTORY_TABLE : 'wf_history',
+	WORKFLOW_ACTIVITY_TABLE : 'wf_activity',
+	EXECUTE_NOW_ACTION : 'Execute Now',
+	SHOW_WORKFLOW_ACTION : 'Show Workflow',
+	PULL_BILLING_WORKFLOW_NAME : "Retrieve Cloud Billing Data",
+	PROP_INCLUDE_ZERO_COST : 'sn_clin.include_zero_cost',
+
+	
+	// Function runs a billing data download based upon the sn_cmp_billing_schedule glide record.
+	/* eslint-disable */
+	runThisJob : function(jobConfigId, startYear, startMonth, endYear, endMonth, clearData) {
+		if (this.isNewWfEnabled(jobConfigId)) {
+			var wf = new global.Workflow();
+			var includeZeroCostItems = ('true' === gs.getProperty(this.PROP_INCLUDE_ZERO_COST, 'false').toLowerCase());
+			var workflowId = wf.getWorkflowFromName(this.PULL_BILLING_WORKFLOW_NAME);
+			var gr = wf.startFlow(workflowId, null, 'update', {u_config_id : jobConfigId,
+															   u_start_year: startYear,
+															   u_start_month: startMonth,
+															   u_end_year: endYear,
+															   u_end_month: endMonth,
+															   u_clear_existing_data: clearData,
+															   u_include_zero_cost_items: includeZeroCostItems});
+				
+			gr.next();
+			return gr.sys_id;
+		} else {
+			return null;
+		}		
+	},
+	
+
+	// Verify if the WF associated with the report job is cancelled, if yes then show Execute now UI action.
+	canShowActionExecuteNow : function(jobConfigId) {
+		var grJob = new GlideRecord(this.JOB_CONFIG_TABLE);
+		// Verify the status of all contexts for billing download WF 
+		// If any of the one is executing then do not show 'Excecute Now' UI Action
+		if(grJob.get(jobConfigId) && !gs.nil(this.isBillingWorkflowExecuting())){		
+			var parentContextId = this.getCurrentWfContextId(jobConfigId);
+			var contextId = this.getChildWfContextId(parentContextId);
+			
+			if(gs.nil(contextId))
+				contextId = parentContextId;
+			if(!gs.nil(contextId)){
+				var activity = new GlideRecord(this.WORKFLOW_HISTORY_TABLE); 
+				var qc = activity.addQuery('context', contextId);
+				if(contextId != parentContextId)
+					qc.addOrCondition('context', parentContextId);
+				activity.addQuery('state', 'cancelled');
+				activity.query();
+				if(activity.next()){
+					// If nothing is executing & WF context is cancelled, show 'Execute Now' UI action
+					// change job status to 'Finish', so that user can trigger another billing download
+					grJob.current_job_status = 'Finish';
+					grJob.current_job_details = 'Workflow failed or cancelled';
+					grJob.last_executed_on = new GlideDateTime().getDisplayValue();
+					grJob.last_executed_state = 'failure';
+					grJob.update();
+
+					// Mark any "In Progress" logs as failed
+					var logGr = new GlideRecord(this.REPORT_DOWNLOAD_LOG_TABLE); 
+					logGr.addQuery('job_config', grJob.getUniqueValue());
+					logGr.addQuery('state', 'in_progress');
+					logGr.query();
+					while(logGr.next()){
+						logGr.state = 'failure';
+						logGr.details = 'Workflow failed or cancelled';
+						logGr.update();
+					}				
+				}
+			}
+			return this.canShowAction(jobConfigId, 'Execute Now');
+		}
+		return false;
+	},
+	
+	canShowAction : function(jobConfigId, actionName) {
+		var gr = new GlideRecord(this.JOB_CONFIG_TABLE);
+		if(gr.get(jobConfigId)){
+			if(actionName == this.EXECUTE_NOW_ACTION) {
+				return gr.current_job_status != 'In Progress';			
+			}
+		}
+		return false;
+	},	
+
+	// verify if any of the billing download WF is running
+	isBillingWorkflowExecuting  : function() {
+		var grWfContextAll = new GlideRecord(this.WORKFLOW_CONTEXT_TABLE);
+		grWfContextAll.addQuery('id', '' + this.getBillingWFId());  
+		grWfContextAll.addQuery('state', 'executing');
+		grWfContextAll.query();
+		return grWfContextAll.next();
+	},
+	
+	// Get the Id from WF executions to query in wf context table
+	getBillingWFId : function (){
+		var gr = new GlideRecord('wf_workflow_execution');
+		gr.addQuery('name', this.PULL_BILLING_WORKFLOW_NAME);
+		gr.orderByDesc('sys_created_on');
+		gr.query();
+		if(gr.next())
+			return gr.sys_id;
+		return '';
+	},	
+
+	// Check if a new downloading workflow for same job should be enabled or disabled
+	isNewWfEnabled : function(jobConfigId) {
+		var enableWf = true;
+		
+		// Get the latest downloading workflow context
+		var contextId = this.getCurrentWfContextId(jobConfigId);
+		
+		// If the latest downloading workflow context is still in executing or paused status
+		// disable Execute Now ui action to run the workflow
+		if (!gs.nil(contextId)) {
+			var context = new GlideRecord(this.WORKFLOW_CONTEXT_TABLE);
+			context.get(contextId);
+			var status = context.state;
+			if (status == 'executing' || status == 'paused') {
+				gs.info('Disabled workflow ' + this.PULL_BILLING_WORKFLOW_NAME + ' since previous workflow ' +
+				contextId + ' status is ' + status);
+				enableWf = false;
+			}
+		}
+		return enableWf;
+	},
+	
+	getCurrentWfContextId: function(jobConfigId){
+		// lookup the report download table to check the latest downloading job
+		var reportLog = this.getReportDownloadLog(jobConfigId);
+		if(reportLog.next())
+			return reportLog.wf_context;
+		else
+			return '';
+	},
+
+    getChildWfContextId: function(parentContextId){
+        if(gs.nil(parentContextId))
+            return null;
+        var context = new GlideRecord(this.WORKFLOW_CONTEXT_TABLE);
+        context.addQuery('parent', parentContextId);
+        context.query();
+        if(context.next())
+            return context.sys_id;
+        else
+            return null;
+    },
+	
+	
+	// Get latest report download log record for the job
+	getReportDownloadLog:  function(jobConfigId){
+		var reportLog = new GlideRecord(this.REPORT_DOWNLOAD_LOG_TABLE);
+		reportLog.addQuery('job_config', ''+ jobConfigId);
+		reportLog.orderByDesc('start_time');
+		reportLog.setLimit(1);
+		reportLog.query();
+		return reportLog;
+	},
+	
+	getProviderProperty: function(providerId, propKey) {
+		var ppGr = new GlideRecord(this.PROVIDER_PROPERTY_TABLE);
+		ppGr.addQuery('provider', providerId);
+		ppGr.addQuery('key', propKey);
+		ppGr.query();
+		if(ppGr.next()) {
+			return ppGr.value+'';
+		}
+		return '';
+	},
+	
+	initialize: function() {
+	},
+	
+	type: 'CmpBillingJobUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-19 23:56:25</sys_created_on>
+        <sys_id>a300e846932222004a9032bfa67ffb6d</sys_id>
+        <sys_mod_count>37</sys_mod_count>
+        <sys_name>CmpBillingJobUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a300e846932222004a9032bfa67ffb6d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:41:57</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Workload Provider Properties" max_length="40" name="sn_cmp_wl_prov_prop" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Key" max_length="100" name="key" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="3" label="Type" max_length="40" name="type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Pool" sequence="1" value="pool"/>
+                <element inactive_on_update="false" label="Text" sequence="2" value="text"/>
+                <element inactive_on_update="false" label="CSV" sequence="3" value="csv"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="100" name="value" type="string"/>
+        <element label="Provider Type" mandatory="true" max_length="32" name="workload_provider_type" reference="sn_cmp_workload_provider_type" type="reference"/>
+        <index name="index">
+            <element name="workload_provider_type"/>
+        </index>
+    </element>
+</database>

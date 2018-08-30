@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPServiceDefinitionVersionGenerator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPServiceDefinitionVersionGenerator</name>
+        <script><![CDATA[var CMPServiceDefinitionVersionGenerator = Class.create();
+CMPServiceDefinitionVersionGenerator.prototype = {
+    initialize: function() {
+    },
+	
+	generate : function(layerObj) {
+		var activeChkPt = this.getActiveCheckPointFromCheckedInTimeLine(layerObj);
+		if (gs.nil(activeChkPt))
+			return '1';
+		else {
+			var nextVersion = parseInt(activeChkPt.getVersion()) + 1; 
+			return nextVersion.toString();
+		}
+	},
+	
+	getActiveCheckPointFromCheckedInTimeLine: function(layerObj) {
+		var tline  = layerObj.getCheckedIn();
+		return tline.getActiveCheckpoint();
+	},
+
+
+	
+    type: 'CMPServiceDefinitionVersionGenerator'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-23 08:12:35</sys_created_on>
+        <sys_id>4c7755090b5322009e620bcb15673aa0</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPServiceDefinitionVersionGenerator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_4c7755090b5322009e620bcb15673aa0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-23 10:23:35</sys_updated_on>
+    </sys_script_include>
+</record_update>

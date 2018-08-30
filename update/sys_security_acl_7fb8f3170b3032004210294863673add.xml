@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>false</admin_overrides>
+        <advanced>true</advanced>
+        <condition/>
+        <description>Allow create for records in sn_cmp_pol_action, for users with role sn_cmp.cloud_governor, and if the ACL script returns true.</description>
+        <express_security>false</express_security>
+        <name>sn_cmp_pol_action</name>
+        <operation display_value="create">create</operation>
+        <script><![CDATA[if (current.policy_rule) {
+	var policy = current.policy_rule.policy;
+	if (policy)
+		answer = policy.getRefRecord().getValue('status') != '1';
+}
+else
+	answer = true;]]></script>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 09:17:05</sys_created_on>
+        <sys_id>7fb8f3170b3032004210294863673add</sys_id>
+        <sys_mod_count>49</sys_mod_count>
+        <sys_name>sn_cmp_pol_action</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_security_acl_7fb8f3170b3032004210294863673add</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-17 19:17:03</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

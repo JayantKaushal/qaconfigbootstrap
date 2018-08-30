@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Start_Virtual_Server_Response_Processor</name>
+        <resource display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, &#13;
+						  correlationId, step, requestorContext, stackId) {&#13;
+	&#13;
+	var rawResponseObject = global.JSON.parse(response);&#13;
+	var responseObject;&#13;
+	if (rawResponseObject.hasOwnProperty('successfullyDone'))&#13;
+		responseObject = rawResponseObject.successfullyDone;&#13;
+	else&#13;
+		responseObject = rawResponseObject;&#13;
+		&#13;
+	var responseProcessor = new sn_cmp.ResponseProcessor(cloudServiceAccountId, &#13;
+														 ldc, &#13;
+														 'Cloud API',&#13;
+														 {"correlationId": correlationId,&#13;
+														  "step": step,&#13;
+														  "requestorContext": requestorContext,&#13;
+														  "stackId": stackId});&#13;
+	&#13;
+	var cloudModelObject = &#13;
+		responseProcessor.processResponseArray(responseObject,&#13;
+											   '',&#13;
+											   'virtual_machine_create_update_validator', &#13;
+											   '',&#13;
+											   'cmdb_ci_vm_instance');&#13;
+	responseObject = [].concat(responseObject);&#13;
+	for (var index=0; index&lt;responseObject.length; index++) {&#13;
+		var object = responseObject[index];&#13;
+		var networkInterfaces = object.networkInterfaces;&#13;
+		if (networkInterfaces) {&#13;
+			var nicObject = responseProcessor.processResponseArray(networkInterfaces,&#13;
+											   '',&#13;
+											   'nic_create_validator',&#13;
+											   '',&#13;
+											   'cmdb_ci_nic');&#13;
+			cloudModelObject = cloudModelObject.concat(nicObject);&#13;
+		}&#13;
+	}&#13;
+	return global.JSON.stringify(cloudModelObject);&#13;
+ }&#13;
+		</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId) {
+	
+	var rawResponseObject = global.JSON.parse(response);
+	var responseObject;
+	if (rawResponseObject.hasOwnProperty('successfullyDone'))
+		responseObject = rawResponseObject.successfullyDone;
+	else
+		responseObject = rawResponseObject;
+		
+	var responseProcessor = new sn_cmp.ResponseProcessor(cloudServiceAccountId, 
+														 ldc, 
+														 'Cloud API',
+														 {"correlationId": correlationId,
+														  "step": step,
+														  "requestorContext": requestorContext,
+														  "stackId": stackId});
+	
+	var cloudModelObject = 
+		responseProcessor.processResponseArray(responseObject,
+											   '',
+											   'virtual_machine_create_update_validator', 
+											   '',
+											   'cmdb_ci_vm_instance');
+	responseObject = [].concat(responseObject);
+	for (var index=0; index<responseObject.length; index++) {
+		var object = responseObject[index];
+		var networkInterfaces = object.networkInterfaces;
+		if (networkInterfaces) {
+			var nicObject = responseProcessor.processResponseArray(networkInterfaces,
+											   '',
+											   'nic_create_validator',
+											   '',
+											   'cmdb_ci_nic');
+			cloudModelObject = cloudModelObject.concat(nicObject);
+		}
+	}
+	return global.JSON.stringify(cloudModelObject);
+ }
+		]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-21 10:28:23</sys_created_on>
+        <sys_id>b24a37de0be622009e620bcb15673aa2</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>Start_Virtual_Server_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_b24a37de0be622009e620bcb15673aa2</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-09-08 11:35:45</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

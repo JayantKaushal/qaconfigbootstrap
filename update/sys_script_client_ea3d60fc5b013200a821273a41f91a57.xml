@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>is_script</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_Rule_Action_Is_Script_On_Change</name>
+        <order/>
+        <script><![CDATA[var BLUEPRINT_PROVISION = "2";
+var BLUEPRINT_APPROVAL = "4";
+var CATALOG_ITEM_LAUNCH = "6";
+var CATALOG_ITEM_REQUEST_START = "8";
+var CATALOG_ITEM_REQUEST_END = "9";
+var CLOUD_EVENT = "7";
+var RESOURCE_OPERATION = "3";
+var STACK_APPROVAL = "5";
+var STACK_RESOURCE_OPERATION_APPROVAL = "10";
+var ON_TASK_CLEANUP = "13";
+
+var PROPERTY_OVERRIDE = 1;
+var SERVICE_NOW_APPROVAL = 2;
+var EXECUTE_SCRIPT = 3;
+var EXECUTE_WORKFLOW = 4;
+var CLOUD_API = 5;
+var ABORT_PROCESS = 6;
+var QUOTA = 7;
+var UPDATE_CI = 8;
+var CUSTOM_APPROVAL = 9;
+var STACK_STATUS = 10;
+
+function onChange(control, oldValue, newValue, isLoading, isTemplate) {
+   if (isLoading || newValue === '') {
+      return;
+   }
+	var displayScript = false;
+	if( g_form.getValue( "is_script") == "true"){
+		displayScript = true;
+	}
+	g_form.setDisplay( "action_script_name", displayScript);
+	g_form.setDisplay( "script", displayScript);
+	g_form.setDisplay( "action_script_cat", displayScript);
+	var displayValue = !displayScript;
+	if( g_form.getValue( "action_type") != PROPERTY_OVERRIDE){
+		displayValue = false;
+	}
+	g_form.setDisplay( "value", displayValue);
+   //Type appropriate comment here, and begin script below
+   
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 10:19:31</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>ea3d60fc5b013200a821273a41f91a57</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>Policy_Rule_Action_Is_Script_On_Change</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_ea3d60fc5b013200a821273a41f91a57</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-05 03:31:56</sys_updated_on>
+        <table>sn_cmp_pol_action</table>
+        <type>onChange</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope) {
+  /* widget controller */
+  var c = this;
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.no-spend {
+  text-align: center;
+  position: relative;
+  top: 60px;
+}
+
+.cap-pie-graph-size {
+  height: 150px;
+  margin: 0 auto;
+}
+
+.widgetIcon {
+  margin-right: 5px;
+}
+
+.panel-body {
+  padding: 0;
+}
+
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cap_donut_chart</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+	$(document).ready(function(){
+		//resize_window();
+		setTimeout(function () {
+			drawDountChart();
+		}, 500);
+	});
+
+	$(window).resize(function(){
+		//resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 635) + 'px';
+		if(panel_height > '174px')
+			$(el).find('.panel-body').css('height',panel_height);
+	}
+
+	function drawDountChart () {
+		Highcharts.setOptions({
+			lang: {
+				thousandsSep: ','
+			}
+		});
+		chart = new Highcharts.chart(ctrl.data.containerId, {
+			colors: ['#278ecf', '#4bd762', '#ffca1f', '#ff9416','#d42ae8','#535ad7','#ff402c','#83bfff','#6edb8f','#ffe366'],
+			chart: {
+				marginTop: 0,
+				marginBottom: 50,
+				spacingTop: 0,
+				spacingBottom: 0
+			},
+			legend: {
+				labelFormatter: function() {
+					return this.name + '  ' + this.y;
+				},
+				itemStyle: {
+					fontSize: '10px'
+				},
+				align: 'center',
+				layout: 'vertical',
+				verticalAlign: 'bottom',
+				maxHeight: 50
+			},
+			title: {
+				text: ctrl.data.total.toString(),
+				align: 'center',
+				y: 55,
+				style: {
+					fontSize: '12px',
+					fontWeight: 'bold'
+				}
+			},
+			tooltip: {
+				pointFormat: '{point.name}: <b>{point.y}</b>'
+			},
+			plotOptions: {
+				pie: {
+					dataLabels: {
+						enabled: false
+					},
+					center: ['50%', '50%']
+				}
+			},
+			credits: {
+				enabled: false
+			},
+			series: [{
+				type: 'pie',
+				name: 'Cloud',
+				size: '100%',
+				innerSize: '70%',
+				showInLegend: true,
+				data: ctrl.data.dataArray
+			}]
+		});
+	}
+}]]></link>
+        <name>CAP Donut chart</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+
+	data.name = options.name;
+	data.dataArray = options.data;
+	data.total = options.total;
+	data.containerId = options.containerId;
+	data.link = options ? options.link : '';
+
+})()]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-30 11:23:20</sys_created_on>
+        <sys_id>a887f92b3be332009c82cedf34efc4b9</sys_id>
+        <sys_mod_count>391</sys_mod_count>
+        <sys_name>CAP Donut chart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_a887f92b3be332009c82cedf34efc4b9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-24 04:45:53</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-default b widget-container" layout="column" flex>
+  <div class="panel-heading">
+    <h4 class="panel-title"><i class="fa fa-pie-chart widgetIcon"></i>{{data.name}}</h4>
+  </div>
+  <div class="panel-body">
+    <div ng-show="data.dataArray.length == 0" class="no-spend">${No Data Available}</div>
+    <div class="cap-pie-graph-size" ng-hide="data.dataArray.length == 0" id="{{data.containerId}}"></div>
+  </div>
+  <div class="panel-footer" ng-if="c.data.link && data.dataArray.length > 0">
+    <a class="pull-right" href="{{c.data.link}}">${View All}</a>   
+    &nbsp;
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

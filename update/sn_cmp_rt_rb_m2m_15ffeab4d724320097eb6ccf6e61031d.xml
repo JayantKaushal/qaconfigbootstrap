@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rt_rb_m2m">
+    <sn_cmp_rt_rb_m2m action="INSERT_OR_UPDATE">
+        <resource_block display_value="Subnet">f54b003e67532200ff506c706785eff8</resource_block>
+        <resource_type display_value="AWS::EC2::Subnet">078cd22a930b22004a9032bfa67ffb7d</resource_type>
+        <sys_class_name>sn_cmp_rt_rb_m2m</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-23 23:18:30</sys_created_on>
+        <sys_id>15ffeab4d724320097eb6ccf6e61031d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rt_rb_m2m_15ffeab4d724320097eb6ccf6e61031d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-23 23:18:30</sys_updated_on>
+    </sn_cmp_rt_rb_m2m>
+</record_update>

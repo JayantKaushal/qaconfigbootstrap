@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>sys_created_on</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>IP_Pool_On_Load</name>
+        <order/>
+        <script><![CDATA[function onLoad() {
+	//Type appropriate comment here, and begin script below
+	var provider = g_form.getValue( "ipam_provider");
+	if( provider != "" && provider != "ServiceNow"){
+		g_form.hideRelatedList("sn_cmp_ip_pool_ip_address.ip_pool");
+		g_form.setDisplay( "provider_instance", true);
+	}
+	else{
+		g_form.showRelatedList("sn_cmp_ip_pool_ip_address.ip_pool");
+		g_form.setDisplay( "provider_instance", false);
+	}	
+/*	var providerName = "";
+	
+	var ajax = new GlideAjax("IPAMUtil");
+	ajax.addParam("sysparm_name", "fetchIPAMProviderInfo");
+	ajax.addParam("sysid", provider);
+	
+	ajax.getXML(function(serverResponse) {
+		providerName = serverResponse.responseXML.getElementsByTagName("xml")[0].getAttribute("answer");
+		if( providerName != "" && providerName != "ServiceNow"){
+			g_form.hideRelatedList("sn_cmp_ip_pool_ip_address.ip_pool");
+			g_form.setDisplay( "provider_instance", true);
+		}
+		else{
+			g_form.showRelatedList("sn_cmp_ip_pool_ip_address.ip_pool");
+			g_form.setDisplay( "provider_instance", false);
+		}
+	});
+*/	
+	addLookupOnclickEvent();
+}
+
+function addLookupOnclickEvent(){
+	if(g_form.getControl( 'provider_instance')!= null && g_form.getControl( 'provider_instance').parentElement != null){
+		var links = g_form.getControl( 'provider_instance').parentElement.getElementsByTagName('a');
+		if( links != null){
+			for( var i=0;i<links.length;i++){
+				if( links[i].id != null && links[i].id == 'lookup.sn_cmp_ip_pool.provider_instance'){
+					attachEvent(links[i]);
+				}
+			}
+		}
+	}
+}
+
+function attachEvent( link){
+	Event.observe(link, 'click', function(event) {
+		//		setTimeout(documentIDPopup, 1000);
+		var loadingInterval = setInterval(function() {
+			var documentSelector = g_form.getControl("ipam_provider").ownerDocument.getElementById("document_selector");
+			if(documentSelector) {
+				documentSelector.style.display = "none";
+				var documentModal = g_form.getControl("ipam_provider").ownerDocument.getElementById("document_selector_title");
+				var headerElement = documentModal.parentElement;
+				if( headerElement != null) {
+					headerElement.style.borderBotton = "0px";
+					if( headerElement.children[0] != null){
+						headerElement.children[0].style.display = "none";
+					}
+				}
+				documentIDPopup(loadingInterval,documentSelector);
+			}
+		}, 100);
+	});
+}
+
+function documentIDPopup(loadingInterval,documentSelector){
+	var found = false;
+	var retryCount = 0;
+	var labelId = g_form.getValue( "ipam_provider");
+	var documentKey = g_form.getControl("ipam_provider").ownerDocument.getElementById("document_key");
+	if( documentKey != null){
+		var documentKeyDiv = documentKey.parentElement;
+		if( documentKeyDiv != null){
+			if( documentKeyDiv.previousSibling != null){
+				documentKeyDiv.previousSibling.style.display = "none";
+				clearInterval(loadingInterval);
+				documentSelector.style.display = 'block';
+			}
+			var documentKeyLabels = documentKeyDiv.getElementsByTagName("label");
+			if( documentKeyLabels !== undefined && documentKeyLabels.length > 0){
+				documentKeyLabels[0].textContent = "";
+			}
+			found=true;
+		}
+	}
+	retryCount++;
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 02:49:41</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>3366c3e80b453200a91f6707b6673af8</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>IP_Pool_On_Load</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_3366c3e80b453200a91f6707b6673af8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-14 05:10:09</sys_updated_on>
+        <table>sn_cmp_ip_pool</table>
+        <type>onLoad</type>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

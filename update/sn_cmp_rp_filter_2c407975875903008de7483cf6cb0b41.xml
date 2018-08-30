@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getBySubnet</name>
+        <resource_pool display_value="AvailabilityZonePool">dec017280b403200e937c97193673a51</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - json should contain the sysId of related item
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var relations = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		var subnetId = map.SubnetId;
+		if (!subnetId)
+			return relations;
+		var rel = new GlideRecord('cmdb_rel_ci');
+		rel.addQuery('child', subnetId);
+		rel.addQuery('type.name', 'Contains::Contained by');
+		rel.query();
+		while (rel.next()) {
+			var parent = rel.getValue('parent');
+			var az = new GlideRecord('cmdb_ci_availability_zone');
+			if (az.get(parent)) {
+				var relation = {};
+				relation.value = az.getValue('object_id');
+				relation.label = az.getValue('object_id');
+				relations.push(relation);
+			}
+		}
+	}else{
+		gs.error("input json is blank - "+json);
+	}
+	return global.JSON.stringify(relations);
+}
+
+]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 00:12:15</sys_created_on>
+        <sys_id>2c407975875903008de7483cf6cb0b41</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>getBySubnet</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_2c407975875903008de7483cf6cb0b41</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-20 19:02:13</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

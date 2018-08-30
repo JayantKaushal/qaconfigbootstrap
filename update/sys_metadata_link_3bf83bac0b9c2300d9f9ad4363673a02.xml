@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_metadata_link">
+    <sys_metadata_link action="INSERT_OR_UPDATE">
+        <directory>update</directory>
+        <documentkey>aaf6db6c0b5c2300d9f9ad4363673af4</documentkey>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_cfg_ansible_tower">
+    <sn_cfg_ansible_tower action="INSERT_OR_UPDATE">
+        <asset/>
+        <asset_tag/>
+        <assigned/>
+        <assigned_to/>
+        <assignment_group/>
+        <attributes/>
+        <can_print>false</can_print>
+        <category/>
+        <change_control/>
+        <checked_in/>
+        <checked_out/>
+        <comments/>
+        <company/>
+        <correlation_id/>
+        <cost/>
+        <cost_cc>USD</cost_cc>
+        <cost_center/>
+        <credential display_value="ITom Ansible Tower Credentials">032f83240b5c2300d9f9ad4363673aaf</credential>
+        <delivery_date/>
+        <department/>
+        <discovery_source>ServiceNow</discovery_source>
+        <dns_domain/>
+        <due/>
+        <due_in/>
+        <fault_count>0</fault_count>
+        <first_discovered>2018-08-30 10:52:10</first_discovered>
+        <fqdn/>
+        <gl_account/>
+        <install_date/>
+        <install_status>1</install_status>
+        <invoice_number/>
+        <ip_address/>
+        <is_default>false</is_default>
+        <justification/>
+        <last_discovered>2018-08-30 10:52:30</last_discovered>
+        <lease_id/>
+        <location/>
+        <mac_address/>
+        <maintenance_schedule/>
+        <managed_by/>
+        <manufacturer/>
+        <model_id/>
+        <model_number/>
+        <monitor>false</monitor>
+        <name>ITom Ansible Tower</name>
+        <object_id>431308</object_id>
+        <operational_status>1</operational_status>
+        <order_date/>
+        <organization>Default</organization>
+        <owned_by/>
+        <po_number/>
+        <provider display_value="Ansible Tower">8c50f6020bd50300a682aac125673a2e</provider>
+        <purchase_date/>
+        <schedule/>
+        <serial_number/>
+        <server_type>1</server_type>
+        <service_category display_value="Config Management">731f86900b2322004b1b812f15673ade</service_category>
+        <short_description/>
+        <skip_sync>false</skip_sync>
+        <start_date/>
+        <subcategory/>
+        <support_group/>
+        <supported_by/>
+        <sys_class_name>sn_cfg_ansible_tower</sys_class_name>
+        <sys_class_path>/!!/$#/!!/!#</sys_class_path>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 09:48:04</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>aaf6db6c0b5c2300d9f9ad4363673af4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 10:52:30</sys_updated_on>
+        <unverified>false</unverified>
+        <url>https://10.198.1.25</url>
+        <vendor/>
+        <version/>
+        <warranty_expiration/>
+    </sn_cfg_ansible_tower>
+</record_update>
+]]></payload>
+        <sys_class_name>sys_metadata_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 12:16:41</sys_created_on>
+        <sys_id>3bf83bac0b9c2300d9f9ad4363673a02</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ITom Ansible Tower</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_metadata_link_3bf83bac0b9c2300d9f9ad4363673a02</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 12:16:41</sys_updated_on>
+        <tablename>sn_cfg_ansible_tower</tablename>
+    </sys_metadata_link>
+</record_update>

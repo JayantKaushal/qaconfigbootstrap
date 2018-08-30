@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="IPAM ProviderProperties" max_length="40" name="sn_cmp_wl_cfg_ipam_keyvalue" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Key" max_length="200" name="key" type="string"/>
+        <element label="Provider" max_length="32" name="provider" reference="sn_cmp_wl_cfg_ipam_provider" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="200" name="value" type="string"/>
+        <index name="index">
+            <element name="provider"/>
+        </index>
+    </element>
+</database>

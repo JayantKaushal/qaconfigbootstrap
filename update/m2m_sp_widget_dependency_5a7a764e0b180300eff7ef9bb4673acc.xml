@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_widget_dependency">
+    <m2m_sp_widget_dependency action="INSERT_OR_UPDATE">
+        <sp_dependency display_value="Highcharts 5">000430900b222200eff7ef9bb4673aa7</sp_dependency>
+        <sp_widget display_value="CAP Overview Counts">6b6c63c33be332009c82cedf34efc4c2</sp_widget>
+        <sys_class_name>m2m_sp_widget_dependency</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-02 07:12:06</sys_created_on>
+        <sys_id>5a7a764e0b180300eff7ef9bb4673acc</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Highcharts 5.CAP Overview Counts</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>m2m_sp_widget_dependency_5a7a764e0b180300eff7ef9bb4673acc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-02 07:12:06</sys_updated_on>
+    </m2m_sp_widget_dependency>
+</record_update>

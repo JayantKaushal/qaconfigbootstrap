@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_hp_publisher">
+    <sys_ui_hp_publisher action="INSERT_OR_UPDATE">
+        <allow_database_view_filter>false</allow_database_view_filter>
+        <allow_extended_table>false</allow_extended_table>
+        <boolean_field/>
+        <boolean_table/>
+        <date_filter/>
+        <default_boolean_field/>
+        <default_choice/>
+        <default_date_filter/>
+        <default_reference_field_value/>
+        <description/>
+        <exclusion_choice_list/>
+        <look_up_name>Cloud Trail - Level</look_up_name>
+        <name>Level</name>
+        <reference_conditions/>
+        <reference_table/>
+        <source_field>message_type</source_field>
+        <source_table>sn_cmp_cloud_trail</source_table>
+        <sys_class_name>sys_ui_hp_publisher</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-28 18:38:59</sys_created_on>
+        <sys_id>43855fd1933d32004a9032bfa67ffb03</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Level</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_hp_publisher_43855fd1933d32004a9032bfa67ffb03</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-28 19:02:45</sys_updated_on>
+        <type>1</type>
+        <ui_control_type>4</ui_control_type>
+    </sys_ui_hp_publisher>
+</record_update>

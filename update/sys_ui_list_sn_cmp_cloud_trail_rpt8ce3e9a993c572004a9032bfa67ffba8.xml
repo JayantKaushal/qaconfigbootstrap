@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="sn_cmp_cloud_trail" version="2" view="RPT8ce3e9a993c572004a9032bfa67ffba8">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>number</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>3f59a21993f443004a9032bfa67ffb8c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>sys_created_on</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>bf59a21993f443004a9032bfa67ffb8c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>step</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>3359a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>message_type</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>b359a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>req_item</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>3759a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>user_id</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>5</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>b759a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>invocation_template</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>6</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>3b59a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>target_instance</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>7</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>bb59a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>status_message</element>
+            <list_id display_value="sn_cmp_cloud_trail" element="NULL" name="sn_cmp_cloud_trail" parent="NULL" relationship="NULL" sys_domain="global" view="dbdccf640b1c2300d9f9ad4363673ac1">7759a21993f443004a9032bfa67ffb8c</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>8</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_id>3f59a21993f443004a9032bfa67ffb8d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>sn_cmp_cloud_trail</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-08-24 18:33:21</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>7759a21993f443004a9032bfa67ffb8c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_cloud_trail</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_sn_cmp_cloud_trail_RPT8ce3e9a993c572004a9032bfa67ffba8</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-08-24 18:33:21</sys_updated_on>
+            <sys_user/>
+            <view display_value="Rpt8ce3e9a993c572004a9032bfa67ffba8" name="RPT8ce3e9a993c572004a9032bfa67ffba8">dbdccf640b1c2300d9f9ad4363673ac1</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

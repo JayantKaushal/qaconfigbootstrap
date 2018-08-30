@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Azure Deployment Operation" max_length="40" name="sn_cmp_arm_deployment_operation" type="collection">
+        <element label="Deployment" max_length="32" name="deployment" reference="cmdb_ci_azure_deployment" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Duration" max_length="100" name="duration" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="ID" max_length="512" name="id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Operation ID" max_length="100" name="operation_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Provisioning operation" max_length="100" name="provisioning_operation" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Provisioning state" max_length="100" name="provisioning_state" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Service request ID" max_length="100" name="service_request_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Status code" max_length="100" name="status_code" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Status message" max_length="1024" name="status_message" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Status message code" max_length="100" name="status_message_code" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Timestamp" max_length="100" name="timestamp" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Tracking ID" max_length="100" name="tracking_id" type="string"/>
+        <index name="index">
+            <element name="deployment"/>
+        </index>
+    </element>
+</database>

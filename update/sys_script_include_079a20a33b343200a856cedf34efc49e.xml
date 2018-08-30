@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateResourceBlockAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateResourceBlockAction</name>
+        <script><![CDATA[var CMPCreateResourceBlockAction = Class.create();
+CMPCreateResourceBlockAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (params.name === '') {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPCreateResourceBlockAction.doAction: Undefined element name params.name" + params.name,
+				null
+				);
+			}
+
+			var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			var rbObj = {
+				name : params.name,
+				description :params.description,
+				layer : params.layer,
+				type : params.type,
+				refCI : params.refCI,
+				guestInterface : params.guestInterface,
+				hostInterface : params.hostInterface,
+				status : params.status
+			};
+
+			//Form data doesn't contain info regarding whether the resource is tlr or not so update operation fails as tlr is a mandatory attribute
+			var resourceGR = new GlideRecord('sn_cmp_rb_resourceblock');
+			resourceGR.addQuery('name',rbObj.name);
+			resourceGR.query();
+			if(resourceGR.next())
+				rbObj['tlr'] = (resourceGR.getValue('is_tlr') == 1 ? true : false);
+
+			var paramsList = [];
+			paramsList.push(rbObj);
+			if(gs.nil(params.id)) {
+				var resourceObject = resourceBlockServiceScript.getResourceBlockByName(params.name);
+				if(resourceObject && resourceObject != "null" && JSON.parse(resourceObject).id){
+					throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Resource block {0} already exists.",params.name),
+				"CMPCreateResourceBlockAction.doAction(): Failed to create new resource block",
+				null
+				);
+				}
+			}
+
+			var isReasourceNameValid = new ResourceBlockDataValidator().validateResourceName(params.name);
+			if(isReasourceNameValid){
+
+				var newResourceBlockObj = resourceBlockServiceScript.create(JSON.stringify(paramsList));
+				var newResourceBlock = new global.JSON().decode(newResourceBlockObj);
+
+				/*** Fetch Host Interface id based on host name **/
+				var gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+				if(newResourceBlock.hostInterface || newResourceBlock.hostInterface != "") {
+					gr.addQuery("name", newResourceBlock.hostInterface);
+					gr.query();
+					if(gr.next()) {
+						newResourceBlock.hostInterfaceId = gr.getValue('sys_id');
+					}
+				} else {
+					newResourceBlock.hostInterfaceId = '';
+				}
+
+				return newResourceBlock;
+			}
+			else{
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to create new resourceblock due to invalid name: {0}",params.name),
+				"CMPCreateResourceBlockAction.doAction(): Failed to create new resourceblock due to invalid name: '"+params.name+"'",
+				null
+				);
+			}
+			/*var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+			gr.addQuery('name', params.name);
+			gr.query();
+			if (gr.next()) {
+				return false;
+			} else {
+				gr.setValue('name', params.name);
+				gr.setValue('description', params.description);
+				gr.setValue('layer', params.layer);
+				gr.setValue('refCI', params.refCI);
+				gr.setValue('guestInterface', params.guestInterface);
+				gr.setValue('hostInterface', params.hostInterface);
+				gr.setValue('status', params.status);
+				gr.insert();
+				return true;
+			}*/
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to add the resource block"),
+			"CMPCreateResourceBlockAction.doAction(): Failed to create new resource block",
+			error
+			);
+		}
+    },
+
+    type: 'CMPCreateResourceBlockAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 12:54:51</sys_created_on>
+        <sys_id>079a20a33b343200a856cedf34efc49e</sys_id>
+        <sys_mod_count>32</sys_mod_count>
+        <sys_name>CMPCreateResourceBlockAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_079a20a33b343200a856cedf34efc49e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 19:07:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

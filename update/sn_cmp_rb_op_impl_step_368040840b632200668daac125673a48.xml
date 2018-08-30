@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface/>
+        <capi_method/>
+        <capi_version/>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <flow_type/>
+        <force_async>false</force_async>
+        <interface display_value="Storage Server Interface">ca79b35e0be622009e620bcb15673a29</interface>
+        <interface_operation display_value="Delete Storage Volume">a1d93b9e0be622009e620bcb15673ae7</interface_operation>
+        <name>Storage Server Interface.Delete Storage Volume</name>
+        <operationimpl display_value="Deprovision">ff6088440b632200668daac125673a66</operationimpl>
+        <order/>
+        <owner_type>2</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider/>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-02 09:33:40</sys_created_on>
+        <sys_id>368040840b632200668daac125673a48</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Storage Server Interface.Delete Storage Volume</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_368040840b632200668daac125673a48</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-02 09:33:40</sys_updated_on>
+        <target_entity_flow/>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

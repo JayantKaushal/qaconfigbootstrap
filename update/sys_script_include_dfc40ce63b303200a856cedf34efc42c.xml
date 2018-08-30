@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllResourceBlocksAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllResourceBlocksAction</name>
+        <script><![CDATA[var CMPGetAllResourceBlocksAction = Class.create();
+CMPGetAllResourceBlocksAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			//Get blueprint list
+			//Based on selected layer
+			//and pagination test
+			//var resourceBlocksServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+			var layer = params.selected_layer_id;
+			//getTotalRowCount also in the call;
+			var resourceBlockDTOsWithTotalCount=new ResourceBlockServiceHelper().searchResourceBlocksByNameWithTotalRows(params.selected_layer_id,params.selected_status_id, params.rb_name,params.current_page,params.limit, true);
+            var totalRecordCount = resourceBlockDTOsWithTotalCount.totalRecordCount;
+            var resourceBlockList = resourceBlockDTOsWithTotalCount.resourceBlockDTOs;
+			var responseObj = {
+				resourceBlockList : resourceBlockList,
+				totalRecords : totalRecordCount
+			};
+			return responseObj;
+
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all resource block."),
+				"CMPGetAllResourceBlocksAction.doAction(): Failed to get all resource blocks",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllResourceBlocksAction'
+});
+
+	]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-10 07:45:06</sys_created_on>
+        <sys_id>dfc40ce63b303200a856cedf34efc42c</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>CMPGetAllResourceBlocksAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_dfc40ce63b303200a856cedf34efc42c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-18 09:08:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

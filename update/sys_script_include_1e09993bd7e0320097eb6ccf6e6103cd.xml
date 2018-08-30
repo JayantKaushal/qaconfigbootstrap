@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureAlertHandler</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureAlertHandler</name>
+        <script><![CDATA[var AzureAlertHandler = Class.create();
+AzureAlertHandler.prototype = Object.extendsObject(CloudEventHandler, {
+	
+	processEvent : function(headersStr, bodyStr, queryParamsStr, eventId) {
+		var response = {};
+		var json = new global.JSON();
+		var headers = json.decode(headersStr);
+		var body = json.decode(bodyStr);
+		var queryParams = json.decode(queryParamsStr);
+		
+		var context = body.context;
+		var action = context.event.operationName;
+		var subscriptionId = context.subscriptionId;
+		var status = context.event.status;
+		var resourceGroup = context.resourceGroupName;
+		var resourceId = context.resourceId;
+		var timestamp = context.timestamp;
+		
+		if (action)
+			response.event_name = action;
+		else {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot get action from event');
+			return response;
+		}
+		
+		var resourceType = this.getResourceType(action);
+		if (!resourceType) {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot get resource type from event: {0}', [action]);
+			return response;
+		}
+		
+		var resourceTypeGr = this._getResourceTypeGr(resourceType);
+		
+		if (action.indexOf('delete') > 0) {
+			response.ci = this.markCITerminated(resourceId);
+			response.state = "processed";
+		} else {
+			var gr = new GlideRecord('sn_cmp_resource_type_operation');
+			if (!gr.get('resource_type.name', resourceType) || gs.nil(gr.discovery_operation)) {
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('Cannot get discovery operation for resource type: {0}', [resourceType]);
+				return response;
+			}
+
+			var operation = gr.discovery_operation;
+			if (!operation) {
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('Cannot get discovery operation for resource type: {0}', [resourceType]);
+				return response;
+			}
+			var operationName = operation.name+'';
+			var interfaceName = operation["interface"].name+'';
+			var credential = this._verifyCredential(subscriptionId);
+			if (!credential) {
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('Cannot get credential for service account: {0}', [subscriptionId]);
+				return response;
+			}
+			this.executeCAPI(subscriptionId, interfaceName, operationName, resourceId, credential, eventId, resourceTypeGr.ci_class+'');
+			//set state to processing, wait for sn_cmp_order to update event
+			response.state = "processing";
+		}		
+		
+		response.resource_id = resourceId;
+		if (resourceTypeGr)
+			response.resource_type = resourceTypeGr.getUniqueValue();
+		response.resource_block = this._getResourceblock(resourceTypeGr.getUniqueValue());
+		return response;
+	},
+	
+	getResourceType: function(action) {
+		var type = '';
+		var regex = /(.+?\/.+?)\//;
+		var match = regex.exec(action);
+		if (match && match.length > 0)
+			return match[1];
+		else
+			return '';
+	},
+	
+	markCITerminated : function(resourceId) {
+		var ciGR = new GlideRecord('cmdb_ci_vm_object');
+		if (ciGR.get('object_id', resourceId)) {
+			var ciClass = ciGR.sys_class_name+'';
+			if (ciClass != 'cmdb_ci_vm_object') {
+				ciGR = new GlideRecord(ciClass);
+				ciGR.get('object_id', resourceId);
+				new CMPReconciler().retireCI(ciGR);
+				return ciGR.getUniqueValue();
+			}
+		}
+		return '';
+	},
+	
+	executeCAPI : function(subscriptionId, interfaceName, operationName, resourceId, credential, eventId, resourceTable) {
+		//var region = "westus"; //region of the rules doesn't matter, set it to westus
+		var result = {};
+		result.userId = gs.getUserID();
+		result.operationName = interfaceName+'.'+operationName;
+		result.entityType = "Resource";
+		result.resource = "Azure Datacenter";
+		result.status = "Initialized";
+		result.ownerTable = "sn_cmp_cloud_event";
+		result.ownerInstanceId = eventId;
+		result.contextTable = "sn_cmp_rb_resourceblock";
+		result.contextInstance = "ddf5cd6bd722220097eb6ccf6e610346";//azure DC
+		var date = new GlideDateTime();
+		result.orderDate = date.getValue();
+		var orderFormData = {};
+		orderFormData.CloudServiceAccountId = subscriptionId;
+		//orderFormData.ResourceGroup = resourceGroupName;
+		//orderFormData.Location = region;
+		orderFormData.Interface = interfaceName;
+		orderFormData.Credential = credential;
+		orderFormData.ObjectID = resourceId;
+		orderFormData.resourceTable = resourceTable;
+		
+		result.orderFormData = orderFormData;
+		var os = new sn_cmp_api.OrderServiceScript();
+		var order = os.submitOrder(new global.JSON().encode(result));
+	},
+		
+	type: 'AzureAlertHandler'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-02 00:40:19</sys_created_on>
+        <sys_id>1e09993bd7e0320097eb6ccf6e6103cd</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>AzureAlertHandler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1e09993bd7e0320097eb6ccf6e6103cd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-25 20:39:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

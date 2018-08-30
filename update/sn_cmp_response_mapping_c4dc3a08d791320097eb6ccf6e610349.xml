@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_response_mapping">
+    <sn_cmp_response_mapping action="INSERT_OR_UPDATE">
+        <additional_identifier>false</additional_identifier>
+        <array_field/>
+        <attribute_value_type>mapped</attribute_value_type>
+        <binding_endpoint/>
+        <binding_type/>
+        <ci_class>cmdb_ci_nic</ci_class>
+        <ci_class_field>state</ci_class_field>
+        <datasource display_value="Cloud API">b8f801d49f53220048111f80a57fcfc1</datasource>
+        <datasource_for_mappings/>
+        <fixed_value/>
+        <identifier_ci_class/>
+        <identifier_ci_class_field/>
+        <relationship_ci_class/>
+        <script/>
+        <source_field>status</source_field>
+        <sys_class_name>sn_cmp_response_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-27 23:07:01</sys_created_on>
+        <sys_id>c4dc3a08d791320097eb6ccf6e610349</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_response_mapping_c4dc3a08d791320097eb6ccf6e610349</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-01 00:34:49</sys_updated_on>
+        <translation_key/>
+        <used_for_identification>false</used_for_identification>
+    </sn_cmp_response_mapping>
+</record_update>

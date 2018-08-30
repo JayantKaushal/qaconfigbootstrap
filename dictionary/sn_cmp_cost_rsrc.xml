@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Cost Resource" max_length="40" name="sn_cmp_cost_rsrc" type="collection">
+        <element label="Datacenter" max_length="32" name="datacenter" reference="sn_cmp_cost_ldc" type="reference"/>
+        <element label="Resource" max_length="32" name="resource" reference="cmdb_ci" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Resource ID" max_length="512" name="resource_id" type="string"/>
+        <element label="Resource type" max_length="32" name="resource_type" reference="sn_capi_resource_type" type="reference"/>
+        <element label="Stack" max_length="32" name="stack" reference="sn_cmp_stack" type="reference"/>
+        <index name="index">
+            <element name="stack"/>
+        </index>
+        <index name="index2">
+            <element name="resource"/>
+        </index>
+        <index name="index3">
+            <element name="resource_type"/>
+        </index>
+        <index name="index4">
+            <element name="datacenter"/>
+        </index>
+    </element>
+</database>

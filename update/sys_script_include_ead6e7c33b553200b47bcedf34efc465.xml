@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPExportResourceBlockAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPExportResourceBlockAction</name>
+        <script><![CDATA[var CMPExportResourceBlockAction = Class.create();
+CMPExportResourceBlockAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.rbName) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPExportResourceBlockAction.doAction: Undefined resource block name",
+					null
+				);
+			}
+			
+			/****
+			   Export Resource Block with following options
+			   1.Basic
+			   2.Advanced
+			   3.Default - yaml
+			****/
+			
+			if(params.exportType == '1' || params.exportType == '2') { //Basic Or Advanced
+				var resourceBlockExporterObj = new ResourceBlockExporter();
+				var getResponse = resourceBlockExporterObj.createUpdateSet(params);
+				return getResponse;
+			} else {
+				var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+				var rbExportJSON = resourceBlockServiceScript.exportResourceBlock(params.rbName);
+				var rbExport = new global.JSON().decode(rbExportJSON);
+				return rbExport;
+			}
+			
+		} catch (error) {
+			var e = error;
+			var errorMsg = e && e.message ? e.message : "Failed to export resource block";
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage('{0}', errorMsg),
+				"CMPExportResourceBlockAction.doAction(): Failed to export resource block",
+				error
+			);
+		}
+    },
+    type: 'CMPExportResourceBlockAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-09 09:53:21</sys_created_on>
+        <sys_id>ead6e7c33b553200b47bcedf34efc465</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPExportResourceBlockAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_ead6e7c33b553200b47bcedf34efc465</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-16 10:46:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

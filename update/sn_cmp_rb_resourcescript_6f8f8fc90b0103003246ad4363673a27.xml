@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Process_Apache_Chef_Response</name>
+        <resource display_value="Apache Web Server">bae3a6f60b3003003246ad4363673a56</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) {&#13;
+	var apacheResponse=global.JSON.parse(response);&#13;
+		var contentResponse=apacheResponse['content'];&#13;
+		var apacheNodeName=apacheResponse['name'];&#13;
+		var payload = [];&#13;
+		var content=global.JSON.parse(contentResponse);&#13;
+&#13;
+		// lets figure out the hardware first.. hardware criteria is the ip_address and mac_address which i can figure out from automatic attributes.. lets start&#13;
+		var automaticAttributeResponse=content['automatic'];&#13;
+		var machine_id = automaticAttributeResponse['machine_id'];&#13;
+		var cloudV2 = automaticAttributeResponse['cloud_v2'];&#13;
+		var ip_address = automaticAttributeResponse['ipaddress'];&#13;
+&#13;
+		var machineIdType = '';&#13;
+		if(!gs.nil(cloudV2))&#13;
+			machineIdType = cloudV2['provider'];&#13;
+	&#13;
+		var mac_address = automaticAttributeResponse['macaddress'];&#13;
+		var os = automaticAttributeResponse['os'];&#13;
+		var os_version = automaticAttributeResponse['os_version'];&#13;
+&#13;
+		var hardwareCriteria={};&#13;
+		var apacheCriteria={};&#13;
+		var hardwareCriteriaAttributes={};&#13;
+		hardwareCriteriaAttributes['serial_number']=machine_id;&#13;
+		hardwareCriteriaAttributes['ip_address']=ip_address;&#13;
+		hardwareCriteriaAttributes['mac_address']=mac_address;&#13;
+		hardwareCriteriaAttributes['name']=os+'_'+os_version;&#13;
+		hardwareCriteria['criterion']=hardwareCriteriaAttributes;&#13;
+&#13;
+		// now hardware is out of the way. lets populate apache CI..&#13;
+&#13;
+		var apacheIdentification={};&#13;
+		var apacheCriteriaAttributes={};&#13;
+		var apachePayloadAttributes={};&#13;
+		var apacheAttributes={};&#13;
+		var apachePayload={};&#13;
+&#13;
+		var defaultAttributeResponse=content['default'];&#13;
+		var apache = defaultAttributeResponse['apache'];&#13;
+		var listen_ports = apache['listen_ports'];&#13;
+	    var version = apache['version'];&#13;
+		var keepalive = apache['keepalive'];&#13;
+		var keepaliverequests = apache['keepaliverequests'];&#13;
+		var serverlimit = apache['worker']['serverlimit'];&#13;
+		var keepalivetimeout = apache['keepalivetimeout'];&#13;
+		var timeout = apache['timeout'];&#13;
+		apacheCriteriaAttributes['ci_port']=ip_address+'_'+listen_ports;&#13;
+		&#13;
+		apacheCriteriaAttributes['version']=version;&#13;
+		apacheCriteriaAttributes['config_file']=ip_address+'_'+listen_ports+'_server.xml';&#13;
+		apacheCriteriaAttributes['sys_class_name']='cmdb_ci_apache_web_server';&#13;
+		apacheCriteria['criterion']=apacheCriteriaAttributes;&#13;
+&#13;
+&#13;
+		apacheIdentification['cmdb_ci_hardware']=hardwareCriteria;&#13;
+		apacheIdentification['cmdb_ci_apache_web_server']=apacheCriteria;&#13;
+&#13;
+		apacheAttributes['server_limit']=serverlimit;&#13;
+		apacheAttributes['maxkeepaliverequests']=keepaliverequests;&#13;
+		apacheAttributes['keepalive']=keepalive;&#13;
+		apacheAttributes['time_out']=timeout;&#13;
+		apacheAttributes['requkeepalivetimeout']=keepalivetimeout;&#13;
+		apacheAttributes['type']='Apache';&#13;
+		apacheAttributes['name']='Apache_'+ip_address+'_'+listen_ports;&#13;
+&#13;
+		apachePayloadAttributes['identification']=apacheIdentification;&#13;
+		apachePayloadAttributes['attributes']=apacheAttributes;&#13;
+		apachePayload['cmdb_ci_apache_web_server']=apachePayloadAttributes;&#13;
+		payload.push(apachePayload);&#13;
+		var output=global.JSON.stringify(payload);&#13;
+		gs.debug('Final Json created for Identification Engine'+output);&#13;
+		return global.JSON.stringify(payload);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var apacheResponse=global.JSON.parse(response);
+	var contentResponse=apacheResponse['content'];
+	var apacheNodeName=apacheResponse['name'];
+	var payload = [];
+	var content=global.JSON.parse(contentResponse);
+
+	// lets figure out the hardware first.. hardware criteria is the ip_address and mac_address which i can figure out from automatic attributes.. lets start
+	var automaticAttributeResponse=content['automatic'];
+	var machine_id = automaticAttributeResponse['machine_id'];
+	var cloudV2 = automaticAttributeResponse['cloud_v2'];
+	var ip_address = automaticAttributeResponse['ipaddress'];
+
+	var machineIdType = '';
+	if(!gs.nil(cloudV2))
+		machineIdType = cloudV2['provider'];
+
+	var mac_address = automaticAttributeResponse['macaddress'];
+	var os = automaticAttributeResponse['os'];
+	var os_version = automaticAttributeResponse['os_version'];
+
+	var hardwareCriteria={};
+	var apacheCriteria={};
+	var hardwareCriteriaAttributes={};
+	hardwareCriteriaAttributes['serial_number']=machine_id;
+	hardwareCriteriaAttributes['ip_address']=ip_address;
+	hardwareCriteriaAttributes['mac_address']=mac_address;
+	hardwareCriteriaAttributes['name']=os+'_'+os_version;
+	hardwareCriteria['criterion']=hardwareCriteriaAttributes;
+
+	// now hardware is out of the way. lets populate apache CI..
+
+	var apacheIdentification={};
+	var apacheCriteriaAttributes={};
+	var apachePayloadAttributes={};
+	var apacheAttributes={};
+	var apachePayload={};
+
+	var defaultAttributeResponse=content['default'];
+	var apache = defaultAttributeResponse['apache'];
+	var listen_ports = apache['listen_ports'];
+	var version = apache['version'];
+	var keepalive = apache['keepalive'];
+	var keepaliverequests = apache['keepaliverequests'];
+	var serverlimit = apache['worker']['serverlimit'];
+	var keepalivetimeout = apache['keepalivetimeout'];
+	var timeout = apache['timeout'];
+	apacheCriteriaAttributes['ci_port']=ip_address+'_'+listen_ports;
+
+	apacheCriteriaAttributes['version']=version;
+	apacheCriteriaAttributes['config_file']=ip_address+'_'+listen_ports+'_server.xml';
+	apacheCriteriaAttributes['sys_class_name']='cmdb_ci_apache_web_server';
+	apacheCriteria['criterion']=apacheCriteriaAttributes;
+
+	apacheIdentification['cmdb_ci_hardware']=hardwareCriteria;
+	apacheIdentification['cmdb_ci_apache_web_server']=apacheCriteria;
+
+	apacheAttributes['server_limit']=serverlimit;
+	apacheAttributes['maxkeepaliverequests']=keepaliverequests;
+	apacheAttributes['keepalive']=keepalive;
+	apacheAttributes['time_out']=timeout;
+	apacheAttributes['requkeepalivetimeout']=keepalivetimeout;
+	apacheAttributes['type']='Apache';
+	apacheAttributes['name']='Apache_'+ip_address+'_'+listen_ports;
+
+	apachePayloadAttributes['identification']=apacheIdentification;
+	apachePayloadAttributes['attributes']=apacheAttributes;
+	apachePayload['cmdb_ci_apache_web_server']=apachePayloadAttributes;
+	payload.push(apachePayload);
+	var output=global.JSON.stringify(payload);
+	gs.debug('Final Json created for Identification Engine'+output);
+	
+	return global.JSON.stringify(payload);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 12:58:13</sys_created_on>
+        <sys_id>6f8f8fc90b0103003246ad4363673a27</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>Process_Apache_Chef_Response</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_6f8f8fc90b0103003246ad4363673a27</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-28 06:19:26</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

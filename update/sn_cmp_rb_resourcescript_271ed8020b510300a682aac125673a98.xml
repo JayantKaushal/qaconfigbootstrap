@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Ansible_Inventory</name>
+        <resource display_value="Ansible Tower">d31e50020b510300a682aac125673aae</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var AnsibleModelString = [];
+	var discoveryResponse =global.JSON.parse(response);
+
+	//inventory
+	var inventoryResponse = discoveryResponse.inventories;
+
+	//hosting table = ansible tower for organization
+	var hostingTables = [];
+	var orgHostingTable = {};
+	orgHostingTable.name = "sn_cfg_ansible_tower";
+	orgHostingTable.identifier = "object_id";
+	orgHostingTable.identifierValue = discoveryResponse.objectId;
+	hostingTables.push(orgHostingTable);
+
+	var tableName = "sn_cfg_ansible_inventory";
+	for(var respIndex = 0 ; respIndex <inventoryResponse.length ; respIndex++){
+		var atInventory = inventoryResponse[respIndex];
+		var inventoryTable = new BuildTableData(tableName,atInventory.id, discoveryResponse.towerUrl, hostingTables);
+
+		//add attributes for table
+		inventoryTable[tableName].attributes.id = atInventory.id;
+		inventoryTable[tableName].attributes.type = atInventory.type;
+		inventoryTable[tableName].attributes.name = atInventory.name;
+		inventoryTable[tableName].attributes.short_description = atInventory.description;
+		inventoryTable[tableName].attributes.organization_id = atInventory.organization;
+		inventoryTable[tableName].attributes.hosts = atInventory.total_hosts;
+		inventoryTable[tableName].attributes.groups = atInventory.total_groups;
+		inventoryTable[tableName].attributes.object_roles = atInventory.object_roles;
+
+		AnsibleModelString.push(inventoryTable);
+	}
+
+	return global.JSON.stringify(AnsibleModelString);
+}
+
+
+function BuildTableData(tableName, id, towerUrl, hostingTables){
+	this[tableName] = {};
+	this[tableName].validator = "AnsibleTowerResponseValidator";
+	this[tableName].validator_overrides = {};
+	this[tableName].identification = {};
+	this[tableName].identification [tableName] = {};
+	this[tableName].identification[tableName].criterion= {};
+	this[tableName].identification[tableName].criterion.object_id = id.toString();
+
+	for(var index in hostingTables){
+		//attach hosting table identification
+		this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);
+	}
+	this[tableName].attributes = {};
+}
+
+function buildTableIdentification(hostingTable){
+	var identification = {};
+	identification[hostingTable.name] = {};
+	identification[hostingTable.name].criterion = {};
+	identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;
+	return identification[hostingTable.name];
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 12:51:45</sys_created_on>
+        <sys_id>271ed8020b510300a682aac125673a98</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>Discover_Ansible_Inventory</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_271ed8020b510300a682aac125673a98</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-15 11:27:54</sys_updated_on>
+        <type>17</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

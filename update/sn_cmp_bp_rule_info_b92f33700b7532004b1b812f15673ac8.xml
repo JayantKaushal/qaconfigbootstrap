@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_bp_rule_info">
+    <sn_cmp_bp_rule_info action="INSERT_OR_UPDATE">
+        <guest display_value="Router">ff5d7e420ba32200668daac125673a11</guest>
+        <host_resource>Any</host_resource>
+        <operation>Router Attach External Network</operation>
+        <rule_json>{&#13;
+	"FormLoad": {},&#13;
+	"Location": {&#13;
+		"Reload": {&#13;
+			"Attributes": [{&#13;
+				"Name": "NetworkID",&#13;
+				"ApplicableHost": "OpenStack Datacenter",&#13;
+				"AdditionalRules": ""&#13;
+			}]&#13;
+		},&#13;
+		"Hide": {&#13;
+&#13;
+		},&#13;
+		"Show": {&#13;
+&#13;
+		},&#13;
+		"TriggerChangeEvent": {&#13;
+&#13;
+		}&#13;
+	}&#13;
+}</rule_json>
+        <sys_class_name>sn_cmp_bp_rule_info</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-27 08:24:26</sys_created_on>
+        <sys_id>b92f33700b7532004b1b812f15673ac8</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_bp_rule_info_b92f33700b7532004b1b812f15673ac8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-27 14:02:36</sys_updated_on>
+        <template_type/>
+    </sn_cmp_bp_rule_info>
+</record_update>

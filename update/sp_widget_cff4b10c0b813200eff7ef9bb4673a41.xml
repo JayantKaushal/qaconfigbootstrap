@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $http, spUtil, $rootScope, $location) {
+	$scope.g_form = null;
+
+	$scope.$on("$sp.stack.operation_cat_item.submit",function(){
+		if($scope.g_form) {
+			$scope.g_form.submit();
+		}
+	});
+
+	$scope.$on('spModel.gForm.initialized', function(e, gFormInstance){
+		$scope.g_form = gFormInstance;
+		$scope.g_form.setValue('operationName', $scope.data.operationName, $scope.data.operationName);
+		$scope.g_form.setValue('resourceId', $scope.data.resourceId, $scope.data.resourceId);
+		if($scope.data.operationName && $scope.data.operationName != 'Provision')
+			$scope.g_form.setValue('StackID', $scope.data.resourceId, $scope.data.resourceId);
+		BlueprintSCClient.prefillForm('sn_cmp.DynamicFormAjax',$scope.g_form.getUniqueValue(), $scope.g_form);
+		$scope.g_form.$private.events.on('submitted', function(){
+			getOne();
+		});
+
+	});
+
+	// spModel populates mandatory - hasMandatory is called by the submit button
+	$scope.hasMandatory = function(mandatory) {
+		return mandatory && mandatory.length > 0;
+	};
+
+	function getOne() {		
+
+		function getVarData(fields) {
+			var reqData = {};
+			for(var obj in fields)
+				reqData[fields[obj].name] = fields[obj].value;
+			return reqData;
+		}
+
+		var baseUrl = "/api/sn_sc/v1/servicecatalog/";
+
+		var request = {'sysparm_quantity': 1, 'variables': getVarData($scope.data.sc_cat_item._fields), 'get_portal_messages': 'true', sysparm_no_validation: 'true'};
+		$http.post(baseUrl + "items/" + $scope.data.sys_id + "/order_now", request).then(function(response){
+			$scope.$emit("$$uiNotification", response.data.result.$$uiNotification);
+			var request_sys_id = response.data.result.sys_id;	
+			if(request_sys_id)
+				$rootScope.$broadcast("$sp.cloud.stack.operation.cat.item.submitted", request_sys_id);
+		},null);
+	}
+}
+]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-operation-modal</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attr,ctrl) {
+	
+}]]></link>
+        <name>Cloud Stack Operation Modal</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.sys_id = input.sys_id;
+	data.operationName = input.operationName;
+	data.resourceId = input.resourceId;
+	data.sc_cat_item = $sp.getCatalogItem(data.sys_id,true);
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-15 07:36:35</sys_created_on>
+        <sys_id>cff4b10c0b813200eff7ef9bb4673a41</sys_id>
+        <sys_mod_count>136</sys_mod_count>
+        <sys_name>Cloud Stack Operation Modal</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_cff4b10c0b813200eff7ef9bb4673a41</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-17 20:11:47</sys_updated_on>
+        <template><![CDATA[<div style="height:50px;">
+  <h1 class="h4 m-t-none m-b-none">{{::data.sc_cat_item.short_description}}</h1>
+</div>
+<div id="sc_cat_item">
+  <div class="row" ng-if="::data.sc_cat_item" >
+    <sp-cat-item item="::data.sc_cat_item" />
+    <form>
+      <div>
+        <!-- display view and model -->
+        <sp-model form-model="::data.sc_cat_item" mandatory="mandatory"></sp-model>
+      </div>
+    </form>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

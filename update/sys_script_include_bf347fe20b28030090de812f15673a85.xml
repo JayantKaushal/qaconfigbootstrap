@@ -1,0 +1,1251 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPackDependencyUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPackDependencyUtil</name>
+        <script><![CDATA[var CMPPackDependencyUtil = Class.create();
+
+CMPPackDependencyUtil.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+	blueprintServiceScript : new sn_cmp_api.BlueprintServiceScript(),
+	resourceBlockServiceScript : new sn_cmp_api.ResourceBlockServiceScript(),
+	capiLibraryServiceScript : new sn_cloud_api.CAPILibraryServiceScript(),
+	cloudScriptServiceScript : new sn_cfg_mgmt.CloudScriptService(),
+	packItemRecord : new GlideRecord('sn_cmp_pack_item'),
+	blOperation : new GlideRecord('sn_cmp_bp_stage_resource_op'),
+	rbOperation : new GlideRecord('sn_cmp_rb_op_impl_step'),
+	policyUtils : new sn_cmp.PolicyOperationsUtil(),
+	packId : '',
+	tableName : '',
+	blueprintObject : '',
+	stageModelId : '',
+	stageResourceBlockId : '',
+	rbExtensionDetails : [],
+	blueprintDeploymentsList : [],
+	packDependency : '',
+	hostResourceDependencies : [],
+	guestResourceDependencies : [],
+	delegatedResourceDependencies : [],
+	rbDependencyDetails : [],
+	order : 0,
+	dep : {},
+
+	initialize: function() {
+		order = this.order;
+		blueprintServiceScript = this.blueprintServiceScript;
+		resourceBlockServiceScript = this.resourceBlockServiceScript;
+		capiLibraryServiceScript = this.capiLibraryServiceScript;
+		cloudScriptServiceScript = this.cloudScriptServiceScript;
+		blOperation = this.blOperation;
+		rbOperation = this.rbOperation;
+		policyUtils = this.policyUtils;
+		hostResourceDependencies = this.hostResourceDependencies;
+		guestResourceDependencies = this.guestResourceDependencies;
+		delegatedResourceDependencies = this.delegatedResourceDependencies;
+		rbExtensionDetails = this.rbExtensionDetails;
+		rbDependencyDetails = this.rbDependencyDetails;
+	},
+
+	saveDependency : function (tableName, entityType, entityName, dependentEntityType, dependentEntity, tag, includeInPack){
+		var dependencyMap = new GlideRecord('sn_cmp_pack_dependency');
+		dependencyMap.setValue('tag',tag);
+		dependencyMap.setValue('pack',packId);
+		dependencyMap.setValue('source_entity_type',entityType);
+		dependencyMap.setValue('source_entity',entityName);
+		dependencyMap.setValue('dep_entity_type',dependentEntityType);
+		dependencyMap.setValue('dep_entity',dependentEntity);
+		dependencyMap.setValue('dep_table_name',tableName);
+		dependencyMap.setValue('include_in_pack',includeInPack);
+		var dependentSysId = dependencyMap.insert();
+
+		return dependentSysId;
+	},
+
+	createOrUpdateDependency : function (tableName, entityType, entityName, dependentEntityType, dependentEntity, tag, includeInPack, content, packItemData) {
+		var dependentGR = this.getMatchingPackDependency(tag, entityName, dependentEntity, entityType, dependentEntityType);
+
+		//if the includeInPack to update the dependency is true, dependecy exists and the old value of dependency is not set to true then update the dependency.
+		if(dependentGR && dependentGR.include_in_pack != includeInPack && includeInPack){
+			dependentGR.setValue('include_in_pack',includeInPack);
+			dependentGR.update();
+
+			//TODO : if 2 OpenStack DCs available with different extensions in blueprint and both uses different extension. check this case.
+			this.savePackItemFromDependency(tableName, dependentGR.dep_entity_type, dependentGR.dep_entity, "localhost", content, packItemData);
+		}
+
+		if (!dependentGR) {
+			this.saveDependency(tableName, entityType, entityName, dependentEntityType, dependentEntity, tag, includeInPack);
+
+			if(includeInPack){
+				this.savePackItemFromDependency(tableName, dependentEntityType, dependentEntity, "localhost", content, packItemData);
+			}
+		}
+	},
+
+	savePackItemFromDependency : function (tableName, dependentEntityType, dependentEntity, source, content, packItemData) {
+		var packItemExists = this.checkPackItemInPack(dependentEntityType, dependentEntity);
+		if (!packItemExists) {
+			this.savePackItem(tableName, dependentEntityType, dependentEntity, source, content, packItemData);
+		}
+	},
+
+	checkPackItemInPack : function(entityType, entityName){
+		packItemRecord.initialize();
+		packItemRecord.addEncodedQuery('pack=' + packId + '^entity_type=' + entityType + '^name=' + entityName);
+		packItemRecord.query();
+
+		if (packItemRecord.next()) {
+			return true;
+		}
+	},
+
+	savePackItem : function(tableName, entityType, entityName, source, content, packItemData){
+		for( var itemIndex in packItemData){
+			delete packItemData[itemIndex].resourceList;
+		}
+
+		packItemRecord.initialize();
+		packItemRecord.setValue('entity_type',entityType);
+		packItemRecord.setValue('name',entityName);
+		packItemRecord.setValue('dependency',source);
+		packItemRecord.setValue('pack',packId);
+
+		if (entityType == 'Resource Block') {
+			order = order + 1;
+			packItemRecord.setValue('order',order);
+			if (packItemData) {
+				var packItemString = this.getPackItemContentString(packItemData);
+				packItemRecord.setValue('pack_item_data', packItemString);
+			}
+		}
+
+		var packItemSysId=packItemRecord.insert();
+
+		var yaml = null;
+		if( entityType == 'Blueprint' ) {
+			var bp = CMPPackDependencyUtil.getBlueprintObject(entityName);
+
+			if(bp){
+				yaml = blueprintServiceScript.exportCompleteBlueprint(bp.sys_id);
+			}
+		}
+		else if( entityType == 'Resource Block' ) {
+			var rb = CMPPackDependencyUtil.getResourceBlockObject(entityName);
+			if(rb){
+				if (rb.is_system_defined && content) {
+					yaml = content;
+				}
+				else if (!rb.is_system_defined) {
+					var rbJSONObject = resourceBlockServiceScript.exportResourceBlock(rb.name);
+					yaml = JSON.parse(rbJSONObject).objectJSON;
+				}
+			}
+		}
+		else if( entityType == 'Cloud API' ) {
+			var capi = CMPPackDependencyUtil.parseCAPIEntityAndGetObject(entityName);
+			if(capi){
+				var capiJSONObject = capiLibraryServiceScript.exportCloudApi(capi.sys_id);
+				yaml = JSON.parse(capiJSONObject).objectJSON;
+			}
+		}
+		else if( entityType == 'Cloud Script' ) {
+			var cloudScript = CMPPackDependencyUtil.getCloudScriptObject(entityName);
+
+			if(cloudScript){
+				yaml = cloudScriptServiceScript.exportCloudScript(cloudScript.sys_id);
+			}
+		}else if (entityType=='Policy'){
+			yaml = policyServiceScript.exportPolicy(entityName);
+		}else if( entityType == 'Cloud Script Template' ) {
+			var cloudScriptTemplate = CMPPackDependencyUtil.getCloudScriptTemplateObject(entityName);
+
+			if(cloudScriptTemplate){
+				yaml = cloudScriptServiceScript.exportCloudScriptTemplate(cloudScriptTemplate.sys_id);
+			}
+		}else if (entityType=='Pool'){
+			var pool = CMPPackDependencyUtil.getPoolObject(entityName);
+			if(pool){
+				yaml = poolServiceScript.exportPool(pool.sys_id);
+			}
+		}else if (entityType=='MID Script'){
+			var entityTableName = tableName;
+			var midScript = CMPPackDependencyUtil.getMidScriptObject (entityTableName, entityName);
+			if (midScript) {
+				yaml = capiLibraryServiceScript.exportMidScript(tableName, midScript.sys_id);
+			}
+		}
+
+		if(yaml){
+			this.saveContents(packItemRecord, packItemRecord.name, yaml);
+		}
+	},
+
+	getMatchingPackDependency : function(tag, sourceEntity, dependentEntity, sourceEntityType, dependentEntityType){
+		var gr = new GlideRecord("sn_cmp_pack_dependency");
+		gr.addQuery('source_entity', sourceEntity);
+		gr.addQuery('dep_entity', dependentEntity);
+		gr.addQuery('source_entity_type', sourceEntityType);
+		gr.addQuery('dep_entity_type', dependentEntityType);
+		gr.addQuery('tag',tag);
+		gr.addQuery('pack', packId);
+		gr.query();
+
+		if(gr.next()) {
+			return gr;
+		}
+	},
+
+	saveContents: function(itemGlideRecord, contentFileName, content){
+		contentType='yaml';
+		glideSysAtt.write(itemGlideRecord,contentFileName+'.yaml',contentType,content);
+
+	},
+	
+	getPackItemContentString : function (packItemContent) {
+		var packItemString = '';
+		for (var i in packItemContent){
+			if (i >= 1) {
+				packItemString += ";  ";
+			}
+			
+			packItemString += "ExtensionName:"+packItemContent[i].interfaceExtensionName+ " --> Operations: "+ packItemContent[i].operationNames;
+		}
+		return packItemString;
+	},
+
+	/*
+ 		* Method fetches the resource interface record from the resource operation implementation
+ 		*/
+	getInterfaceTypeFromOperationImpl: function (resourceOperationImplId) {
+		var glideRecord = new GlideRecord("sn_cmp_rb_resourceinterface");
+
+		var resourceOperationGR = glideRecord.addJoinQuery("sn_cmp_rb_op_impl", "sys_id", "interface");
+		resourceOperationGR.addCondition("sys_id", resourceOperationImplId);
+
+		glideRecord.query();
+		if(glideRecord.next()){
+			return glideRecord;
+		}
+	},
+
+	/*
+ 		* This method fetches all the stage resource operations implemented from interface extensions.
+ 		* This method should return a map of interfaceExtensionName, List of operations implemented in the blueprint stage resource.
+ 		*/
+	updateStageResourceExtensionOperations : function (stageResourceBlockId, stageResourceOperationsObject, entityType, entityName) {
+		for(var k in stageResourceOperationsObject) {
+			var stageResourceOperation = stageResourceOperationsObject[k];
+			var opImplId = stageResourceOperation.rb_operation_impl;
+
+			var rbInterfaceObject = this.getInterfaceTypeFromOperationImpl(opImplId);
+
+			if (rbInterfaceObject.type == 'Extension') {
+				var matchedIndex = rbExtensionDetails.map(function(e) { return e.resourceBlockId; }).indexOf(stageResourceBlockId);
+				var extOperationName = this.getOperationNameFromOperationImplId(opImplId);
+				var extensionDetails = {};
+
+				var interfaceExtensionObject = {};
+				var dependentBlueprints = [];
+				var extensionOperationNames = [];
+				var extResourcesList = [];
+
+				if (matchedIndex === -1) {
+					var possibleRBExtensions = [];
+					extensionOperationNames.push(extOperationName);
+					extResourcesList.push(stageResourceBlockId);
+
+					if (dependentBlueprints.indexOf(entityName) === -1) {
+						dependentBlueprints.push(entityName);
+					}
+
+					interfaceExtensionObject['interfaceExtensionName'] = rbInterfaceObject.getValue('name');
+					interfaceExtensionObject['operationNames'] = extensionOperationNames;
+					interfaceExtensionObject['resourceList'] = extResourcesList;
+					possibleRBExtensions.push(interfaceExtensionObject);
+
+					extensionDetails['resourceBlockId'] = stageResourceBlockId;
+					extensionDetails['interfaceExtensionDetails'] = possibleRBExtensions;
+					extensionDetails['dependentBlueprints'] = dependentBlueprints;
+					extensionDetails['entityType'] = entityType;
+
+					rbExtensionDetails.push(extensionDetails);
+				}
+				else {
+					extensionDetails = rbExtensionDetails[matchedIndex].interfaceExtensionDetails;
+
+					if (rbExtensionDetails[matchedIndex].dependentBlueprints.indexOf(entityName) === -1) {
+						rbExtensionDetails[matchedIndex].dependentBlueprints.push(entityName);
+					}
+
+					rbExtensionDetails[matchedIndex].entityType = entityType;
+
+					var matchedExtensionIndex = extensionDetails.map(function(e) { return e.interfaceExtensionName; }).indexOf(rbInterfaceObject.getValue('name'));
+
+					if (matchedExtensionIndex === -1) {
+						extensionOperationNames.push(extOperationName);
+						extResourcesList.push(stageResourceBlockId);
+
+						interfaceExtensionObject['interfaceExtensionName'] = rbInterfaceObject.getValue('name');
+						interfaceExtensionObject['operationNames'] = extensionOperationNames;
+						interfaceExtensionObject['resourceList'] = extResourcesList;
+
+						extensionDetails.push(interfaceExtensionObject);
+					}
+					else {
+						if (extensionDetails[matchedExtensionIndex].operationNames.indexOf(extOperationName) === -1) {
+							extensionDetails[matchedExtensionIndex].operationNames.push(extOperationName);
+						}
+						if (extensionDetails[matchedExtensionIndex].resourceList.indexOf(stageResourceBlockId) === -1) {
+							extensionDetails[matchedExtensionIndex].resourceList.push(stageResourceBlockId);
+						}
+					}
+				}
+			}
+		}
+	},
+
+	/*
+ 						* Method fetches operation name from resource operation implementation
+ 						*/
+	getOperationNameFromOperationImplId: function (opImplId){
+		var glideRecord = new GlideRecord("sn_cmp_rb_op_impl");
+
+		if (glideRecord.get(opImplId)) {
+			return glideRecord.operation.name+'';
+		}
+	},
+
+	/*
+ 						* Method fetches all the extension operation names used in the blueprint for the given the blueprint stage resource
+ 						*
+ 						* TODO : Need to add support for the OOB resource blocks. What if the same OOB resource exists in target?
+ 						*/
+	updateDependenciesForGuestResources : function (resourceBlockObject, stageResourceOperationsObject, entityType, entityName)  {
+		//checks whether blueprint stage resource has interface extensions operations implemented
+		if (resourceBlockObject.is_system_defined) {
+			this.updateStageResourceExtensionOperations(resourceBlockObject.getValue('sys_id'), stageResourceOperationsObject, entityType, entityName);
+		}
+	},
+
+	buildResourceDependencyObject : function(rbLayer, isHost, tableName, entityType, entityNames, dependentEntityType, dependentEntityName, includeInPack, extensionYaml, packItemData) {
+		for (var i in entityNames){
+			resourceDependency = {};
+
+			//populate LDCs first, delegated resources, guest resources.
+			resourceDependency['pack'] = packId;
+			resourceDependency['tableName'] = tableName;
+			resourceDependency['entityType'] = entityType;
+			resourceDependency['entityName'] = entityNames[i];
+			resourceDependency['dependentEntityType'] = dependentEntityType;
+			resourceDependency['dependentEntityName'] = dependentEntityName;
+			resourceDependency['sourceTag'] = entityNames[i];
+			resourceDependency['includeInPack'] = includeInPack;
+			resourceDependency['content'] = extensionYaml;
+			resourceDependency['packItemData'] = packItemData;
+
+			if (rbLayer == 4 && isHost == 'true') {
+				hostResourceDependencies.push(resourceDependency);
+			}
+			else if (rbLayer != 4 && isHost == 'true') {
+				delegatedResourceDependencies.push(resourceDependency);
+			}
+			else{
+				guestResourceDependencies.push(resourceDependency);
+			}
+		}
+	},
+
+	/**
+ 							* Method fetches all the dependent entities for the given entity type and entity.
+ 							* Supported Entity Types : Blueprint, Resource Block, Cloud API, Cloud Script, Cloud Script Template, MID Script
+ 							*
+ 							* Given the entity type as Bluepeint, this method fetches all the dependent resource blocks from blueprint deployment
+ 							*           model and all the cloud apis needed for the dependent resource blocks.
+ 							*/
+	getDependentEntities : function (packSysId, entityType, entityName, entityTableName){
+		packId = packSysId;
+		tableName = entityTableName;
+
+		if (entityType === "Blueprint") {
+			var hostResList = [];
+			var guestResList = [];
+
+			var rbDependencyDetail = {};
+			rbDependencyDetail['entityType'] = entityType;
+			rbDependencyDetail['entityName'] = entityName;
+
+			gs.info("Entity Type : Blueprint - " + entityName);
+
+			blueprintObject = this.getBlueprintObject(entityName);
+			var blueprintId = blueprintObject.sys_id;
+
+			this.createOrUpdateDependency(tableName, '', '', entityType, entityName, entityName, true, '');
+
+			//Fetch BlueprintStageResources and BlueprintDeployments from BlueprintID
+			var stageModelObject = this.getBlueprintStageModelObject(blueprintId);
+			stageModelId = stageModelObject.sys_id;
+
+			var stageResourcesObject = this.getBlueprintStageResourcesObject(stageModelId);
+
+			var stageResourceDeploymentsObject = this.getBlueprintStageDeploymentsObject(stageModelId);
+			blueprintDeploymentsList = stageResourceDeploymentsObject;
+
+			//Fetch Blueprint TLR Operations provided BlueprintID
+			var blueprintOperations = blueprintServiceScript.getBlueprintOperations(blueprintId);
+			var blueprintTLROperations = JSON.parse(blueprintOperations);
+
+			//Traverse TLR Blueprint Operations to fetch all the implemented resource operations for each stage resource
+			for(var i in blueprintTLROperations){
+				var tlrOperationId = blueprintTLROperations[i].id;
+
+				//Traverse Blueprint Stage Resource to fetch all the implemented operations from each stage
+				for(var j in stageResourcesObject){
+					stageResourceBlockId = stageResourcesObject[j].resource_block;
+					var stageResourceAliasName = stageResourcesObject[j].alias_name;
+					var blueprintStageResourceId = stageResourcesObject[j].sys_id;
+
+					//check only resource blocks which is not a datacenter resource. Layer is 4 for datacenters
+					if (stageResourcesObject[j].host_ci !== "cmdb_ci_logical_datacenter") {
+						var resourceBlockObject = this.getResourceBlockObject(stageResourceBlockId);
+
+						if (resourceBlockObject.layer != 4) {
+							packDependency = this.getMatchingPackDependency(entityName, entityName, resourceBlockObject.name, entityType, 'Resource Block');
+
+							if (!packDependency) {
+								//Fetch Stage Resource Operations for each stage resource for the selected TLR operation and resource
+								var stageResourceOperationsObject = this.getBlueprintStageResourceOperationsObject(stageResourceBlockId, blueprintStageResourceId, tlrOperationId);
+
+								//Check If the stage resource operation is not empty.
+								if (stageResourceOperationsObject) {
+									for (var k in stageResourceOperationsObject) {
+										var stageResourceOperation = stageResourceOperationsObject[k];
+										var opImplId = stageResourceOperation.rb_operation_impl;
+
+										//save only non-tlr resource blocks as dependency
+										if (!resourceBlockObject.is_tlr){
+											var matchedResBlockIndex = guestResList.map(function(e) { return e.guestResourceBlockId; }).indexOf(stageResourceBlockId);
+											var guestResDetail = {};
+
+											if (matchedResBlockIndex == -1) {
+												guestResDetail['guestResourceBlockId'] = stageResourceBlockId;
+												guestResDetail['stageResourceOperationsObject'] = stageResourceOperationsObject;
+												guestResList.push(guestResDetail);
+											}
+											else {
+												guestResDetail = guestResList[matchedResBlockIndex];
+												guestResDetail.stageResourceOperationsObject.push(stageResourceOperation);
+											}
+										}
+
+										this.getBlueprintDependentCloudAPIs(opImplId, stageResourceBlockId, stageResourceAliasName, '', '', hostResList);
+									}
+								}
+							}
+						}
+					}
+				}
+
+				this.getDependentCloudScripts(entityName, tlrOperationId);
+				this.getDependencyPolicies(entityName,entityType,tlrOperationId,'');
+				this.getDependentPools(entityType, blueprintObject, tlrOperationId);
+			}
+
+			rbDependencyDetail['guestResList'] = guestResList;
+			rbDependencyDetail['hostResList'] = hostResList;
+			rbDependencyDetails.push(rbDependencyDetail);
+		}
+		else if (entityType === "Resource Block") {
+			gs.info("Entity Type : Resource Block - " +entityName);
+
+			var rbObject = this.getResourceBlockObject(entityName);
+			var resourceId = rbObject.sys_id;
+
+			if (rbObject.is_system_defined) {
+				var interfaceExtensionsExists = this.checkIfInterfaceExtensionExistsForResource(resourceId);
+
+				if(interfaceExtensionsExists){
+					var interfaceExtensions = resourceBlockServiceScript.exportResourceBlock(rbObject.name);
+					var yamlContent = JSON.parse(interfaceExtensions).objectJSON;
+
+					this.createOrUpdateDependency(tableName, '', '', entityType, entityName, entityName, !rbObject.is_system_defined, yamlContent, '');
+				}
+				else {
+					this.createOrUpdateDependency(tableName, '', '', entityType, entityName, entityName, !rbObject.is_system_defined, '');
+				}
+			}
+			else{
+				this.createOrUpdateDependency(tableName, '', '', entityType, entityName, entityName, !rbObject.is_system_defined, '');
+			}
+
+			var resourceOperationsList = this.getAllOperationsForResource(resourceId);
+
+			for(var resOperation in resourceOperationsList) {
+				var resourceOperation = resourceOperationsList[resOperation];
+				var operationName=this.findOperationName(resourceOperation);
+				this.getDependencyPolicies(entityName,entityType,resourceOperation.sys_id,operationName);
+
+				var resourceOpImplId = this.getHostResourceOperationImplementation(resourceOperation.interfaceId, resourceOperation.operation, rbObject.sys_id);
+				this.getDependentPools(entityType, rbObject, resourceOpImplId);
+				var operationImplSteps = resourceOperationsList[resOperation].operationSteps;
+				if( operationImplSteps ){
+					this.fetchOperationImplementationSteps(entityName, operationImplSteps, resourceId);
+				}
+			}
+		}
+		else if( entityType === "Cloud API" ){
+			gs.info("Entity Type : Cloud API - " +entityName);
+			var capiObject = this.parseCAPIEntityAndGetObject(entityName);
+
+			if (capiObject) {
+				this.createOrUpdateDependency(tableName, '','', 'Cloud API', entityName, entityName, !capiObject.is_system_defined, '');
+			}
+		}
+		else if(entityType === "Cloud Script"){
+			var csGlideRecord = new GlideRecord("sn_cfg_cloud_script");
+			csGlideRecord.addQuery('name', entityName);
+			csGlideRecord.query();
+
+			if(csGlideRecord.next()){
+				this.createOrUpdateDependency(tableName, '','', 'Cloud Script', entityName, entityName, true, '');
+			}
+		}
+		else if (entityType === 'Cloud Script Template') {
+			var cstGlideRecord = new GlideRecord('sn_cfg_cloud_script_template');
+			cstGlideRecord.addQuery('name', entityName);
+			cstGlideRecord.query();
+
+			if (cstGlideRecord.next()) {
+				this.createOrUpdateDependency(tableName, '','', 'Cloud Script Template', entityName, entityName, true, '');
+			}
+		}
+		else if (entityType === "MID Script") {
+			var midScriptGR = new GlideRecord(tableName);
+			midScriptGR.addQuery('name', entityName);
+			midScriptGR.query();
+
+			if(midScriptGR.next()){
+				this.createOrUpdateDependency(tableName, '','', 'MID Script', entityName, entityName, true, '');
+			}
+		}
+	},
+
+	findOperationName:function(operation){
+		var interfaceSysId=operation.interfaceId;
+		var interfaceRec=new GlideRecord('sn_cmp_rb_resourceinterface');
+		var operationName;
+		interfaceRec.addQuery('sys_id',interfaceSysId);
+		interfaceRec.query();
+		if(interfaceRec.next()){
+			operationName=interfaceRec.getValue('name');
+		}
+
+		var operationSign=new GlideRecord('sn_cmp_rb_op_signature');
+		operationSign.addQuery('sys_id',operation.operation);
+		operationSign.query();
+		if(operationSign.next()){
+			operationName=operationName+'.'+operationSign.getValue('name');
+		}
+
+		return operationName;
+	},
+
+	fetchOperationImplementationSteps: function (entityName, operationImplSteps, resourceId){
+		for( var opImplStep in operationImplSteps ){
+			this.fetchHostImplementationByOwnerType(entityName, operationImplSteps[opImplStep], resourceId);
+		}
+	},
+
+	fetchHostImplementationByOwnerType: function (entityName, opImplStepDetail, resourceId){
+		if( opImplStepDetail.owner_type == 1 ){
+			this.fetchCAPIFromOperationImplStep(entityName, opImplStepDetail, resourceId);
+		}
+		else if ( opImplStepDetail.owner_type == 2 ){
+			this.getHostResourceOpImplDetails(entityName, opImplStepDetail, resourceId);
+		}
+	},
+
+	getHostResourceOpImplDetails: function (entityName, opImplStepDetail, resourceId){
+		var hostResources = this.getAllHostResources(resourceId);
+
+		for( var i in hostResources){
+			var hostResourceBlockObject = this.getResourceBlockObject(hostResources[i].hostresource);
+			var opImplId = this.getHostResourceOperationImplementation(opImplStepDetail.interfaceId, opImplStepDetail.interface_operation, hostResourceBlockObject.sys_id);
+
+			if( opImplId ){
+				var operationImplStepDetailsList = this.getResourceOperationImplStepsObject(opImplId);
+
+				this.fetchOperationImplementationSteps(entityName, operationImplStepDetailsList, resourceId);
+			}
+			else {
+				this.getHostResourceOpImplDetails(entityName, opImplStepDetail, hostResources[i].hostresource);
+			}
+		}
+	},
+
+	//guestResourceBlockId         - actual resource block id from the blueprint stage resource
+	//resourceOperationImplId      - actual operation implemented in the blueprint stage resource
+
+	//Method fetches the actual CAPI implementation from the blueprint stage resource operation
+	getBlueprintDependentCloudAPIs: function (resourceOperationImplId, guestResourceBlockId, guestAssociationName, resolvedHostAssociationName, resolvedHostResource, hostResList){
+		var blueprintId = blueprintObject.sys_id;
+		var blueprintName = blueprintObject.name;
+		var operationImplStepDetails = this.getResourceOperationImplStepsObject(resourceOperationImplId);
+
+		var hostResourceDetails = this.getPossibleHostsFromBlueprintDeployment(blueprintId, guestResourceBlockId, guestAssociationName, resolvedHostAssociationName, resolvedHostResource);
+
+		var hostResourceList = hostResourceDetails.hostResourceList;
+		var hostAssociationName = hostResourceDetails.hostAssociationName;
+
+		for (var i in operationImplStepDetails) {
+			var opImplStep = operationImplStepDetails[i];
+
+			if( opImplStep.owner_type == 2 ){//owner type is resource
+				var opImplId;
+
+				for(var j in hostResourceList){
+					var rbInterfaceObject = this.getResourceInterfaceObject(opImplStep.interfaceId);
+					var hostRBObject = this.getResourceBlockObject(hostResourceList[j]);
+
+					opImplId = this.getHostResourceOperationImplementation(opImplStep.interfaceId, opImplStep.interface_operation, hostResourceList[j]);
+					// if it's a 3 level resource eg:) Subnet
+					if( opImplId ){
+
+						// update dependencies with the yaml if the invoke host resource operation is calling interface extension's operation
+						// A stage resource can call operations from different interface extensions. So, creating an array with one or more interface extensions with its operations
+
+						if (rbInterfaceObject.type == 'Extension') {
+							var matchedIndex = rbExtensionDetails.map(function(e) { return e.resourceBlockId; }).indexOf(hostResourceList[j]);
+							var extOperationName = this.getInterfaceSignatureObject(opImplStep.interface_operation).getValue('name');
+							var extensionDetails = {};
+
+							var interfaceExtensionObject = {};
+							var extensionOperationNames = [];
+							var dependentBlueprints = [];
+							var extResourcesList = [];
+							var entityName = blueprintObject.getValue('name');
+
+							if (matchedIndex === -1) {
+								var possibleRBExtensions = [];
+
+								extensionOperationNames.push(extOperationName);
+								extResourcesList.push(hostResourceList[j]);
+
+								if (dependentBlueprints.indexOf(entityName) === -1) {
+									dependentBlueprints.push(entityName);
+								}
+
+								interfaceExtensionObject['interfaceExtensionName'] = rbInterfaceObject.getValue('name');
+								interfaceExtensionObject['operationNames'] = extensionOperationNames;
+								interfaceExtensionObject['resourceList'] = extResourcesList;
+								possibleRBExtensions.push(interfaceExtensionObject);
+
+								extensionDetails['resourceBlockId'] = hostResourceList[j];
+								extensionDetails['interfaceExtensionDetails'] = possibleRBExtensions;
+								extensionDetails['dependentBlueprints'] = dependentBlueprints;
+								extensionDetails['isHost'] = 'true';
+								extensionDetails['entityType'] = 'Blueprint';
+
+								rbExtensionDetails.push(extensionDetails);
+							}
+							else {
+								extensionDetails = rbExtensionDetails[matchedIndex].interfaceExtensionDetails;
+
+								rbExtensionDetails[matchedIndex].entityType = 'Blueprint';
+								rbExtensionDetails['isHost'] = 'true';
+								if (rbExtensionDetails[matchedIndex].dependentBlueprints.indexOf(entityName) === -1) {
+									rbExtensionDetails[matchedIndex].dependentBlueprints.push(entityName);
+								}
+
+								var matchedExtensionIndex = extensionDetails.map(function(e) { return e.interfaceExtensionName; }).indexOf(rbInterfaceObject.getValue('name'));
+
+								if (matchedExtensionIndex === -1) {
+									extensionOperationNames.push(extOperationName);
+									extResourcesList.push(hostResourceList[j]);
+
+									interfaceExtensionObject['interfaceExtensionName'] = rbInterfaceObject.getValue('name');
+									interfaceExtensionObject['operationNames'] = extensionOperationNames;
+									interfaceExtensionObject['resourceList'] = extResourcesList;
+
+									extensionDetails.push(interfaceExtensionObject);
+								}
+								else {
+									if (extensionDetails[matchedExtensionIndex].operationNames.indexOf(extOperationName) === -1){
+										extensionDetails[matchedExtensionIndex].operationNames.push(extOperationName);
+									}
+									if (extensionDetails[matchedExtensionIndex].resourceList.indexOf(hostResourceList[j]) === -1){
+										extensionDetails[matchedExtensionIndex].resourceList.push(hostResourceList[j]);
+									}
+								}
+							}
+						} else {
+							if (hostResList.indexOf(hostRBObject.getValue('sys_id')) == -1) {
+								hostResList.push(hostRBObject.getValue('sys_id'));
+							}
+						}
+
+						this.getBlueprintDependentCloudAPIs(opImplId, guestResourceBlockId, guestAssociationName, hostAssociationName, hostResourceList[j], hostResList);
+					}
+					else if (rbInterfaceObject.type == 'Extension' && hostRBObject.layer == 4) { //if layer is logical datacenter
+						gs.info('No Extension implementation found for interface '+rbInterfaceObject.name+' in datacenter '+hostRBObject.name);
+					}
+					else {
+						var actualGuestResourceBlockId = hostResourceDetails.nextGuestResource;
+						var actualGuestAssociationName = hostResourceDetails.nextGuestAssociationName;
+						var resolvedHosts = blueprintServiceScript.getHostsByConnection(stageModelId, hostAssociationName, 'Direct');
+						hostResourceList = [];
+
+						var resolvedHostsList = JSON.parse(resolvedHosts);
+
+						for( var k in resolvedHostsList ){
+							if(resolvedHostsList[k].hostCI === 'cmdb_ci_logical_datacenter') {
+								var constraints = resolvedHostsList[k].constraintCSV;
+
+								if(constraints){
+									//constraints defined in the blueprint for logical datacenter
+									var constraintArray = constraints.split(",");
+									for(var l in constraintArray){
+										var hostResId = this.getResourceBlockObject(constraintArray[l]).sys_id;
+										hostResourceList.push(hostResId);
+									}
+								}else {
+									var possibleHosts = this.getAllHostResources(actualGuestResourceBlockId);
+									for(var m in possibleHosts){
+										var hostResourceId = this.getResourceBlockObject(possibleHosts[m].hostresource).sys_id;
+										hostResourceList.push(hostResourceId);
+									}
+								}
+
+								for(var n in hostResourceList){
+									this.getBlueprintDependentCloudAPIs(resourceOperationImplId, actualGuestResourceBlockId, actualGuestAssociationName, hostAssociationName, hostResourceList[n], hostResList);
+								}
+							}
+							else {
+								hostAssociationName = resolvedHostsList[k].resBlockName;
+								var hostResource = resolvedHostsList[k].resourceId;
+								this.getBlueprintDependentCloudAPIs(resourceOperationImplId, actualGuestResourceBlockId, actualGuestAssociationName, hostAssociationName, hostResource, hostResList);
+							}
+						}
+					}
+				}
+			}
+			else if( opImplStep.owner_type == 1){//owner type is cloud api
+				this.fetchCAPIFromOperationImplStep(blueprintName, opImplStep, guestResourceBlockId);
+			}
+		}
+	},
+
+	getDependentCloudScripts: function (bpEntityName, blueprintTLROperationId){
+		var glideRecord = new GlideRecord("sn_cmp_bp_stage_res_op_attr");
+
+		var glideRecordStageResOp = glideRecord.addJoinQuery("sn_cmp_bp_stage_resource_op", "stage_resource_operation", "sys_id");
+		glideRecordStageResOp.addCondition("bp_stage_operation", blueprintTLROperationId);
+
+		glideRecord.addEncodedQuery("default_valueSTARTSWITH${CloudScript.scripts");
+		glideRecord.query();
+
+		while (glideRecord.next()) {
+			var cloudScriptExpression = glideRecord.default_value.split('{CloudScript.scripts.')[1];
+			var cloudScriptName = cloudScriptExpression.split('}')[0];
+
+			var csGlideRecord = new GlideRecord("sn_cfg_cloud_script");
+			csGlideRecord.addQuery('name', cloudScriptName);
+			csGlideRecord.query();
+
+			if(csGlideRecord.next()){
+				gs.info("Entity Type : Cloud Scripts - " +cloudScriptName);
+				this.createOrUpdateDependency(tableName, 'Blueprint', bpEntityName, 'Cloud Script', cloudScriptName, bpEntityName, true, '');
+			}
+		}
+	},
+
+	getDependentPools : function (entityType, entityObject, operationId) {
+		var poolName, filterName;
+		if (entityType == 'Blueprint') {
+			var bpCatalogItems = this.getAllCatalogItemForBlueprintOperation(entityObject.sys_id, operationId);
+			//var formBehaviors = this.getAllFormBehaviorByBlueprintId(entityObject.sys_id);
+
+			for (p in bpCatalogItems){
+				var catalogPropertiesList = this.getAllCatalogPropertiesByFormBehavior(bpCatalogItems[p].sys_id);
+
+				for ( q in catalogPropertiesList){
+					if( catalogPropertiesList[q].datasource == 1 ){
+						var dataSourceValue = catalogPropertiesList[q].policy;
+						this.savePoolDependenciesFromDataSourceValue (dataSourceValue, entityType, entityObject.name, poolName);
+					}
+				}
+			}
+		} else if (entityType == 'Resource Block'){
+			var poolsList = this.getAllPoolsByResourceOperation(operationId);
+
+			for (var m in poolsList) {
+				this.savePoolDependenciesFromDataSourceValue (poolsList[m], entityType, entityObject.name, poolName);
+			}
+		}
+	},
+
+	savePoolDependenciesFromDataSourceValue : function (dataSourceValue, entityType, entityName, poolName){
+		if (dataSourceValue) {
+			var dsSplit = dataSourceValue.split("ServiceNow::Pools::");
+
+			if (dsSplit.length >= 2){
+				var poolAndFilter = dsSplit[1].split('.');
+
+				if(poolAndFilter.length >= 2){
+					poolName = poolAndFilter[0];
+					filterName = poolAndFilter[1];
+				}
+
+				if(poolName){
+					var poolObject = this.getPoolObject(poolName);
+
+					gs.info("Entity Type : Pool - " +poolName);
+					if (poolObject.is_system_defined) {
+						//check if filter exists. if filter doesn't exists make include_in_pack true here.
+						this.createOrUpdateDependency(tableName, entityType, entityName, 'Pool', poolName, entityName, false, '');
+					} else {
+						this.createOrUpdateDependency(tableName, entityType, entityName, 'Pool', poolName, entityName, true, '');
+					}
+				}
+			}
+		}
+	},
+
+	getDependencyPolicies: function(entityName, entityType, operationId, rbOperationName){
+		var policyNames=[];
+		var operationName;
+		var operationRecord;
+		if (entityType == 'Blueprint') {
+			operationRecord=blOperation;
+			blOperation.initialize();
+			blOperation.addQuery ('sys_id',operationId);
+			blOperation.query();
+			if(blOperation.next()) {
+				operationName = blOperation.getValue('name');
+			}
+		} else if (entityType == 'Resource Block') {
+			operationName = rbOperationName;
+		}
+
+		policyNames = policyUtils.fetchPolicyNames(entityType, entityName, operationName);
+		for (j=0;j<policyNames.length;j++) {
+			var name = policyNames[j];
+			var policyObject = this.getPolicyObject(name);
+			this.createOrUpdateDependency(tableName, entityType,entityName,'Policy',name,entityName, !policyObject.is_system, '');
+		}
+	},
+
+	getPossibleHostsFromBlueprintDeployment : function(blueprintId, guestResourceBlockId, guestAssociationName, resolvedHostAssociationName, resolvedHostResourceId){
+		var hostResourceList = [], hostAssociationName, hostResource, nextGuestResource, nextGuestAssociationName;
+		var hostResourceDetails = {};
+
+		//check for the owner type of the operation implementation. If owner type is Resource, call the host resource operation
+		//To get host resource operation implementation, get the possible host resources for the stage resource from the blueprint stage deployment
+		for(var j in blueprintDeploymentsList){
+			//Right now, not looking for the relation between TLR and any stage resource which has guest-host relationship in the blueprint deployment
+			//Fetch the host for the selected stage resource from the deployment
+
+			if(blueprintDeploymentsList[j].guest_association_name != "Blueprint Container Resource" && blueprintDeploymentsList[j].guest_resource == guestResourceBlockId && blueprintDeploymentsList[j].guest_association_name == guestAssociationName && blueprintDeploymentsList[j].deployment_type == 1){
+				if(resolvedHostAssociationName){
+					hostAssociationName = resolvedHostAssociationName;
+					hostResource = resolvedHostResourceId;
+				}
+				else{
+					hostAssociationName = blueprintDeploymentsList[j].host_association_name;
+					hostResource = blueprintDeploymentsList[j].host_resource;
+				}
+
+				if(hostResource === "undefined" || hostResource === "" || hostResource === null){
+					if(blueprintDeploymentsList[j].deployment_type == 1){
+						this.resolveBlueprintConstraints(blueprintId, guestResourceBlockId, hostAssociationName, hostResourceList);
+						nextGuestResource = blueprintDeploymentsList[j].host_resource;
+						nextGuestAssociationName = blueprintDeploymentsList[j].host_association_name;
+						break;
+					}
+				}
+				else if(hostResourceList.indexOf(hostResource) === -1 ){
+					hostResourceList.push(hostResource);
+					nextGuestResource = blueprintDeploymentsList[j].host_resource;
+					nextGuestAssociationName = blueprintDeploymentsList[j].host_association_name;
+					break;
+				}
+			}
+		}
+		hostResourceDetails['hostResourceList'] = hostResourceList;
+		hostResourceDetails['hostAssociationName'] = hostAssociationName;
+		hostResourceDetails['nextGuestResource'] = nextGuestResource;
+		hostResourceDetails['nextGuestAssociationName'] = nextGuestAssociationName;
+		return hostResourceDetails;
+	},
+
+	resolveBlueprintConstraints : function(blueprintId, guestResourceBlockId, hostAssociationName, hostResourceList){
+		var constraints = blueprintServiceScript.getConstraintFromAliasName(blueprintId, hostAssociationName);
+
+		if(constraints){
+			//constraints defined in the blueprint for logical datacenter
+			var constraintArray = constraints.split(",");
+			for(var i in constraintArray){
+				var hostResource = this.getResourceBlockObject(constraintArray[i]).sys_id;
+				hostResourceList.push(hostResource);
+			}
+		} else{
+			//No Constraints defined on the logical datacenter
+			var possibleHosts = this.getAllHostResources(guestResourceBlockId);
+			for(var k in possibleHosts){
+				var possibleHostResource = this.getResourceBlockObject(possibleHosts[k].hostresource).sys_id;
+				hostResourceList.push(possibleHostResource);
+			}
+		}
+	},
+
+	getBlueprintObject : function (blueprintName){
+		var glideRecord = new GlideRecord("sn_cmp_bp_blueprint");
+		glideRecord.addQuery("name", blueprintName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getResourceBlockObject : function (resource){
+		var glideRecord = new GlideRecord("sn_cmp_rb_resourceblock");
+		if (glideRecord.get(resource)) {
+			return glideRecord;
+		} else {
+			glideRecord.addQuery("name", resource);
+			glideRecord.query();
+			if (glideRecord.next()) {
+				return glideRecord;
+			}
+		}
+	},
+
+	getResourceInterfaceObject : function (resourceInterfaceId) {
+		var glideRecord = new GlideRecord("sn_cmp_rb_resourceinterface");
+		if (glideRecord.get(resourceInterfaceId)) {
+			return glideRecord;
+		}
+	},
+
+	getInterfaceSignatureObject : function (interfaceOperationId) {
+		var glideRecord = new GlideRecord("sn_cmp_rb_op_signature");
+		if (glideRecord.get(interfaceOperationId)) {
+			return glideRecord;
+		}
+	},
+
+	getPoolObject : function (poolName){
+		var glideRecord = new GlideRecord("sn_cmp_resource_pool");
+		glideRecord.addQuery("name", poolName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getCloudScriptObject : function (entityName){
+		var csGlideRecord = new GlideRecord("sn_cfg_cloud_script");
+		csGlideRecord.addQuery('name', entityName);
+		csGlideRecord.query();
+
+		if(csGlideRecord.next()){
+			return csGlideRecord;
+		}
+	},
+
+	getCloudScriptTemplateObject : function(name){
+		var csTemplateRecord = new GlideRecord("sn_cfg_cloud_script_template");
+		csTemplateRecord.addQuery('name', name);
+		csTemplateRecord.query();
+
+		if(csTemplateRecord.next()){
+			return csTemplateRecord;
+		}
+	},
+
+	getCAPIObject : function (capiName){
+		var glideRecord = new GlideRecord("sn_capi_cloud_api");
+		glideRecord.addQuery("cloud_api_name", capiName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getPolicyObject : function (policyName){
+		var glideRecord = new GlideRecord("sn_cmp_pol_policy");
+		glideRecord.addQuery("name", policyName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getMidScriptObject : function (scriptTableName, midScriptName) {
+		var glideRecord = new GlideRecord(scriptTableName);
+		glideRecord.addQuery("name", midScriptName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getMidScriptObjectByName : function (midScriptName) {
+		var scriptIncludeGR = new GlideRecord('ecc_agent_script_include');
+		var scriptFileGR = new GlideRecord('ecc_agent_script_file');
+
+		if (scriptIncludeGR.get('name' , midScriptName)) {
+			return scriptIncludeGR;
+		}
+		else if (scriptFileGR.get('name' , midScriptName)) {
+			return scriptFileGR;
+		}
+	},
+
+	getCAPIObjectByNameAndVersion : function (capiName, capiVersion){
+		var glideRecord = new GlideRecord("sn_capi_cloud_api");
+		glideRecord.addQuery("cloud_api_name", capiName);
+		glideRecord.addQuery("version", capiVersion);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	parseCAPIEntityAndGetObject : function (capiEntityName) {
+		var capi = capiEntityName.split('[v');
+		var capiObject = null;
+
+		if (capi.length >= 1) {
+			var capiName = capi[0];
+			var version = capi[1].split(']');
+			if (version.length > 0){
+				var capiVersion = version[0];
+
+				capiObject = this.getCAPIObjectByNameAndVersion (capiName, capiVersion);
+			}
+		}
+		return capiObject;
+	},
+
+	getBlueprintStageModelObject : function (blueprintId){
+		var glideRecord = new GlideRecord("sn_cmp_bp_stage_model");
+		glideRecord.addQuery("blueprint", blueprintId);
+		glideRecord.addQuery("stage.name", "Default");
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getBlueprintStageResourcesObject : function (stageModelId){
+		var stageResources = [];
+		var glideRecord = new GlideRecord("sn_cmp_bp_stage_resource");
+		glideRecord.addQuery("bp_stage_model", stageModelId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			stageResources.push(glideRecordObject);
+		}
+		return stageResources;
+	},
+
+	getBlueprintStageDeploymentsObject : function (stageModelId){
+		var stageResourceDeployments = [];
+		var glideRecord = new GlideRecord("sn_cmp_bp_stage_resource_dep");
+		glideRecord.addQuery("bp_stage_model", stageModelId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			stageResourceDeployments.push(glideRecordObject);
+		}
+		return stageResourceDeployments;
+	},
+
+	getBlueprintStageResourceOperationsObject : function (resourceBlockId, stageResourceId, bluprintTLROperationId){
+		var blueprintStageResourceOperations = [];
+		var glideRecord = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		glideRecord.addQuery("resource_block", resourceBlockId);
+		glideRecord.addQuery("bp_stage_resource", stageResourceId);
+		glideRecord.addQuery("bp_stage_operation", bluprintTLROperationId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			blueprintStageResourceOperations.push(glideRecordObject);
+		}
+		return blueprintStageResourceOperations;
+	},
+
+	getResourceOperationImplStepsObject : function (operationImplId){
+		var operationImplStepDetails = [];
+		var glideRecord = new GlideRecord("sn_cmp_rb_op_impl_step");
+		glideRecord.addQuery("operationimpl", operationImplId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			operationImplStepDetails.push(glideRecordObject);
+		}
+		return operationImplStepDetails;
+	},
+
+	getAllHostResources : function (resourceBlockId){
+		var hostResources = [];
+		var glideRecord = new GlideRecord("sn_cmp_rb_resourcehost");
+		glideRecord.addQuery("guestresource", resourceBlockId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			hostResources.push(glideRecordObject);
+		}
+		return hostResources;
+	},
+
+	getKeyValues : function(glideRecordObject) {
+		var grObject = {};
+		for(var column in glideRecordObject) {
+			if (column === 'interface')
+				grObject['interfaceId'] = glideRecordObject.getValue(column);
+			else
+				grObject[column] = glideRecordObject.getValue(column) ? glideRecordObject.getValue(column) : '';
+		}
+		return grObject;
+	},
+
+	getHostResourceOperationImplementation: function (interfaceId, interfaceOperation, hostResource){
+		var glideRecord = new GlideRecord("sn_cmp_rb_op_impl");
+		glideRecord.addQuery("interface", interfaceId);
+		glideRecord.addQuery("operation", interfaceOperation);
+		glideRecord.addQuery("resource", hostResource);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			//call the method which returns the operation implementation steps for the host resource
+			return glideRecord.sys_id;
+		}
+	},
+
+	fetchCAPIFromOperationImplStep: function (sourceTag, operationImplStep, resourceBlockId){
+		var resourceBlockObject = this.getResourceBlockObject(resourceBlockId);
+		var providerId = capiLibraryServiceScript.getCAPIProviderIdByName(operationImplStep.provider);
+
+		var capiVersion = operationImplStep.capi_version ? operationImplStep.capi_version : '1.0';
+		var capiImplementation = this.getCAPIByProviderInterfaceAndVersion(providerId, operationImplStep.capi_interface, capiVersion);
+
+		if (capiImplementation) {
+			var capiName = capiImplementation.cloud_api_name + "[v" + capiImplementation.version +"]";
+			gs.info("Entity Type : Cloud API - " +capiName);
+			this.createOrUpdateDependency(tableName, 'Resource Block', resourceBlockObject.name, 'Cloud API', capiName, sourceTag, !capiImplementation.is_system_defined, '');
+		}
+	},
+
+	getCAPIByProviderInterfaceAndVersion : function(providerId, interfaceId, version){
+		var capiImplementations = [];
+		var glideRecord = new GlideRecord("sn_capi_cloud_api");
+		glideRecord.addQuery("provider", providerId);
+		glideRecord.addQuery("cloud_api_interface", interfaceId);
+		glideRecord.addQuery("version", version);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getAllOperationsForResource : function(resourceBlockId){
+		var resourceOperations = [];
+		var glideRecord = new GlideRecord("sn_cmp_rb_op_impl");
+		glideRecord.addQuery("resource", resourceBlockId);
+		glideRecord.query();
+		while (glideRecord.next()) {
+			var glideRecordObject = this.getKeyValues(glideRecord);
+			glideRecordObject['operationSteps'] = this.getResourceOperationImplStepsObject(glideRecordObject.sys_id);
+			resourceOperations.push(glideRecordObject);
+		}
+		return resourceOperations;
+	},
+
+
+	checkIfInterfaceExtensionExistsForResource : function(resourceBlockId){
+		var glideRecord = new GlideRecord("sn_cmp_rb_guest_interface");
+		glideRecord.addQuery("resource", resourceBlockId);
+
+		var guestInterfaceGR = glideRecord.addJoinQuery("sn_cmp_rb_resourceinterface", "guestinterface", "sys_id");
+		guestInterfaceGR.addCondition("type", "Extension");
+		glideRecord.query();
+
+		if (glideRecord.getRowCount() > 0)
+			return true;
+	},
+
+	getAllFormBehaviorByBlueprintId : function (blueprintId) {
+		var formBehaviorsList = [];
+		var gr = new GlideRecord('sn_cmp_bp_form_behavior');
+		gr.addQuery('bp_association', blueprintId);
+		gr.query();
+
+		while (gr.next()) {
+			var grObject = this.getKeyValues(gr);
+			formBehaviorsList.push(grObject);
+		}
+		return formBehaviorsList;
+	},
+
+	getAllCatalogPropertiesByFormBehavior : function (formBehaviorId) {
+		var catalogPropertiesList = [];
+		var gr = new GlideRecord('sn_cmp_bp_catalog_prop');
+		gr.addQuery('bp_cat_form_behavior', formBehaviorId);
+		gr.query();
+
+		while (gr.next()) {
+			var grObject = this.getKeyValues(gr);
+			catalogPropertiesList.push(grObject);
+		}
+		return catalogPropertiesList;
+	},
+
+	getAllCatalogItemForBlueprintOperation : function (blueprintId, tlrOperationId) {
+		var bpCatalogItemsList = [];
+		var gr = new GlideRecord('sn_cmp_bp_form_behavior');
+		gr.addQuery('bp_association', blueprintId);
+		gr.addQuery('stage_operation', tlrOperationId);
+		gr.query();
+
+		while (gr.next()) {
+			var grObject = this.getKeyValues(gr);
+			bpCatalogItemsList.push(grObject);
+		}
+		return bpCatalogItemsList;
+	},
+
+	getAllPoolsByResourceOperation : function (resourceOperationImplId) {
+		var rbPoolsList = [];
+		var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+		gr.addQuery('operation', resourceOperationImplId);
+		gr.addQuery('datasource', 2);
+		gr.query();
+
+		while (gr.next()) {
+			var datasourcevalue = gr.getValue('datasourcevalue');
+			if (rbPoolsList.indexOf(datasourcevalue) === -1 ) {
+				rbPoolsList.push(datasourcevalue);
+			}
+		}
+		return rbPoolsList;
+	},
+
+	type: 'CMPPackDependencyUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 10:57:16</sys_created_on>
+        <sys_id>bf347fe20b28030090de812f15673a85</sys_id>
+        <sys_mod_count>478</sys_mod_count>
+        <sys_name>CMPPackDependencyUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_bf347fe20b28030090de812f15673a85</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-28 18:13:56</sys_updated_on>
+    </sys_script_include>
+</record_update>

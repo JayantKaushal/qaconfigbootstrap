@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Cost Report" max_length="40" name="sn_cmp_cost" type="collection">
+        <element attributes="scale=8" label="Cost" max_length="30" name="cost" type="decimal"/>
+        <element label="Resource" max_length="32" name="resource" reference="sn_cmp_cost_rsrc" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element label="Tag values" max_length="32" name="tag_values" reference="sn_cmp_tag_value_set" type="reference"/>
+        <element label="Usage date" max_length="40" name="usage_date" type="glide_date"/>
+        <element label="Usage profile" max_length="32" name="usage_profile" reference="sn_cmp_usage_profile" type="reference"/>
+        <element attributes="scale=8" label="Usage quantity" max_length="30" name="usage_quantity" type="decimal"/>
+        <index name="index">
+            <element name="tag_values"/>
+        </index>
+        <index name="index2">
+            <element name="resource"/>
+        </index>
+        <index name="index3">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index4">
+            <element name="usage_date"/>
+            <element name="resource"/>
+            <element name="usage_profile"/>
+            <element name="tag_values"/>
+        </index>
+        <index name="index5">
+            <element name="usage_profile"/>
+        </index>
+    </element>
+</database>

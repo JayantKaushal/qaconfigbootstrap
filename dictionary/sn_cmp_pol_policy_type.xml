@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Type" max_length="40" name="sn_cmp_pol_policy_type" type="collection">
+        <element label="Has Operation" max_length="40" name="has_operation" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Label" max_length="100" name="label" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" max_length="100" name="name" type="string"/>
+        <element choice="1" label="Target Entity" max_length="40" name="target_entity" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="None" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Blueprint" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Catalog" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Resource" sequence="3" value="3"/>
+            </choice>
+        </element>
+    </element>
+</database>

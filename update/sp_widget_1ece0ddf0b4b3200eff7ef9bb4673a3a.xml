@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function TypeaheadSearchCtrl($scope, spUtil, $filter, $location, $window, $http, $timeout) {
+	$scope.isLoggedIn = (NOW.user_name !== 'guest');
+	if($scope.isLoggedIn) 
+		$scope.searchPlaceholder = 'Search for anything';
+	else
+		$scope.searchPlaceholder = 'Search for anything';
+
+	$scope.onSelect = function($item, $model, $label) {
+
+		if ($item.type == "sc") {
+			if ($scope.isLoggedIn) {
+			}
+			$scope.selectedState = "";
+			$window.open($item.url, $item.targetTab);
+		}
+		if ($item.type == "kb") {
+			$scope.selectedState = "";
+			$window.open("/kb_view.do?sysparm_article=" + $item.number, "_blank");
+		}
+	};
+
+	$scope.getResults = function(query) {
+
+		$scope.moveInProgress = false;
+		var j = {q: query};
+		return spUtil.get($scope, j).then(function(response){
+			if (response) {
+				return response.data.results;
+			}
+			return [];
+		});
+	};
+
+	/*For a non guest user try to detect if user is looking for a task,
+			If the search looks like a task try to query the task number
+			In case search for a task does not return anything fallback to search page
+			In case the search does not look like a task navigate to respective search page*/
+	$scope.processQuery = function($event) {
+		/*
+			There is a visible lag on the text change and ng-model reflecting the new value.
+			Give an opportunity for $scope.selectedState to populate by delaying the execution by a second.
+			*/
+		$timeout(processAfterWait, 1000);
+		function processAfterWait() {
+			if(!$scope.selectedState)
+				return;
+			if($event.keyCode === 13 || $event === "submit") {
+				if($scope.isLoggedIn) {
+					$scope.detectTaskSearch();
+					if($scope.taskTable !== "none") {
+						$scope.queryTaskNumber();
+					}
+					else
+						$scope.navigateToSearch();
+
+				}
+				else
+					$scope.navigateToSearch();
+			}
+		}
+	};
+
+	$scope.detectTaskSearch = function() {
+		$scope.taskTable = "none";
+		var incidentPattern = /^\s*INT\d+\s*$/i;
+		var problemPattern = /^\s*PRB\d+\s*$/i;
+		var changePattern = /^\s*CHG\d+\s*$/i;
+		var ftaskPattern = /^\s*FTASK\d+\s*$/i;
+
+		if(incidentPattern.test($scope.selectedState))
+			$scope.taskTable = "incident";
+		else if(changePattern.test($scope.selectedState))
+			$scope.taskTable = "change_request";
+		else if(problemPattern.test($scope.selectedState))
+			$scope.taskTable = "problem";
+		else if(ftaskPattern.test($scope.selectedState))
+			$scope.taskTable = "release_task"; 
+	};
+
+	$scope.queryTaskNumber = function() {
+		$http({
+			method: "POST",
+			url: "/xmlhttp.do",
+			params: {
+				"sysparm_processor" : "AJAXGlideRecord",
+				"sysparm_name" : $scope.taskTable,
+				"sysparm_chars" : "^number="+$scope.selectedState,
+				"sysparm_type":  "query",
+				"sysparm_max": 1
+			}
+		}).then(function(response){
+			var resp = $.parseXML(response.data);
+			var data = resp.getElementsByTagName("item");
+			if(data.length > 0 || !data) {
+				var formView = "",
+						serviceNowSysId = 'bcd73a0ad0bbf53801f322a4eb09a8f2';
+
+				if ($scope.$root.user.company === serviceNowSysId) {
+					formView = "ess_sp";
+				}
+				var taskSysId = data[0].getAttribute('sys_id');
+				$location.search({"id": "form", "sys_id": taskSysId, "table": $scope.taskTable, "view": formView});
+			}
+			else
+				$scope.navigateToSearch();
+		});
+	};
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.headerSearchGroup {
+  margin: 18px;
+  max-width: 300px;
+}
+
+ul.dropdown-menu {
+    min-width: 100%;
+    border-radius: 0px 0px 4px 4px;
+    margin:0px;
+  	max-width: 190%;
+}
+
+ul.dropdown-menu a.ta-item {
+	line-height: 20px;
+}
+
+ul.dropdown-menu i.ta-icon, i.ta-img {
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    line-height: 20px;
+    float:left;
+    margin-right: 8px;
+}
+ul.dropdown-menu li {
+  	overflow: hidden;
+} 
+
+::-webkit-input-placeholder {
+   color: #65666a;
+}
+::-moz-placeholder {
+   color: #65666a;
+}
+:-ms-input-placeholder {
+   color: #65666a;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cap-header-search</id>
+        <internal>false</internal>
+        <link/>
+        <name>CAP Header Search</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+  // populate the 'data' variable
+	if(!input)
+	  return;
+  
+	var searchTerm = input.q;
+	data.results = [];
+
+  	if(gs.getUserName() == "guest")
+		populateKnowledgeResults();
+  	else {
+    	populateKnowledgeResults();
+      	data.results = CatalogSearchForSP.populateCatalogResults(searchTerm, 0, 5).concat(data.results);
+    }
+
+	function populateKnowledgeResults() {
+	  var SEARCH_CONTEXT_KNOWLEDGE_BASE = "03ddb541c31121005655107698ba8f7f",
+	  knowlegeBaseArray = ['124c2ca22bb9f1002f42729fe8da152e','a5f38d0b2be931002f42729fe8da1594','e27c6ca22bb9f1002f42729fe8da1586','8ab42db06fa2c600f0eb8e4c2c3ee4f2'],
+	  searchParameters = {
+		  "context": SEARCH_CONTEXT_KNOWLEDGE_BASE,
+		  "debug": false,
+		  "entity": "articles",
+		  "meta": {
+			  "applyFilter": true,
+			  "includePinnedArticles": true,
+			  "searchWhenEmpty": false,
+			  "window": {
+				  "end": 5,
+				  "start": 0
+			  }
+		  },
+		  "query": {
+			  "author": [],
+			  "freetext": searchTerm,
+			  "kb_category": [],
+			  "kb_knowledge_base": knowlegeBaseArray,
+			  "order": "relevancy",
+			  "searchParameters": {
+				  "knowledgeBase": "",
+				  "language": "en"
+			  }
+		  }
+	  };
+
+	  var request = new SNC.SearchRequest().fromJSON(new JSON().encode(searchParameters));
+	  var response = SNC.SearchService.search(request);
+	  var responseJSON = response.toJSON();
+	  var searchResults = (new JSONParser()).parse(responseJSON).results;
+
+	  data.searchNumber = searchResults.length;
+
+	  searchResults.forEach(function(searchResult) {
+		  var resultRecord = {};
+		  resultRecord.title = searchResult.title;
+		  resultRecord.label = searchResult.title;
+		  resultRecord.number = searchResult.meta.number;
+		  resultRecord.modified = searchResult.meta.modified;
+		  resultRecord.text = searchResult.snippet.replace(/(([^\s]+\s\s*){30})(.*)/, "$1…");
+		  if (resultRecord.text > 300)
+			  resultRecord.text = resultRecord.text.substring(0, 300);
+		  resultRecord.link = searchResult.link;
+		  resultRecord.type = "kb";
+		  data.results.push(resultRecord);
+	  });
+    }
+})(data);]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-04 17:15:32</sys_created_on>
+        <sys_id>1ece0ddf0b4b3200eff7ef9bb4673a3a</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CAP Header Search</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_1ece0ddf0b4b3200eff7ef9bb4673a3a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-19 07:35:57</sys_updated_on>
+        <template><![CDATA[<span ng-controller="TypeaheadSearchCtrl" method="get" action="?">
+  <input type="hidden" name="id" value="cssp_search"/>
+  <div class="input-group headerSearchGroup">
+    <!-- uses ui.bootstrap.typeahead -->
+    <input name="q" type="text" placeholder="{{searchPlaceholder}}" ng-model="selectedState" 
+           ng-model-options="{debounce: 100}" autocomplete="off" 
+           ng-blur="focused=false"
+           typeahead-focus-first="false"
+           uib-typeahead="item as item.label for item in getResults($viewValue)"
+           typeahead-on-select="onSelect($item, $model, $label); selectedState = '';"
+           typeahead-template-url="customTemplate.html" class="form-control input-typeahead"
+           ng-keypress="processQuery($event)"
+           typeahead-wait-ms="1000"
+           id="headerSearchInput"
+           typeahead-min-length='3'>
+    <span class="input-group-btn">
+      <button name="search" type="submit" class="btn btn-default" ng-click="processQuery('submit')">
+        <i class="fa fa-search"></i>
+      </button>
+    </span> 
+  </div>
+  <script type="text/ng-template" id="customTemplate.html">
+    <a class="ta-item">
+      <i class="ta-icon fa fa-shopping-cart" ng-if="match.model.type=='sc'" style="background-image:url('{{match.model.picture}}')"></i>
+      <i class='ta-icon fa fa-file-text-o' ng-if="match.model.type=='kb'"></i>
+      <i class='ta-icon fa fa-comments-o' ng-if="match.model.type=='com'"></i>
+      <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+  </script>
+</span>
+]]></template>
+    </sp_widget>
+</record_update>

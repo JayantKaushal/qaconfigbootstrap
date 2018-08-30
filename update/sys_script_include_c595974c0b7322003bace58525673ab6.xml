@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDeleteBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDeleteBlueprintAction</name>
+        <script><![CDATA[var CMPDeleteBlueprintAction = Class.create();
+CMPDeleteBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.bp_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPDeleteBlueprintAction.doAction: Undefined element type, blueprintid",
+				null
+				);
+			}
+			
+			var isActiveStack = new BlueprintServiceHelper().isActiveStack('blueprint', params.bp_id);
+			if (isActiveStack) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("This blueprint catalog has atleast one 'Active' Stack associated with it. Please terminate the Stack(s) before deleting the blueprint."),
+				"CMPDeleteBlueprintAction.doAction: This blueprint catalog has atleast one 'Active' Stack associated with it. Please terminate the Stack(s) before deleting the blueprint.",
+				null
+				);
+			}
+			
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var afterDeleteBp = blueprintServiceScript.deleteBlueprint(params.bp_id);
+			var blueprint=new global.JSON().decode(afterDeleteBp);
+			return blueprint;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to add the resource block"),
+			"CMPDeleteBlueprintAction.doAction(): Failed to delete the blueprint",
+			error
+			);
+		}
+	},
+
+    type: 'CMPDeleteBlueprintAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-15 11:20:24</sys_created_on>
+        <sys_id>c595974c0b7322003bace58525673ab6</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPDeleteBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c595974c0b7322003bace58525673ab6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-19 11:26:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

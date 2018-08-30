@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>false</client>
+        <client_script_v2/>
+        <comments/>
+        <condition>current.canWrite()</condition>
+        <form_action>true</form_action>
+        <form_button>false</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>true</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <keyboard_shortcut/>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <name>Discover Datacenters</name>
+        <onclick/>
+        <order>50</order>
+        <script><![CDATA[// discovery datacenters asscociated with this service account
+listDatacenters();
+
+function listDatacenters() {
+
+	// Make sure credential is present in a variety of cases
+	if (current.discovery_credentials.nil()) {
+
+		// If it's a master account, the credentials are absolutely required.
+		if (current.is_master_account) {
+			gs.addErrorMessage(gs.getMessage('Missing credential...credentials are absolutely required for master account!'));
+			action.setRedirectURL(current);
+			return;
+		}
+
+		// At this point, it's not a master account and there are no credentials.
+		// Make sure it has an associated parent account.
+		if (current.parent_account.nil()) {
+			gs.addErrorMessage(gs.getMessage('Missing credential...and no associated parent account for this member account!'));
+			action.setRedirectURL(current);
+			return;
+		}
+
+		// At this point, we know it's a member account with no credentials.
+		// But we also know there is an associated parent account.   We need to make sure that parent account has credentials.
+		if (current.parent_account.discovery_credentials.nil()) {
+			gs.addErrorMessage(gs.getMessage('Missing credential...and associated parent account for this member account is missing credential!'));
+			action.setRedirectURL(current);
+			return;
+		}
+	}
+
+	//let's check if we have a valid mid server
+	var capiSvrScript = new sn_cloud_api.CAPIOrchestratorServiceScript(); 
+
+	try {
+	    var cloudType = resolveCloudType(current.datacenter_type);
+		capiSvrScript.resolveMid('', cloudType, '');
+	} catch(e) {
+		gs.addErrorMessage(e.message);
+		action.setRedirectURL(current);
+		return;
+	} 
+	
+	var resource = '';
+	var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+	gr.addQuery('refcitype', current.datacenter_type);
+	gr.query();
+	if (gr.next())
+		resource = gr.name+'';
+	
+	if (!resource) {
+		gs.addErrorMessage(gs.getMessage('Cannot find resource type for {0}', current.datacenter_type));
+		action.setRedirectURL(current);
+		return;
+	}
+
+	var order = {'resource':resource, 'entityType':'Resource', 'operationName':'Discovery Interface.ListDatacenters',
+				 orderFormData:{'CloudServiceAccountId':current.account_id+'',
+							   'Credential':current.discovery_credentials.sys_id+''}};
+
+	var orderScript = new sn_cmp_api.OrderServiceScript();
+	orderScript.submitOrder(new global.JSON().encode(order));
+	action.setRedirectURL(current);
+	gs.addInfoMessage(gs.getMessage('Starting discovery of datacenters for account: {0}', current.name));
+}
+
+function resolveCloudType(dcType) {
+    // locate the cloud provider type from the datacenter class name
+    var cloudProvider = new GlideRecord('sn_capi_provider');
+    cloudProvider.addQuery('datacenter_class', dcType);
+    cloudProvider.query();
+    cloudProvider.next();
+
+    var cloudType = cloudProvider.getValue('name');
+    return cloudType;
+}]]></script>
+        <show_insert>false</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-15 22:52:27</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>01c24d9ceb01320047f6a5115206fe93</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>Discover Datacenters</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_action_01c24d9ceb01320047f6a5115206fe93</sys_update_name>
+        <sys_updated_by>vishal.rao</sys_updated_by>
+        <sys_updated_on>2018-04-05 22:08:58</sys_updated_on>
+        <table>cmdb_ci_cloud_service_account</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>false</ui16_compatible>
+    </sys_ui_action>
+</record_update>

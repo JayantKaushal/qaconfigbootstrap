@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Saves raw CloudFormation stack resource information</description>
+        <name>StoreCFResources</name>
+        <script><![CDATA[if (related_data.stackResources.hasOwnProperty('ListStackResourcesResult') &&
+    related_data.stackResources.ListStackResourcesResult.hasOwnProperty('StackResourceSummaries') &&
+	!gs.nil(related_data.stackResources.ListStackResourcesResult.StackResourceSummaries) && 
+    related_data.stackResources.ListStackResourcesResult.StackResourceSummaries.hasOwnProperty('member')) {
+	var resources = related_data.stackResources.ListStackResourcesResult.StackResourceSummaries.member;
+	
+	var gr = new GlideRecord('sn_cmp_cloudformation_resource');
+	for (var i = 0; i < resources.length; i++) {
+		var resource = resources[i];
+		gr.initialize();
+		gr.addQuery('physical_resource_id', resource.PhysicalResourceId);
+		gr.addQuery('logical_resource_id', resource.LogicalResourceId);
+		gr.addQuery('resource_type', resource.ResourceType);
+		gr.addQuery('cloudformation_stack.sys_id', ci_sys_id);
+		gr.query();
+		
+		gr.last_updated_timestamp = resource.LastUpdatedTimestamp;
+		gr.physical_resource_id = resource.PhysicalResourceId;
+		gr.resource_status = resource.ResourceStatus;
+		gr.logical_resource_id = resource.LogicalResourceId;
+		gr.resource_type = resource.ResourceType;
+		gr.cloudformation_stack = ci_sys_id;
+		gr.sn_stack = related_data.stackId;
+		
+		if (gr.next())
+			gr.update();
+		else
+			gr.insert();
+	}
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+if (related_data.stackResources.hasOwnProperty('ListStackResourcesResult') &&
+    related_data.stackResources.ListStackResourcesResult.hasOwnProperty('StackResourceSummaries') &&
+	!gs.nil(related_data.stackResources.ListStackResourcesResult.StackResourceSummaries) && 
+    related_data.stackResources.ListStackResourcesResult.StackResourceSummaries.hasOwnProperty('member')) {
+	var resources = related_data.stackResources.ListStackResourcesResult.StackResourceSummaries.member;
+	
+	var gr = new GlideRecord('sn_cmp_cloudformation_resource');
+	for (var i = 0; i < resources.length; i++) {
+		var resource = resources[i];
+		gr.initialize();
+		gr.addQuery('physical_resource_id', resource.PhysicalResourceId);
+		gr.addQuery('logical_resource_id', resource.LogicalResourceId);
+		gr.addQuery('resource_type', resource.ResourceType);
+		gr.addQuery('cloudformation_stack.sys_id', ci_sys_id);
+		gr.query();
+		
+		gr.last_updated_timestamp = resource.LastUpdatedTimestamp;
+		gr.physical_resource_id = resource.PhysicalResourceId;
+		gr.resource_status = resource.ResourceStatus;
+		gr.logical_resource_id = resource.LogicalResourceId;
+		gr.resource_type = resource.ResourceType;
+		gr.cloudformation_stack = ci_sys_id;
+		gr.sn_stack = related_data.stackId;
+		
+		if (gr.next())
+			gr.update();
+		else
+			gr.insert();
+	}
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-03 08:48:39</sys_created_on>
+        <sys_id>388ed8119f553200ef3c1f80a57fcf0b</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>StoreCFResources</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_388ed8119f553200ef3c1f80a57fcf0b</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-04-08 13:58:09</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

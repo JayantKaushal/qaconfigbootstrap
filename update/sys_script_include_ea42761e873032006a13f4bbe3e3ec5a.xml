@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudPolicyUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudPolicyUtil</name>
+        <script><![CDATA[var CloudPolicyUtil = Class.create();
+CloudPolicyUtil.prototype = {	
+	GLIDE_CMP_DEBUG: 'glide.cmp.debug',
+	
+    initialize: function() {
+    },
+	
+	// Function calls workflow policy
+	// Input: Request Item gliderecord
+	// Output: Response from policy execution. Response to be decoded by the caller
+	invokePolicy: function (reqItem, moment, policyType, operation, entityType, entityId) {
+		var input = {};
+		input.entityType = entityType;
+		input.contextKey = "ContextKey";
+		input.policyType = policyType; // "CatalogItem";	
+		input.requestItem = reqItem.sys_id + ''; 
+		input.stackName = "";
+		input.resourceName = "";
+		input.interfaceName = "";
+		input.operationName = operation; //"provision";
+		input.moment = moment;  //"approval"; //"pre-process";
+		input.requestorContext = this.setRequestorContext(reqItem.request.requested_for + '');
+		input.contextData = this.setFormData(reqItem);
+		input.blueprintName = '';
+		if(operation.toLowerCase() == 'provision' ){
+			input.blueprintName = reqItem.cat_item.blue_print.name + ''; //input.blueprint
+		}
+		input.entityId = entityId; //reqItem.cat_item.blue_print + '';
+				
+		// Make java call 
+		var os = new sn_cmp_api.PolicyServiceScript();
+		var policyOutput = os.executePolicy(new global.JSON().encode(input));
+		
+		// TODO : print output
+		return policyOutput;
+	},
+	
+	// Function gathers user's groups and roles
+	// Input: sys_user sysId (optional), if not mentioned system's logged in user is assumed
+	// Output: {"groups": [{"id":.., "name":..}, ..], 
+	//          "roles" : [{"id": .., "name": ..}, ..]
+    //          }
+	setRequestorContext : function (userId) {	
+		var requestorContext = {};
+		var userName = '';
+		if(gs.nil(userId))
+			 userId = '' + gs.getUserID();  
+		var grUser = new GlideRecord('sys_user');
+		if(grUser.get(userId)) {
+			userName = grUser.name + '';
+		}
+		requestorContext.userId = userId;
+		requestorContext.userName = userName;
+		requestorContext.groups = [];
+		// Get all user groups
+// 		var grGroup = new GlideRecord('sys_user_grmember');
+// 		grGroup.addQuery('user', userId);
+// 		grGroup.query();
+// 		while(grGroup.next()) {
+// 			requestorContext.groups.push({"id": grGroup.group + '', "name": grGroup.group.name + '' });
+// 		}
+
+		// Get all user roles
+		requestorContext.roles = [];
+// 		var grRole = new GlideRecord('sys_user_has_role');
+// 		grRole.addQuery('user', userId);
+// 		grRole.query();
+// 		while(grRole.next()) {
+// 			 requestorContext.roles.push({"id" : grRole.role.sys_id + '', "name" : grRole.role.name + ''});
+// 		}
+
+		return requestorContext;
+	},
+
+	// Function gathers given request item variables, resolves the values and put them in a key value format
+	// Input: Request item gliderecord
+	// Output: list of request item variables
+	 setFormData : function(reqItem) {
+		if(gs.nil(reqItem))
+			return null;
+		var formData = {};
+		 var variableGr = new GlideRecord('item_option_new');
+		 variableGr.addQuery('cat_item', '' + reqItem.cat_item);
+		 variableGr.query();
+		 if(variableGr.hasNext()) {
+			while(variableGr.next()){
+				var variableName = variableGr.getValue('name');
+				var variableValue = reqItem.variables[variableName] + '';
+				formData[variableName] = variableValue; //blueprintRequestUtil.resolveParamValue(variableName, variableValue,blueprintSysid);
+			}
+		 } 
+		 //get all variable set of catalog item 
+		 var catItemVariableSetGr = new GlideRecord('io_set_item');
+		 catItemVariableSetGr.addQuery('sc_cat_item', reqItem.cat_item);
+		 catItemVariableSetGr.query();
+		 while (catItemVariableSetGr.next()) {
+			 var varSetSysId = catItemVariableSetGr.variable_set + '';
+			 variableGr = new GlideRecord('item_option_new');
+			 variableGr.addQuery('variable_set', varSetSysId);
+			 variableGr.query();
+			 while(variableGr.next()){
+				 var variableName = variableGr.getValue('name');
+				 var variableValue = reqItem.variables[variableName] + '';
+				 formData[variableName] = variableValue;
+			 }
+		 }
+		return formData;
+	},
+	
+    setOrderFormData : function(reqItem) {
+		if(gs.nil(reqItem))
+			return null;
+		var formData = {};
+		var blueprintSysid = reqItem.cat_item.blue_print + '';
+		var blueprintRequestUtil = new BlueprintRequestUtil();
+		//get all variable set of catalog item 
+		var catItemVariableSetGr = new GlideRecord('io_set_item');
+		catItemVariableSetGr.addQuery('sc_cat_item', reqItem.cat_item);
+		catItemVariableSetGr.query();
+		while (catItemVariableSetGr.next()) {
+			var varSetSysId = catItemVariableSetGr.variable_set + '';
+			var variableGr = new GlideRecord('item_option_new');
+			variableGr.addQuery('variable_set', varSetSysId);
+			variableGr.query();
+			while(variableGr.next()){
+				var variableName = variableGr.getValue('name');
+				var variableValue = reqItem.variables[variableName] + '';
+				formData[variableName] = blueprintRequestUtil.resolveParamValue(variableValue,variableGr);
+			}
+		}
+		return formData;
+	},
+	
+	createCloudTrail : function(reqItem, statusMessageSummary,statusMessageDetails) {
+		var os = new sn_cmp_api.CloudTrailServiceScript();
+		var cloudTrail = generateCloudTrailJSON(statusMessageSummary,statusMessageDetails);
+		var input = new global.JSON().encode(cloudTrail);
+		var output = os.createTrail(input);
+	},
+
+
+	generateCloudTrailJSON : function(reqItem, statusMessageSummary,statusMessageDetails){
+		var result = {};
+		result.catalogItemId = '' + reqItem.cat_item;
+		result.requestItemId = '' + reqItem.sys_id;
+		result.orderId = '';
+		result.stackId = '';
+		result.contextKey  = '';
+		result.targetInstanceId = '' + reqItem.sys_id;
+		result.invocationTemplateId = '' + reqItem.cat_item.blue_print;
+		result.userId = '' + gs.getUserID();
+		result.groupId = '';
+		result.messageType = '2'; // info
+		result.milestone = true;
+		result.step = 'Apply Policy';
+		result.statusMessageSummary = statusMessageSummary; //'Blueprint Request WF: ' + 'Blueprint policy request payload';
+		result.statusMessageDetails = statusMessageDetails; // workflow.scratchpad.policyPayload;
+		return result;
+	},
+	
+	getWorkflowName : function (wid) {
+		var workflow = new GlideRecord('wf_workflow');			
+		if (workflow.get(wid))
+			return workflow.name + '';
+		return '';
+	},
+	
+	getPolicyOperator : function () {
+		var operatorUIMap = {};
+		operatorUIMap["1"] = "=";
+		operatorUIMap["2"] = "!=";
+		operatorUIMap["3"] = ">=";
+		operatorUIMap["4"] = "<=";
+		operatorUIMap["5"] = "=";
+		operatorUIMap["6"] = 'LIKE';
+		operatorUIMap["7"] = "LIKE";
+		return operatorUIMap;
+	},
+	
+	getPolicyLogicalOperator : function () {
+		var oprLogicalUIMap = {};
+		oprLogicalUIMap["0"] = "^"; // AND
+		oprLogicalUIMap["1"] = "^"; // AND
+		oprLogicalUIMap["2"] = "^OR"; // OR
+		return oprLogicalUIMap;
+	},
+
+	isPolicyPublished: function (ruleGr) {
+		if(!ruleGr)
+			return false;
+
+		return ruleGr.policy.status+'' == '1';
+	},
+
+	getTLROperationParameters : function () {
+		var grOpParam = new GlideRecord('sn_cmp_rb_op_param');
+    	var joinQ = grOpParam.addJoinQuery('sn_cmp_rb_resourceblock', 'interface', 'guestinterface');
+    	joinQ.addCondition('is_tlr', true);
+    	grOpParam.orderBy('name');
+    	grOpParam.query();
+    	var list = {};
+    	while(grOpParam.hasNext()) {
+    		grOpParam.next();
+        	list[grOpParam.name] =true
+      	}
+
+    	var newlist = [];
+    	for (var prop in list) {
+    		if(!list.hasOwnProperty(prop)) continue;
+        	newlist.push(prop);
+      	}
+      	return newlist;
+	},
+
+
+    type: 'CloudPolicyUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-10 01:35:05</sys_created_on>
+        <sys_id>ea42761e873032006a13f4bbe3e3ec5a</sys_id>
+        <sys_mod_count>47</sys_mod_count>
+        <sys_name>CloudPolicyUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_ea42761e873032006a13f4bbe3e3ec5a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CfgMgmtUtils</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CfgMgmtUtils</name>
+        <script><![CDATA[var CfgMgmtUtils = Class.create();
+CfgMgmtUtils.prototype = {
+	initialize: function() {
+		this.cmpJsonUtil = new global.JSON();
+	},
+	getManagementAttributes: function(provider, type) {
+		var gr = new GlideRecord('sn_cmp_wl_prov_prop');
+		gr.addQuery('workload_provider_type.sys_id', type);
+		gr.query();
+		var values = [];
+		while (gr.next()) {
+			var valueMap = {};
+			var key = gr.getValue('key');
+			var propvalue = gr.getValue('value');
+			var propType = gr.getValue('type');
+			valueMap['management_attribute'] = key;
+			valueMap['datatype'] = 'selectBox';
+			// now lets take care of datatypes...
+			if (propType == 'text') {
+				valueMap['value'] = propvalue;
+				var optionValues = [];
+				var optionValueMap = {};
+				optionValueMap.name = propvalue;
+				optionValueMap.value = propvalue;
+				optionValues.push(optionValueMap);
+				valueMap['allowedValues'] = optionValues;
+				values.push(valueMap);
+			}
+			if (propType == 'csv') {
+				var propValueDefault=propvalue.split(',');
+				valueMap['value'] = propValueDefault[0];
+				var csvOptionValues = [];
+				for(var i=0;i<propValueDefault.length;i++){
+					var propNameValue = propValueDefault[i];
+					valueMap['value'] = propNameValue;
+					var csvoptionValueMap = {};
+					csvoptionValueMap.name = propNameValue;
+					csvoptionValueMap.value = propNameValue;
+					csvOptionValues.push(csvoptionValueMap);
+				}
+				valueMap['allowedValues'] = csvOptionValues;
+				values.push(valueMap);
+			}
+
+			if (propType == 'pool') {
+				var script = new sn_cmp_api.PoolServiceScript();
+				var split = propvalue.split('::');
+				// var source=split[0]
+				//var poolType=split[1]
+				var poolValue=split[2];
+				var poolAndFilter = poolValue.split('.');
+				var poolName = poolAndFilter[0];
+				var filter = poolAndFilter[1];
+
+				var wcp= this.cmpJsonUtil.encode({'WorkloadConfigProvider':provider});
+				var output=script.getFilteredRecords(poolName,filter,wcp);
+				if(!gs.nil(output)){
+					var outputItem = this.cmpJsonUtil.decode(output);
+					var poolOptionValues = [];
+					valueMap['value'] = outputItem[0].value;
+					for(var j=0 ;j<outputItem.length;j++){
+						var label=outputItem[j].label;
+						var value=outputItem[j].value;
+					    var poolOptionValueMap = {};
+					    poolOptionValueMap.name =label;
+						poolOptionValueMap.value = value;
+						poolOptionValues.push(poolOptionValueMap);
+					}
+					valueMap['allowedValues'] = poolOptionValues;
+				}
+				values.push(valueMap);
+			}
+
+
+		}
+		var generatedAttrs = this.cmpJsonUtil.encode(values);
+		return generatedAttrs;
+	},
+
+	getCfgMgmtCredentials: function(provider,providerType, mgmtAttributes) {
+		// Based on the information providerd in the provider type,
+		// We can figure out the exact credential expression.
+		var providerTypeRec = new GlideRecord('sn_cmp_workload_provider_type');
+		providerTypeRec.get(providerType);
+		var capiProductType = providerTypeRec.getDisplayValue('product_type');
+		var credentialResolver = providerTypeRec.getValue('credential_resolver');
+		var midScriptRecord = new GlideRecord('ecc_agent_script_include');
+		midScriptRecord.get(credentialResolver);
+		var credentialResolverName = midScriptRecord.getValue('name');
+		var configCI = providerTypeRec.getValue('config_ci');
+		var providerRec = new GlideRecord(configCI);
+		providerRec.get(provider);
+		var credId = providerRec.getValue('credential');
+		var objectId = providerRec.getValue('object_id');
+		var organization = providerRec.getValue('organization');
+		var credentialPrefix = '$(capiResolver.'+credentialResolverName+'#serverCredentialId=';
+		var suffix = ',organizationName=';
+		var objectIdsuffix = ',object_id=';
+		var expression = credentialPrefix + credId + suffix + organization + objectIdsuffix+objectId+')';
+		return expression;
+	},
+
+
+	getApplicationProfileAttribute: function(appProfile, provider) {
+		var mgmtValueArray = [];
+		var gr = new GlideRecord('sn_cmp_app_profile_mapping');
+		gr.addQuery("profile", appProfile);
+		gr.addQuery("workload_cfg_provider", provider);
+		gr.query();
+		var values = [];
+		if (gr.next()) {
+			var template = gr.getValue('template');
+			var templateRecord = new GlideRecord('sn_cmp_application_template');
+			templateRecord.get(template);
+			var overrideAttributeJson = new sn_cmp_api.ExpressionResolverUtilScript().getValueTypesForMetaDataRelation(templateRecord.getValue('config_runlist'), 'Contains', 'sn_cmp_cfg_installable_param', 'flat', 1, 'value');
+
+			var overrideAttributes=this.cmpJsonUtil.decode(overrideAttributeJson);
+
+			for (var i=0;i<overrideAttributes.length;i++){
+				var overrideAttr=overrideAttributes[i];
+				var valueMap = {};
+				var key = overrideAttr.label;
+				var value = overrideAttr.value;
+				var propType = gr.getValue('type');
+				valueMap['attribute'] = key;
+				valueMap['value'] = value;
+				valueMap['datatype'] = 'text';
+				values.push(valueMap);
+			}
+
+		}
+		var output=this.cmpJsonUtil.encode(values);
+
+		gs.debug("Override Attributes" + output);
+		return output;
+	},
+	getConfigScript: function(provider,type,resource) {
+		var rbScript= new sn_cmp_api.ResourceBlockServiceScript();
+		var rbJson=rbScript.getResourceBlockByName(resource);
+		var resId = rbJson.id;
+		var resourceJson=this.cmpJsonUtil.decode(rbJson);
+		var resourceId = resourceJson.id;
+		var configScript="";
+		var gr = new GlideRecord('sn_cmp_rb_prov_resp_map');
+		gr.addQuery("provider_type", type);
+		gr.addQuery("resource",resourceId);
+		gr.query();
+		if (gr.next()) {
+			configScript =  gr.getValue('config_script');
+		}
+		return configScript;
+	},
+	getAllTemplates : function( workloadConfigProvider){
+		gs.info("Fetching templaes for provider "+workloadConfigProvider);
+		var glideR = new GlideRecord("sn_cmp_application_template");
+		glideR.addQuery("provider_instance", workloadConfigProvider);
+		glideR.query();
+		var outputStr = [];
+		while(glideR.hasNext()) {
+			glideR.next();
+			outputStr.push(glideR.getValue("sys_id"));
+		}
+		outputStr = "sys_idIN"  + outputStr.toString();
+		return outputStr;
+	},
+	getAllInterfaces : function( resource){
+		var gr = new GlideRecord("sn_cmp_rb_resourceblock");
+		gr.get(resource);
+		var guestInterface = gr.getValue('guestinterface');
+		var outputStr = [];
+		outputStr.push(guestInterface);
+		outputStr = "sys_idIN"  + outputStr.toString();
+		return outputStr;
+	},
+	getOperationsForInterface : function(resourceInterface){
+		gs.info('resourceInterface'+resourceInterface);
+		var gr = new GlideRecord("sn_cmp_rb_op_signature");
+		gr.addQuery('interface',resourceInterface);
+		gr.query();
+		var outputStr = [];
+		while(gr.hasNext()){
+			if(gr.next()){
+			outputStr.push(gr.getUniqueValue());
+			}
+		}
+		outputStr = "sys_idIN"  + outputStr.toString();
+		return outputStr;
+	},
+	getOverrideAttributesByProvider: function(provider,providerType,resource,interfaceName,operation){
+		var provResMapping= new GlideRecord('sn_cmp_rb_prov_resp_map');
+		provResMapping.addQuery('resource.name','Apache Web Server');
+		provResMapping.addQuery('provider_type',providerType);
+		provResMapping.addQuery('resource.name',resource);
+		provResMapping.addQuery('resource_interface.name',interfaceName);
+		provResMapping.addQuery('operation.name',operation);
+		provResMapping.query();
+		var appProfile ='';
+		if(provResMapping.next()){
+		appProfile = provResMapping.getValue('config_script');
+		}
+	    return this.getApplicationProfileAttribute(appProfile,provider);
+
+	},
+
+	getApplicationProfiles:function( workloadConfigProvider){
+		gs.info("Fetching profiles for provider "+workloadConfigProvider);
+		
+		var glideR = new GlideRecord("sn_cmp_app_profile_mapping");
+		glideR.addQuery("workload_cfg_provider.provider", workloadConfigProvider);
+		glideR.query();
+		var outputStr = [];
+		while(glideR.next())
+			outputStr.push(glideR.getValue("profile"));
+		
+		outputStr = "sys_idIN"  + outputStr.toString();
+		return outputStr;
+	},
+	
+	type: 'CfgMgmtUtils'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 20:29:43</sys_created_on>
+        <sys_id>4447313e0b2003003246ad4363673a34</sys_id>
+        <sys_mod_count>201</sys_mod_count>
+        <sys_name>CfgMgmtUtils</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_4447313e0b2003003246ad4363673a34</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-16 06:26:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

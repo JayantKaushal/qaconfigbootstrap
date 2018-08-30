@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRepairBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRepairBlueprintAction</name>
+        <script><![CDATA[var CMPRepairBlueprintAction = Class.create();
+CMPRepairBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			var bpGR = new GlideRecord('sn_cmp_bp_blueprint');
+			bpGR.addQuery('sys_id',params.blueprintId);
+			bpGR.query();
+			if(bpGR.next()){
+			
+			// Add your code here
+			var container = sn_smd.SMAPI.loadServiceModelByName(sn_cmp.SNCMPConstants.CMP_CONTAINER);
+
+			var layer=sn_smd.SMAPI.createServiceLayer(container.getId(), sn_smd.SMConstants.SVC_LAYER_KIND_SERVICE_DEF, sn_cmp.SNCMPConstants.CMP_KIND_IDENTIFIER_BP, bpGR.name, null, null);
+			bpGR.setValue("svc_layer",layer.getId());
+			bpGR.update();
+				
+				var tlrparams = {
+                    "ci_type":"cmdb_ci_qualifier_entrypoint", 
+                    "layer_id" : bpGR.svc_layer, 
+                    "name" : "Blueprint Container Resource",
+	                "resblock_id":bpGR.tlr,
+			        "resourceblock_name": bpGR.name + " Blueprint Resource",
+			        type: {
+						name : "Blueprint Container Resource"
+					}
+            };
+    
+    new sn_cmp.CMPAddResourceBlockAction().doAction(tlrparams);
+			}
+			
+			var bpMap  = this.getBlueprintMap(params.blueprintId);
+			new CMPImportBlueprintAction().repairBlueprint(bpMap);
+			return bpGR.getValue('svc_layer');
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all blueprints."),
+				"CMPGetAllBlueprintsAction.doAction(): Failed to get all blueprints",
+				error
+			);
+		}
+    },
+	
+	getBlueprintMap: function(blueprintId){
+		var output ={};
+		var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+		var bpResponse  = blueprintServiceScript.getBlueprint(blueprintId);
+		var bpDTO = new global.JSON().decode(bpResponse);
+		output['blueprintName'] = bpDTO.name;
+		output['isBlueprintExist'] = false;
+		output['blueprintDTO'] = bpDTO;
+		var bpModelRes = blueprintServiceScript.getStageModelForBlueprint(blueprintId);
+		var stageModelDTO = new global.JSON().decode(bpModelRes);
+		var stageModelId = stageModelDTO.id + '';
+		
+		var stageResList = [];
+		var stageResGR = new GlideRecord('sn_cmp_bp_stage_resource');
+		stageResGR.addQuery('bp_stage_model',stageModelId);
+		stageResGR.query();
+		while(stageResGR.next()){
+			var stageResDTO = {
+				"id":stageResGR.getValue('sys_id'),
+				"aliasName":stageResGR.getValue('alias_name'),
+				"resourceId":stageResGR.getValue('resource_block'),
+				"stageModelId":stageModelDTO.id,
+				"type":stageResGR.getDisplayValue('type'),
+				"typeId":stageResGR.getValue('type'),
+				"blueprintName":bpDTO.name,
+				"hostCI":stageResGR.getValue('host_ci'),
+				"resBlockName":stageResGR.getDisplayValue('resource_block'),
+				"constraintCSV":stageResGR.getValue('constraint')
+			};
+			stageResList.push(stageResDTO);
+		}
+		
+		output['stageResources'] = stageResList;
+		
+		var stageResDepModelList = [];
+		var stageResDepModelGR = new GlideRecord('sn_cmp_bp_stage_resource_dep');
+		stageResDepModelGR.addQuery('bp_stage_model',stageModelId);
+		stageResDepModelGR.query();
+		while(stageResDepModelGR.next()){
+			var stageResDepModelDTO = {
+				"id":stageResDepModelGR.getValue('sys_id'),
+				"guestAssociationName":stageResDepModelGR.getValue('guest_association_name'),
+				"guestResource":stageResDepModelGR.getValue('guest_resource'),
+				"stageModelId":stageModelDTO.id,
+				"hostResource":stageResDepModelGR.getValue('host_resource'),
+				"deploymentType":stageResDepModelGR.getDisplayValue('deployment_type'),
+				"hostAssociationName":stageResDepModelGR.getValue('host_association_name'),
+				"endpoint":stageResDepModelGR.getValue('endpoint')
+			};
+			stageResDepModelList.push(stageResDepModelDTO);
+		}
+		
+		output['deploymentModel'] = stageResDepModelList;
+		
+		return output;
+		
+	},
+
+    type: 'CMPRepairBlueprintAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-02-02 07:23:01</sys_created_on>
+        <sys_id>8351a2d10bc013003bace58525673a69</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>CMPRepairBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_8351a2d10bc013003bace58525673a69</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-02 11:58:59</sys_updated_on>
+    </sys_script_include>
+</record_update>

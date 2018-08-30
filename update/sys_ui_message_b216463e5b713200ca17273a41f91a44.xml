@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Policy Action Script Text</key>
+        <language>en</language>
+        <message>&lt;ul&gt;&lt;li&gt;Form values must be modified in the function  &lt;b style="font-size:14px;"&gt;customScripts&lt;/b&gt;. User data cannot be overwritten with scripts, but is available to use in script conditions. An example script is:   &lt;br&gt;&#13;
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;var groups = this.parameters.userData.groups;&lt;br&gt;&#13;
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;if( groups.length &gt; 0){&lt;br&gt;&#13;
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;formData.App_Server_NodeName = "MyNodeName";&lt;br&gt;&#13;
+&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;}&lt;br&gt;&lt;/li&gt;&#13;
+&lt;li&gt;Changes in any other function could result in an error and thus cancellation of requested catalog item.&lt;/li&gt;&#13;
+&lt;/ul&gt;</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-02 04:42:00</sys_created_on>
+        <sys_id>b216463e5b713200ca17273a41f91a44</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>Policy Action Script Text</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_b216463e5b713200ca17273a41f91a44</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-21 22:46:35</sys_updated_on>
+    </sys_ui_message>
+</record_update>

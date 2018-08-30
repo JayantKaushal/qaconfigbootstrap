@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Price Attribute mapping" max_length="40" name="sn_cmp_price_attribute_mapping" type="collection">
+        <element dependent="pricing_product" label="Mapping Key" mandatory="true" max_length="80" name="mapping_key" type="field_name"/>
+        <element hint="Pricing Resource Offer" label="Offer" max_length="32" name="offer" reference="sn_cmp_pricing_resource_offer" type="reference"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci_cmp_price_product_base,base_start=true" hint="Pricing Product Name" label="Pricing Product" max_length="80" name="pricing_product" type="table_name"/>
+        <element hint="The cloud management provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Source Key" mandatory="true" max_length="200" name="source_key" type="string"/>
+        <index name="index">
+            <element name="offer"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+    </element>
+</database>

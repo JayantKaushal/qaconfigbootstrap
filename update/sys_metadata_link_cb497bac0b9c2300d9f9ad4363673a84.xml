@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_metadata_link">
+    <sys_metadata_link action="INSERT_OR_UPDATE">
+        <directory>update</directory>
+        <documentkey>3da5ebe40b9c2300d9f9ad4363673a0f</documentkey>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_cfg_ansible_inventory">
+    <sn_cfg_ansible_inventory action="INSERT_OR_UPDATE">
+        <asset/>
+        <asset_tag/>
+        <assigned/>
+        <assigned_to/>
+        <assignment_group/>
+        <attributes/>
+        <can_print>false</can_print>
+        <category/>
+        <change_control/>
+        <checked_in/>
+        <checked_out/>
+        <comments/>
+        <company/>
+        <correlation_id/>
+        <cost/>
+        <cost_cc>USD</cost_cc>
+        <cost_center/>
+        <delivery_date/>
+        <department/>
+        <discovery_source>ServiceNow</discovery_source>
+        <dns_domain/>
+        <due/>
+        <due_in/>
+        <fault_count>0</fault_count>
+        <first_discovered>2018-08-30 10:52:11</first_discovered>
+        <fqdn/>
+        <gl_account/>
+        <groups>2</groups>
+        <hosts>3</hosts>
+        <install_date/>
+        <install_status>1</install_status>
+        <invoice_number/>
+        <ip_address/>
+        <justification/>
+        <last_discovered>2018-08-30 10:52:20</last_discovered>
+        <lease_id/>
+        <location/>
+        <mac_address/>
+        <maintenance_schedule/>
+        <managed_by/>
+        <manufacturer/>
+        <model_id/>
+        <model_number/>
+        <monitor>false</monitor>
+        <name>WebServer</name>
+        <object_id>3</object_id>
+        <operational_status>1</operational_status>
+        <order_date/>
+        <organization_id>1</organization_id>
+        <owned_by/>
+        <po_number/>
+        <purchase_date/>
+        <schedule/>
+        <serial_number/>
+        <short_description/>
+        <skip_sync>false</skip_sync>
+        <start_date/>
+        <subcategory/>
+        <support_group/>
+        <supported_by/>
+        <sys_class_name>sn_cfg_ansible_inventory</sys_class_name>
+        <sys_class_path>/!!/$0</sys_class_path>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 10:52:11</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>3da5ebe40b9c2300d9f9ad4363673a0f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 10:52:20</sys_updated_on>
+        <unverified>false</unverified>
+        <vendor/>
+        <warranty_expiration/>
+    </sn_cfg_ansible_inventory>
+</record_update>
+]]></payload>
+        <sys_class_name>sys_metadata_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 12:18:00</sys_created_on>
+        <sys_id>cb497bac0b9c2300d9f9ad4363673a84</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>WebServer</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_metadata_link_cb497bac0b9c2300d9f9ad4363673a84</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 12:18:00</sys_updated_on>
+        <tablename>sn_cfg_ansible_inventory</tablename>
+    </sys_metadata_link>
+</record_update>

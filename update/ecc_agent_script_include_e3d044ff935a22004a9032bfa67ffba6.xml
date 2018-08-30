@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>AWS billing probe class that handles credentials to connect to the Amazon AWS, downloads and unzips the bill, and sends back the output in chunks. </description>
+        <name>AWSBillingProbe</name>
+        <script><![CDATA[/* jshint -W030 */
+
+var AWSBillingProbe = Class.create();
+
+(function() {
+	
+AWSBillingProbe.prototype = Object.extendsObject(CmpBillingProbe, {
+	s3Client : null,
+	CREDENTIAL_TYPE : 'aws',
+	MINIMUM_HEADER_LENGTH : 200,
+	   
+	connect : function(credential, endpoint, year, month, accountNum, bucket) {
+		var accessKey = credential.getAttribute("access_key");
+		var secretKey = credential.getAttribute("secret_key");
+		
+		if (accessKey && secretKey) {
+			accessKey = accessKey.trim();
+			secretKey = secretKey.trim();			
+			
+			var parameters = new Packages.java.util.HashMap();      
+			parameters.put('Service', 's3');
+			parameters.put('Identity', accessKey);
+			parameters.put('Credentials', secretKey);
+     
+			var awsConfigurationUtil = new AWSConfigurationUtil();
+			this.s3Client = awsConfigurationUtil.fetchAPIClient(parameters);
+			var reportType = this.getParameter("report_type",
+											   "aws-billing-detailed-line-items-with-resources-and-tags");
+			endpoint = this._getRegionedEndpoint(endpoint, bucket);
+			ms.log(endpoint);
+			this.s3Client.setEndpoint(endpoint);
+
+			var fileName = accountNum.trim()+"-"+reportType+"-"+year+"-"+month+".csv.zip";
+			var objReq = new amazonaws.services.s3.model.GetObjectRequest(bucket.trim(), fileName);
+			var s3Object = null;
+			
+			try {
+				s3Object = this.s3Client.getObject(objReq);
+				var is = s3Object.getObjectContent();
+				this.inputStream = new ZipArchiveInputStream(is);
+				var zipEntry = this.inputStream.getNextZipEntry();
+			} catch (ex) {
+				// try without .zip extension
+				fileName = accountNum.trim()+"-"+reportType+"-"+year+"-"+month+".csv";
+				objReq = new amazonaws.services.s3.model.GetObjectRequest(bucket.trim(), fileName);
+				s3Object = this.s3Client.getObject(objReq);
+				this.inputStream = s3Object.getObjectContent();
+			}
+			var isr = new InputStreamReader(this.inputStream);
+			this.reader = new BufferedReader(isr);
+			return true;
+        }
+		return false;
+    },
+
+	// If an unregioned endpoint is the default, find the region for this bucket and include it
+	_getRegionedEndpoint: function(endpoint, bucket) {
+		var splitPoint = endpoint.indexOf("s3.amazonaws")+3;
+		if (splitPoint >= 0) {
+			var region = null;
+			try {
+				region = this.s3Client.getBucketLocation(bucket);
+			} catch (ex) {
+				var exMessage = ex.getMessage();
+				if (exMessage.indexOf("Cannot create enum from ") >= 0) {
+					var rStart = exMessage.indexOf("Cannot create enum from ")+24;
+					var rEnd = exMessage.indexOf(" value!");
+					region = exMessage.substring(rStart, rEnd).trim();
+					ms.log("Parsed '"+region+"' region from exception: "+ex);
+				}
+			}
+			if (region != null && region != "US") {
+				var epStart = endpoint.substring(0,splitPoint);
+				var epEnd = endpoint.substring(splitPoint);
+				endpoint = epStart + region + "." + epEnd;
+				ms.log("Using endpoint "+endpoint);
+			}
+		}
+		return endpoint;
+	},
+
+	/**
+	* Get the (zero-indexed) day of the month associated with this line item.
+	*/
+	getDayForLine : function(line) {
+		// Find the spot with two comma separated dates
+		var dateIndex = line.search(/"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}","\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"/g);
+		if (dateIndex >= 0) {
+			// pull the 2-digit day out of the first date
+			var day = line.substring(dateIndex+9,dateIndex+11);
+			return (parseInt(day, 10) - 1);
+		}
+		return 0;
+	},
+	
+    type: "AWSBillingProbe"
+});
+	
+})();]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 21:53:50</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e3d044ff935a22004a9032bfa67ffba6</sys_id>
+        <sys_mod_count>205</sys_mod_count>
+        <sys_name>AWSBillingProbe</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>ecc_agent_script_include_e3d044ff935a22004a9032bfa67ffba6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 17:58:26</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

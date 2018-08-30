@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Tag Definition" max_length="40" name="sn_cmp_tag_name" type="collection">
+        <element default="true" hint="Only active tags will not be included on newly provisioned resources." label="Active" max_length="40" name="active" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="The key to be paired with the tag value" label="Label" mandatory="true" max_length="127" name="label" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="The system name for this tag's value set column" label="Name" mandatory="true" max_length="127" name="name" type="string"/>
+        <element attributes="allow_references=true" dependent="order_table" hint="The tag value is derived from a field within the order for the provisioned resource." label="Order field" max_length="80" name="order_field" type="field_name"/>
+        <element attributes="allow_public=true,base_start=true" default="sn_cmp_order" label="Order table" max_length="80" name="order_table" read_only="true" type="table_name"/>
+        <element dependent="table" hint="The tag value is the variable answer (var answer) resulting from the script." label="Script" max_length="4000" name="script" type="script"/>
+        <element attributes="allow_public=true,base_start=true" hint="The table that tag values may reference. If empty, the tag will only be associated with string values" label="Table" max_length="80" name="table" type="table_name"/>
+        <element choice="3" default="Custom" label="Tag type" mandatory="true" max_length="40" name="tag_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="ServiceNow" sequence="1" value="ServiceNow"/>
+                <element inactive_on_update="false" label="ServiceNow (Custom)" sequence="2" value="Custom"/>
+                <element inactive_on_update="false" label="User-defined" sequence="3" value="User-defined"/>
+                <element inactive_on_update="false" label="Internal" sequence="4" value="Internal"/>
+            </choice>
+        </element>
+        <element choice="3" default="Variable" label="Value type" max_length="40" name="value_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Variable" sequence="1" value="Variable"/>
+                <element inactive="true" inactive_on_update="true" label="Order Field" sequence="2" value="Order Field"/>
+                <element inactive_on_update="false" label="Script" sequence="3" value="Script"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="The name of the variable to associate with the tag value" label="Variable name" max_length="100" name="variable_name" type="string"/>
+        <element default="true" hint="Only visible tags will be shown with a resource's details on the user portal." label="Visible" max_length="40" name="visible" type="boolean"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+        <index name="index2">
+            <element name="label"/>
+        </index>
+    </element>
+</database>

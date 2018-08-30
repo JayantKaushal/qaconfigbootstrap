@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cloud Orchestration Trail Step" max_length="40" name="sn_cmp_cloud_trail_step" type="collection">
+        <element choice="1" label="Component" max_length="40" name="component" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Catalog Item" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Dynamic Forms" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Workflow Engine" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Policy Engine" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="BP DSL Validator" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="BP DSL Executor" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="CAPI Orchestrator" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="CAPI Probe" sequence="8" value="8"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="40" name="name" type="string"/>
+        <element label="Sequence" max_length="40" name="sequence" type="integer"/>
+        <element choice="1" label="Stage" max_length="40" name="stage" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Catalog Item Request" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Workflow and Policy Execution" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Cloud Orchestration" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Cloud API Orchestration" sequence="4" value="4"/>
+            </choice>
+        </element>
+    </element>
+</database>

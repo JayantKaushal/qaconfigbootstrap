@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintExporter</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintExporter</name>
+        <script><![CDATA[var BlueprintExporter = Class.create();
+
+BlueprintExporter.prototype = Object.extendsObject(global.CMPExporterUtil, {
+	blueprintName : '',
+	blueprintId : '',
+	bpUpdateSetList : [],
+	deletedRecordList:[],
+	bpExporterLog: [],
+	BLUEPRINT_EXPORTER_LABEL: '[Blueprint Exporter LOG] ',
+
+	initialize: function() {
+		this.bpUpdateSetList = []; 
+		this.deletedRecordList = []; 
+		this.bpExporterLog = [];
+	},
+
+	populateEntriesForUpdateSet : function(sysId, tableName) {
+		var recordGR = new GlideRecord(tableName);
+		if(recordGR.get(sysId)) {
+			if(tableName == 'sn_cmp_bp_blueprint')
+				recordGR.svc_layer = null;
+			if(tableName == 'sn_cmp_bp_stage_resource_dep' && recordGR.getValue('host_resource')=='undefined')
+				recordGR.host_resource = null;
+			this.addRecordsToUpdateSetList(recordGR, this.bpUpdateSetList);
+		}
+	},
+
+	initializeUpdateSet: function() {
+		this.exporterlogger.init(this.BLUEPRINT_EXPORTER_LABEL, this.bpExporterLog);
+	},
+
+	createUpdateSet : function(params) {
+		this.blueprintName = params.name;
+		this.initializeUpdateSet();
+
+		if (this.blueprintName) {
+			this.populateBlueprintRelatedXMLs();
+			this.exportBlueprintDependencies(params);
+			var output = this.generateUpdateSet(this.blueprintName, this.bpUpdateSetList, this.deletedRecordList);
+			output.log = this.bpExporterLog;
+			return output;
+		}
+	},
+
+	exportCloudScripts : function(cloudScripts) {
+		for(var n = 0; n < cloudScripts.length; n++)
+			this.exportCloudScript(cloudScripts[n].id);
+	},
+
+	exportCloudScriptTemplates : function(cloudScriptTemplates) {
+		for(var p=0; p<cloudScriptTemplates.length; p++) {
+			this.exportCloudScriptTemplate(cloudScriptTemplates[p].name);
+		}
+	},
+
+	exportBlueprintDependencies:function(params) {
+		//export default dependencies like resourceblocks,cloud apis and pools:Deterministic Dependencies
+		var defaultDependencies = params.defaultDependencies;
+		if(defaultDependencies) {
+			var depResBlocks = defaultDependencies.resourceBlocks || [];
+			for(var i = 0;i < depResBlocks.length;i++)
+				this.exportResourceBlock(depResBlocks[i].id);
+
+			var dependentCloudAPIs = defaultDependencies.cloudAPIs || [];
+			for(var j=0;j<dependentCloudAPIs.length;j++)
+				this.exportCloudAPI(dependentCloudAPIs[j]);
+
+			var dependentPools = defaultDependencies.pools || [];
+			var poolExporter = new sn_cmp.PoolExporter();
+			poolExporter.getAllPoolsAndRelatedEntities(dependentPools,this.bpUpdateSetList,this.bpExporterLog);
+
+			var dependentCloudScripts = defaultDependencies.cloudScripts || [];
+			this.exportCloudScripts(dependentCloudScripts);
+		}
+
+		//Export custom dependencies as Policy,MID Scripts and Script Includes: NonDeterministic Dependencies
+		var customDependencies = params.dependencies;
+		this.exportCustomDependencies(customDependencies, this.bpUpdateSetList,this.bpExporterLog);
+
+	},
+	populateBlueprintRelatedXMLs : function() {
+		var blueprintGR = this.getBlueprintByName(this.blueprintName);
+
+		if (blueprintGR.next()) {
+			this.blueprintId = blueprintGR.sys_id;
+			this.exporterlogger.log('Exporting Blueprint - '+this.blueprintName);
+			this.populateEntriesForUpdateSet(this.blueprintId, blueprintGR.sys_class_name);
+			this.getAllBlueprintStageModels();
+			
+			//This call seems to do nothing
+			this.getAllBPVariableSetsToUpdateSet();
+
+			//deleted Records for blueprint
+			this.addDeletedRecordsToUpdateSet(blueprintGR.getValue("sys_id"),'sn_cmp_bp_stage_model');
+			this.addDeletedRecordsToUpdateSet(blueprintGR.getValue("sys_id"),'sn_cmp_bp_to_variableset');
+		}
+	},
+
+	getBlueprintByName : function (bpName) {
+		var blueprintGR = new GlideRecord("sn_cmp_bp_blueprint");
+		blueprintGR.addQuery("name", bpName);
+		blueprintGR.query();
+		return blueprintGR;
+	},
+
+	getAllBPVariableSetsToUpdateSet : function() {
+		var variableSetGR = new GlideRecord("sn_cmp_bp_to_variableset");
+		variableSetGR.addQuery("blue_print", this.blueprintId);
+		variableSetGR.query();
+		while(variableSetGR.next())
+		  this.populateEntriesForUpdateSet(variableSetGR.sys_id, variableSetGR.sys_class_name);
+	},
+
+	exportCloudAPI : function (cloudAPIParams) {
+		var cloudAPIUpdateSetExporter = new sn_capi.CloudAPIUpdateSetExporter();
+		this.exporterlogger.log('Exporting cloud API - ' + cloudAPIParams.name);
+		var param = {id:cloudAPIParams.sys_id,capiName:cloudAPIParams.name};
+		var output  = cloudAPIUpdateSetExporter.createUpdateSet(param);
+		var cloudAPIUpdateSetList = cloudAPIUpdateSetExporter.updateSetList;
+		for(var i in cloudAPIUpdateSetList){
+			var matchedIndex = this.bpUpdateSetList.map(function(e) { return e.scope; }).indexOf(cloudAPIUpdateSetList[i].scope);
+			if(matchedIndex != -1)
+				Array.prototype.push.apply(this.bpUpdateSetList[matchedIndex].entries, cloudAPIUpdateSetList[i].entries);
+			else
+				this.bpUpdateSetList.push(cloudAPIUpdateSetList[i]);
+		}
+	},
+
+	//Export TLR
+
+	exportResourceBlock : function(resourceBlockId) {
+		var resourceBlockGR = new GlideRecord("sn_cmp_rb_resourceblock");
+		if (resourceBlockGR.get(resourceBlockId)) {
+			var rbExporter = new ResourceBlockExporter();
+
+			var params = {};
+			params ["rbName"] = resourceBlockGR.name;
+			var tlrRecords = rbExporter.getDependentResourceRecords(params,this.bpExporterLog);
+			for(var i in tlrRecords){
+				var matchedIndex = this.bpUpdateSetList.map(function(e) { return e.scope; }).indexOf(tlrRecords[i].scope);
+				if(matchedIndex != -1)
+					Array.prototype.push.apply(this.bpUpdateSetList[matchedIndex].entries, tlrRecords[i].entries);
+				else
+					this.bpUpdateSetList.push(tlrRecords[i]);
+			}
+		}
+	},
+
+	getBpDependentResourceBlocks: function(blueprintId){
+		var rbExporter = new ResourceBlockExporter();
+		var bpDependentResourceBlocks=[];
+		var stageResourceGR = new GlideRecord("sn_cmp_bp_stage_resource");
+		stageResourceGR.addQuery("bp_stage_model.blueprint", blueprintId);
+		stageResourceGR.addNotNullQuery('resource_block');
+		stageResourceGR.query();
+		while (stageResourceGR.next()) {
+			var index = bpDependentResourceBlocks.map(function(e) { return e.id; }).indexOf(stageResourceGR.getValue('resource_block'));
+			if(index == -1){
+				bpDependentResourceBlocks.push({
+				"id":stageResourceGR.getValue('resource_block'),
+				"name":stageResourceGR.getDisplayValue("resource_block"),
+				"createdBy":stageResourceGR.getDisplayValue('resource_block.sys_created_by'),
+				"description":stageResourceGR.getDisplayValue('resource_block.description'),
+				"status": stageResourceGR.getDisplayValue('resource_block.status')
+			});
+		}
+			var dependentResourceBlocks = rbExporter.getDependentResourceBlocks(stageResourceGR.resource_block.name);
+			for(var i=0;i<dependentResourceBlocks.length;i++){
+				var matchedIndex = bpDependentResourceBlocks.map(function(e) { return e.id; }).indexOf(dependentResourceBlocks[i].id);
+				if(matchedIndex == -1)
+					bpDependentResourceBlocks.push(dependentResourceBlocks[i]);
+			}
+		}
+
+		return bpDependentResourceBlocks;
+
+	},
+
+	getAllBlueprintStageModels : function () {
+		var stageModelGR = new GlideRecord("sn_cmp_bp_stage_model");
+		stageModelGR.addQuery("blueprint.name", this.blueprintName);
+		stageModelGR.query();
+
+		while (stageModelGR.next()) {
+			this.populateEntriesForUpdateSet(stageModelGR.sys_id, stageModelGR.sys_class_name);
+
+			this.getAllBlueprintStageResources(stageModelGR.sys_id);
+			this.getAllDeploymentModel(stageModelGR.sys_id);
+			this.getAllBlueprintStageOperations(stageModelGR.sys_id);
+			//deleted records for stage resources
+			this.addDeletedRecordsToUpdateSet(stageModelGR.getValue("sys_id"),'sn_cmp_bp_stage_resource');
+			this.addDeletedRecordsToUpdateSet(stageModelGR.getValue("sys_id"),'sn_cmp_bp_stage_resource_dep');
+			this.addDeletedRecordsToUpdateSet(stageModelGR.getValue("sys_id"),'sn_cmp_bp_stage_op');
+		}
+	},
+
+	getAllBlueprintStageResources : function (stageModelId){
+		var stageResourceGR = new GlideRecord("sn_cmp_bp_stage_resource");
+		stageResourceGR.addQuery("bp_stage_model", stageModelId);
+		stageResourceGR.query();
+		while (stageResourceGR.next()) {
+			this.exporterlogger.log('Exporting Stage Resource - ' + stageResourceGR.alias_name);
+			this.populateEntriesForUpdateSet(stageResourceGR.sys_id, stageResourceGR.sys_class_name);
+		}
+	},
+
+	getAllDeploymentModel : function (stageModelId){
+		var depModelGR = new GlideRecord("sn_cmp_bp_stage_resource_dep");
+		depModelGR.addQuery("bp_stage_model", stageModelId);
+		depModelGR.query();
+		while (depModelGR.next()) {
+			this.populateEntriesForUpdateSet(depModelGR.sys_id, depModelGR.sys_class_name);
+		}
+	},
+
+	getAllBlueprintStageOperations : function (stageModelId) {
+		var stageOperationGR = new GlideRecord("sn_cmp_bp_stage_op");
+		stageOperationGR.addQuery("blueprint_stage_model", stageModelId);
+		stageOperationGR.query();
+
+		while (stageOperationGR.next()) {
+			this.exporterlogger.log('Exporting Stage Operation - ' + stageOperationGR.name);
+			this.populateEntriesForUpdateSet(stageOperationGR.sys_id, stageOperationGR.sys_class_name);
+
+			this.getAllGlobalPropertiesByStageOperation(stageOperationGR.sys_id);
+			this.getAllStageResourceOperations(stageOperationGR.sys_id);
+			this.populateBlueprintRelatedXMLsStageOperationGraphs(stageOperationGR.sys_id);
+			this.getAllBlueprintFormBehaviors(stageOperationGR.sys_id);
+			//this.getDependentCloudScripts(stageOperationGR.sys_id);
+			this.addDeletedRecordsToUpdateSet(stageOperationGR.getValue("sys_id"),'sn_cmp_bp_global_prop');
+			this.addDeletedRecordsToUpdateSet(stageOperationGR.getValue("sys_id"),'sn_cmp_bp_stage_resource_op');
+			this.addDeletedRecordsToUpdateSet(stageOperationGR.getValue("sys_id"),'sn_cmp_bp_stage_res_op_graph');
+			this.addDeletedRecordsToUpdateSet(stageOperationGR.getValue("sys_id"),'sn_cmp_bp_form_behavior');
+		}
+	},
+
+	getAllGlobalPropertiesByStageOperation : function (stageOperationId) {
+		var stageOpAttributeGR = new GlideRecord("sn_cmp_bp_global_prop");
+		stageOpAttributeGR.addQuery("bp_stage_operation", stageOperationId);
+		stageOpAttributeGR.query();
+
+		while (stageOpAttributeGR.next()) {
+			this.exporterlogger.log('Exporting Stage Operation Attribute - ' + stageOpAttributeGR.name);
+			this.populateEntriesForUpdateSet(stageOpAttributeGR.sys_id, stageOpAttributeGR.sys_class_name);
+		}
+	},
+
+	populateBlueprintRelatedXMLsStageOperationGraphs : function (stageOperationId) {
+		var stageOperationGraphGR = new GlideRecord("sn_cmp_bp_stage_res_op_graph");
+		stageOperationGraphGR.addQuery("blueprint_stage_op", stageOperationId);
+		stageOperationGraphGR.query();
+
+		while (stageOperationGraphGR.next()) {
+			this.populateEntriesForUpdateSet(stageOperationGraphGR.sys_id, "sn_cmp_bp_stage_res_op_graph");
+		}
+	},
+
+	getAllStageResourceOperations : function (stageOperationId) {
+		var stageResOperationGR = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResOperationGR.addQuery("bp_stage_operation", stageOperationId);
+		stageResOperationGR.query();
+
+		while (stageResOperationGR.next()) {
+			this.exporterlogger.log('Exporting Stage Resource Operation - ' + stageResOperationGR.alias_name);
+			this.populateEntriesForUpdateSet(stageResOperationGR.sys_id, stageResOperationGR.sys_class_name);
+
+			this.getAllStageResourceOperationAttributes(stageResOperationGR.sys_id);
+
+			this.addDeletedRecordsToUpdateSet(stageResOperationGR.getValue("sys_id"),'sn_cmp_bp_stage_res_op_attr');
+		}
+	},
+
+	getAllStageResourceOperationAttributes : function (stageResourceOperationId) {
+		var stageResOpAttributeGR = new GlideRecord("sn_cmp_bp_stage_res_op_attr");
+		stageResOpAttributeGR.addQuery("stage_resource_operation", stageResourceOperationId);
+		stageResOpAttributeGR.query();
+
+		while (stageResOpAttributeGR.next()) {
+			this.exporterlogger.log('Exporting Stage Resource Operation Attribute - ' + stageResOpAttributeGR.name);
+			this.populateEntriesForUpdateSet(stageResOpAttributeGR.sys_id, stageResOpAttributeGR.sys_class_name);
+		}
+	},
+
+	getAllBlueprintFormBehaviors : function (stageOperationId) {
+		var formBehaviorGR = new GlideRecord("sn_cmp_bp_form_behavior");
+		formBehaviorGR.addQuery("bp_association.name", this.blueprintName);
+		formBehaviorGR.addQuery("stage_operation", stageOperationId);
+		formBehaviorGR.query();
+
+		while (formBehaviorGR.next()) {
+			this.populateEntriesForUpdateSet(formBehaviorGR.sys_id, formBehaviorGR.sys_class_name);
+
+			this.getAllFormGroupsByFormBehavior(formBehaviorGR.sys_id);
+			this.getAllCatalogPropertiesByFormBehavior(formBehaviorGR.sys_id);
+			this.getAllEventsForFormBehavior(formBehaviorGR.sys_id);
+
+			//catalog item
+			var catItemId = formBehaviorGR.getValue('cat_item_association');
+
+			this.addCatalogItemToUpdateSet(catItemId,this);
+			this.addDeletedRecordsToUpdateSet(this.blueprintId,'sn_cmp_bp_cat_item');
+
+			this.addDeletedRecordsToUpdateSet(formBehaviorGR.getValue("sys_id"),'sn_cmp_bp_form_ui_group');
+			this.addDeletedRecordsToUpdateSet(formBehaviorGR.getValue("sys_id"),'sn_cmp_bp_catalog_prop');
+			this.addDeletedRecordsToUpdateSet(formBehaviorGR.getValue("sys_id"),'sn_cmp_bp_event');
+		}
+	},
+	
+		addCatalogItemToUpdateSet:function(catItemId,exporter){
+			this.getIoSetItem(catItemId,exporter);
+			this.getCatalogCategory(catItemId,exporter);
+			this.getCatItemCatalog(catItemId,exporter);
+			this.getCatalogItemsForFormBehavior(catItemId,exporter);
+			this.getVariablesForCatItem(catItemId,exporter);
+			this.getScriptClientForCatItem(catItemId,exporter);
+			this.getVariableSetsForCatItem(catItemId,exporter);
+			this.getCatalogUIPoliciesForCatItem(catItemId,exporter);
+
+			exporter.addDeletedRecordsToUpdateSet(catItemId,'io_set_item');
+			exporter.addDeletedRecordsToUpdateSet(catItemId,'sc_cat_item_category');
+			exporter.addDeletedRecordsToUpdateSet(catItemId,'sc_cat_item_catalog');
+			this.deleteItemOptionNew(catItemId,exporter);
+			exporter.addDeletedRecordsToUpdateSet(catItemId,'catalog_ui_policy');
+		
+	},
+
+	deleteItemOptionNew : function(catalogItemId,exporter) {
+		var ioSetItemGr = new GlideRecord("io_set_item");
+		ioSetItemGr.addQuery("sc_cat_item", catalogItemId);
+		ioSetItemGr.query();
+		while (ioSetItemGr.next()) {
+			var ioSetItemNewGr = new GlideRecord("item_option_new_set");
+			if (ioSetItemNewGr.get(ioSetItemGr.getValue("variable_set"))) {
+				var ioSteItemId = ioSetItemNewGr.getValue("sys_id");
+				exporter.addDeletedRecordsToUpdateSet(ioSteItemId,'item_option_new');
+				exporter.addDeletedRecordsToUpdateSet(ioSteItemId,'sn_cmp_bp_to_variable_set');
+				exporter.addDeletedRecordsToUpdateSet(ioSteItemId,'catalog_script_client');
+			}
+
+			exporter.addDeletedRecordsToUpdateSet(ioSetItemGr.getValue("sys_id"),'item_option_new_set');
+		}
+	},
+
+	getAllFormGroupsByFormBehavior : function (formBehaviorId) {
+		var formBehaviorGroupGR = new GlideRecord("sn_cmp_bp_form_ui_group");
+		formBehaviorGroupGR.addQuery("bp_cat_form_behavior", formBehaviorId);
+		formBehaviorGroupGR.query();
+
+		while (formBehaviorGroupGR.next()) {
+			this.exporterlogger.log('Exporting Blueprint Form Behavior Groups - ' + formBehaviorGroupGR.name);
+			this.populateEntriesForUpdateSet(formBehaviorGroupGR.sys_id, formBehaviorGroupGR.sys_class_name);
+		}
+	},
+
+	getAllCatalogPropertiesByFormBehavior : function (formBehaviorId) {
+		var catalogPropertyGR = new GlideRecord("sn_cmp_bp_catalog_prop");
+		catalogPropertyGR.addQuery("bp_cat_form_behavior", formBehaviorId);
+		catalogPropertyGR.query();
+
+		while (catalogPropertyGR.next()) {
+			this.exporterlogger.log('Exporting Blueprint Catalog Properties - ' + catalogPropertyGR.name);
+			this.populateEntriesForUpdateSet(catalogPropertyGR.sys_id, catalogPropertyGR.sys_class_name);
+		}
+	},
+
+	getAllEventsForFormBehavior : function (formBehaviorId) {
+		var eventGR = new GlideRecord("sn_cmp_bp_event");
+		eventGR.addQuery("form_behavior", formBehaviorId);
+		eventGR.query();
+
+		while (eventGR.next()) {
+			this.populateEntriesForUpdateSet(eventGR.sys_id, eventGR.sys_class_name);
+
+			this.getAllRulesForEvent(eventGR.sys_id);
+			this.addDeletedRecordsToUpdateSet(eventGR.getValue("sys_id"),'sn_cmp_bp_rule');
+
+		}
+	},
+
+	getAllRulesForEvent : function (eventId) {
+		var ruleGR = new GlideRecord("sn_cmp_bp_rule");
+		ruleGR.addQuery("event", eventId);
+		ruleGR.query();
+
+		while (ruleGR.next()) {
+			this.exporterlogger.log('Exporting Blueprint Form Behavior Rule - ' + ruleGR.name);
+			this.populateEntriesForUpdateSet(ruleGR.sys_id, ruleGR.sys_class_name);
+
+			this.getAllConditionsForRule(ruleGR.sys_id);
+			this.getAllActionsForRule(ruleGR.sys_id);
+
+			this.addDeletedRecordsToUpdateSet(ruleGR.getValue("sys_id"),'sn_cmp_bp_condition');
+			this.addDeletedRecordsToUpdateSet(ruleGR.getValue("sys_id"),'sn_cmp_bp_action');
+		}
+	},
+
+	getAllConditionsForRule : function (ruleId) {
+		var conditionGR = new GlideRecord("sn_cmp_bp_condition");
+		conditionGR.addQuery("rule", ruleId);
+		conditionGR.query();
+
+		while (conditionGR.next()) {
+			this.populateEntriesForUpdateSet(conditionGR.sys_id, conditionGR.sys_class_name);
+		}
+	},
+
+	getAllActionsForRule : function (ruleId) {
+		var actionGR = new GlideRecord("sn_cmp_bp_action");
+		actionGR.addQuery("rule", ruleId);
+		actionGR.query();
+
+		while (actionGR.next()) {
+			this.exporterlogger.log('Exporting Blueprint Rule Actions - ' + actionGR.name);
+			this.populateEntriesForUpdateSet(actionGR.sys_id, actionGR.sys_class_name);
+			this.getAllKeyValuesForAction(actionGR.getValue('sys_id'));
+
+			this.addDeletedRecordsToUpdateSet(actionGR.getValue("sys_id"),'sn_cmp_rb_keyvalue');
+		}
+	},
+
+	getAllKeyValuesForAction : function(actionId){
+		var keyValueGR = new GlideRecord("sn_cmp_rb_keyvalue");
+		keyValueGR.addQuery("action", actionId);
+		keyValueGR.query();
+
+		while (keyValueGR.next()) {
+			this.populateEntriesForUpdateSet(keyValueGR.sys_id, keyValueGR.sys_class_name);
+		}
+
+	},
+
+	//Export Catalog Items
+
+	getIoSetItem : function (catalogItemId,exporter) {
+		var ioSetItemGR = new GlideRecord("io_set_item");
+		ioSetItemGR.addQuery("sc_cat_item", catalogItemId);
+		ioSetItemGR.query();
+
+		while (ioSetItemGR.next())
+			exporter.populateEntriesForUpdateSet(ioSetItemGR.sys_id, ioSetItemGR.sys_class_name);
+
+	},
+
+	getCatalogCategory : function (catalogItemId,exporter) {
+		var catItemCategoryGR = new GlideRecord("sc_cat_item_category");
+		catItemCategoryGR.addQuery("sc_cat_item", catalogItemId);
+		catItemCategoryGR.query();
+
+		while (catItemCategoryGR.next())
+			exporter.populateEntriesForUpdateSet(catItemCategoryGR.sys_id, catItemCategoryGR.sys_class_name);
+
+	},
+
+	getCatItemCatalog : function (catalogItemId,exporter) {
+		var catItemCatalogGR = new GlideRecord("sc_cat_item_catalog");
+		catItemCatalogGR.addQuery("sc_cat_item", catalogItemId);
+		catItemCatalogGR.query();
+
+		while (catItemCatalogGR.next())
+			exporter.populateEntriesForUpdateSet(catItemCatalogGR.sys_id, catItemCatalogGR.sys_class_name);
+
+	},
+
+	getCatalogItemsForFormBehavior : function (catalogItemId,exporter) {
+		var catItemGR = new GlideRecord("sn_cmp_bp_cat_item");
+		catItemGR.addQuery("sys_id", catalogItemId);
+		catItemGR.query();
+
+		while (catItemGR.next())
+			exporter.populateEntriesForUpdateSet(catItemGR.sys_id, catItemGR.sys_class_name);
+
+	},
+
+	getVariablesForCatItem : function (catalogItemId,exporter) {
+		var itemOptionNewGr = new GlideRecord("item_option_new");
+		itemOptionNewGr.addQuery("cat_item", catalogItemId);
+		itemOptionNewGr.query();
+		while (itemOptionNewGr.next())
+			exporter.populateEntriesForUpdateSet(itemOptionNewGr.sys_id, itemOptionNewGr.sys_class_name);
+
+	},
+
+	getScriptClientForCatItem : function (catalogItemId,exporter) {
+		var scriptClientGR = new GlideRecord("catalog_script_client");
+		scriptClientGR.addQuery("cat_item", catalogItemId);
+		scriptClientGR.query();
+		while (scriptClientGR.next())
+			exporter.populateEntriesForUpdateSet(scriptClientGR.sys_id, scriptClientGR.sys_class_name);
+
+	},
+
+	getCatalogUIPoliciesForCatItem : function (catalogItemId,exporter) {
+		var uiPolicyGR = new GlideRecord("catalog_ui_policy");
+		uiPolicyGR.addQuery("catalog_item", catalogItemId);
+		uiPolicyGR.query();
+		while (uiPolicyGR.next())
+			exporter.populateEntriesForUpdateSet(uiPolicyGR.sys_id, uiPolicyGR.sys_class_name);
+
+	},
+
+	getVariableSetsForCatItem : function (catalogItemId,exporter) {
+		var ioSetItemGr = new GlideRecord("io_set_item");
+		ioSetItemGr.addQuery("sc_cat_item", catalogItemId);
+		ioSetItemGr.query();
+		while (ioSetItemGr.next()) {
+			var ioSetItemNewGr = new GlideRecord("item_option_new_set");
+			if (ioSetItemNewGr.get(ioSetItemGr.getValue("variable_set"))) {
+				var ioSetItemNewId = ioSetItemNewGr.getValue("sys_id");
+				exporter.populateEntriesForUpdateSet(ioSetItemNewId, ioSetItemNewGr.sys_class_name);
+
+				this.getVariablesForCatItemVariableSet(ioSetItemNewId,exporter);
+				this.getScriptClientForVariableSet(ioSetItemNewId,exporter);
+				this.getCatalogUIPoliciesForVariableSet(ioSetItemNewId,exporter);
+
+				exporter.addDeletedRecordsToUpdateSet(ioSetItemNewId,'item_option_new');
+				exporter.addDeletedRecordsToUpdateSet(ioSetItemNewId,'catalog_script_client');
+				exporter.addDeletedRecordsToUpdateSet(ioSetItemNewId,'catalog_ui_policy');
+			}
+		}
+	},
+
+	getVariablesForCatItemVariableSet : function (variableSetId,exporter) {
+		var variableGR = new GlideRecord("item_option_new");
+		variableGR.addQuery("variable_set", variableSetId);
+		variableGR.query();
+		while (variableGR.next())
+			exporter.populateEntriesForUpdateSet(variableGR.sys_id, variableGR.sys_class_name);
+
+	},
+
+	getScriptClientForVariableSet : function (variableSetId,exporter) {
+		var scriptClientGR = new GlideRecord("catalog_script_client");
+		scriptClientGR.addQuery("variable_set", variableSetId);
+		scriptClientGR.query();
+		while (scriptClientGR.next())
+			exporter.populateEntriesForUpdateSet(scriptClientGR.sys_id, scriptClientGR.sys_class_name);
+
+	},
+
+	getCatalogUIPoliciesForVariableSet : function (variableSetId,exporter) {
+		var uiPolicyGR = new GlideRecord("catalog_ui_policy");
+		uiPolicyGR.addQuery("variable_set", variableSetId);
+		uiPolicyGR.query();
+		while (uiPolicyGR.next())
+			exporter.populateEntriesForUpdateSet(uiPolicyGR.sys_id, uiPolicyGR.sys_class_name);
+
+	},
+
+	exportCloudScript : function (id) {
+		var cloudScriptGR = new GlideRecord("sn_cfg_cloud_script");
+		cloudScriptGR.addQuery('sys_id', id);
+		cloudScriptGR.query();
+
+		if(cloudScriptGR.next()){
+			this.exporterlogger.log("Exporting Cloud Script - " +cloudScriptGR.getValue('name'));
+			this.populateEntriesForUpdateSet(cloudScriptGR.sys_id, "sn_cfg_cloud_script");
+
+			this.getAllCloudScriptParameters(cloudScriptGR.sys_id);
+			this.addDeletedRecordsToUpdateSet(cloudScriptGR.getValue("sys_id"),'sn_cfg_cloud_script_parameter');
+
+			var cloudScriptContent = cloudScriptGR.getValue('content');
+				if(!gs.nil(cloudScriptContent)){
+				var templateNameArr = cloudScriptContent.split("templateResolver.getTemplate");
+				if(templateNameArr && templateNameArr.length>1){
+				var cloudScriptTemplate = templateNameArr[1].split("'")[1];
+					if(!gs.nil(cloudScriptTemplate))
+						this.exportCloudScriptTemplate(cloudScriptTemplate);
+				}
+			}
+
+		}
+	},
+
+	exportCloudScriptTemplate : function (cloudScriptTemplateName) {
+		var cloudScriptTemplateGR = new GlideRecord("sn_cfg_cloud_script_template");
+		cloudScriptTemplateGR.addQuery('name', cloudScriptTemplateName);
+		cloudScriptTemplateGR.query();
+
+		if(cloudScriptTemplateGR.next()){
+			this.exporterlogger.log("Exporting Cloud Script Template - " +cloudScriptTemplateName);
+			this.populateEntriesForUpdateSet(cloudScriptTemplateGR.sys_id, "sn_cfg_cloud_script_template");
+
+			this.getAllCloudScriptTemplateParameters(cloudScriptTemplateGR.sys_id);
+
+			this.addDeletedRecordsToUpdateSet(cloudScriptTemplateGR.getValue("sys_id"),'sn_cfg_cloud_template_parameter');
+		}
+	},
+
+	getAllCloudScriptParameters : function (cloudScriptId) {
+		var cloudScriptParameterGR = new GlideRecord("sn_cfg_cloud_script_parameter");
+		cloudScriptParameterGR.addQuery('ci_script', cloudScriptId);
+		cloudScriptParameterGR.query();
+
+		while (cloudScriptParameterGR.next()) {
+			this.exporterlogger.log("Exporting Cloud Script Parameter - " +cloudScriptParameterGR.name);
+			this.populateEntriesForUpdateSet(cloudScriptParameterGR.sys_id, "sn_cfg_cloud_script_parameter");
+		}
+	},
+
+	getAllCloudScriptTemplateParameters : function (cloudScriptTemplateId) {
+		var cloudScriptTemplateParameterGR = new GlideRecord("sn_cfg_cloud_template_parameter");
+		cloudScriptTemplateParameterGR.addQuery('cs_template', cloudScriptTemplateId);
+		cloudScriptTemplateParameterGR.query();
+
+		while (cloudScriptTemplateParameterGR.next()) {
+			this.exporterlogger.log("Exporting Cloud Script Template Parameter - " +cloudScriptTemplateParameterGR.name);
+			this.populateEntriesForUpdateSet(cloudScriptTemplateParameterGR.sys_id, "sn_cfg_cloud_template_parameter");
+		}
+	},
+
+	addDeletedRecordsToUpdateSet : function(parentSysId,childTableName) {
+		this.addDeletedRecordsXMLToUpdateSet(parentSysId,childTableName,this.deletedRecordList);
+	},
+
+	type: 'BlueprintExporter'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-15 15:39:55</sys_created_on>
+        <sys_id>4a86efab0b6b0300bd20812f15673a77</sys_id>
+        <sys_mod_count>300</sys_mod_count>
+        <sys_name>BlueprintExporter</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_4a86efab0b6b0300bd20812f15673a77</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-15 17:20:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

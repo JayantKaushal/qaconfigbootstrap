@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_policy_action">
+    <sys_ui_policy_action action="INSERT_OR_UPDATE">
+        <cleared>false</cleared>
+        <disabled>false</disabled>
+        <field>cloud_template_url</field>
+        <mandatory>true</mandatory>
+        <sys_class_name>sys_ui_policy_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-13 23:24:23</sys_created_on>
+        <sys_id>b4658f95735313009b3bbf097bf6a728</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>cloud_template_url</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_policy_action_b4658f95735313009b3bbf097bf6a728</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-16 17:27:22</sys_updated_on>
+        <table>sn_cmp_cloud_template</table>
+        <ui_policy display_value="Show Template URL when Ingestion Method is Import From URL">8da2cb55735313009b3bbf097bf6a72a</ui_policy>
+        <visible>true</visible>
+    </sys_ui_policy_action>
+</record_update>

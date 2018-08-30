@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPAzureAlertRuleMgr</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPAzureAlertRuleMgr</name>
+        <script><![CDATA[var CMPAzureAlertRuleMgr = Class.create();
+CMPAzureAlertRuleMgr.prototype = {
+    initialize: function() {
+    },
+	
+	handleConfigurationChange: function(current, previous, operation) {	
+		if (operation == 'create') {
+			updateCurrent('updating');
+			createRules();
+		}		
+		else if (operation == 'delete')
+			deleteRules();
+		else if (operation == 'update') {
+			//remove inactive rule
+			if (previous.active && !current.active) {
+				updateCurrent('deleting');
+				deleteRules();
+			}
+			//activate rule
+			else if (!previous.active && current.active) {
+				updateCurrent('updating');
+				createRules();
+			}
+			//remove old rules and create new rules
+			else if (previous.active && current.active) {
+				var resourceGroupNameOld = previous.resource_group.name;
+				var subscriptionIdOld = previous.subscription.account_id;
+				var resourceGroupNameNew = current.resource_group.name;
+				var subscriptionIdNew = current.subscription.account_id;
+				updateCurrent('updating');
+				if (resourceGroupNameOld != resourceGroupNameNew || subscriptionIdOld != subscriptionIdNew)
+					deleteRules();
+				createRules();
+			}
+		}		
+		
+		
+		function executeCAPI(resourceGroupName, subscriptionId, operationName, credential) {
+			var region = "westus"; //region of the rules doesn't matter, set it to westus
+			var result = {};
+			result.userId = gs.getUserID();
+			result.operationName = "Event Interface."+operationName;
+			result.entityType = "Resource";
+			result.resource = "Azure Datacenter";
+			result.status = "Initialized";
+			result.ownerTable = "sn_cmp_azure_alert_configuration";
+			result.ownerInstanceId = current.sys_id+'';
+			result.contextTable = "sn_cmp_rb_resourceblock";
+			result.contextInstance = "ddf5cd6bd722220097eb6ccf6e610346";//azure DC
+			var date = new GlideDateTime();
+			result.orderDate = date.getValue();
+			var orderFormData = {};
+			orderFormData.CloudServiceAccountId = subscriptionId;
+			orderFormData.ResourceGroup = resourceGroupName;
+			orderFormData.Location = region;
+			orderFormData.Interface = "Event Interface";
+			orderFormData.Credential = credential;
+			orderFormData.InstanceName = gs.getProperty('instance_name');
+			
+			if (operationName == "CreateAlertRules") {
+				var userName = current.user.user_name;
+				var password = current.user_password.getDecryptedValue();
+				var instanceUrl = gs.getProperty('glide.servlet.uri');
+				var regex = /(https?:\/\/)(.*)/;
+				var match = regex.exec(instanceUrl);
+
+				if (match.length !=3) {
+					gs.addErrorMessage(gs.getMessage("Invalid instance uri: {0}",instanceUrl));
+					return;
+				}
+
+				var ws = new GlideRecord('sys_ws_operation');
+				//Cloud Config Event Post API
+				if (!ws.get("ec64b45ad741320097eb6ccf6e610393"))
+					return;
+				var path = ws.getValue("operation_uri");
+				//TODO: Azure doesn't support basic auth so password is not sent in the URL. Once Azure starts
+				//supporting it, we should send real password
+				var serviceUri = match[1] + userName + ":" + "****" + "@" + match[2].substring(0,match[2].length-1) + path;
+				orderFormData.ServiceURI = serviceUri;
+				
+				var ruleMap = [];
+				var ruleGr = new GlideRecord('azure_alert_rule');
+				ruleGr.addActiveQuery();
+				ruleGr.query();
+				while (ruleGr.next()) {
+					var rule = {};
+					rule.ruleAction = ruleGr.getValue('action');
+					rule.ruleName = ruleGr.getValue('rule_name');
+					ruleMap.push(rule);
+				}
+				if (!ruleMap)
+					return;
+				orderFormData.RuleMap = new global.JSON().encode(ruleMap);
+				
+				var gr = new GlideRecord('sn_cmp_rb_resourcescript');
+				gr.addQuery('name', 'Azure alert template');
+				gr.addQuery('resource.name', 'Azure Datacenter');
+				gr.addQuery('type', 18); //ARM Template
+				gr.query();
+				if (gr.next())
+					orderFormData.Template = gr.getValue('script');
+			}			
+			
+			result.orderFormData = orderFormData;
+			var os = new sn_cmp_api.OrderServiceScript();
+			var order = os.submitOrder(new global.JSON().encode(result));
+		}
+		
+		function deleteRules() {
+			var resourceGroupName = previous.resource_group.name + '';
+			var subscriptionId = previous.subscription.account_id + '';
+			var subscriptionName = previous.subscription.name + '';
+			var credential = previous.subscription.discovery_credentials.sys_id+'';
+			var operationName = "DeleteAlertRules";
+			
+			executeCAPI(resourceGroupName, subscriptionId, operationName, credential);
+			
+			gs.addInfoMessage(gs.getMessage("Alert rules will be deleted for service account: {0}, resource group: {1}",[subscriptionName, resourceGroupName]));
+		}
+		
+		function createRules() {
+			var resourceGroupName = current.resource_group.name+'';
+			var subscriptionId = current.subscription.account_id+'';
+			var subscriptionName = current.subscription.name+'';
+			var credential = current.subscription.discovery_credentials.sys_id+'';
+			var operationName = "CreateAlertRules";
+			
+			executeCAPI(resourceGroupName, subscriptionId, operationName, credential);
+			
+			gs.addInfoMessage(gs.getMessage("Alert rules will be created or updated for service account: {0}, resource group: {1}",[subscriptionName, resourceGroupName]));
+		}
+		
+		function updateCurrent(status) {
+			current.setWorkflow(false);
+			current.status = status;
+			current.update();
+		}
+	},
+
+    type: 'CMPAzureAlertRuleMgr'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-31 19:25:20</sys_created_on>
+        <sys_id>44a54f53d760320097eb6ccf6e6103be</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>CMPAzureAlertRuleMgr</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_44a54f53d760320097eb6ccf6e6103be</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-06 23:44:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Azure Alert Configuration" max_length="40" name="sn_cmp_azure_alert_configuration" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element dependent="subscription" label="Resource group" mandatory="true" max_length="32" name="resource_group" reference="cmdb_ci_resource_group" reference_cascade_rule="delete" reference_qual="javascript:new sn_cmp.RefQualsCMP().getResourceGroupForSA(current.subscription);" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Status" max_length="40" name="status" read_only="true" type="string">
+            <choice>
+                <element inactive_on_update="false" label="activated" sequence="1" value="activated"/>
+                <element inactive_on_update="false" label="updating" sequence="2" value="updating"/>
+                <element inactive_on_update="false" label="deleting" sequence="3" value="deleting"/>
+                <element inactive_on_update="false" label="deleted" sequence="4" value="deleted"/>
+                <element inactive_on_update="false" label="error" sequence="5" value="error"/>
+            </choice>
+        </element>
+        <element label="Service Account" mandatory="true" max_length="32" name="subscription" reference="cmdb_ci_cloud_service_account" reference_cascade_rule="delete" reference_qual="javascript:new sn_cmp.RefQualsCMP().getAzureServiceAccount();" type="reference"/>
+        <element label="User" mandatory="true" max_length="32" name="user" reference="sys_user" reference_cascade_rule="delete" reference_qual="javascript:new sn_cmp.RefQualsCMP().getIntegrationUser();" type="reference"/>
+        <element attributes="no_data_replicate=true" hint="The password for the user to authenticate alert requests" label="Password" max_length="255" name="user_password" type="password2"/>
+        <index name="index">
+            <element name="resource_group"/>
+        </index>
+        <index name="index2">
+            <element name="subscription"/>
+        </index>
+        <index name="index3">
+            <element name="subscription"/>
+            <element name="active"/>
+        </index>
+        <index name="index4">
+            <element name="user"/>
+        </index>
+    </element>
+</database>

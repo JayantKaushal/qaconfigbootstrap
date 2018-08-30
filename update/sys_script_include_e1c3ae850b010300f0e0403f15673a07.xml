@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPackDeployUtils</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPackDeployUtils</name>
+        <script><![CDATA[var CMPPackDeployUtils = Class.create();
+CMPPackDeployUtils.prototype = {
+	
+	blueprintServiceScript : new sn_cmp_api.BlueprintServiceScript(),
+	resourceBlockServiceScript : new sn_cmp_api.ResourceBlockServiceScript(),
+	capiLibraryServiceScript : new sn_cloud_api.CAPILibraryServiceScript(),
+	cloudScript : new sn_cfg_mgmt.CloudScriptService(),
+	policyServiceScript : new sn_cmp_api.PolicyServiceScript(),
+	poolServiceScript : new sn_cmp_api.PoolServiceScript(),
+
+
+	deploymentRecord : new GlideRecord('sn_cmp_deployment_run'),
+	deploymentItemRecord : new GlideRecord('sn_cmp_dep_item_run_info'),
+	packItem : new GlideRecord('sn_cmp_pack_item'),
+	cmpAction: new sn_cmp.CMPImportBlueprintAction(),
+
+	initialize: function() {
+		blueprintServiceScript = this.blueprintServiceScript;
+		resourceBlockServiceScript = this.resourceBlockServiceScript;
+		capiLibraryServiceScript = this.capiLibraryServiceScript;
+		cloudScript = this.cloudScript;
+		policyServiceScript=this.policyServiceScript;
+		poolServiceScript=this.poolServiceScript;
+		deploymentRecord=this.deploymentRecord;
+		cmpAction = this.cmpAction;
+		packItem = this.packItem;
+		deploymentItemRecord = this.deploymentItemRecord;
+	},
+	
+	getDeploymentRecords:function(packId){
+
+		var deployRecords=[];
+		deploymentRecord.addQuery('pack',packId);
+		deploymentRecord.orderByDesc('dep_start_time');
+		deploymentRecord.query();
+		while(deploymentRecord.next()){
+			var deployRecordObj={};
+				deployRecordObj['pack']=packId;
+				deployRecordObj['depStartTime']=deploymentRecord.getDisplayValue('dep_start_time');
+				deployRecordObj['depEndTime']=deploymentRecord.getDisplayValue('dep_end_time');
+				deployRecordObj['depStatus']=deploymentRecord.getValue('status');
+				deployRecordObj['depRunStatusMsg']=deploymentRecord.getValue('dep_run_status_msg');
+				deployRecordObj['sysId']=deploymentRecord.getValue('sys_id');
+				deployRecords.push(deployRecordObj);
+			}
+
+			return deployRecords;
+
+		},
+
+
+		ifDeploymentInProgress : function (packSysId) {
+
+			var deploymentStatus = this.deploymentRecord;
+			deploymentStatus.initialize();
+			deploymentStatus.addQuery('pack',packSysId);
+			deploymentStatus.addQuery('status', 'IN', 'Initialized,In Progress');
+			deploymentStatus.query();
+
+			return deploymentStatus.next();
+
+		},
+
+
+		createDepRecord : function(packJSON){
+			var packId = packJSON.pack;
+			var packItems = packJSON.packItems;
+			var deploymentStatus = this.deploymentRecord;
+			var packItem = this.packItem;
+			deploymentStatus.setValue('pack',packId);
+			deploymentStatus.setValue('status','Initialized');
+			deploymentStatus.setValue('dep_run_status_msg','The deployment will start shortly.');
+			deploymentStatus.setValue('dep_start_time',new GlideDateTime());
+			var depSysId=deploymentStatus.insert();
+			this.createDepItemRecordOrder(packJSON,depSysId);
+			return depSysId;
+
+
+		},
+
+		createDepItemRecordOrder : function(packJSON,depSysId){
+
+			var order = 1;
+			var deploymentStatus=this.deploymentRecord;
+			var capiEntities=[];
+			var rbEntities=[];
+			var blueprintEntities=[];
+			var policyEntities=[];
+			var poolEntities=[];
+			var cloudScriptEntities=[];
+			var cloudScriptTemplates=[];
+			var midScripts = [];
+
+			var packItems=packJSON.packItems;
+
+			var packItemGR=new GlideRecord('sn_cmp_pack_item');
+			for (var i=0;i<packItems.length;i++) {
+				var packItemObj = packItems[i];
+				var packSysId = packItemObj.packItem;
+				var packEntityType = packItemObj.entityType;
+				if (packEntityType == 'Blueprint') {
+					blueprintEntities.push(packItemObj);
+				} else if (packEntityType=='Resource Block') {
+					gs.info(global.JSON.stringify(packItemObj));
+					rbEntities.push(packItemObj);
+				} else if (packEntityType=='Cloud API') {
+					capiEntities.push(packItemObj);
+				} else if (packEntityType=='Policy'){
+					policyEntities.push(packItemObj);
+				} else if (packEntityType=='Pool'){
+					poolEntities.push(packItemObj);
+				} else if (packEntityType=='Cloud Script'){
+					cloudScriptEntities.push(packItemObj);
+				} else if (packEntityType=='Cloud Script Template'){
+					cloudScriptTemplates.push(packItemObj);
+				} else if (packEntityType=='MID Script'){
+					midScripts.push(packItemObj);
+				}
+			}
+
+			if (midScripts.length>0) {
+				for (i=0;i<midScripts.length;i++) {
+					this.createDeploymentRecords(midScripts[i], depSysId, order++);
+				}
+			}
+			if (capiEntities.length>0) {
+				for (i=0;i<capiEntities.length;i++) {
+					this.createDeploymentRecords(capiEntities[i], depSysId,order++);
+				}
+			}
+			if (rbEntities.length>0) {
+				//specially handle resource block cases.RBs have dependencies on RBs itsel.
+				var resourceBlockEntities=[];
+				var y=0;
+				for(var x in rbEntities ) {
+					matchedIndex = rbEntities.map(function(e) { return e.order; }).indexOf(++y+"");
+						resourceBlockEntities.push(rbEntities[matchedIndex]);
+					}
+					for (i=0;i<resourceBlockEntities.length;i++) {
+						this.createDeploymentRecords(resourceBlockEntities[i], depSysId,order++);
+					}
+				}
+				if (blueprintEntities.length>0) {
+					for (i=0;i<blueprintEntities.length;i++) {
+						this.createDeploymentRecords(blueprintEntities[i], depSysId, order++);
+					}
+				}
+				if (policyEntities.length>0) {
+					for (i=0;i<policyEntities.length;i++) {
+						this.createDeploymentRecords(policyEntities[i], depSysId, order++);
+					}
+				}
+				if (poolEntities.length>0) {
+					for (i=0;i<poolEntities.length;i++) {
+						this.createDeploymentRecords(poolEntities[i], depSysId,  order++);
+					}
+				}
+				if (cloudScriptEntities.length>0) {
+					for (i=0;i<cloudScriptEntities.length;i++) {
+						this.createDeploymentRecords(cloudScriptEntities[i], depSysId, order++);
+					}
+				}
+				if (cloudScriptTemplates.length>0) {
+					for (i=0;i<cloudScriptTemplates.length;i++) {
+						this.createDeploymentRecords(cloudScriptTemplates[i], depSysId,  order++);
+					}
+				}
+
+
+			},
+
+			getPackItem : function(packItemObj,packItemGR){
+				var packSysId = packItemObj.packItem;
+				packItemGR.initialize();
+				packItemGR.addQuery('sys_id',packSysId);
+				packItemGR.query();
+				if (packItemGR.next()) {
+					return packItemGR;
+				}
+				return ;
+			},
+
+
+			createDeploymentRecords : function (packItemObj, depRunId, order){
+				var packSysId = packItemObj.packItem;
+				var packEntityType = packItemObj.entityType;
+				var status = packItemObj.userAction;
+				var deploymentItemRecord = new GlideRecord('sn_cmp_dep_item_run_info');
+				var packItemRec = this.getPackItem(packItemObj,this.packItem);
+				deploymentItemRecord.setValue('pack_item',packItemRec.getValue("sys_id"));
+				deploymentItemRecord.setValue('deployment_option',status);
+				deploymentItemRecord.setValue('status','Not Started');
+				deploymentItemRecord.setValue('dep_item_order',order);
+				deploymentItemRecord.setValue('sn_cmp_deployment_run',depRunId);
+				deploymentItemRecord.setValue('dep_run_status_msg','');
+
+				var depItemSysId = deploymentItemRecord.insert();
+
+			},
+
+
+			deploy : function(depSysId){
+
+				var deploymentStatus = this.deploymentRecord;
+				deploymentStatus.addQuery('sys_id',depSysId);
+				deploymentStatus.query();
+				if (deploymentStatus.next()) {
+					deploymentStatus.setValue('status','In Progress');
+					deploymentStatus.setValue('dep_run_status_msg',"Deployment in progress");
+					deploymentStatus.update();
+				}
+
+
+				var depItemRecord = this.deploymentItemRecord;
+				depItemRecord.initialize();
+				depItemRecord.addQuery('sn_cmp_deployment_run',depSysId);
+				depItemRecord.orderBy('dep_item_order');
+				depItemRecord.query();
+				var recordArray = [];
+				while (depItemRecord.next()) {
+					recordArray.push(depItemRecord.getValue('sys_id'));
+
+				}
+				this.deployEntity(recordArray);
+
+				deploymentStatus.initialize();
+				deploymentStatus.addQuery('sys_id',depSysId);
+				deploymentStatus.query();
+				if(deploymentStatus.next()){
+					deploymentStatus.setValue('dep_end_time',new GlideDateTime());
+					deploymentStatus.setValue('status','Completed');
+					deploymentStatus.setValue('dep_run_status_msg',"Deployment completed");
+					deploymentStatus.update();
+				}
+			},
+
+			deployEntity : function(recordArray){
+
+				try{
+					for (var j in recordArray) {
+						var depSysId = recordArray[j];
+						var result, message;
+						var status ='';
+						var attachedYAML, packEntity, depStatus;
+
+						var deploymentItemRecord = this.deploymentItemRecord;
+						deploymentItemRecord.initialize();
+						if (deploymentItemRecord.get(depSysId)) {
+							depStatus = deploymentItemRecord.getValue('deployment_option');
+							var packItemTable = this.packItem;
+							packItemTable.initialize();
+
+							if(packItemTable.get(deploymentItemRecord.getValue('pack_item'))){
+								packEntity=packItemTable.getValue('entity_type');
+								attachedYAML = this.getAttachment(packItemTable);
+							}
+						}
+						deploymentItemRecord.setValue('dep_item_start_time',new GlideDateTime());
+						deploymentItemRecord.setValue('status',"In Progress");
+						deploymentItemRecord.update();
+
+						if (depStatus != 'Skip') {
+							if (packEntity == 'Blueprint') {
+								var params={};
+									params.content = attachedYAML;
+									result = cmpAction.doAction(params);
+									var bpStatus =result.status;
+									if(bpStatus=='Failure'){
+										message=result.errorMessage;
+										status = 'Failed';
+									}else if ( bpStatus == 'Success'){
+										message = result.message;
+										status = 'Completed';
+									}
+								} else if (packEntity == 'Resource Block') {
+									result = resourceBlockServiceScript.importResourceBlock(attachedYAML);
+								} else if (packEntity == 'Cloud API') {
+									result = capiLibraryServiceScript.importCloudApi(attachedYAML);
+								} else if (packEntity == 'Policy') {
+									result = policyServiceScript.importPolicy(attachedYAML);
+								} else if (packEntity == 'Cloud Script') {
+									result = cloudScript.importCloudScript(attachedYAML);
+								} else if (packEntity == 'Cloud Script Template'){
+									result = cloudScript.importScriptTemplate(attachedYAML);
+								} else if (packEntity == 'Pool') {
+									result = poolServiceScript.importPool(attachedYAML);
+								} else if (packEntity == 'MID Script') {
+									result = capiLibraryServiceScript.importMidScript(attachedYAML);
+								}
+							}
+
+							if (result && status != 'Failed'){
+								status = 'Completed';
+							}else if ( depStatus == 'Skip') {
+								status = 'Completed';
+							}else{
+								status = 'Failed';
+							}
+
+							if ( deploymentItemRecord.get( depSysId ) ) {
+								deploymentItemRecord.setValue('dep_item_end_time',new GlideDateTime());
+
+								if (message) {
+									deploymentItemRecord.setValue('dep_run_status_msg',message);
+								}
+								deploymentItemRecord.setValue('status',status);
+								deploymentItemRecord.update();
+
+							}
+							if (status == 'Failed') {
+								break;
+							}
+							message = '';
+						}
+					}catch ( error ){
+						if ( deploymentItemRecord.get( depSysId ) ) {
+							deploymentItemRecord.setValue('dep_item_end_time',new GlideDateTime());
+							if (message) {
+								deploymentItemRecord.setValue('dep_run_status_msg',message);
+							}
+							deploymentItemRecord.setValue('status',"Failed");
+							deploymentItemRecord.update();
+						}
+
+						var deploymentStatus=this.deploymentRecord;
+
+						if ( deploymentStatus.get( deploymentItemRecord.getValue('sn_cmp_deployment_run') ) ) {
+							deploymentStatus.setValue('dep_item_end_time',new GlideDateTime());
+							deploymentStatus.setValue('status',"Failed");
+							deploymentStatus.update();
+						}
+					}
+				},
+
+
+
+				deployPackItem : function(packItemObj, depRunId, order){
+					gs.info("inside deploy pack item");
+
+					var packItemSysId=packItemObj.packItem;
+					var status=packItemObj.userAction;
+					var deployItemRecord = this.deploymentItemRecord;
+					deployItemRecord.initialize();
+					deployItemRecord.addQuery('pack_item',packItemSysId);
+					deployItemRecord.addQuery('sn_cmp_deployment_run',depRunId);
+					deployItemRecord.query();
+					if (deployItemRecord.next()) {
+						this.deployEntity(deployItemRecord,status, order);
+					}
+				},
+
+				getAttachment:function(packItem){
+
+					var attachedRecord=null;
+					var attachmentRec=new GlideRecord('sys_attachment');
+					attachmentRec.addQuery('table_name','sn_cmp_pack_item');
+					attachmentRec.addQuery('table_sys_id',packItem.getValue('sys_id'));
+					attachmentRec.query();
+
+					if(attachmentRec.next()){
+
+						var attachmentUtil= new GlideSysAttachment();
+						attachedRecord=attachmentUtil.getContent(attachmentRec);
+					}
+
+					return attachedRecord;
+
+				},
+
+				getSysAttachment:function(tableName, tableSysId){
+					var attachedRecord=null;
+					var attachmentRec=new GlideRecord('sys_attachment');
+					attachmentRec.addQuery('table_name',tableName);
+					attachmentRec.addQuery('table_sys_id',tableSysId);
+					attachmentRec.query();
+
+					if(attachmentRec.next()){
+
+						var attachmentUtil= new GlideSysAttachment();
+						attachedRecord=attachmentUtil.getContent(attachmentRec);
+					}
+
+					return attachedRecord;
+				},
+
+				deleteSysAttachment:function(tableName, tableSysId, fileName){
+					var attachmentRec=new GlideRecord('sys_attachment');
+					attachmentRec.addQuery('table_name',tableName);
+					attachmentRec.addQuery('table_sys_id',tableSysId);
+					attachmentRec.addQuery('file_name',fileName);
+					attachmentRec.query();
+
+					if(attachmentRec.next()){
+						attachmentRec.deleteRecord();
+					}
+				},
+
+				type: 'CMPPackDeployUtils'
+			};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 09:47:31</sys_created_on>
+        <sys_id>e1c3ae850b010300f0e0403f15673a07</sys_id>
+        <sys_mod_count>151</sys_mod_count>
+        <sys_name>CMPPackDeployUtils</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e1c3ae850b010300f0e0403f15673a07</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-28 10:11:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

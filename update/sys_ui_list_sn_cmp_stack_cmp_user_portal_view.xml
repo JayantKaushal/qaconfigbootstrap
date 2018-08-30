@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="sn_cmp_stack" version="2" view="cmp_user_portal_view">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>name</element>
+            <list_id display_value="sn_cmp_stack" element="NULL" name="sn_cmp_stack" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">e4439ed0730023006cf439282bf6a7ef</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_id>24439ed0730023006cf439282bf6a7f0</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>stack_status</element>
+            <list_id display_value="sn_cmp_stack" element="NULL" name="sn_cmp_stack" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">e4439ed0730023006cf439282bf6a7ef</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_id>2c439ed0730023006cf439282bf6a7f0</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>owned_by</element>
+            <list_id display_value="sn_cmp_stack" element="NULL" name="sn_cmp_stack" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">e4439ed0730023006cf439282bf6a7ef</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_id>ac439ed0730023006cf439282bf6a7f0</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>owner_group</element>
+            <list_id display_value="sn_cmp_stack" element="NULL" name="sn_cmp_stack" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">e4439ed0730023006cf439282bf6a7ef</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_id>20439ed0730023006cf439282bf6a7f1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>blueprint</element>
+            <list_id display_value="sn_cmp_stack" element="NULL" name="sn_cmp_stack" parent="NULL" relationship="NULL" sys_domain="global" view="50435ad0730023006cf439282bf6a7e4">e4439ed0730023006cf439282bf6a7ef</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_id>a0439ed0730023006cf439282bf6a7f1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>sn_cmp_stack</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-16 23:58:00</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>e4439ed0730023006cf439282bf6a7ef</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_stack</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_sn_cmp_stack_cmp_user_portal_view</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-16 23:58:00</sys_updated_on>
+            <sys_user/>
+            <view display_value="cmp_user_portal_view" name="cmp_user_portal_view">50435ad0730023006cf439282bf6a7e4</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

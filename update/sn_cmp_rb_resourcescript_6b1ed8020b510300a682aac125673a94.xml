@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Ansible_Config_installables</name>
+        <resource display_value="Ansible Tower">d31e50020b510300a682aac125673aae</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var AnsibleModelString = [];
+	var discoveryResponse = global.JSON.parse(response);
+	var respIndex =0;
+	var tableName = "";
+
+	//payload for configInstallables
+	var jobTemplateResponse = discoveryResponse.jobTemplates;
+	for(respIndex = 0, job_size = jobTemplateResponse.length; respIndex < job_size ; respIndex++){
+		var hostingTables = [];
+
+		//hosting table = ansible_tower for configInstallables
+		var configInstallTable = {};
+		configInstallTable.name = "sn_cfg_ansible_tower";
+		configInstallTable.identifier = "object_id";
+		configInstallTable.identifierValue = discoveryResponse.objectId;
+		hostingTables.push(configInstallTable);
+
+		tableName = "sn_cmp_cfg_installable";
+		var jobTempObjectId = jobTemplateResponse[respIndex].name +"_"+discoveryResponse.objectId;
+		var configInstallableTable = new BuildTableData(tableName, jobTempObjectId, hostingTables);
+
+		//add attributes for table
+		configInstallableTable[tableName].attributes.name=jobTemplateResponse[respIndex].name;
+		configInstallableTable[tableName].attributes.run_list=jobTemplateResponse[respIndex].playbook;
+
+
+		//payload for installableParameters
+		var extraVars = jobTemplateResponse[respIndex].extra_vars;
+		if(extraVars){
+			var extraVarstableName = "sn_cmp_cfg_installable_param";
+		    var relationshipPayload = [];
+			for(var key in extraVars){
+				var installParamTable = {};
+				//hosting table = sn_cmp_cfg_installable for configInstallables
+				installParamTable.name = "sn_cmp_cfg_installable";
+				installParamTable.identifier = "object_id";
+				installParamTable.identifierValue = jobTempObjectId;
+				hostingTables.push(installParamTable);
+
+
+				var extraVarsObjectId = jobTemplateResponse[respIndex].name +"_"+key;
+				var installableParamTable = {};
+
+				installableParamTable.identification = {};
+				installableParamTable.identification[extraVarstableName] = {};
+				installableParamTable.identification[extraVarstableName].criterion= {};
+				installableParamTable.identification[extraVarstableName].criterion.object_id = extraVarsObjectId.toString();
+
+				for(var index in hostingTables){
+				//attach hosting table identification
+				installableParamTable.identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);
+			}
+				installableParamTable.attributes = {};
+				installableParamTable.attributes.name = key;
+				installableParamTable.attributes.value = extraVars[key];
+
+				relationshipPayload.push(installableParamTable);
+			}
+			if(relationshipPayload.length > 0){
+				var relationships = {};
+				relationships[extraVarstableName] = relationshipPayload;
+				configInstallableTable[tableName]['relationships'] = relationships;
+
+			}
+		}
+		AnsibleModelString.push(configInstallableTable);
+
+	}
+	return global.JSON.stringify(AnsibleModelString);
+}
+function BuildTableData(tableName, jobTempObjectId, hostingTables){
+		this[tableName] = {};
+		this[tableName].validator = "AnsibleTowerResponseValidator"  ;
+		this[tableName].validator_overrides = {};
+		this[tableName].identification = {};
+		this[tableName].identification [tableName] = {};
+		this[tableName].identification[tableName].criterion= {};
+		this[tableName].identification[tableName].criterion.object_id = jobTempObjectId.toString();
+
+	for(var index in hostingTables){
+		//attach hosting table identification
+		this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);
+	}
+	this[tableName].attributes = {};
+}
+
+function buildTableIdentification(hostingTable){
+	var identification = {};
+	identification[hostingTable.name] = {};
+	identification[hostingTable.name].criterion = {};
+	identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;
+	return identification[hostingTable.name];
+}
+
+]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 12:51:45</sys_created_on>
+        <sys_id>6b1ed8020b510300a682aac125673a94</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>Discover_Ansible_Config_installables</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_6b1ed8020b510300a682aac125673a94</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-10-06 11:40:14</sys_updated_on>
+        <type>17</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

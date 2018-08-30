@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Compute Security Group Rule Template" max_length="40" name="sn_cmp_sec_grp_rule_template" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="CIDR Range" max_length="32" name="cidr_range" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="From Port" max_length="40" name="from_port" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="IP Protocol" max_length="40" name="ip_protocol" type="string">
+            <choice>
+                <element inactive_on_update="false" label="TCP" sequence="1" value="tcp"/>
+                <element inactive_on_update="false" label="UDP" sequence="2" value="udp"/>
+                <element inactive_on_update="false" label="ICMP" sequence="3" value="icmp"/>
+            </choice>
+        </element>
+        <element choice="1" label="Is Outbound" max_length="40" name="is_outbound" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="0" sequence="1" value="0"/>
+                <element inactive_on_update="false" label="1" sequence="2" value="1"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Network Type" max_length="50" name="network_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Public" sequence="1" value="Public"/>
+                <element inactive_on_update="false" label="Private" sequence="2" value="Private"/>
+            </choice>
+        </element>
+        <element label="Compute Security Group Template" max_length="32" name="security_grp_template" reference="cmdb_ci_security_grp_template" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="To Port" max_length="40" name="to_port" type="string"/>
+        <index name="index">
+            <element name="security_grp_template"/>
+        </index>
+    </element>
+</database>

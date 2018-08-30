@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="" section_id="c0d65693d700320097eb6ccf6e61039c" sys_domain="global" table="cmdb_cmp_cloud_model_validator" version="3" view="">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>validator_name</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-01-17 18:49:18</sys_created_on>
+            <sys_id>26d8b6fed710320097eb6ccf6e61036e</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>validator_payload</element>
+            <position>11</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-01-17 18:49:18</sys_created_on>
+            <sys_id>a6d8b6fed710320097eb6ccf6e61036e</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.begin_split</element>
+            <position>21</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:07:01</sys_created_on>
+            <sys_id>1d9d07ec0b1c2300d9f9ad4363673ab1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>validator_type</element>
+            <position>31</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-01-17 18:49:18</sys_created_on>
+            <sys_id>2ad8b6fed710320097eb6ccf6e61036e</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.split</element>
+            <position>41</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:07:01</sys_created_on>
+            <sys_id>119d07ec0b1c2300d9f9ad4363673ab2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sys_scope</element>
+            <position>51</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:07:01</sys_created_on>
+            <sys_id>919d07ec0b1c2300d9f9ad4363673ab2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.end_split</element>
+            <position>61</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:07:01</sys_created_on>
+            <sys_id>159d07ec0b1c2300d9f9ad4363673ab2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>ci_class</element>
+            <position>71</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-01-17 18:49:18</sys_created_on>
+            <sys_id>aad8b6fed710320097eb6ccf6e61036e</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="cmdb_cmp_cloud_model_validator" sys_domain="global" view="Default view">c0d65693d700320097eb6ccf6e61039c</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:07:01</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption/>
+            <header>false</header>
+            <name>cmdb_cmp_cloud_model_validator</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-01-06 19:21:52</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>c0d65693d700320097eb6ccf6e61039c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>cmdb_cmp_cloud_model_validator</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_section_c0d65693d700320097eb6ccf6e61039c</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-01-06 19:21:52</sys_updated_on>
+            <sys_user/>
+            <title>true</title>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

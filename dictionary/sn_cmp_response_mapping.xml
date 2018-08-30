@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Response Mapping" max_length="40" name="sn_cmp_response_mapping" type="collection">
+        <element label="Additional identifier" max_length="40" name="additional_identifier" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Array field" max_length="100" name="array_field" type="string"/>
+        <element choice="1" default="mapped" label="Attribute value type" max_length="40" name="attribute_value_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Mapped" sequence="1" value="mapped"/>
+                <element inactive_on_update="false" label="Fixed" sequence="2" value="fixed"/>
+                <element inactive_on_update="false" label="Array count" sequence="3" value="array_count"/>
+                <element inactive_on_update="false" label="First element of array" sequence="4" value="first_array_element"/>
+                <element inactive="true" inactive_on_update="true" label="Mapped value in first element of array" sequence="5" value="mapped_first_array_element"/>
+                <element inactive_on_update="false" label="Value translation" sequence="6" value="translation"/>
+                <element inactive_on_update="false" label="Related object(s)" sequence="7" value="related_object"/>
+                <element inactive_on_update="false" label="Binding" sequence="8" value="binding"/>
+                <element inactive_on_update="false" label="Scripted" sequence="9" value="scripted"/>
+            </choice>
+        </element>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" choice="1" label="Binding Endpoint" max_length="80" name="binding_endpoint" type="table_name">
+            <choice/>
+        </element>
+        <element choice="1" label="Binding type" max_length="40" name="binding_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Use" sequence="1" value="use"/>
+                <element inactive_on_update="false" label="Implement" sequence="2" value="implement"/>
+            </choice>
+        </element>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" choice="1" label="CI class" mandatory="true" max_length="80" name="ci_class" type="table_name">
+            <choice/>
+        </element>
+        <element attributes="allow_null=true" dependent="ci_class" label="CI class field" mandatory="true" max_length="80" name="ci_class_field" type="field_name"/>
+        <element label="Datasource" mandatory="true" max_length="32" name="datasource" reference="sn_cmp_datasource" type="reference"/>
+        <element hint="Mappings for this datasource and the relationship resource type are used when created the related object" label="Datasource for mappings" max_length="32" name="datasource_for_mappings" reference="sn_cmp_datasource" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Fixed value" max_length="100" name="fixed_value" type="string"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" choice="1" label="Identifier CI Class" max_length="80" name="identifier_ci_class" type="table_name">
+            <choice/>
+        </element>
+        <element attributes="allow_null=true" dependent="identifier_ci_class" label="Identifier CI class field" max_length="80" name="identifier_ci_class_field" type="field_name"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" choice="1" label="Relationship CI Class" max_length="80" name="relationship_ci_class" type="table_name">
+            <choice/>
+        </element>
+        <element label="Script" max_length="8000" name="script" type="script_plain"/>
+        <element attributes="edge_encryption_enabled=true" label="Source field" max_length="100" name="source_field" type="string"/>
+        <element label="Translation key" max_length="32" name="translation_key" reference="sn_cmp_response_value_map_key" type="reference"/>
+        <element label="Used for identification" max_length="40" name="used_for_identification" type="boolean"/>
+        <index name="index">
+            <element name="datasource"/>
+        </index>
+        <index name="index2">
+            <element name="translation_key"/>
+        </index>
+        <index name="index3">
+            <element name="datasource_for_mappings"/>
+        </index>
+    </element>
+</database>

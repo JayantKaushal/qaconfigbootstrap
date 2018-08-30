@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_hp_date">
+    <sys_ui_hp_date action="INSERT_OR_UPDATE">
+        <date_field>usage_date</date_field>
+        <date_table>sn_cmp_cost_daily</date_table>
+        <publisher_reference display_value="Usage Date">d7de9fcf931322004a9032bfa67ffb8a</publisher_reference>
+        <sys_class_name>sys_ui_hp_date</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-26 00:18:23</sys_created_on>
+        <sys_id>f7e109bd93bc43004a9032bfa67ffb4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>d7de9fcf931322004a9032bfa67ffb8a</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_hp_date_f7e109bd93bc43004a9032bfa67ffb4e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-26 00:18:23</sys_updated_on>
+    </sys_ui_hp_date>
+</record_update>

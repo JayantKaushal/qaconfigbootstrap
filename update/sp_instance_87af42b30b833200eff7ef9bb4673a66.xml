@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance">
+    <sp_instance action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css>h2 {&#13;
+  color: #fff;&#13;
+  text-align: center;&#13;
+  font-size: 40px;&#13;
+  font-weight: 300;&#13;
+  padding: 20px;&#13;
+}</css>
+        <glyph/>
+        <id/>
+        <order>0</order>
+        <roles/>
+        <short_description/>
+        <size>md</size>
+        <sp_column display_value="1">73ce4e730b833200eff7ef9bb4673a95</sp_column>
+        <sp_widget display_value="HTML">8679ef89cb21120000f8d856634c9c4f</sp_widget>
+        <sys_class_name>sp_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-06 11:15:58</sys_created_on>
+        <sys_id>87af42b30b833200eff7ef9bb4673a66</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>Welcome to Cloud Admin Portal</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_87af42b30b833200eff7ef9bb4673a66</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-06 11:28:55</sys_updated_on>
+        <title>Welcome to Cloud Admin Portal</title>
+        <url/>
+        <widget_parameters><![CDATA[{
+	"html": {
+		"value": "<h2>Welcome to Cloud Admin Portal</h2>",
+		"displayValue": "<h2>Welcome to Cloud Admin Portal</h2>"
+	}
+}]]></widget_parameters>
+    </sp_instance>
+    <sys_translated_text action="delete_multiple" query="documentkey=87af42b30b833200eff7ef9bb4673a66"/>
+</record_update>

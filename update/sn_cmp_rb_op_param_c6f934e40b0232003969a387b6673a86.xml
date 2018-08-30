@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_param">
+    <sn_cmp_rb_op_param action="INSERT_OR_UPDATE">
+        <interface display_value="Router Interface">2805c6e50b632200e937c97193673a15</interface>
+        <name>DestinationCidrBlock</name>
+        <operation display_value="CreateRoute">f278b8a40b0232003969a387b6673a63</operation>
+        <order>1000</order>
+        <sys_class_name>sn_cmp_rb_op_param</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-07 09:38:31</sys_created_on>
+        <sys_id>c6f934e40b0232003969a387b6673a86</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>DestinationCidrBlock</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_param_c6f934e40b0232003969a387b6673a86</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-07 09:40:37</sys_updated_on>
+        <type>1</type>
+    </sn_cmp_rb_op_param>
+</record_update>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($rootScope,$scope,$location) {
+ 
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel {
+  margin-bottom: 0px;
+}
+
+.panel-body {
+  padding: 0px 4px 0px 3px;
+}
+
+.panel-heading {
+  background-color: #000;
+  color: #fff;
+  height: 42px;
+  padding: 5px 15px;
+}
+
+.m-n{
+  margin-top : 6px!important;
+}
+
+.alert-info{
+  margin : 10px;
+}
+
+.col-md-3{
+  padding-right : 0px;
+  padding-left: 0px;
+}
+
+.col-md-9{
+  padding-right : 0px;
+}
+
+#requestsNotAvailable{
+  background-color:white;
+  min-height:315px;
+  overflow-y:auto;
+  border-radius:4px
+}
+
+.col-md-9{
+  padding-left : 5px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cap-activities-requests</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope, element, attrs, ctrl){
+
+	$(document).ready(function(){
+		var panel_height = ($(document).height()- 130) + 'px';
+		scope.body_height = panel_height;
+		resize_window();
+	});
+	
+	$(window).resize(function(){
+		resize_window();
+	});
+	
+	
+	function resize_window(){
+		var panel_height = ($(document).height()- 130) + 'px';
+		$(element).find('#requestsNotAvailable').css('height',panel_height);
+	}
+	
+}]]></link>
+        <name>CAP Activities Requests</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	var cloud_item = new GlideRecord('sc_req_item');
+	cloud_item.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+	cloud_item.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+	cloud_item.orderByDesc('sys_created_on');
+	cloud_item.query();
+	if(cloud_item.next()){
+		data.sys_id = cloud_item.getUniqueValue();
+		data.cat_name = cloud_item.getDisplayValue('cat_item.name');
+		data.number = cloud_item.getDisplayValue('number');
+		data.cloudRequestsWidget = $sp.getWidget('cloud-requests',{sys_id: data.sys_id});
+		data.cloudRequestTabsWidget = $sp.getWidget('cloud-requests-tabs',{sys_id : data.sys_id, cat_name : data.cat_name, number : data.number});
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-03 17:56:17</sys_created_on>
+        <sys_id>e2c002600b410300eff7ef9bb4673a09</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>CAP Activities Requests</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_e2c002600b410300eff7ef9bb4673a09</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-17 03:06:13</sys_updated_on>
+        <template><![CDATA[<div class="panel-heading">
+  <h4 class="panel-title" style="padding-top:8px;">${Requests}</h4>
+</div>
+<div ng-if="!data.sys_id" id="requestsNotAvailable" class="panel-body" ng-style="{height : body_height}">
+   <div class="alert alert-info">
+        ${No requests to display}
+      </div>
+</div>
+<div ng-if="data.sys_id" class="panel-body" id="requestsAvailable">
+  <div class="sp-row-content row">
+    <div class="col-md-3">
+      <sp-widget widget="data.cloudRequestsWidget"></sp-widget>
+    </div>
+    <div class="col-md-9">
+      <sp-widget widget="data.cloudRequestTabsWidget"></sp-widget>
+    </div>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintDataValidator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintDataValidator</name>
+        <script><![CDATA[var BlueprintDataValidator = Class.create();
+BlueprintDataValidator.prototype = {
+    initialize: function() {
+    },
+
+	/***
+	 RULE : BlueprintName cannot contain characters apart from a-z,A-Z,0-9 and space( )
+	 * \W          -> Checks for a non-word character i.e., apart from a-z,A-Z,_,0-9
+	 * \w          -> Checks for a word character i.e., a-z,A-Z,_,0-9
+	 * [\s]{2,}    -> Checks if given string contains whitespace characters repeating more than once in serial. Eg., 'SimpleVM     Blueprint'
+	 * [^\w ]+     -> Checks if given string contains any non-word character except space, one or more times ANYWHERE. Eg., 'SimpleVM$BP','.SimpleVM BP'
+	 * [_]+        -> Checks if given string contains underscore, one or more times ANYWHERE. Eg., 'AWS_Datacenter','.AWS__Datacenter'
+	 * ^[\W]       -> Checks if given string starts with any non-word character. Eg., ' SimpleVM Blueprint','_SimpleVMbp'
+	 * [\W]+$      -> Checks if given string ends with any non-word character. Eg., 'SimpleVM Blueprint ','SimpleVMbp$'
+	 */
+	validateBlueprintName: function(blueprintName){
+		var nameRegEx =  /[\s]{2,}|[^\w ]+|[_]+|^[\W]|[\W]+$/;
+		return !nameRegEx.test(blueprintName);
+	},
+
+    type: 'BlueprintDataValidator'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-11-29 18:53:14</sys_created_on>
+        <sys_id>a7efc2e867320300eccf6c706785efd1</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>BlueprintDataValidator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a7efc2e867320300eccf6c706785efd1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-11 11:28:07</sys_updated_on>
+    </sys_script_include>
+</record_update>

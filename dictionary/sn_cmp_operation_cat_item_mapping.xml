@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource Operation Catalog Item Mapping" max_length="40" name="sn_cmp_operation_cat_item_mapping" type="collection">
+        <element label="Catalog Item" max_length="32" name="cat_item" reference="sn_cmp_rsrc_opr_cat_item" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="operation_name" type="string"/>
+        <index name="index">
+            <element name="cat_item"/>
+        </index>
+    </element>
+</database>

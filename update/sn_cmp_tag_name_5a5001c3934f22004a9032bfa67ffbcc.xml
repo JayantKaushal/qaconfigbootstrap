@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_tag_name">
+    <sn_cmp_tag_name action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <label>ServiceNow Instance</label>
+        <name>sn_instance</name>
+        <order_field/>
+        <order_table>sn_cmp_order</order_table>
+        <script><![CDATA[var instanceName = gs.getProperty('glide.servlet.uri').split('/')[2].split(':')[0];
+answer = gs.nil(instanceName) ? '' : instanceName + '';]]></script>
+        <sys_class_name>sn_cmp_tag_name</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-17 01:22:49</sys_created_on>
+        <sys_id>5a5001c3934f22004a9032bfa67ffbcc</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>ServiceNow Instance</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_tag_name_5a5001c3934f22004a9032bfa67ffbcc</sys_update_name>
+        <sys_updated_by>abel.tuter</sys_updated_by>
+        <sys_updated_on>2017-02-03 07:43:07</sys_updated_on>
+        <table/>
+        <tag_type>ServiceNow</tag_type>
+        <value_type>Script</value_type>
+        <variable_name>ServiceNowInstance </variable_name>
+        <visible>false</visible>
+    </sn_cmp_tag_name>
+</record_update>

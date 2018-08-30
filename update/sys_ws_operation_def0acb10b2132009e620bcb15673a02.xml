@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl/>
+        <http_method>POST</http_method>
+        <name>Get Qualified YAML</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response, processor) {
+
+    // implement resource here
+	var templateBody;
+	var returnStatus = 400; // Invalid request
+	var inputyaml = request.body.dataString+'';
+	var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+	var output = blueprintServiceScript.generateParameterSet(inputyaml);
+	var res = new global.JSON().decode(output);
+	if(res.status == "Success"){
+		templateBody = res.objectJSON;
+		returnStatus = 200;
+	}else{
+		returnStatus = 404;
+	}
+	
+	response.setStatus(returnStatus);
+	response.setHeader("Content-Disposition","attachment; filename=output.yaml");
+	response.setContentType("text/text;charset=UTF-8");
+	var writer = response.getStreamWriter();
+	writer.writeString(templateBody);
+})(request, response);]]></operation_script>
+        <operation_uri>/api/sn_cmp/blueprint_exim/qualifiedyaml</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/qualifiedyaml</relative_path>
+        <request_example/>
+        <requires_acl_authorization>false</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-17 08:30:58</sys_created_on>
+        <sys_id>def0acb10b2132009e620bcb15673a02</sys_id>
+        <sys_mod_count>36</sys_mod_count>
+        <sys_name>Get Qualified YAML</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ws_operation_def0acb10b2132009e620bcb15673a02</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-31 05:15:28</sys_updated_on>
+        <web_service_definition display_value="Blueprint EXIM API">b3b0a8b10b2132009e620bcb15673a7d</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

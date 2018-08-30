@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>fetchByWorkloadConfigProvider</name>
+        <resource_pool display_value="Application Profile Pool">c4bcca7b0bb13200f353c9bf15673a46</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+ * @param json - map for properties which you need to run this script
+ * @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+ 	*/
+	function getFilteredRecords(json) {
+		
+		var filteredRecords = [];
+		if(json != null && json != ""){
+			var map = new global.JSON().decode(json);
+			var provider =  map.WorkloadConfigProvider;
+			// TODO: write script to set filtered records
+			var gr = new GlideRecord('sn_cmp_app_profile_mapping');
+			gr.addQuery("workload_cfg_provider", provider);
+			gr.query();
+			if(gr.hasNext()){
+				while(gr.next()){
+					var profile={};
+						profile.label=gr.getDisplayValue("profile");
+						profile.value=gr.getValue("profile");
+						filteredRecords.push(profile);
+					}
+				}
+			}
+			return new global.JSON().encode(filteredRecords);
+		}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-11 07:16:49</sys_created_on>
+        <sys_id>d2c3a59c0b030300f845ad4363673a40</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>fetchByWorkloadConfigProvider</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_d2c3a59c0b030300f845ad4363673a40</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-11 10:35:14</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

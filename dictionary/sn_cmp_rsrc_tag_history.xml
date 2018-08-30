@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Resource Tag History" max_length="40" name="sn_cmp_rsrc_tag_history" type="collection">
+        <element label="CMDB CI" mandatory="true" max_length="32" name="cmdb_ci" reference="cmdb_ci" reference_cascade_rule="delete" type="reference"/>
+        <element default="true" label="Current" max_length="40" name="current" type="boolean"/>
+        <element label="Tag values" mandatory="true" max_length="32" name="tag_values" reference="sn_cmp_tag_value_set" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="tag_values"/>
+        </index>
+        <index name="index2">
+            <element name="cmdb_ci"/>
+        </index>
+    </element>
+</database>

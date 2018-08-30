@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance_link">
+    <sp_instance_link action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css/>
+        <glyph>paint-brush</glyph>
+        <id/>
+        <kb_article/>
+        <kb_category/>
+        <kb_topic/>
+        <order>0</order>
+        <roles/>
+        <sc_cat_item/>
+        <sc_category/>
+        <short_description>Design your own cloud solutions</short_description>
+        <size>md</size>
+        <sp_column display_value="2">7dc25af30b833200eff7ef9bb4673ab5</sp_column>
+        <sp_page/>
+        <sp_widget display_value="Cloud Icon Link">c48762440b472200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>sp_instance_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-06 11:31:01</sys_created_on>
+        <sys_id>1313daf30b833200eff7ef9bb4673a61</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Design Cloud Solutions</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_link_1313daf30b833200eff7ef9bb4673a61</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-06 11:36:19</sys_updated_on>
+        <title>Design Cloud Solutions</title>
+        <type>url</type>
+        <url/>
+        <widget_parameters><![CDATA[{
+	"link_template": {
+		"value": "Circle Icon",
+		"displayValue": "Circle Icon"
+	}
+}]]></widget_parameters>
+    </sp_instance_link>
+    <sys_translated_text action="delete_multiple" query="documentkey=1313daf30b833200eff7ef9bb4673a61"/>
+</record_update>

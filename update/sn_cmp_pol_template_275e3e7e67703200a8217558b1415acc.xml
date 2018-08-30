@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_pol_template">
+    <sn_cmp_pol_template action="INSERT_OR_UPDATE">
+        <logic_name>script_action_template</logic_name>
+        <name>script_action_template</name>
+        <sys_class_name>sn_cmp_pol_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-11 15:45:44</sys_created_on>
+        <sys_id>275e3e7e67703200a8217558b1415acc</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>script_action_template</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_pol_template_275e3e7e67703200a8217558b1415acc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-21 22:47:59</sys_updated_on>
+        <template>var templateClass = Class.create();&#13;
+templateClass.prototype = {&#13;
+	parameters : "",&#13;
+	initialize: function(parameters) {&#13;
+		this.parameters = JSON.parse(parameters);&#13;
+	},&#13;
+	execute: function() {&#13;
+		if(this.parameters !=  null &amp;&amp; this.parameters.formData != null){&#13;
+        	var inputData = JSON.parse(JSON.stringify(this.parameters.formData));&#13;
+		    var outputFormData = this.customScript(inputData);&#13;
+            if( outputFormData != null){&#13;
+                this.parameters.formData = outputFormData;&#13;
+            }&#13;
+       	}&#13;
+		var output = {};&#13;
+		output.answer = this.parameters;&#13;
+		return JSON.stringify(output);&#13;
+	},&#13;
+	customScript : function( formData){ &#13;
+                // Manipulation of form parameters are supported. Changes in any other attributes&#13;
+                // will be ignored.&#13;
+               // The data available for manipulation is as follows:&#13;
+               // Form Data -  for example: StackName can be accessed through formData.StackName&#13;
+               // formData.StackName = "MyStack";&#13;
+               // User Data  - for example: User Id can be accessed through this.parameters.userData&#13;
+               // if(this.parameter.userData.userId == 'servicenowuserId')&#13;
+ &#13;
+		&#13;
+		return formData;&#13;
+	},&#13;
+    isGroupMember: function(id){&#13;
+        var policyExecutionUtil = new sn_cmp.PolicyExecutionUtil();&#13;
+        return policyExecutionUtil.isGroupMember( this.parameter.userData.userId, id);&#13;
+    },&#13;
+    isRoleMember: function(id){&#13;
+        var policyExecutionUtil = new sn_cmp.PolicyExecutionUtil();&#13;
+        return policyExecutionUtil.isRoleMember( this.parameter.userData.userId, id);&#13;
+    },&#13;
+	debug: function(msg) {&#13;
+		gs.debug('*** DEBUG: (' + this.type + '): ' + msg);&#13;
+	},&#13;
+	info: function(msg) {&#13;
+		gs.info('*** INFO: (' + this.type + '): ' + msg);&#13;
+	},&#13;
+	warn: function(msg) {&#13;
+		gs.warn('*** WARNING: (' + this.type + '): ' + msg);&#13;
+	},&#13;
+	error: function(msg) {&#13;
+		gs.error('*** ERROR: (' + this.type + '): ' + msg);&#13;
+	},&#13;
+	type: 'templateClass'&#13;
+};&#13;
+&#13;
+var templateClassObj = new templateClass(inputAttributes);&#13;
+var outputParams = templateClassObj.execute();&#13;
+gs.info( "Output of script is = " + outputParams);</template>
+    </sn_cmp_pol_template>
+</record_update>

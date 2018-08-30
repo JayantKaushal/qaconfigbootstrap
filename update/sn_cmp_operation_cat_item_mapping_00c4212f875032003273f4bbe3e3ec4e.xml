@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_operation_cat_item_mapping">
+    <sn_cmp_operation_cat_item_mapping action="INSERT_OR_UPDATE">
+        <cat_item display_value="Cloud operation nonparam">dc23d5e3875032003273f4bbe3e3ec0b</cat_item>
+        <operation_name>Start</operation_name>
+        <sys_class_name>sn_cmp_operation_cat_item_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-19 20:37:34</sys_created_on>
+        <sys_id>00c4212f875032003273f4bbe3e3ec4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_operation_cat_item_mapping_00c4212f875032003273f4bbe3e3ec4e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-19 20:37:34</sys_updated_on>
+    </sn_cmp_operation_cat_item_mapping>
+</record_update>

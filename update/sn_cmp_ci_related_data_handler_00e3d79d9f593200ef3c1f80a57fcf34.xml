@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Saves raw ARM template deployment operation and resource information</description>
+        <name>StoreARMTemplateOperations</name>
+        <script><![CDATA[if (related_data.hasOwnProperty('value')) {
+	var ops = related_data.value;
+	
+	var gr = new GlideRecord('sn_cmp_arm_deployment_operation');
+	
+	var trailer = new sn_cmp_api.CloudTrailServiceScript();
+	for (var i = 0; i < ops.length; i++) {
+		var op = ops[i];
+		
+		gr.addQuery('id', op.id);
+		gr.query();
+		
+		gr.id = op.id;
+		gr.operation_id = op.operationId;
+		gr.provisioning_operation = op.properties.provisioningOperation;
+		gr.provisioning_state = op.properties.provisioningState;
+		gr.timestamp = op.properties.timestamp;		
+		gr.duration = op.properties.duration;
+		gr.tracking_id = op.properties.trackingId;
+		gr.service_request_id = op.properties.serviceRequestId;
+		gr.status_code = op.properties.statusCode;
+		
+		if (op.properties.statusCode != 'OK' && op.properties.hasOwnProperty('statusMessage')) {
+			if (op.properties.statusMessage.hasOwnProperty('error')) {
+				gr.status_message_code = op.properties.statusMessage.error.code;
+			
+				var messageDetails = op.properties.statusMessage.error.message;
+				
+				var err = op.properties.statusMessage.error;
+				
+				if(err.hasOwnProperty('details')) {
+				// Retrieve th detailed error message
+					var detailsParent = op.properties.statusMessage.error.details; // an array
+					for (var j = 0; j < detailsParent.length; j++) {
+						if(detailsParent[j].hasOwnProperty('details')) {
+							var detailsChild = detailsParent[j].details; // nested array
+							for (var k = 0; k < detailsChild.length; k++) {
+									var msg = detailsChild[k].message + '';
+									msg = msg.replace(/\\r/g, "");
+									msg = msg.replace(/\\n/g, "");
+									msg = msg.replace(/\\/g, "");
+									messageDetails = messageDetails + msg;
+							}
+						}
+						messageDetails = messageDetails + "\n";
+					}
+				}
+			    gr.status_message = messageDetails;
+			}
+		}
+		
+		gr.deployment = ci_sys_id;	
+		
+		var opSysId;
+		if (gr.next())
+			opSysId = gr.update();
+		else
+			opSysId = gr.insert();
+		
+		if (op.properties.hasOwnProperty('targetResource')) {
+			var res = op.properties.targetResource;
+			var resourceGr = new GlideRecord('sn_cmp_arm_operation_resource');
+			resourceGr.addQuery('id', res.id);
+			resourceGr.query();
+			
+			resourceGr.id = res.id;
+			resourceGr.name = res.resourceName;
+			resourceGr.resource_type = res.resourceType;
+			resourceGr.deployment_operation = opSysId;
+			
+			if (resourceGr.next())
+				resourceGr.update();
+			else
+				resourceGr.insert();
+		}
+	}
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+if (related_data.hasOwnProperty('value')) {
+	var ops = related_data.value;
+	
+	var gr = new GlideRecord('sn_cmp_arm_deployment_operation');
+	
+	var trailer = new sn_cmp_api.CloudTrailServiceScript();
+	for (var i = 0; i < ops.length; i++) {
+		var op = ops[i];
+		
+		gr.addQuery('id', op.id);
+		gr.query();
+		
+		gr.id = op.id;
+		gr.operation_id = op.operationId;
+		gr.provisioning_operation = op.properties.provisioningOperation;
+		gr.provisioning_state = op.properties.provisioningState;
+		gr.timestamp = op.properties.timestamp;		
+		gr.duration = op.properties.duration;
+		gr.tracking_id = op.properties.trackingId;
+		gr.service_request_id = op.properties.serviceRequestId;
+		gr.status_code = op.properties.statusCode;
+		
+		if (op.properties.statusCode != 'OK' && op.properties.hasOwnProperty('statusMessage')) {
+			if (op.properties.statusMessage.hasOwnProperty('error')) {
+				gr.status_message_code = op.properties.statusMessage.error.code;
+			
+				var messageDetails = op.properties.statusMessage.error.message;
+				
+				var err = op.properties.statusMessage.error;
+				
+				if(err.hasOwnProperty('details')) {
+				// Retrieve th detailed error message
+					var detailsParent = op.properties.statusMessage.error.details; // an array
+					for (var j = 0; j < detailsParent.length; j++) {
+						if(detailsParent[j].hasOwnProperty('details')) {
+							var detailsChild = detailsParent[j].details; // nested array
+							for (var k = 0; k < detailsChild.length; k++) {
+									var msg = detailsChild[k].message + '';
+									msg = msg.replace(/\\r/g, "");
+									msg = msg.replace(/\\n/g, "");
+									msg = msg.replace(/\\/g, "");
+									messageDetails = messageDetails + msg;
+							}
+						}
+						messageDetails = messageDetails + "\n";
+					}
+				}
+			    gr.status_message = messageDetails;
+			}
+		}
+		
+		gr.deployment = ci_sys_id;	
+		
+		var opSysId;
+		if (gr.next())
+			opSysId = gr.update();
+		else
+			opSysId = gr.insert();
+		
+		if (op.properties.hasOwnProperty('targetResource')) {
+			var res = op.properties.targetResource;
+			var resourceGr = new GlideRecord('sn_cmp_arm_operation_resource');
+			resourceGr.addQuery('id', res.id);
+			resourceGr.query();
+			
+			resourceGr.id = res.id;
+			resourceGr.name = res.resourceName;
+			resourceGr.resource_type = res.resourceType;
+			resourceGr.deployment_operation = opSysId;
+			
+			if (resourceGr.next())
+				resourceGr.update();
+			else
+				resourceGr.insert();
+		}
+	}
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-03 21:59:16</sys_created_on>
+        <sys_id>00e3d79d9f593200ef3c1f80a57fcf34</sys_id>
+        <sys_mod_count>40</sys_mod_count>
+        <sys_name>StoreARMTemplateOperations</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_00e3d79d9f593200ef3c1f80a57fcf34</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-01 23:03:11</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

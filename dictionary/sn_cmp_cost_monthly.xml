@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Cost Report Monthly" max_length="40" name="sn_cmp_cost_monthly" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Account ID" max_length="40" name="account_id" type="string"/>
+        <element label="Service Category" mandatory="true" max_length="32" name="category" reference="sn_capi_service_category" type="reference"/>
+        <element attributes="scale=8" label="Cost" max_length="30" name="cost" type="decimal"/>
+        <element label="Datacenter" max_length="32" name="datacenter" reference="sn_cmp_cost_ldc" type="reference"/>
+        <element label="Provider" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Region" max_length="40" name="region" type="string"/>
+        <element label="Resource" max_length="32" name="resource" reference="sn_cmp_cost_rsrc" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element label="Tag values" max_length="32" name="tag_values" reference="sn_cmp_tag_value_set" type="reference"/>
+        <element label="Usage date" max_length="40" name="usage_date" type="glide_date"/>
+        <index name="index">
+            <element name="tag_values"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+        <index name="index3">
+            <element name="resource"/>
+        </index>
+        <index name="index4">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index5">
+            <element name="usage_date"/>
+        </index>
+        <index name="index6">
+            <element name="datacenter"/>
+        </index>
+        <index name="index7">
+            <element name="category"/>
+        </index>
+    </element>
+</database>

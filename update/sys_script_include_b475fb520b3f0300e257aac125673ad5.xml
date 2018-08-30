@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.ResourceBlockExporter</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ResourceBlockExporter</name>
+        <script><![CDATA[var ResourceBlockExporter = Class.create();
+
+ResourceBlockExporter.prototype = Object.extendsObject(global.CMPExporterUtil, {
+	resourceBlockExportType: 1,
+	isSystemDefined: false,
+	resourceUpdateSetList: [],
+	rbDeletedRecordList: [],
+	sourceResourceBlockName: "",
+	rbExporterLog: [],
+	RESOURCE_EXPORTER_LABEL: '[ResourceBlock Exporter LOG] ',
+
+	initialize: function() {
+		this.sourceResourceBlockName = "";
+		this.resourceUpdateSetList = [];
+		this.rbDeletedRecordList = [];
+		this.rbExporterLog = [];
+	},
+
+	populateEntriesForUpdateSet : function(sysId, tableName) {
+		  var recordGR = new GlideRecord(tableName);
+		if(recordGR.get(sysId)) {
+			if(tableName == 'sn_cmp_rb_resourceblock'){
+				// Earlier type was not reference. It was choice value and mapped to numbers(1,2).
+				// This has been moved to table sn_cmp_cloud_template_type.
+				if(recordGR.getValue('type') === 1)
+                   recordGR.setValue('type','ab1f81e49f00320048111f80a57fcf30');//type as ServiceNow Blueprint
+				if(gs.nil(recordGR.getDisplayValue('hostinterface')))
+				   recordGR.setValue('hostinterface',null);
+			}
+		   this.addRecordsToUpdateSetList(recordGR, this.resourceUpdateSetList);
+		}
+	},
+
+	initializeUpdateSet: function() {
+		this.exporterlogger.init(this.RESOURCE_EXPORTER_LABEL, this.rbExporterLog);
+	},
+
+	createUpdateSet : function(params) {
+		var resourceBlockName = params.rbName;
+		this.resourceBlockExportType = params.exportType;
+		this.initializeUpdateSet();
+
+		if (resourceBlockName) {
+			this.addResourceBlockEntitiesInUpdateSet(resourceBlockName);
+			this.exportResourceBlockDependencies(params);
+			var output = this.generateUpdateSet(resourceBlockName, this.resourceUpdateSetList, this.rbDeletedRecordList);
+			output.log = this.rbExporterLog;
+			return output;
+		}
+	},
+
+	exportResourceBlockDependencies:function(params){
+		//export default dependencies like resourceblocks,cloud apis and pools:Deterministic Dependencies
+		var defaultDependencies = JSON.parse(params.defaultDependencies);
+		if(defaultDependencies) {
+			var dependentResourceBlocks = defaultDependencies.resourceBlocks || [];
+			this.exportDependentResourceBlocks(dependentResourceBlocks);
+
+			var dependentCloudAPIs = defaultDependencies.cloudAPIs || [];
+			this.exportDependentCloudAPIs(dependentCloudAPIs);
+
+			var dependentPools = defaultDependencies.pools || [];
+			var poolExporter = new sn_cmp.PoolExporter();
+			poolExporter.getAllPoolsAndRelatedEntities(dependentPools,this.resourceUpdateSetList,this.rbExporterLog);
+		}
+
+		//Export custom dependencies as Policy, MID Scripts and Script Includes: NonDeterministic Dependencies
+		var customDependencies = JSON.parse(params.dependencies);
+		this.exportCustomDependencies(customDependencies, this.resourceUpdateSetList,this.rbExporterLog);
+	},
+
+	getDependentResourceRecords:function(params,bpLogList){
+		this.resourceUpdateSetList = [];
+		this.rbExporterLog = [];
+		var resourceBlockName = params.rbName;
+		this.resourceBlockExportType = params.exportType;
+		this.initializeUpdateSet();
+
+		if (resourceBlockName) {
+			var dependentEntitiesList = params.dependencies;
+			this.addResourceBlockEntitiesInUpdateSet(resourceBlockName);
+			Array.prototype.push.apply(bpLogList, this.rbExporterLog);
+			return this.resourceUpdateSetList;
+		}
+
+	},
+
+	getResourceBlock : function(resourceBlockName) {
+		this.addResourceBlockEntitiesInUpdateSet(resourceBlockName);
+	},
+
+	addResourceBlockEntitiesInUpdateSet: function(resourceBlockName){
+		var resourceBlockGR = this.getResourceBlockByName(resourceBlockName);
+		if (resourceBlockGR.next()) {
+			this.isSystemDefined = resourceBlockGR.is_system_defined;
+			var resourceBlockId =  resourceBlockGR.sys_id;
+			this.exporterlogger.log('Exporting resource block - ' + resourceBlockName);
+			this.populateEntriesForUpdateSet(resourceBlockGR.sys_id, resourceBlockGR.sys_class_name);
+
+			this.getAllResourceBlockRelatedEntities(resourceBlockName);
+			this.getAllDeletedRecordsFromRBChildTables(resourceBlockId);
+		}
+	},
+
+	exportDependentPools:function(dependentPools){
+		var poolExporter = new sn_cmp.PoolExporter();
+		for(var i=0;i<dependentPools.length;i++)
+			poolExporter.createUpdateSetForPool(dependentPools[i],this.resourceUpdateSetList);
+	},
+
+	exportDependentResourceBlocks:function(dependentResourceBlocks){
+		for(var i=0;i<dependentResourceBlocks.length;i++)
+			this.addResourceBlockEntitiesInUpdateSet(dependentResourceBlocks[i].name);
+	},
+
+	getDependentResourceBlocks:function(resourceBlockName){
+		var dependentResourceBlocks=[];
+		this.sourceResourceBlockName = resourceBlockName;
+		this.getAllBindingResources(resourceBlockName,dependentResourceBlocks);
+		this.getAllHostResources(resourceBlockName,dependentResourceBlocks);
+		return dependentResourceBlocks;
+	},
+
+	getResourceBlockByName : function(resourceBlockName) {
+		var resourceBlockGR = new GlideRecord("sn_cmp_rb_resourceblock");
+		resourceBlockGR.addQuery("name", resourceBlockName);
+		resourceBlockGR.query();
+		return resourceBlockGR;
+	},
+
+	getAllResourceBlockRelatedEntities : function(resourceBlockName) {
+		this.getHostInterface(resourceBlockName);
+		this.getAllResourceGuestInterfacesAndMappings(resourceBlockName);
+		this.getAllHostResourcesForResourceBlock(resourceBlockName);
+		this.getAllOperationSignatureAndParams(resourceBlockName);
+		this.getAllOperationImplAndParams(resourceBlockName);
+		this.getAllResourceBlockScripts(resourceBlockName);
+		this.getAllResourceBindings(resourceBlockName);
+		this.getAllGuestResourceBindings(resourceBlockName);
+		this.getAllEndpointMappings(resourceBlockName);
+		this.getAllBindingResourceEPs(resourceBlockName);
+		this.getAllSourceResourceEPs(resourceBlockName);
+		this.getProviderResponseMapping(resourceBlockName);
+		this.getAllCatalogItems(resourceBlockName);
+	},
+	
+	getAllCatalogItems: function(resourceBlockName){
+		var bpExporter = new sn_cmp.BlueprintExporter();
+		var rbOpCatMapGR = new GlideRecord('sn_cmp_rb_op_cat_map');
+		rbOpCatMapGR.addQuery('resource_block.name',resourceBlockName);
+		rbOpCatMapGR.query();
+		while(rbOpCatMapGR.next()) {
+			this.exporterlogger.log('Exporting catalog item - ' + rbOpCatMapGR.cat_item.name);
+			this.populateEntriesForUpdateSet(rbOpCatMapGR.sys_id, rbOpCatMapGR.sys_class_name);
+			this.getResourceOperationCatalogItem(rbOpCatMapGR.cat_item);
+			bpExporter.addCatalogItemToUpdateSet(rbOpCatMapGR.cat_item,this);
+		}
+	},
+	
+	getResourceOperationCatalogItem: function(catItemId){
+		var resOpCatItemGR = new GlideRecord('sn_cmp_rsrc_opr_cat_item');
+		if(resOpCatItemGR.get(catItemId)) {
+			this.exporterlogger.log('Exporting resource opertion catalog item - ' + resOpCatItemGR.sys_id);
+			this.populateEntriesForUpdateSet(resOpCatItemGR.sys_id, resOpCatItemGR.sys_class_name);
+		}
+		
+	},
+
+	getProviderResponseMapping: function(resourceBlockName){
+		var resMappingGR = new GlideRecord('sn_cmp_rb_prov_resp_map');
+		resMappingGR.addQuery('resource.name',resourceBlockName);
+		resMappingGR.query();
+		while(resMappingGR.next()) {
+			this.exporterlogger.log('Exporting provider response mapping - ' + resMappingGR.name);
+			this.populateEntriesForUpdateSet(resMappingGR.sys_id, resMappingGR.sys_class_name);
+			this.getApplicationProfile(resMappingGR.getValue('config_script'));
+			this.getResponseProcessorContainer(resMappingGR.getValue('sys_id'));
+			this.getWorkloadConfigProviderType(resMappingGR.getValue('provider_type'));
+		}
+
+	},
+
+	getApplicationProfile : function(applicationProfileId){
+		var appProfileGR = new GlideRecord('sn_cmp_application_profile');
+		appProfileGR.addQuery('sys_id',applicationProfileId);
+		appProfileGR.query();
+		while(appProfileGR.next()) {
+			this.exporterlogger.log('Exporting application profile - ' + appProfileGR.name);
+			this.populateEntriesForUpdateSet(appProfileGR.sys_id, appProfileGR.sys_class_name);
+		}
+
+	},
+
+	getResponseProcessorContainer : function(providerResponseMappingId){
+		var providerResContainerGR = new GlideRecord('sn_cmp_rb_rbscript_container');
+		providerResContainerGR.addQuery('prov_resp_mapping',providerResponseMappingId);
+		providerResContainerGR.query();
+		while(providerResContainerGR.next()) {
+			this.populateEntriesForUpdateSet(providerResContainerGR.sys_id, providerResContainerGR.sys_class_name);
+		}
+
+	},
+
+	getWorkloadConfigProviderType : function(providerTypeId){
+		var glideRecord = new GlideRecord('sn_cmp_workload_provider_type');
+		glideRecord.addQuery('sys_id',providerTypeId);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'sn_cmp_workload_provider_type');
+			this.getWorkloadProviderProperties(glideRecord.getValue('sys_id'));
+			this.getWorkloadCloudTemplate(glideRecord.getValue('sys_id'));
+			this.getCredentialResolver(glideRecord.getValue('credential_resolver'));
+			this.getCAPIProduct(glideRecord.getValue('product_type'));
+		}
+
+	},
+
+	getWorkloadProviderProperties : function(providerTypeId){
+		var glideRecord = new GlideRecord('sn_cmp_wl_prov_prop');
+		glideRecord.addQuery('workload_provider_type',providerTypeId);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'sn_cmp_wl_prov_prop');
+		}
+
+	},
+
+	getWorkloadCloudTemplate : function(providerTypeId){
+		var glideRecord = new GlideRecord('sn_cmp_provider_cloud_template');
+		glideRecord.addQuery('operation_template',providerTypeId);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'sn_cmp_provider_cloud_template');
+			this.getConfigCloudTemplate(glideRecord.getValue('cloud_script_template'));
+		}
+
+	},
+
+	getConfigCloudTemplate : function(templateId){
+		var glideRecord = new GlideRecord('sn_cfg_cloud_script_template');
+		glideRecord.addQuery('sys_id',templateId);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'sn_cfg_cloud_script_template');
+		}
+
+	},
+
+	getCredentialResolver: function(eccScriptId){
+		var glideRecord = new GlideRecord('ecc_agent_script_include');
+		glideRecord.addQuery('sys_id',eccScriptId);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'ecc_agent_script_include');
+		}
+
+	},
+
+	getCAPIProduct : function(capiProduct){
+		var capiProductGR = new GlideRecord("sn_capi_product");
+		capiProductGR.addQuery("sys_id", capiProduct);
+		capiProductGR.query();
+		if (capiProductGR.next()) {
+			this.exporterlogger.log('Exporting Cloud API Product - '+capiProductGR.name);
+			this.populateEntriesForUpdateSet(capiProductGR.sys_id, 'sn_capi_product');
+			this.getServiceCategory(capiProductGR.getValue('category'));
+		}
+	},
+
+	getServiceCategory: function(id){
+		var glideRecord = new GlideRecord('sn_capi_service_category');
+		glideRecord.addQuery('sys_id',id);
+		glideRecord.query();
+		while(glideRecord.next()) {
+			this.populateEntriesForUpdateSet(glideRecord.sys_id, 'sn_capi_service_category');
+		}
+
+	},
+
+	getAllDeletedRecordsFromRBChildTables : function (resourceBlockId) {
+		var resourceBlockChildTables = ["sn_cmp_rb_resourceinterface","sn_cmp_rb_guest_interface","sn_cmp_rb_resourcehost","sn_cmp_rb_op_signature","sn_cmp_rb_op_impl","sn_cmp_rb_resourcescript","sn_cmp_rb_binding","sn_cmp_rb_endpoint_mapping"];
+
+		for (var i in resourceBlockChildTables){
+			this.addDeletedRecordsToUpdateSet(resourceBlockId,resourceBlockChildTables[i]);
+		}
+	},
+
+	exportCloudAPI : function (cloudAPIParams) {
+		var cloudAPIUpdateSetExporter = new sn_capi.CloudAPIUpdateSetExporter();
+		var param = {id:cloudAPIParams.sys_id,capiName:cloudAPIParams.name};
+		var output  = cloudAPIUpdateSetExporter.createUpdateSet(param);
+		var cloudAPIUpdateSetList = cloudAPIUpdateSetExporter.updateSetList;
+		for(var i in cloudAPIUpdateSetList){
+			var matchedIndex = this.resourceUpdateSetList.map(function(e) { return e.scope; }).indexOf(cloudAPIUpdateSetList[i].scope);
+			if(matchedIndex != -1)
+				Array.prototype.push.apply(this.resourceUpdateSetList[matchedIndex].entries, cloudAPIUpdateSetList[i].entries);
+			else
+				this.resourceUpdateSetList.push(cloudAPIUpdateSetList[i]);
+		}
+	},
+
+	getAllResourceGuestInterfacesAndMappings : function (resourceBlockName) {
+		var guestInterfaceGR = this.getAllResourceGuestInterfaceMappings(resourceBlockName);
+		while (guestInterfaceGR.next()) {
+			this.populateEntriesForUpdateSet(guestInterfaceGR.sys_id, guestInterfaceGR.sys_class_name);
+			var resInterfaceGR = new GlideRecord('sn_cmp_rb_resourceinterface');
+			resInterfaceGR.addQuery('sys_id',guestInterfaceGR.guestinterface);
+			resInterfaceGR.addQuery('is_system_defined',0);
+			resInterfaceGR.query();
+			if(resInterfaceGR.next()) {
+				this.populateEntriesForUpdateSet(resInterfaceGR.sys_id, resInterfaceGR.sys_class_name);
+			}
+		}
+	},
+
+	getAllResourceGuestInterfaceMappings : function (resourceBlockName) {
+		var guestInterfaceMappingsGR = new GlideRecord('sn_cmp_rb_guest_interface');
+		guestInterfaceMappingsGR.addQuery('resource.name',resourceBlockName);
+		guestInterfaceMappingsGR.query();
+		return guestInterfaceMappingsGR;
+	},
+
+	getAllExtensionInterfaces : function (resourceBlockName) {
+		var guestInterfaceMappingsGR = new GlideRecord('sn_cmp_rb_guest_interface');
+		guestInterfaceMappingsGR.addQuery('resource.name',resourceBlockName);
+		guestInterfaceMappingsGR.addQuery('guestinterface.type','Extension');
+		guestInterfaceMappingsGR.query();
+		return guestInterfaceMappingsGR;
+	},
+
+	getHostInterface: function(resourceBlockName){
+		var resGR = this.getResourceBlockByName(resourceBlockName);
+		if(resGR.next()){
+			var resInterfaceGR = new GlideRecord('sn_cmp_rb_resourceinterface');
+			resInterfaceGR.addQuery('sys_id',resGR.hostinterface);
+			resInterfaceGR.addQuery('is_system_defined',0);
+			resInterfaceGR.query();
+			if(resInterfaceGR.next()) {
+				this.exporterlogger.log('Exporting host interface - ' + resInterfaceGR.name);
+				this.populateEntriesForUpdateSet(resInterfaceGR.sys_id, resInterfaceGR.sys_class_name);
+			}
+		}
+
+	},
+
+	getAllHostResourcesForResourceBlock : function (resourceBlockName) {
+		var resourceHostGR = new GlideRecord("sn_cmp_rb_resourcehost");
+		resourceHostGR.addQuery("guestresource.name", resourceBlockName);
+		resourceHostGR.query();
+		while (resourceHostGR.next()){
+			this.populateEntriesForUpdateSet(resourceHostGR.sys_id, resourceHostGR.sys_class_name);
+		}
+
+	},
+
+	getAllOperationSignatureAndParams : function (resourceBlockName){
+		var resourceInterfaceGR;
+		if(this.isSystemDefined)
+			resourceInterfaceGR = this.getAllExtensionInterfaces(resourceBlockName);
+		else
+			resourceInterfaceGR = this.getAllResourceGuestInterfaceMappings(resourceBlockName);
+		while(resourceInterfaceGR.next()){
+			var operationSignatureGR = new GlideRecord("sn_cmp_rb_op_signature");
+			operationSignatureGR.addQuery('interface',resourceInterfaceGR.guestinterface);
+			operationSignatureGR.query();
+			while (operationSignatureGR.next()) {
+				this.exporterlogger.log('Exporting operation signature - ' + operationSignatureGR.name);
+				this.populateEntriesForUpdateSet(operationSignatureGR.sys_id, operationSignatureGR.sys_class_name);
+				this.getAllOperationParam(operationSignatureGR.sys_id);
+				this.addDeletedRecordsToUpdateSet(operationSignatureGR.getValue("sys_id"),'sn_cmp_rb_op_param');
+			}
+		}
+	},
+
+	getAllOperationParam : function (operationSignatureSysId){
+		var operationParamGR = new GlideRecord("sn_cmp_rb_op_param");
+		operationParamGR.addQuery('operation', operationSignatureSysId);
+		operationParamGR.query();
+		while (operationParamGR.next()){
+			this.exporterlogger.log('Exporting operation parameter - ' + operationParamGR.name);
+			this.populateEntriesForUpdateSet(operationParamGR.sys_id, operationParamGR.sys_class_name);
+		}
+	},
+
+	getAllOperationImplAndParams : function (resourceBlockName){
+		var resourceOperationImplGR = new GlideRecord("sn_cmp_rb_op_impl");
+		resourceOperationImplGR.addQuery("resource.name", resourceBlockName);
+		if(this.isSystemDefined)
+			resourceOperationImplGR.addQuery("interface.type", 'Extension');
+		resourceOperationImplGR.query();
+		while (resourceOperationImplGR.next()){
+			this.populateEntriesForUpdateSet(resourceOperationImplGR.sys_id, resourceOperationImplGR.sys_class_name);
+			this.getAllOperationImplParam(resourceOperationImplGR.sys_id);
+			this.getAllOperationImplSteps(resourceOperationImplGR.sys_id);
+			this.addDeletedRecordsToUpdateSet(resourceOperationImplGR.getValue("sys_id"),'sn_cmp_rb_op_impl_param');
+			this.addDeletedRecordsToUpdateSet(resourceOperationImplGR.getValue("sys_id"),'sn_cmp_rb_op_impl_step');
+		}
+	},
+
+	getAllOperationImplParam : function (resourceOperationImplSysId){
+		var dependencyUtil = new sn_cmp.CMPUpdateSetDependencyUtil();
+		var poolExporter = new sn_cmp.PoolExporter();
+		var operationImplParamGR = new GlideRecord("sn_cmp_rb_op_impl_param");
+		operationImplParamGR.addQuery('operation', resourceOperationImplSysId);
+		operationImplParamGR.query();
+		while (operationImplParamGR.next()){
+			this.exporterlogger.log('Exporting operation implementation parameter - ' + operationImplParamGR.name);
+			this.populateEntriesForUpdateSet(operationImplParamGR.sys_id, operationImplParamGR.sys_class_name);
+		}
+	},
+
+	getAllOperationImplSteps : function (resourceOperationImplSysId) {
+		var operationImplStepGR = new GlideRecord("sn_cmp_rb_op_impl_step");
+		operationImplStepGR.addQuery('operationimpl', resourceOperationImplSysId);
+		operationImplStepGR.query();
+		while (operationImplStepGR.next()){
+			this.exporterlogger.log('Exporting operation implementation step - ' + operationImplStepGR.name);
+			this.populateEntriesForUpdateSet(operationImplStepGR.sys_id, operationImplStepGR.sys_class_name);
+			this.getAllStepKeyValues(operationImplStepGR.sys_id);
+			this.getAllStepTranslators(operationImplStepGR.sys_id);
+			this.addDeletedRecordsToUpdateSet(operationImplStepGR.getValue("sys_id"),'sn_cmp_rb_keyvalue');
+			this.addDeletedRecordsToUpdateSet(operationImplStepGR.getValue("sys_id"),'sn_cmp_rb_step_translator');
+
+		}
+	},
+
+	getAllStepKeyValues : function (operationImplStepSysId) {
+		var stepKeyValueGR = new GlideRecord("sn_cmp_rb_keyvalue");
+		stepKeyValueGR.addQuery('step', operationImplStepSysId);
+		stepKeyValueGR.query();
+		while (stepKeyValueGR.next()){
+			this.exporterlogger.log('Exporting operation implementation key - ' + stepKeyValueGR.key);
+			this.populateEntriesForUpdateSet(stepKeyValueGR.sys_id, stepKeyValueGR.sys_class_name);
+			this.getAllKeyValueMapping(stepKeyValueGR.getValue('sys_id'));
+			this.addDeletedRecordsToUpdateSet(stepKeyValueGR.getValue('sys_id'),'sn_cmp_rb_keyvalue_mapping');
+		}
+	},
+
+	getAllKeyValueMapping : function (keyValueId) {
+		var stepKeyValueMappingGR = new GlideRecord("sn_cmp_rb_keyvalue_mapping");
+		stepKeyValueMappingGR.addQuery('keyvalue', keyValueId);
+		stepKeyValueMappingGR.query();
+		while (stepKeyValueMappingGR.next()){
+			this.exporterlogger.log('Exporting operation key value mapping - ' + stepKeyValueMappingGR.parameter);
+			this.populateEntriesForUpdateSet(stepKeyValueMappingGR.sys_id, stepKeyValueMappingGR.sys_class_name);
+		}
+	},
+
+	getAllStepTranslators : function (operationImplStepSysId) {
+		var stepTranslatorGR = new GlideRecord("sn_cmp_rb_step_translator");
+		stepTranslatorGR.addQuery('step', operationImplStepSysId);
+		stepTranslatorGR.query();
+		while (stepTranslatorGR.next())
+			this.populateEntriesForUpdateSet(stepTranslatorGR.sys_id, stepTranslatorGR.sys_class_name);
+	},
+
+	getAllResourceBlockScripts : function (resourceBlockName) {
+		var scriptRecordGR = new GlideRecord("sn_cmp_rb_resourcescript");
+		scriptRecordGR.addQuery("resource.name", resourceBlockName);
+		scriptRecordGR.query();
+		while (scriptRecordGR.next()){
+			this.exporterlogger.log('Exporting resource script - ' + scriptRecordGR.name);
+			this.populateEntriesForUpdateSet(scriptRecordGR.sys_id, scriptRecordGR.sys_class_name);
+		}
+	},
+
+	getAllResourceBindings : function (resourceBlockName) {
+		var resourceBindingGR = new GlideRecord('sn_cmp_rb_binding');
+		resourceBindingGR.addQuery('binding_resource.name', resourceBlockName);
+		resourceBindingGR.query();
+		while (resourceBindingGR.next()){
+			this.populateEntriesForUpdateSet(resourceBindingGR.sys_id, resourceBindingGR.sys_class_name);
+		}
+	},
+
+	getAllGuestResourceBindings : function (resourceBlockName) {
+		var guestResourceBindingGR = new GlideRecord('sn_cmp_rb_binding');
+		guestResourceBindingGR.addQuery('guest_resource.name', resourceBlockName);
+		guestResourceBindingGR.query();
+		while (guestResourceBindingGR.next()){
+			this.populateEntriesForUpdateSet(guestResourceBindingGR.sys_id, guestResourceBindingGR.sys_class_name);
+		}
+	},
+
+	getAllEndpointMappings : function (resourceBlockName) {
+		var resourceEndpointMappingGR = new GlideRecord("sn_cmp_rb_ep_mapping");
+		resourceEndpointMappingGR.addQuery("resource_block.name", resourceBlockName);
+		resourceEndpointMappingGR.query();
+		while (resourceEndpointMappingGR.next()){
+			this.populateEntriesForUpdateSet(resourceEndpointMappingGR.sys_id, resourceEndpointMappingGR.sys_class_name);
+		}
+	},
+
+	getAllBindingResourceEPs : function (resourceBlockName) {
+		var endpointMapping = new GlideRecord('sn_cmp_rb_endpoint_mapping');
+		endpointMapping.addQuery('binding_resource.name', resourceBlockName);
+		endpointMapping.query();
+		while (endpointMapping.next()){
+			this.populateEntriesForUpdateSet(endpointMapping.sys_id, endpointMapping.sys_class_name);
+		}
+	},
+
+	getAllSourceResourceEPs : function (resourceBlockName) {
+		var endpointMapping = new GlideRecord('sn_cmp_rb_endpoint_mapping');
+		endpointMapping.addQuery('source_resource.name', resourceBlockName);
+		endpointMapping.query();
+		while (endpointMapping.next()){
+			this.exporterlogger.log('Exporting binding source resource endpoint - ' + endpointMapping.sys_id);
+			this.populateEntriesForUpdateSet(endpointMapping.sys_id, endpointMapping.sys_class_name);
+		}
+	},
+
+	getAllSupportedDCTypesOfResource : function (resourceBlockName) {
+		var resourceCapacityTypeGR = new GlideRecord('sn_cmp_rb_dc_capacity_type');
+		resourceCapacityTypeGR.addQuery('resoure_block.name', resourceBlockName);
+		resourceCapacityTypeGR.query();
+		while (resourceCapacityTypeGR.next())
+			this.populateEntriesForUpdateSet(resourceCapacityTypeGR.sys_id, resourceCapacityTypeGR.sys_class_name);
+	},
+
+	deleteResourceBlockUpdateSet : function(updateSetId){
+		var cmpUpdateSetPublisher =  new global.CMPUpdateSetPublisher();
+		cmpUpdateSetPublisher.deleteUpdateSet(updateSetId);
+	},
+
+	addDeletedRecordsToUpdateSet : function(parentSysId,childTableName) {
+		this.addDeletedRecordsXMLToUpdateSet(parentSysId,childTableName,this.rbDeletedRecordList);
+	},
+
+	getAllBindingResources : function(resourceBlockName,dependentResourceBlocks){
+		var qry = "guest_resource.name="+resourceBlockName+"^ORbinding_resource.name="+resourceBlockName;
+		var guestResourceBindingGR = new GlideRecord('sn_cmp_rb_binding');
+		guestResourceBindingGR.addEncodedQuery(qry);
+		guestResourceBindingGR.query();
+		while(guestResourceBindingGR.next()){
+			var param = {};
+			if(guestResourceBindingGR.getDisplayValue('binding_resource') == resourceBlockName){
+				param.id=guestResourceBindingGR.getValue('guest_resource');
+				param.name=guestResourceBindingGR.getDisplayValue('guest_resource');
+			}else{
+				param.id=guestResourceBindingGR.getValue('binding_resource');
+				param.name=guestResourceBindingGR.getDisplayValue('binding_resource');
+			}
+			var matchedIndex = dependentResourceBlocks.map(function(e) { return e.id; }).indexOf(param.id);
+			if(matchedIndex == -1 && this.sourceResourceBlockName != param.name){
+				var resourceGR = this.getResourceBlockByName(param.name);
+				if(resourceGR.next()){
+					param.createdBy = resourceGR.getValue('sys_created_by');
+					param.description = resourceGR.getValue('description');
+					param.status = resourceGR.getDisplayValue('status');
+				}
+				dependentResourceBlocks.push(param);
+				this.getAllBindingResources(param.name,dependentResourceBlocks);
+				this.getAllHostResources(param.name,dependentResourceBlocks);
+			}
+		}
+
+	},
+
+	getAllHostResources:function(resourceBlockName,dependentResourceBlocks){
+		var resourceHostGR = new GlideRecord("sn_cmp_rb_resourcehost");
+		resourceHostGR.addQuery("guestresource.name", resourceBlockName);
+		resourceHostGR.query();
+		while (resourceHostGR.next()){
+			var param = {};
+			param.id=resourceHostGR.getValue('hostresource');
+			param.name=resourceHostGR.getDisplayValue('hostresource');
+			var matchedIndex = dependentResourceBlocks.map(function(e) {return e.id; }).indexOf(param.id);
+			if(matchedIndex == -1 && this.sourceResourceBlockName != param.name){
+				var resourceGR = this.getResourceBlockByName(param.name);
+				if(resourceGR.next()){
+					param.createdBy = resourceGR.getValue('sys_created_by');
+					param.description = resourceGR.getValue('description');
+					param.status = resourceGR.getDisplayValue('status');
+				}
+				dependentResourceBlocks.push(param);
+				this.getAllHostResources(param.name,dependentResourceBlocks);
+				this.getAllBindingResources(param.name,dependentResourceBlocks);
+			}
+		}
+
+	},
+
+	exportDependentCloudAPIs: function(dependentCloudAPIList){
+		for(var i=0;i<dependentCloudAPIList.length;i++)
+			this.exportCloudAPI(dependentCloudAPIList[i]);
+	},
+
+	getDependentCloudAPIs : function(resourceBlockName){
+		var dependentResblocks = this.getDependentResourceBlocks(resourceBlockName);
+		var dependentCloudAPIList = this.getResourceBlocksDependentCloudAPIs(dependentResblocks);
+		return dependentCloudAPIList;
+
+	},
+
+	getResourceBlocksDependentCloudAPIs: function(dependentResblocks){
+		var dependentCloudAPIList = [];
+		for(var i=0;i<dependentResblocks.length;i++){
+			var resourceBlockGR = this.getResourceBlockByName(dependentResblocks[i].name);
+			if (resourceBlockGR.next()) {
+				var operationImplStepGR = new GlideRecord("sn_cmp_rb_op_impl_step");
+				operationImplStepGR.addQuery("operationimpl.resource.name",resourceBlockGR.getValue('name'));
+				operationImplStepGR.addQuery("owner_type",1);
+				if(resourceBlockGR.is_system_defined)
+					operationImplStepGR.addQuery("operationimpl.interface.type",'Extension');
+				operationImplStepGR.query();
+				while(operationImplStepGR.next()){
+					var capi = this.getCloudAPIUsedInStep(operationImplStepGR);
+					if(capi){
+						var matchedIndex = dependentCloudAPIList.map(function(e) {return e.sys_id; }).indexOf(capi.sys_id);
+						if(matchedIndex == -1)
+							dependentCloudAPIList.push(capi);
+					}
+				}
+			}
+		}
+
+		return dependentCloudAPIList;
+
+	},
+
+	getCloudAPIUsedInStep: function (operationImplStep){
+		var capiLibraryServiceScript = new sn_cloud_api.CAPILibraryServiceScript();
+		var providerId = capiLibraryServiceScript.getCAPIProviderIdByName(operationImplStep.provider);
+		var capiVersion = operationImplStep.capi_version ? operationImplStep.capi_version : '1.0';
+		var capiImplementation = this.getCAPIByProviderInterfaceAndVersion(providerId, operationImplStep.capi_interface, capiVersion);
+		if (capiImplementation) {
+			var param = {'name':capiImplementation.getValue('cloud_api_name'),
+						 "sys_id":capiImplementation.getValue('sys_id'),
+						 'description': capiImplementation.getDisplayValue('description'),
+						 'cloud_api_interface': capiImplementation.getDisplayValue('cloud_api_interface'),
+						 'category': capiImplementation.getDisplayValue('category'),
+						 'sys_created_by': capiImplementation.getDisplayValue('sys_created_by')
+						};
+			return param;
+
+		}
+	},
+
+	getCAPIByProviderInterfaceAndVersion : function(providerId, interfaceId, version){
+		var capiImplementations = [];
+		var glideRecord = new GlideRecord("sn_capi_cloud_api");
+		glideRecord.addQuery("provider", providerId);
+		glideRecord.addQuery("cloud_api_interface", interfaceId);
+		glideRecord.addQuery("version", version);
+		glideRecord.addQuery('is_system_defined',0);
+		glideRecord.query();
+		if (glideRecord.next())
+			return glideRecord;
+	},
+
+	getAllPoolsForResourceBlock: function(resourceBlockName){
+		var dependentResblocks = this.getDependentResourceBlocks(resourceBlockName);
+		var rbDependentPools = this.getResorceBlockDependentPools(dependentResblocks);
+		return rbDependentPools;
+	},
+
+	getResorceBlockDependentPools : function (dependentResblocks){
+		var rbDependentPools = [];
+		var dependencyUtil = new sn_cmp.CMPUpdateSetDependencyUtil();
+		for(var i=0;i<dependentResblocks.length;i++){
+			var resourceBlockGR = this.getResourceBlockByName(dependentResblocks[i].name);
+			if (resourceBlockGR.next()) {
+				var operationImplParamGR = new GlideRecord("sn_cmp_rb_op_impl_param");
+				operationImplParamGR.addQuery('operation.resource', resourceBlockGR.getValue('sys_id'));
+				if(resourceBlockGR.is_system_defined)
+					operationImplParamGR.addQuery('operation.interface.type', 'Extension');
+				operationImplParamGR.query();
+				while (operationImplParamGR.next()){
+					var poolJSON = dependencyUtil.getResourcePoolsByOpImplParam(operationImplParamGR);
+					if(poolJSON){
+						var matchedIndex = rbDependentPools.map(function(e) {return e.id; }).indexOf(poolJSON.id);
+						if(matchedIndex == -1 && (poolJSON.systemDefined == 'false'))
+							rbDependentPools.push(poolJSON);
+					}
+				}
+			}
+		}
+		return rbDependentPools;
+	},
+
+	type: 'ResourceBlockExporter'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-24 05:48:45</sys_created_on>
+        <sys_id>b475fb520b3f0300e257aac125673ad5</sys_id>
+        <sys_mod_count>201</sys_mod_count>
+        <sys_name>ResourceBlockExporter</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b475fb520b3f0300e257aac125673ad5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-15 17:47:51</sys_updated_on>
+    </sys_script_include>
+</record_update>

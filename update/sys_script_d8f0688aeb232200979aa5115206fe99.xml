@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_order</collection>
+        <condition>current != null &amp;&amp; current.operation_name != null &amp;&amp; current.operation_name.endsWith('.Discover')</condition>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Update discovery status</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+	var status = parseInt(current.status);
+	if (status != 6 && status >= 4) {
+		// terminal state, update discovery status
+		var order_form = new global.JSON().decode(current.order_form_data);
+		var disco_status = order_form.DiscoveryStatusId;
+		var ldcGr = new GlideRecord("cmdb_ci_logical_datacenter");
+		var ldcName = "";
+		if(ldcGr.get(current.getValue('owner_instance'))){
+			ldcGr.last_discovered = current.sys_updated_on;
+			ldcGr.discovery_status = disco_status;
+			ldcGr.update();
+			ldcName = ldcGr.name;
+		}
+
+		if (disco_status) {
+			var logger = new global.DiscoveryLogger(disco_status);
+			logger.info(ldcName + ' Discovery ' + current.status.getDisplayValue(),
+						'Cloud Resources Discovery');
+			var updateDiscoveryStatus=true;
+			var orderGr=new GlideRecord('sn_cmp_order');
+			orderGr.addQuery('operation_name','ENDSWITH','.Discover');
+			orderGr.addQuery('status','IN', '6,1');
+			orderGr.query();
+
+			while(orderGr.next()){
+				var orderMap=orderGr.getValue('order_form_data');
+				var orderFormData=global.JSON.parse(orderMap);
+				if(orderFormData.DiscoveryStatusId==disco_status) {
+					updateDiscoveryStatus=false;
+					break;
+				}
+			}
+		}
+	}
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-08 17:23:04</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>d8f0688aeb232200979aa5115206fe99</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>Update discovery status</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_d8f0688aeb232200979aa5115206fe99</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-21 20:54:36</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=d8f0688aeb232200979aa5115206fe99"/>
+</record_update>

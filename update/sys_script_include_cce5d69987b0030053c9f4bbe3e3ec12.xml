@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyConditionAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllPolicyConditionAction</name>
+        <script><![CDATA[var CMPGetAllPolicyConditionAction = Class.create();
+CMPGetAllPolicyConditionAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.input_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAllPolicyConditionAction.doAction: Undefined element Id",
+				null
+				);
+			}
+	
+			
+			var ruleId = params.input_id;
+			var responseObj = {};
+			// Get rule name
+			var ruldGr = new GlideRecord('sn_cmp_pol_rule');
+			if(ruldGr.get(ruleId)) {
+				responseObj.name = ruldGr.name + '';
+				responseObj.encodedQuery = ruldGr.condition;
+			} else {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Policy rule does not exist."), "CMPGetAllPolicyConditionAction.doAction: Undefined record", null);
+			}
+			
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy conditions."),
+				"CMPGetAllPolicyConditionAction.doAction(): Failed to get all policy conditions",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllPolicyConditionAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-24 17:08:09</sys_created_on>
+        <sys_id>cce5d69987b0030053c9f4bbe3e3ec12</sys_id>
+        <sys_mod_count>31</sys_mod_count>
+        <sys_name>CMPGetAllPolicyConditionAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cce5d69987b0030053c9f4bbe3e3ec12</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-07 23:20:26</sys_updated_on>
+    </sys_script_include>
+</record_update>

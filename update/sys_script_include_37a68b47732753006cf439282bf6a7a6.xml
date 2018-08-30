@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudPortalStacksPage</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudPortalStacksPage</name>
+        <script><![CDATA[var CloudPortalStacksPage = Class.create();
+
+CloudPortalStacksPage.ALL_STACKS_TITLE = gs.getMessage('All Stacks');
+CloudPortalStacksPage.STACKS_WITH_ISSUE_TITLE = gs.getMessage('Stacks with Issues');
+
+CloudPortalStacksPage.prototype = {
+    initialize: function(sp) {
+		this.sp = sp;
+		this.isAdmin = CMPUserPortalHelper.isAdmin();
+		this.isGroupAdmin = CMPUserPortalHelper.isGroupAdmin();
+		this.viewPreference = CMPUserPortalHelper.getUserPortalViewPreference();
+    },
+	
+	getCatalogItemsWithStacks: function(windowStart, windowEnd) {
+		var catItemsObj = { list: [] };
+		
+		var stacksGAgg = new GlideAggregate('sn_cmp_stack');
+		stacksGAgg.addNotNullQuery('sc_cat_item');
+		
+		if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin)) 
+			stacksGAgg.addQuery('assigned_to', gs.getUserID());				
+		else if (this.viewPreference == 'group' || !this.isAdmin) {
+			var stackQc = stacksGAgg.addQuery('assigned_to', gs.getUserID());
+			stackQc.addOrCondition('owner_group', 'IN', CMPUserPortalHelper.getMemberOfGroupSysIdsByUser());
+		}
+			
+		stacksGAgg.groupBy('sc_cat_item.name');
+		stacksGAgg.chooseWindow(windowStart, windowEnd);
+		
+		stacksGAgg.query();
+		while(stacksGAgg.next()){
+			var obj = {};	
+			obj.name = stacksGAgg.getDisplayValue('sc_cat_item.name');
+			obj.url = '?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&blueprint=' + stacksGAgg.getDisplayValue('sc_cat_item.name');
+			catItemsObj.list.push(obj);	
+		}
+		
+		catItemsObj.totalCount = stacksGAgg.getRowCount();
+		
+		return catItemsObj;
+	},
+	
+	getTableTitleAndFilter: function() {
+		var returnVal = {};
+		
+		if (this.sp.getParameter('error') && this.sp.getParameter('error') != "false") {
+			
+			var stacksFromIncidents = this._getStacksWithIssuesFromIncidentTable();
+			var stacksFromStacItemTable =  this._getStacksWithIssuesFromStackItemTable();
+			var stacksWithIssues = stacksFromIncidents.concat(stacksFromStacItemTable);			
+			
+			return {
+				title: CloudPortalStacksPage.STACKS_WITH_ISSUE_TITLE,
+				filter: 'sys_idIN' + stacksWithIssues.join(',')
+			};
+		}
+		
+		var filter = ''; //default for viewPreference all and user is admin
+		if (!this.sp.getParameter('blueprint') || this.sp.getParameter('blueprint') == CloudPortalStacksPage.ALL_STACKS_TITLE) {
+			
+			if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin))
+				filter = 'assigned_to=' + gs.getUserID();
+			else if (this.viewPreference == 'group' || !this.isAdmin)
+				filter = 'assigned_to=' + gs.getUserID() + '^ORowner_groupIN' + CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+			
+			return {
+				title: CloudPortalStacksPage.ALL_STACKS_TITLE,
+				filter: filter
+			};
+		}
+		
+		var blueprintName = this.sp.getParameter('blueprint');
+		
+		filter = blueprintName == 'null' ? 'sc_cat_item=NULL': 'sc_cat_item.name=' + blueprintName; //default for viewPreference all and user is admin
+		if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin)) 
+			filter = filter +'^assigned_to=' + gs.getUserID();
+		else if (this.viewPreference == 'group' || !this.isAdmin) //admins are groupAdmin so cheking not admin instead of group admin
+			filter = filter + '^assigned_to=' + gs.getUserID() + '^ORowner_groupIN' + CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+
+		return {
+			title: blueprintName == 'null' ?  undefined : blueprintName,
+			filter: filter
+		};
+	},
+	
+	_getStacksWithIssuesFromIncidentTable: function() {
+		var NEW = 1;
+		var IN_PROGRESS = 2;
+		var ON_HOLD = 3;
+		
+		
+		var incidentsGr = new GlideRecord('incident');
+		incidentsGr.addQuery('category', 'Cloud Management');
+		incidentsGr.addQuery('cmdb_ci.sys_class_name','sn_cmp_stack');
+		incidentsGr.addQuery("state",'IN', [ NEW, IN_PROGRESS, ON_HOLD ]);
+		
+		if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin)) {
+			incidentsGr.addQuery('caller_id', gs.getUserID())
+					   .addOrCondition('cmdb_ci.assigned_to', gs.getUserID());
+		} else if (this.viewPreference == 'group' || !this.isAdmin) {
+			var groupIds = CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+			incidentsGr.addQuery('caller_id', gs.getUserID())
+					   .addOrCondition('cmdb_ci.assigned_to', gs.getUserID())
+					   .addOrCondition('cmdb_ci.assignment_group', 'IN', groupIds)
+					   .addOrCondition('cmdb_ci.ref_sn_cmp_stack.owner_group', 'IN', groupIds);
+		} 
+			
+		incidentsGr.query();
+		
+		var stacks = [];	
+		while (incidentsGr.next())
+			stacks.push(incidentsGr.getValue('cmdb_ci'));
+		
+		return stacks;
+	},
+	
+	_getStacksWithIssuesFromStackItemTable: function() {
+		var ACTIVE_STACK_STATUS = 2;
+		var TERMINATED_STATE = 'terminated';
+		
+		var stacksObj = {};
+		
+		//get the stacks from incidents table's associated ci's
+		var stackItemsGr = new GlideRecord('sn_cmp_stack_item');
+		var queryCond = stackItemsGr.addJoinQuery('incident', 'ci_instance_id', 'cmdb_ci');
+		queryCond.addCondition('cmdb_ci.sys_class_name', '!=', 'sn_cmp_stack');	
+		stackItemsGr.query();
+		while(stackItemsGr.next())
+			stacksObj[stackItemsGr.getValue('stack')] =  true;
+
+		//get the stacks that are Active with terminated cis
+		var collectedStacks = Object.keys(stacksObj);
+		stackItemsGr.initialize();
+		if (this.viewPreference == 'mine' || (!this.isAdmin && !this.isGroupAdmin)) 
+			stackItemsGr.addQuery('stack.assigned_to', gs.getUserID());
+		else if (this.viewPreference == 'group' || !this.isAdmin) {
+			var groupIds = CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+			stackItemsGr.addQuery('stack.assigned_to', gs.getUserID())
+					    .addOrCondition('stack.owner_group', 'IN', groupIds);
+		}
+
+		stackItemsGr.addQuery('stack.sys_id', 'NOT IN', collectedStacks.join(','));
+		stackItemsGr.addQuery('stack.stack_status', ACTIVE_STACK_STATUS);
+		stackItemsGr.addNotNullQuery('ci_instance_id');
+
+		queryCond = stackItemsGr.addQuery('ci_instance_id.ref_cmdb_ci_vm_instance.state',TERMINATED_STATE); 
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_cloud_subnet.state', TERMINATED_STATE);
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_network.state', TERMINATED_STATE);
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_router.state', TERMINATED_STATE);
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_storage_volume.state', TERMINATED_STATE);
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_internet_gateway.state', TERMINATED_STATE);
+		queryCond.addOrCondition('ci_instance_id.ref_cmdb_ci_cloud_load_balancer.state', TERMINATED_STATE);
+
+		stackItemsGr.query();
+		while(stackItemsGr.next()) 
+			stacksObj[stackItemsGr.getValue('stack')] = true;
+		
+		return Object.keys(stacksObj);
+	},
+
+    type: 'CloudPortalStacksPage'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-31 20:15:06</sys_created_on>
+        <sys_id>37a68b47732753006cf439282bf6a7a6</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>CloudPortalStacksPage</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_37a68b47732753006cf439282bf6a7a6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 17:34:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

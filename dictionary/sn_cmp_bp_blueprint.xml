@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sn_cmp_invocation_template" label="Blueprint" max_length="40" name="sn_cmp_bp_blueprint" type="collection">
+        <element label="Category" max_length="32" name="category" reference="sn_capi_service_category" type="reference"/>
+        <element label="Cloud Service" max_length="32" name="cloud_service" reference="sn_cmp_bp_cloud_service" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="100" name="description" type="string"/>
+        <element choice="1" label="Layer" max_length="40" name="layer" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Application" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Platform" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Virtual Workload" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Logical DataCenter" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Virtual Infrastructure" sequence="5" value="5"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" label="SM Checkpoint ID" max_length="40" name="sm_checkpoint_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Source SM Checkpoint ID" max_length="40" name="source_sm_checkpoint_id" type="string"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Published" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Draft" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element label="SVC Layer" max_length="32" name="svc_layer" reference="svc_layer" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element label="Overrides" max_length="32" name="sys_overrides" reference="sn_cmp_bp_blueprint" type="reference"/>
+        <element label="TLR" max_length="32" name="tlr" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+        <index name="index3">
+            <element name="sys_overrides"/>
+        </index>
+        <index name="index4">
+            <element name="tlr"/>
+        </index>
+        <index name="index5">
+            <element name="category"/>
+        </index>
+        <index name="index6">
+            <element name="cloud_service"/>
+        </index>
+        <index name="index7">
+            <element name="svc_layer"/>
+        </index>
+    </element>
+</database>

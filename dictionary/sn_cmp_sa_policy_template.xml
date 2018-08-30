@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Scaling Policy Template" max_length="40" name="sn_cmp_sa_policy_template" type="collection">
+        <element choice="1" label="Adjustment Type" max_length="40" name="adjustment_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Change In Capacity" value="ChangeInCapacity"/>
+                <element inactive_on_update="false" label="Exact Capacity" value="ExactCapacity"/>
+                <element inactive_on_update="false" label="Percent Change In Capacity" value="PercentChangeInCapacity"/>
+            </choice>
+        </element>
+        <element label="Disable Scale In" max_length="40" name="disable_scale_in" type="boolean"/>
+        <element choice="1" label="Metric Aggregation Type" max_length="40" name="metric_aggregation_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Average" value="Average"/>
+                <element inactive_on_update="false" label="Maximum" value="Maximum"/>
+                <element inactive_on_update="false" label="Minimum" value="Minimum"/>
+            </choice>
+        </element>
+        <element label="Min Adjustment Magnitude" max_length="40" name="min_adjustment_magnitude" type="int"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="40" name="name" type="string"/>
+        <element choice="1" label="Policy type" max_length="40" name="policy_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Simple Scaling" value="SimpleScaling"/>
+                <element inactive_on_update="false" label="Step Scaling" value="StepScaling"/>
+                <element inactive_on_update="false" label="Target Tracking Scaling" value="TargetTrackingScaling"/>
+            </choice>
+        </element>
+        <element choice="1" label="Predefined Metric Type" max_length="40" name="predefined_metric_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="ALB RequestCount Per Target" value="ALBRequestCountPerTarget"/>
+                <element inactive_on_update="false" label="ASG Average CPU Utilization" value="ASGAverageCPUUtilization"/>
+                <element inactive_on_update="false" label="ASG Average Network In" value="ASGAverageNetworkIn"/>
+                <element inactive_on_update="false" label="ASG Average Network Out" value="ASGAverageNetworkOut"/>
+            </choice>
+        </element>
+        <element label="Scaling Adjustment" max_length="40" name="scaling_adjustment" type="int"/>
+        <element label="Target Value" max_length="40" name="target_value" type="int"/>
+    </element>
+</database>

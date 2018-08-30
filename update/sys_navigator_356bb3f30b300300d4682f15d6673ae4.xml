@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_navigator">
+    <sys_navigator action="INSERT_OR_UPDATE">
+        <class_name/>
+        <script><![CDATA[if(g_uri.get('sysparm_view') == 'policies_from_card') {
+	var ruleId = g_uri.get('sys_id');
+	var gr = new GlideRecord('sn_cmp_pol_rule');
+	gr.get(ruleId);
+	var policyId = gr.getValue('policy');
+	answer =  '/$cmp_policy_rule.do?sys_id='+g_uri.get('sys_id')+'&policy_id='+policyId;
+}]]></script>
+        <sys_class_name>sys_navigator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-01 19:00:55</sys_created_on>
+        <sys_id>356bb3f30b300300d4682f15d6673ae4</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>sn_cmp_pol_rule</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_navigator_356bb3f30b300300d4682f15d6673ae4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-01 23:22:24</sys_updated_on>
+        <table>sn_cmp_pol_rule</table>
+    </sys_navigator>
+</record_update>

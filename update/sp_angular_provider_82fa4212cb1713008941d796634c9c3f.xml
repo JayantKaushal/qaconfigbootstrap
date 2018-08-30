@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>semiCircleDonutChart</name>
+        <script><![CDATA[function ($timeout, i18n) {
+    return {
+        template: '<div id="{{containerId}}" style="height:{{height}}"></div>',
+        scope: {
+            containerId: '@',
+			chartData: "=data",
+			chartOptions: "=?",
+			options: "=?ngModelOptions",
+        },
+
+        link: function($scope, $elem, $attrs) {
+			$scope.options = $scope.options || {};
+			$scope.height = $scope.options.height || "130px";
+			
+			var seriesLabelFormat = $scope.chartData.seriesLabelFormat || '{y}';
+			var seriesLabelText = $scope.chartData.seriesLabelText || i18n.getMessage('Used');
+			
+			var defaultOptions = {
+				accessibility: {
+					enabled: true 
+				},
+				
+				chart: {
+					type: 'solidgauge',
+					description: $scope.options.description || ""
+				},
+				
+				title: $scope.options.title || "",
+				
+				pane: {
+					center: ['50%', '80%'],
+					size: '100%',
+					startAngle: -90,
+					endAngle: 90,
+					background: {
+						backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+						innerRadius: '65%',
+						outerRadius: '100%',
+						shape: 'arc'
+					}
+				},
+				
+				tooltip: {
+					enabled: false
+				},
+
+				yAxis: {
+					stops: [
+						[0.1, '#55BF3B'], // green
+						[0.5, '#DDDF0D'], // yellow
+						[0.9, '#DF5353'] // red
+					],
+					lineWidth: 0,
+					
+					tickPixelInterval: 400,
+					minorTickInterval: null,
+					tickAmount: 2,
+					tickPositioner:  function() {
+						return [0, parseInt($scope.chartData.total)];
+					},
+					title: {
+						text: $scope.chartData.type || '',
+						y: 60
+					},
+					labels: { 
+						y: 15,
+						distance: -13
+					},
+					min: 0,
+					max: parseInt($scope.chartData.total)
+				},
+				
+				credits: {
+					enabled: false
+				},
+
+				plotOptions: {
+					solidgauge: {
+						innerRadius: '65%',
+						dataLabels: {
+							y: 10,
+							borderWidth: 0,
+							useHTML: true
+						}
+					}
+				},
+				
+				series: [{
+					name: $scope.chartData.type || '',
+					data: [parseInt($scope.chartData.used)],
+					dataLabels: {
+						format: '<div style="text-align:center">' + 
+								'<span style="font-size:14px;color:' +
+						((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + 
+								'">' + seriesLabelFormat + '</span><br/>' +
+						'<span style="font-size:12px;color:silver">' + seriesLabelText + '</span></div>'
+					}
+				}]
+			};
+			
+			$timeout(function() {
+				$("#" + $scope.containerId).highcharts(Highcharts.merge(defaultOptions, $scope.chartOptions || {}));
+				
+				$(".highcharts-container").removeAttr('tabIndex');
+				$(".highcharts-root").attr({
+					role:"img", 
+					focusable:"false"
+				});
+			});
+        }
+    };
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-16 21:44:37</sys_created_on>
+        <sys_id>82fa4212cb1713008941d796634c9c3f</sys_id>
+        <sys_mod_count>48</sys_mod_count>
+        <sys_name>semiCircleDonutChart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_82fa4212cb1713008941d796634c9c3f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-02 19:50:18</sys_updated_on>
+        <type>directive</type>
+    </sp_angular_provider>
+</record_update>

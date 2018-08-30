@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Manual Service Black Lister" max_length="40" name="sn_cmp_manual_service_blacklister" type="collection">
+        <element label="Black Listed CI" max_length="32" name="blacklist_ci" reference="sys_db_object" type="reference"/>
+        <element label="Parent CI" max_length="32" name="parent" reference="sys_db_object" type="reference"/>
+        <element label="Relation Type" max_length="32" name="rel_type" reference="cmdb_rel_type" type="reference"/>
+        <index name="index">
+            <element name="parent"/>
+        </index>
+        <index name="index2">
+            <element name="blacklist_ci"/>
+        </index>
+        <index name="index3">
+            <element name="rel_type"/>
+        </index>
+    </element>
+</database>

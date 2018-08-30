@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_widget_dependency">
+    <m2m_sp_widget_dependency action="INSERT_OR_UPDATE">
+        <sp_dependency display_value="Highcharts 5">000430900b222200eff7ef9bb4673aa7</sp_dependency>
+        <sp_widget display_value="cloud admin half Chart">6dfbf4710b9732003bace58525673a0b</sp_widget>
+        <sys_class_name>m2m_sp_widget_dependency</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-12 10:18:05</sys_created_on>
+        <sys_id>2dfbf4710b9732003bace58525673a0d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Highcharts 5.Copy of Cloud Quota Chart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>m2m_sp_widget_dependency_2dfbf4710b9732003bace58525673a0d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-12 10:18:05</sys_updated_on>
+    </m2m_sp_widget_dependency>
+</record_update>

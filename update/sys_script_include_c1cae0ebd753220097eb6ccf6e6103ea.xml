@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintRequestUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintRequestUtil</name>
+        <script><![CDATA[var BlueprintRequestUtil = Class.create();
+BlueprintRequestUtil.prototype = {
+    initialize: function() {
+    },
+	
+	resolveParamValue : function(variableValue,variableGr){
+		var parameterGr = this._getParameterGr(variableGr);
+		if (parameterGr) {
+			var type = parameterGr.getDisplayValue('parameter_type');
+			if (type == 'Object' || type == 'Array')
+				return new global.JSON().decode(variableValue);
+			else if (type == 'Integer')
+				return parseInt(variableValue);
+			else if (type == 'Boolean')
+				return variableValue.toLowerCase() == 'true' || variableValue.toLowerCase() == 'yes';
+			else if (type == 'Grid') {
+				return this.extractGridInfor(variableValue);
+			}
+		}
+		return variableValue;
+	},
+	
+	_getParameterGr : function(variableGr) {
+		var catItemGr = new GlideRecord('io_set_item');
+		catItemGr.addQuery('variable_set', variableGr.variable_set);
+		catItemGr.query();
+		if (catItemGr.next()) {
+			var formBehaviorGr = new GlideRecord('sn_cmp_bp_form_behavior');
+			formBehaviorGr.addQuery('cat_item_association', catItemGr.sc_cat_item.sys_id);
+			formBehaviorGr.query();
+			if (formBehaviorGr.next()) {
+				var parameterGr = new GlideRecord('sn_cmp_bp_catalog_prop');
+				parameterGr.addQuery('bp_cat_form_behavior', formBehaviorGr.sys_id);
+				parameterGr.addQuery('name', variableGr.name);
+				parameterGr.query();
+				if (parameterGr.next()) {
+					 return parameterGr;
+				}
+			}
+		}
+		return null;
+	},
+
+	extractGridInfor : function (value) {
+		var arr = new global.JSON().decode(value);
+		var result = [];
+		for (var i = 0; i < arr.length; i++) {
+			var cols = arr[i];
+			var item = {};
+			for (var j = 0; j < cols.length; j++) {
+				var col = cols[j];
+				item[col.name] = col.value;
+			}
+			result.push(item);
+		}
+		return  new global.JSON().encode(result);
+	},
+	
+    type: 'BlueprintRequestUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-30 23:29:29</sys_created_on>
+        <sys_id>c1cae0ebd753220097eb6ccf6e6103ea</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>BlueprintRequestUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c1cae0ebd753220097eb6ccf6e6103ea</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-09 22:37:43</sys_updated_on>
+    </sys_script_include>
+</record_update>

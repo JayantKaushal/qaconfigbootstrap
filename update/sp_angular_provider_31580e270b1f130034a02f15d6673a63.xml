@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>cmpCardContainer</name>
+        <script><![CDATA[function cmpCardContainer() {
+  return {
+	  template: '<div class="panel b">'+
+					'<div class="requested-filter-container">'+
+						'<div class="panel-heading">'+
+							'<input ng-model="filter" class="search-request-field" ng-keypress="filterKeyPress($event)">'+
+						 '</div>'+
+					 '</div>'+
+					 '<div class="panel-body">'+
+	                     '<div ng-if="!data.cards.length">'+
+							 '<p>No Records to Display<p>'+
+						 '</div>'+
+						 '<cloud-card data="card" ng-repeat="card in data.cards" card-click="cardClick0($event, card)"'+'card-class="cardClass0(card)" headline-click="headlineClick0($event, card)"/>'+
+						 '<div class="panel-footer" style="padding-bottom:8px" ng-if="data.cards.length">'+
+							 '<div class="btn-toolbar m-r pull-left">'+
+								 '<div class="btn-group">'+
+									 '<a ng-disabled="data.currentPage==1" ng-click="getPrev()" class="btn btn-default btn-sm"><i class="fa fa-chevron-left"></i></a>'+
+								 '</div>'+
+								 '<div class="btn-group">'+
+									  '<a ng-disabled="data.currentPage==data.totalPages" ng-click="getNext()" class="btn btn-default btn-sm"><i class="fa fa-chevron-right"></i></a>'+
+								 '</div>'+
+							 '</div>'+
+							 '<div class="m-t-xs panel-title">{{data.windowStart+1}} - {{data.windowEnd}} of {{data.totalRecords}}</div>'+
+						'</div>'+
+					'</div>'+
+	  
+	  
+'<style>'+
+  '.search-request-field {'+
+  'color: grey;'+
+  'width: 100%;'+
+  'height: 26px;'+
+  'border-radius: 20px;'+
+  'border: 1px solid #ddd;'+
+  'padding-left: 10px;'+
+  'padding-right: 10px;'+
+  'background-image: url("/styles/thirdparty/select2/select2x2.png") !important;'+
+  'background-repeat: no-repeat;'+
+  'background-size: 70px 38px;'+
+  'background-position: 100% -20px;'+
+'}'+
+
+ '.panel-heading{ '+
+  'border-top-right-radius: 0px;'+
+   'border-top-left-radius: 0px;'+
+ '}'+
+
+'.panel-body {'+
+  'padding: 10px;'+
+  'overflow: auto;'+
+  'min-height: 219px;'+
+'}'+
+ '.panel-body p{'+
+	  'text-align:center'+
+  '}'+
+'.search-request-field:focus {'+
+  'border : 1px solid #278efc;'+
+'}'+
+
+'.panel .panel-heading {'+
+  'background-color: #ffffff;'+
+  'padding-bottom: 7px;'+
+  'padding-top: 12px;'+
+  'padding-left: 5px;'+
+  'padding-right: 5px;'+
+'}'+
+
+'.requested-filter-container {'+
+  'background-color: #e7e9eb;'+
+  'border-width: 0px 0 1px 0;'+
+  'border-color: #bdc0c4;'+
+  'border-style: solid;'+
+'}'+
+
+'.filter-cards {'+
+  'display: flex;'+
+  'flex-direction: column;'+
+  'height: calc(100vh - 135px);'+
+'}'+
+'</style>',
+	  /*
+	   Scope variables to the directive.
+	   request(object)(required) {
+	      endPoint: '/api/sn_cmp/requested_items', //Rest endpoint required
+	      params: {
+	          is_admin: 'true', //Optional Url parameters
+	          page: '1', // Default is 1
+	          cardsPerPage: '4' // Default is 4
+	      }
+	  }
+	  recordWatch(object)(optional) {
+	      'sc_req_item': 'active=true',
+	      'incident': 'active=true'
+	  }
+	  cardClick (function) (optional)    function to execute when card is clicked,
+	  headlineClick (function) (optional) function to execute when headline on card is clicked,	
+	 
+	 Output from Rest End point;
+	 result = {cards: [{…}, {…}, {…}, {…}] Array of cards see cloudCard directive for data format for card.
+				currentPage:1 //Integer
+				totalPages:6  //Integer
+				totalRecords:23 //Integer
+				windowEnd:4 //Integer
+				windowStart:0 //Integer
+	           }
+	  */
+	  restrict: 'E',
+	  scope: {
+		  request: '=',
+		  recordWatch: '=?',
+		  cardClick: '&?',
+		  headlineClick: '&?',
+		  cardClass:'&?'
+	  },
+	  controller: function($scope, cloudHttpRestService, spUtil) {
+		  $scope.data = '';
+	      $scope.filter = '';
+	      var params = $scope.request.params;
+	      params.cardsPerPage = params.cardsPerPage || 4;
+	      var endPoint = $scope.request.endPoint;
+
+	      function getCards(page) {
+	          params.page = page;
+	          cloudHttpRestService.get(endPoint, params).then(function(result) {
+	              $scope.data = result;
+	          });
+	      }
+
+	      $scope.getPrev = function() {
+	          var currentPage = $scope.data.currentPage;
+	          var page = parseInt(currentPage) - 1;
+	          if (page < 1)
+	              return;
+	          getCards(page);
+	      };
+
+	      $scope.getNext = function() {
+	          var currentPage = $scope.data.currentPage;
+	          var page = parseInt(currentPage) + 1;
+	          if (page > $scope.data.totalPages)
+	              return;
+	          getCards(page);
+	      };
+
+	      $scope.cardClass0 = function(card) {
+	          return angular.isFunction($scope.cardClass) ? $scope.cardClass({
+	              card: card
+	          }) : '';
+	      };
+
+	      $scope.cardClick0 = function($event, card) {
+	          if (angular.isFunction($scope.cardClick)) {
+	              $scope.cardClick({
+	                  $event: $event,
+	                  card: card
+	              });
+	          }
+	      };
+
+	      $scope.headlineClick0 = function($event, card) {
+	          if (angular.isFunction($scope.headlineClick)) {
+	              $scope.headlineClick({
+	                  $event: $event,
+	                  card: card
+	              });
+	          }
+	      };
+
+	      $scope.filterKeyPress = function($event) {
+	          if ($event.keyCode != 13)
+	              return;
+	          params.filter = $scope.filter;
+	          getCards(1);
+	      };
+
+	      (function init() {
+	          if (params.page)
+	              getCards(params.page);
+			  else
+	              getCards(1);
+	          if ($scope.recordWatch) {
+	              var recordWatch = $scope.recordWatch;
+	              for (var table in recordWatch) {
+	                  spUtil.recordWatch($scope, table, recordWatch[table], function(name, data) {
+	                      getCards(1);
+	                  });
+	              }
+	          }
+	      })();
+	  }	  
+	};
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-20 18:43:45</sys_created_on>
+        <sys_id>31580e270b1f130034a02f15d6673a63</sys_id>
+        <sys_mod_count>173</sys_mod_count>
+        <sys_name>cmpCardContainer</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_31580e270b1f130034a02f15d6673a63</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-02 20:18:56</sys_updated_on>
+        <type>directive</type>
+    </sp_angular_provider>
+</record_update>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.ResourceBlockDataValidator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ResourceBlockDataValidator</name>
+        <script><![CDATA[var ResourceBlockDataValidator = Class.create();
+ResourceBlockDataValidator.prototype = {
+    initialize: function() {
+    },
+
+    /***
+	 RULE : ResourceBlockName cannot contain characters apart from a-z,A-Z,0-9 and space( ). This rule applies for operation signature as well.
+	 * \W          -> Checks for a non-word character i.e., apart from a-z,A-Z,_,0-9
+	 * [\s]{2,}    -> Checks if given string contains whitespace characters repeating more than once in serial. Eg., 'AWS     Datacenter'
+	 * [^\w ]+     -> Checks if given string contains any non-word character except space, one or more times ANYWHERE. Eg., 'AWS$Datacenter','.AWS Datacenter'
+	 * [_]+        -> Checks if given string contains underscore, one or more times ANYWHERE. Eg., 'AWS_Datacenter','.AWS__Datacenter'
+	 * ^[\W]       -> Checks if given string starts with any non-word character. Eg., ' AWS Datacenter','_Subnet'
+	 * [\W]+$      -> Checks if given string ends with any non-word character. Eg., 'AWS Datacenter ','AWS DC$'
+	 */
+	validateResourceName: function(resourceName){
+		var resourceNameRegEx =  /[\s]{2,}|[^\w ]+|[_]+|^[\W]|[\W]+$/;
+		return !resourceNameRegEx.test(resourceName);
+	},
+
+	/***
+	 RULE : InterfaceName cannot contain characters apart from a-z,A-Z,0-9,space( ) and hyphen(-)
+	 * [^\w -]+     -> Checks if given string contains any non-word character except space and hyphen(-), one or more times. Eg., 'Test$Interface','Test.Interface'
+	 * [_]          -> Checks if given string contains underscore anywhere in the given string. Eg., 'Test_Interface'
+	 * ^[\W_]       -> Checks if given string starts with any non-word character or underscore. Eg., ' Test Interface','_Test Interface'
+	 * [\W_]+$      -> Checks if given string ends with any non-word character or underscore. Eg., 'Test Interface ','Test Interface_'
+	 * [-]{2,}      -> Checks if given string contains continuous hyphen(-) i.e., repeating more than once in serial. Eg., 'Test ----- Interface'
+	 * [\s]{2,}     -> Checks if given string contains continuous spaces( ) i.e., repeating more than once in serial. Eg., 'Test        Interface'
+	 */
+	validateResourceInterfaceName: function(interfaceName){
+		var interfaceNameRegEx =  /[^\w -]+|[_]|^[\W_]|[\W_]+$|[-]{2,}|[\s]{2,}/;
+		return !interfaceNameRegEx.test(interfaceName);
+	},
+
+	/***
+	 RULE : OperationImplementationStepName cannot contain characters apart from a-z,A-Z,0-9,space( ), hyphen(-) and dot(.)
+	 * [.]{2,}      -> Checks if given string contains continuous dot(.) i.e., repeating more than once in serial. Eg., 'Test Operation Impl.....Step Name'
+	 * [^\w .]+     -> Checks if given string contains any non-word character except dot and space, one or more times. Eg., 'Test$Operation.CallingStep'
+	 */
+	validateOpImplStepName: function(stepName){
+		var stepNameRegEx =  /^[\W_]|[\W_]$|[_]|[-]{2,}|[.]{2,}|[\s]{2,}|[^\w .-]/;
+		return !stepNameRegEx.test(stepName);
+	},
+	
+	/***
+	* [^\w]        -> Checks if given string contains contains any special character apart from a-z,A-Z,0-9,_ anywhere in the string Eg., '%,_&....'
+	*  ^[\d_]      -> Checks if given string contains any _ (underscore) or numbers at start. Eg., '1asd,_qwe'
+	*/
+	validateResourceAttributeName: function(attributeName){
+		var nameRegEx = /[^\w]|^[\d_]/;
+		return nameRegEx.test(attributeName);
+	},
+	
+    type: 'ResourceBlockDataValidator'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-11-29 18:51:43</sys_created_on>
+        <sys_id>d08c02a867320300eccf6c706785efdd</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>ResourceBlockDataValidator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d08c02a867320300eccf6c706785efdd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-10 22:15:42</sys_updated_on>
+    </sys_script_include>
+</record_update>

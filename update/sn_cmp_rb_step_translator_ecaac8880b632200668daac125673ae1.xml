@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order/>
+        <script display_value="Create_Storage_Volume_Response_Processor">7a6048440b632200668daac125673a6d</script>
+        <step display_value="Block Storage Interface.Create Volume">c9d93b9e0be622009e620bcb15673a73</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-02 10:17:49</sys_created_on>
+        <sys_id>ecaac8880b632200668daac125673ae1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_ecaac8880b632200668daac125673ae1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-02 10:17:49</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

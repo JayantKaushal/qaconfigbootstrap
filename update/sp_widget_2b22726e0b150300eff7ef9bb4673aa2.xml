@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function(cloudEventScope,$scope,$location) {
+
+	/* widget controller */
+	var c = this;
+	cloudEventScope.registerListener('cloudResourceCardEvent', function(e, info) {
+		$location.search(info.url).search('spa', '1').replace();
+		c.server.update();
+	}, $scope);
+
+	cloudEventScope.registerListener("$locationChangeSuccess", function() {
+		c.server.update();
+	}, $scope);
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-body {
+  padding-top: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+}
+.m-n{
+  margin-top : 6px!important;
+}
+
+.alert-info{
+  margin : 10px;
+}
+
+.col-md-3{
+  padding-right : 0px;
+  padding-left: 0px;
+}
+
+.col-md-9{
+  padding-right : 0px;
+}
+
+.col-md-9{
+  padding-left : 5px;
+}
+
+.panel-heading{
+  height: 52px;
+  border : 1px;
+  padding-top: 8.5px;
+  padding-bottom: 8.5px;
+}
+
+#requestsNotAvailable{
+  background-color: white;
+  min-height: 390px;
+  overflow-y: auto;
+  border-radius: 4px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-request</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Stack Requests</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	data.sys_id = false;
+	
+	if($sp.getParameter('req_item_sys_id')){
+		data.sys_id = true;
+	} else {
+		if($sp.getParameter('sys_id') == $sp.getParameter('selected_card')){
+			data.id = $sp.getParameter('sys_id');
+		} else {
+			var item_gr = new GlideRecord("sn_cmp_stack_item");
+			item_gr.addQuery("sys_id",$sp.getParameter('selected_card'));
+			item_gr.query();
+			if(item_gr.next() && item_gr.ci_instance_id)
+				data.id = item_gr.ci_instance_id.sys_id;
+		}
+		var cloud_item = new GlideRecord('sc_req_item');
+		cloud_item.addQuery('configuration_item',data.id);
+		cloud_item.query();
+		if(cloud_item.next()){
+			data.sys_id = true;
+		}
+	}
+
+	data.cloudRequestsWidget = $sp.getWidget('cloud-stack-request-cards');
+	data.cloudRequestTabsWidget = $sp.getWidget('cloud-stack-requests-tabs');
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-22 12:55:37</sys_created_on>
+        <sys_id>2b22726e0b150300eff7ef9bb4673aa2</sys_id>
+        <sys_mod_count>66</sys_mod_count>
+        <sys_name>Cloud Stack Requests</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_2b22726e0b150300eff7ef9bb4673aa2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-17 19:40:28</sys_updated_on>
+        <template><![CDATA[<div class="panel-heading">
+  <h2 class="panel-title" style="padding-top:8px;">${Operations}</h2>
+</div>
+<div ng-if="!data.sys_id" id="requestsNotAvailable" class="panel-body">
+  <div class="alert alert-info">
+    ${No requests to display}
+  </div>
+</div>
+<div ng-if="data.sys_id" class="panel-body" id="requestsAvailable">
+  <div class="sp-row-content row">
+    <div class="col-md-3">
+      <sp-widget widget="data.cloudRequestsWidget"></sp-widget>
+    </div>
+    <div class="col-md-9">
+      <sp-widget widget="data.cloudRequestTabsWidget"></sp-widget>
+    </div>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

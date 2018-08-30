@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Get_Resource</name>
+        <resource display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId) {
+	var rps = new sn_cmp_api.ResponseProcessorScript();
+	var responseToProcess = rps.extractResponse(response);
+	var responseObject = global.JSON.parse(responseToProcess);
+	
+	var responseProcessor = new sn_cmp.ResponseProcessor(cloudServiceAccountId, 
+												  null,
+												  'Azure API',
+												  {"correlationId": correlationId,
+												   "step": step,
+												   "requestorContext": requestorContext,
+												   "stackId": stackId});
+	
+	// Expect an array of the same type of things
+	if (responseObject.length == 0)
+		return [];
+	
+	var orderId = fetchOrderId(stackId);
+	var type = responseObject[0].type;
+	var table = getTableForType(type, orderId);
+	var cloudModelObject = [];
+	
+	if (gs.nil(table)) {
+		cloudModelObject = 
+			responseProcessor.processResponseArray(responseObject,
+												   'Cloud Resource',
+												   'cloud_resource_create_validator');		
+	} else {
+		ensureMappings(table, orderId);
+		var validator = getValidatorForType(table, orderId);
+
+		cloudModelObject = 
+			responseProcessor.processResponseArray(responseObject, type, validator);
+	}	
+	
+	return global.JSON.stringify(cloudModelObject);
+ }
+
+function getTableForType(type, orderId) {
+	var table = '';
+	var gr = new GlideRecord('sn_capi_resource_type');
+	if (gr.get('name', type))
+		table = '' + gr.ci_class;
+		
+	log(gs.getMessage('Table \'{0}\' for type \'{1}\'', [table, type]), orderId);
+	return table;
+}
+
+function getValidatorForType(table, orderId) {
+	var validator;
+
+	var insertUpdateType = '4'; // From choice table
+	var validatorGr = new GlideRecord('cmdb_cmp_cloud_model_validator');
+	validatorGr.addQuery('ci_class', table);
+	validatorGr.addQuery('validator_type', insertUpdateType);
+	validatorGr.query();
+	if (validatorGr.next()) {
+		validator = validatorGr.getValue('validator_name');
+		log(gs.getMessage('Validator \'{0}\' found for table \'{1}\'', [validator, table]), orderId);
+	} else { // create one
+		log(gs.getMessage('Validator not found for table \'{0}\', creating one', [table]), orderId);
+		validatorGr.initialize();
+		validatorGr.ci_class = table;
+		validatorGr.validator_type = insertUpdateType;
+
+		var parts = /cmdb_ci_(.*)/.exec(table);
+		validator = (gs.nil(parts) ? table : parts[1]) + '_create_update_validator';
+		validatorGr.validator_name = validator;
+
+		var payload = {
+			table: "INSERT,UPDATE",
+			"cmdb_ci_cloud_service_account": "UPDATE",
+			"cmdb_ci_logical_datacenter": "UPDATE_WITH_UPGRADE"
+		};
+
+		validatorGr.validator_payload = global.JSON.stringify(payload);
+		validatorGr.insert();
+	}
+
+	return validator;
+}
+
+function ensureMappings(table, orderId) {
+	var datasource = 'Azure API';
+	var OBJECT_ID = 'object_id';
+	var NAME = 'name';
+	log(gs.getMessage('Checking for mappings for datasource {0} and table {1}', 
+						   [datasource, table]), orderId);
+
+	// Get datasource
+	var dsGr = new GlideRecord('sn_cmp_datasource');
+	if (!dsGr.get('name', datasource))
+		return;
+
+	if (!checkMapping(dsGr, table, OBJECT_ID))
+		insertMapping(dsGr, table, true, OBJECT_ID, 'id');
+
+	if (!checkMapping(dsGr, table, NAME))
+		insertMapping(dsGr, table, false, NAME, 'name');
+	
+	ensureLocationMapping(dsGr, table);
+}
+
+function checkMapping(dsGr, table, field) {
+	var mappingExists = false;
+
+	var mappingGr = new GlideRecord('sn_cmp_response_mapping');
+	mappingGr.addQuery('ci_class', table);
+	mappingGr.addQuery('datasource.sys_id', '' + dsGr.sys_id);
+	mappingGr.addQuery('attribute_value_type', 'mapped');
+	mappingGr.addQuery('ci_class_field', field);
+	mappingGr.query();
+
+	if (mappingGr.hasNext())
+		mappingExists = true;
+
+	return mappingExists;
+}
+
+function ensureLocationMapping(dsGr, table) {
+	var mappingExists = false;
+
+	var mappingGr = new GlideRecord('sn_cmp_response_mapping');
+	mappingGr.addQuery('ci_class', table);
+	mappingGr.addQuery('datasource.sys_id', '' + dsGr.sys_id);
+	mappingGr.addQuery('attribute_value_type', 'mapped');
+	mappingGr.addQuery('additional_identifier', true);
+	mappingGr.addQuery('identifier_ci_class', 'cmdb_ci_azure_datacenter');
+	mappingGr.addQuery('identifier_ci_class_field', 'object_id');
+	mappingGr.query();
+
+	if (!mappingGr.hasNext()) {
+		mappingGr.initialize();
+		mappingGr.ci_class = table;
+		mappingGr.datasource = '' + dsGr.sys_id;
+		mappingGr.attribute_value_type ='mapped';
+		mappingGr.additional_identifier = true;
+		mappingGr.identifier_ci_class = 'cmdb_ci_azure_datacenter';
+		mappingGr.identifier_ci_class_field = 'object_id';
+		mappingGr.source_field = 'location';
+		mappingGr.insert();
+	}
+}
+
+function insertMapping(dsGr, table, isIdField, field, sourceField) {
+	var mappingGr = new GlideRecord('sn_cmp_response_mapping');
+	mappingGr.initialize();
+	mappingGr.ci_class = table;
+	mappingGr.datasource = '' + dsGr.sys_id;
+	mappingGr.attribute_value_type ='mapped';
+	mappingGr.ci_class_field = field;
+	mappingGr.source_field = sourceField;
+	mappingGr.used_for_identification = isIdField;
+	mappingGr.insert();
+}
+
+function log(msg, orderId, level, details) {
+	gs.info('Get Resource (response processor): ' + msg);
+	
+	var trailer = new sn_cmp_api.CloudTrailServiceScript();
+	var message = {};
+	message.statusMessageSummary = msg;
+	message.statusMessageDetails = gs.nil(details) ? msg : details;
+	message.messageType = gs.nil(level) ? '1' : level; // '1' is debug
+	message.milestone = false;
+	message.step = 'Handle Cloud API Response';
+	message.orderId = orderId;
+	var trailMessage = global.JSON.stringify(message);
+	trailer.createTrail(trailMessage);		
+}
+
+function fetchOrderId(stackId) {
+	var orderGr = new GlideRecord('sn_cmp_order');
+	orderGr.addQuery('stack.sys_id', stackId);
+	orderGr.query();
+
+	if (orderGr.next())
+		return '' + orderGr.sys_id;
+
+	return '';
+}
+]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-15 19:00:29</sys_created_on>
+        <sys_id>67186cd29f50320048111f80a57fcf23</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_name>Get_Resource</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_67186cd29f50320048111f80a57fcf23</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-04 23:05:55</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

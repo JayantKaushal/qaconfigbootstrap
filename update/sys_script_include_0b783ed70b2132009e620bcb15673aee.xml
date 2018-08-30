@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPExportBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPExportBlueprintAction</name>
+        <script><![CDATA[var CMPExportBlueprintAction = Class.create();
+CMPExportBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+			if (!params.config) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter:blueprint_id"),
+				"CMPExportBlueprintAction.doAction: Undefined element for exproter config for blueprint",
+				null
+				);
+			}
+			/****
+			  Export Blueprint with following options
+			  1.Basic
+			  2.Advance
+			  3.Default - yaml
+			****/
+			var exporterConfig = JSON.parse(params.config);
+ 			if (exporterConfig.exportType == '1' || exporterConfig.exportType == '2') {
+				var bpExporter = new BlueprintExporter();
+				var exportSetLogSuccess = bpExporter.createUpdateSet(exporterConfig);
+				return exportSetLogSuccess;
+ 			} else {
+ 				//This is for exporting as a yaml file
+				var blueprintServiceScript = new sn_cmp_api.BlueprintServiceScript();
+ 				return blueprintServiceScript.exportCompleteBlueprint(exporterConfig.id);
+ 			}
+		}catch(error){
+			var e = error;
+			var errorMsg = e && e.message ? e.message : "Failed to export blueprint";
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage('{0}', errorMsg),
+			"CMPExportBlueprintAction.doAction(): Failed to export blueprint",
+			error
+			);
+		}
+    },
+
+    type: 'CMPExportBlueprintAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-22 11:28:48</sys_created_on>
+        <sys_id>0b783ed70b2132009e620bcb15673aee</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>CMPExportBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0b783ed70b2132009e620bcb15673aee</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-07 23:51:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

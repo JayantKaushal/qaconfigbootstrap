@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl">
+    <sn_cmp_rb_op_impl action="INSERT_OR_UPDATE">
+        <interface display_value="">d4742def536322005acfcdaf33dc340b</interface>
+        <operation display_value="">d8742def536322005acfcdaf33dc340e</operation>
+        <operation_output_attributes/>
+        <resource display_value="">5c742def536322005acfcdaf33dc3429</resource>
+        <sys_class_name>sn_cmp_rb_op_impl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-13 13:48:52</sys_created_on>
+        <sys_id>54742def536322005acfcdaf33dc342c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>d8742def536322005acfcdaf33dc340e</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_54742def536322005acfcdaf33dc342c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-13 13:48:52</sys_updated_on>
+    </sn_cmp_rb_op_impl>
+</record_update>

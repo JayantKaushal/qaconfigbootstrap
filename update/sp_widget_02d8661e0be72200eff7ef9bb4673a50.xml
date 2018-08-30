@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope,$rootScope){
+	var c = this;
+
+	$rootScope.$on('quota.info.changed', function(e, quotaInfo){
+		c.quota_info = JSON.parse(quotaInfo);
+		c.quota_list = c.quota_info.quota_list;
+		angular.forEach(c.quota_list , function(quota, value){
+			quota.quota_type = quota.quota_type.replace(/_|-/g, " ");
+		});
+	});
+
+	c.completionPercent = function(groupUsed,groupLimit){
+		return ((groupUsed/groupLimit) * 100 ) + '%';
+	}
+
+	c.exceedLimit = function(used,limit){
+		return (used == limit || used > limit);
+	}
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-body {
+  padding: 5px;
+  height: 265px;
+  overflow-y: auto;
+  word-wrap: break-word;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: bold;
+  padding: 15px 0;
+}
+
+.progress {
+  position: relative;
+}
+
+
+.blue {
+  color: #000;
+  background-color: #83bfff;
+}
+
+.red {
+  color: #fff;
+  background-color: rgb(223, 83, 83);
+}
+
+.progress-bar span{
+  position: absolute;
+  display: block;
+  width: 100%;
+}
+
+.no-quota {
+  text-align: center;
+  position: relative;
+  top: 80px;
+}
+
+.orange {
+  color: #D7AA01;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud_catalog_item_quota</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+	$(document).ready(function(){
+		resize_window();		
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 387) + 'px';
+		$(el).find('.panel-body').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Catalog Item Quota</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-09 21:35:19</sys_created_on>
+        <sys_id>02d8661e0be72200eff7ef9bb4673a50</sys_id>
+        <sys_mod_count>217</sys_mod_count>
+        <sys_name>Cloud Catalog Item Quota</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_02d8661e0be72200eff7ef9bb4673a50</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-28 06:21:24</sys_updated_on>
+        <template><![CDATA[<div class="panel b widget-container">
+  <div class="panel-heading">
+    <h4 class="panel-title">${Quota Remaining}</h4>
+  </div>
+  <div class="panel-body">
+    <div ng-if="!c.quota_info" class="no-quota orange">
+      ${Please wait while we load the quota information...}
+    </div>
+    <div ng-if="c.quota_info.quota_status == false" class="no-quota orange">
+      {{c.quota_info.message}}
+    </div>  
+    <div ng-if="c.quota_list">
+      <div class="row title">
+        <div class="col-xs-4">Quota Type</div>
+        <div class="col-xs-4">Group Quota</div>
+        <div class="col-xs-4">User Quota</div>
+      </div>
+
+      <div class="row" ng-repeat="item in c.quota_list">
+        <div class="col-xs-4">{{item.quota_type}}</div>
+        <div class="col-xs-4">
+          <div class="progress">
+            <div class="progress-bar" role="progressbar"  ng-style="{'width': c.completionPercent(item.group_used,item.group_limit)}" ng-class="c.exceedLimit(item.group_used,item.group_limit) ? 'red' : 'blue'">
+              <span>{{item.group_used}}/{{item.group_limit}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-4"> 
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" ng-style="{'width': c.completionPercent(item.user_used,item.user_limit)}" ng-class="c.exceedLimit(item.user_used,item.user_limit) ? 'red' : 'blue'">
+              <span>{{item.user_used}}/{{item.user_limit}}</span> 
+            </div>  
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

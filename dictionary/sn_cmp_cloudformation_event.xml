@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="AWS CloudFormation Stack Event" max_length="40" name="sn_cmp_cloudformation_event" type="collection">
+        <element label="Cloudformation stack" max_length="32" name="cloudformation_stack" reference="cmdb_ci_aws_cloudformation_stack" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Event ID" max_length="128" name="event_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Logical Resource ID" max_length="128" name="logical_resource_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Physical Resource ID" max_length="256" name="physical_resource_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource properties" max_length="1024" name="resource_properties" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource status" max_length="128" name="resource_status" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource status reason" max_length="1024" name="resource_status_reason" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource type" max_length="128" name="resource_type" type="string"/>
+        <element label="Sn stack" max_length="32" name="sn_stack" reference="sn_cmp_stack" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Timestamp" max_length="128" name="timestamp" type="string"/>
+        <index name="index">
+            <element name="cloudformation_stack"/>
+        </index>
+        <index name="index2">
+            <element name="sn_stack"/>
+        </index>
+    </element>
+</database>

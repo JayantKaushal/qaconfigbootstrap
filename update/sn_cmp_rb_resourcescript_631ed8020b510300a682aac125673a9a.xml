@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Ansible_Group</name>
+        <resource display_value="Ansible Tower">d31e50020b510300a682aac125673aae</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var AnsibleModelString = [];
+	var discoveryResponse =global.JSON.parse(response);
+
+	var tableName = "sn_cfg_ansible_group";
+
+	//group
+	var groupResponse = discoveryResponse.groups;
+	for(var respIndex = 0; respIndex < groupResponse.length ; respIndex++){
+		var hostingTables = [];
+		var groupObj = groupResponse[respIndex];
+		//hosting table = inventory for group
+		var groupHostingTable = {};
+		groupHostingTable.name = "sn_cfg_ansible_inventory";
+		groupHostingTable.identifier = "object_id";
+		groupHostingTable.identifierValue = groupObj.inventory_id.toString();
+		hostingTables.push(groupHostingTable);
+
+		//get OrgId for inventory, by querying CMDB
+// 		var orgId = "";
+// 		var gr = new GlideRecord('sn_cfg_ansible_inventory');
+// 		gr.addQuery('id',groupResponse[respIndex].inventory_id);
+// 		gr.query();
+// 		if(gr.hasNext()){
+// 			while(gr.next()){
+// 				gs.info("###### inv name--"+gr.getValue('name'));
+// 				orgId = gr.getValue('organization_id');
+// 			}
+// 		}
+// 		gs.info("#### orgId---->"+orgId);
+// 		//hosting table = organization for inventory
+// 		var invHostingTable = {};
+// 		invHostingTable.name = "sn_cfg_ansible_organization";
+// 		invHostingTable.identifier = "object_id";
+// 		invHostingTable.identifierValue = orgId.toString();
+// 		hostingTables.push(invHostingTable);
+
+		//hosting table = ansible tower for organization
+		var orgHostingTable = {};
+		orgHostingTable.name = "sn_cfg_ansible_tower";
+		orgHostingTable.identifier = "object_id";
+		orgHostingTable.identifierValue = discoveryResponse.objectId;
+		hostingTables.push(orgHostingTable);
+
+		var groupTable = new BuildTableData(tableName,groupObj.id, discoveryResponse.towerUrl, hostingTables);
+
+		//add attributes for table
+		groupTable[tableName].attributes.name = groupObj.name;
+		groupTable[tableName].attributes.description = groupObj.description;
+		groupTable[tableName].attributes.inventory_id = groupObj.inventory_id;
+		groupTable[tableName].attributes.hosts = groupObj.total_hosts;
+		groupTable[tableName].attributes.variables= groupObj.variables;
+
+		groupTable[tableName].attributes.id = groupObj.id;
+		groupTable[tableName].attributes.type = groupObj.type;
+		groupTable[tableName].attributes.total_groups = groupObj.total_groups;
+		groupTable[tableName].attributes.has_inventory_sources = groupObj.has_inventory_sources;
+		groupTable[tableName].attributes.hosts_with_active_failures = groupObj.hosts_with_active_failures;
+		groupTable[tableName].attributes.has_active_failures = groupObj.has_active_failures;
+
+		AnsibleModelString.push(groupTable);
+	}
+
+	return global.JSON.stringify(AnsibleModelString);
+}
+
+
+function BuildTableData(tableName, id, towerUrl, hostingTables){
+	this[tableName] = {};
+	this[tableName].validator = "AnsibleTowerResponseValidator"  ;
+	this[tableName].validator_overrides = {};
+    this[tableName].identification = {};
+	this[tableName].identification [tableName] = {};
+    this[tableName].identification[tableName].criterion= {};
+	this[tableName].identification[tableName].criterion.object_id = id.toString();
+
+	for(var index in hostingTables){
+		//attach hosting table identification
+		this[tableName].identification[hostingTables[index].name] = buildTableIdentification(hostingTables[index]);
+	}
+
+    this[tableName].attributes = {};
+	this[tableName].attributes.towerurl = towerUrl;
+}
+
+function buildTableIdentification(hostingTable){
+	var identification = {};
+	identification[hostingTable.name] = {};
+	identification[hostingTable.name].criterion = {};
+	identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;
+	return identification[hostingTable.name];
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 12:51:45</sys_created_on>
+        <sys_id>631ed8020b510300a682aac125673a9a</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Discover_Ansible_Group</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_631ed8020b510300a682aac125673a9a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-15 11:51:35</sys_updated_on>
+        <type>17</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

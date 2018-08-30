@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Scaling Policy Target Tracking" max_length="40" name="sn_cmp_sa_policy_trgt_trk" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Customized Metric Specification" max_length="40" name="customized_metric_specification" type="string"/>
+        <element label="Disable Scale In" max_length="40" name="disable_scale_in" type="boolean"/>
+        <element label="Scaling Policy" max_length="32" name="policy" reference="sn_cmp_sa_policy_template" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Predefinedmetricspecification" max_length="40" name="PredefinedMetricSpecification" type="string"/>
+        <element label="Target Value" max_length="40" name="TargetValue" type="Double"/>
+        <index name="index">
+            <element name="policy"/>
+        </index>
+    </element>
+</database>

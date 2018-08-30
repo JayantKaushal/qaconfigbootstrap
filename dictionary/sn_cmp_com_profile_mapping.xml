@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Compute Profile Mapping" max_length="40" name="sn_cmp_com_profile_mapping" type="collection">
+        <element label="Cloud Account" max_length="32" name="cloud_account" reference="cmdb_ci_cmp_cloud_account" type="reference"/>
+        <element label="Location" max_length="32" name="location" reference="cmdb_ci_logical_datacenter" reference_qual="javascript:new RefQualsCMP().getLogicalDatacenters(current.cloud_account);" type="reference" use_reference_qualifier="advanced"/>
+        <element attributes="edge_encryption_enabled=true" label="Price" max_length="40" name="price" type="string"/>
+        <element label="Compute Profile" max_length="32" name="profile" reference="sn_cmp_compute_profile" reference_cascade_rule="delete" type="reference"/>
+        <element label="Hardware Template" max_length="32" name="template" reference="cmdb_ci_compute_template" reference_qual="javascript:new RefQualsCMP().getImagesForLDC(current.location, &quot;compute&quot;);" type="reference" use_reference_qualifier="advanced"/>
+        <index name="index">
+            <element name="template"/>
+        </index>
+        <index name="index2">
+            <element name="cloud_account"/>
+        </index>
+        <index name="index3">
+            <element name="profile"/>
+            <element name="cloud_account"/>
+            <element name="location"/>
+        </index>
+        <index name="index4">
+            <element name="location"/>
+        </index>
+        <index name="index5">
+            <element name="profile"/>
+        </index>
+    </element>
+</database>

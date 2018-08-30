@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetOperationParameterAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetOperationParameterAction</name>
+        <script><![CDATA[var CMPGetOperationParameterAction = Class.create();
+CMPGetOperationParameterAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.op_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetOperationParameterAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			//Operation list
+			var getOpSignatureId = '';
+			var grOpSignature = new GlideRecord('sn_cmp_rb_op_signature');
+			grOpSignature.addQuery("name", params.opName);
+			grOpSignature.query();
+			while (grOpSignature.next()) {
+				getOpSignatureId = grOpSignature.getValue('sys_id');
+			}
+			
+			var gr = new GlideRecord('sn_cmp_rb_op_param');
+			gr.addQuery("operation", params.opSignatureId);
+			gr.orderBy('name');
+			gr.query();
+			var opParamsList = [];
+			while (gr.next()) {
+				
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.name = gr.getValue('name');
+				rbObj.type = gr.getValue('type');
+				rbObj.order = gr.getValue('order');
+				rbObj.operation = gr.getValue('operation');//Operation sys Id
+				rbObj.checked = false; //Using for delete option with checkbox in the grid
+				opParamsList.push(rbObj);
+			}
+			return opParamsList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get resource block operations signature parameters"),
+				"CMPGetOperationParameterAction.doAction(): Failed to get resource block operations signature parameters",
+				error
+			);
+		}
+    },
+    type: 'CMPGetOperationParameterAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-01 06:03:43</sys_created_on>
+        <sys_id>9b10dbca3b0332009c82cedf34efc468</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>CMPGetOperationParameterAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_9b10dbca3b0332009c82cedf34efc468</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-02 04:22:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

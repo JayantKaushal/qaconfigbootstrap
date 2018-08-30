@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureDeprovisionResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureDeprovisionResponseProcessor</name>
+        <script><![CDATA[var AzureDeprovisionResponseProcessor = Class.create();
+AzureDeprovisionResponseProcessor.prototype = Object.extendsObject(CloudTemplateResponseProcessor, {
+    initialize: function() {
+		CloudTemplateResponseProcessor.prototype.initialize.call(this);
+    },
+	
+	processResponse: function(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId) {
+		if (gs.nil(response)) {
+			this.log(gs.getMessage('Response is invalid'));
+			return [];
+		}
+		
+		var arrayUtil = new global.ArrayUtil();
+		response = arrayUtil.ensureArray(response);
+		
+		var resourceTypesOperationSteps = [];
+		var categorizedItems = this.getStackItems(response[0].id);
+		this.log(gs.getMessage('Categorized items to deprovision: {0}', 
+							   [global.JSON.stringify(categorizedItems)]));
+		var orderedTypes = this.getDeprovisionTypes();
+		this.log(gs.getMessage('Ordered types to deprovision: {0}' , 
+							   [global.JSON.stringify(orderedTypes)]));
+
+		var contextInfo = {};
+		contextInfo.serviceAccount = cloudServiceAccountId;
+		contextInfo.ldc = ldc;
+		contextInfo.step = step;
+		contextInfo.correlationId = correlationId;
+		contextInfo.requestorContext = requestorContext;
+		contextInfo.stackId = stackId;
+		
+		for (var i = 0; i < orderedTypes.length; i++) {
+			if (categorizedItems.hasOwnProperty(orderedTypes[i])) {
+				this.log(gs.getMessage('Adding step for deprovision: {0}: {1}', 
+					[orderedTypes[i], global.JSON.stringify(categorizedItems[orderedTypes[i]])]));
+				
+				var resourceInfo = {};
+				resourceInfo.type = orderedTypes[i];
+				resourceInfo.ids = categorizedItems[orderedTypes[i]];
+				delete categorizedItems[orderedTypes[i]];
+				var stepMessage = gs.getMessage('Deprovision of resource type: {0}', [orderedTypes[i]]);
+				this.addOperationStepForType(orderedTypes[i], 
+											 resourceInfo,
+											 resourceTypesOperationSteps,
+											 '', // top-level so doesn't matter
+											 contextInfo,
+											 stepMessage);				
+			}
+		}
+		
+		//handle unsupported types
+		for (var type in categorizedItems) {
+			var resourceInfo = {};
+			resourceInfo.type = type;
+			resourceInfo.ids = categorizedItems[type];
+			var stepMessage = gs.getMessage('Deprovision of resource type: {0}', type);
+			this.addOperationStepForType(type, 
+										 resourceInfo,
+										 resourceTypesOperationSteps,
+										 '', // top-level so doesn't matter
+										 contextInfo,
+										 stepMessage);		
+		}
+		var orchestratorServiceScript = new sn_cmp_api.BPOrchestratorServiceScript();
+		orchestratorServiceScript.addToOrchestration(global.JSON.stringify(resourceTypesOperationSteps),
+													 correlationId);
+		return [];
+	},
+	
+	/**
+	 * For the given deployment, which is expected to tie 1:1 with a stack, find the resources
+	 * in the stack that are successfully processed and not the deployment itself, and return
+	 * a categorization of type to IDs.
+	 */
+	getStackItems: function(deploymentId) {
+		var gr = new GlideRecord('cmdb_ci_azure_deployment');
+		if (!gr.get('object_id', deploymentId))
+			return {};
+
+		var stackItemGr = new GlideRecord('sn_cmp_stack_item');
+		if (!stackItemGr.get('ci_instance_id', '' + gr.sys_id))
+			return {};
+
+		var azureTypes = this.getAzureTypes();
+		var stackId = '' + stackItemGr.stack.sys_id;	
+
+		stackItemGr.initialize();
+		stackItemGr.addQuery('stack.sys_id', stackId);
+		stackItemGr.addQuery('status', '2'); // Processed
+		stackItemGr.addQuery('ci_instance_id.sys_class_name', '!=', 'cmdb_ci_azure_deployment');
+		stackItemGr.query();
+
+		var categorizedItems = {};
+
+		while (stackItemGr.next()) {
+			var type = '' + stackItemGr.ci_instance_id.sys_class_name;
+			var resourceType = azureTypes[type];			
+			if (type == 'cmdb_ci_cmp_resource')
+				resourceType = '' + stackItemGr.ci_instance_id.resource_type;
+
+			var objectId = '' + stackItemGr.ci_instance_id.object_id;
+			
+			// Pick out non-terminated Azure resources as best as we can
+			var ciGr = new GlideRecord(type);
+			ciGr.get(stackItemGr.ci_instance_id);
+
+			if (ciGr.isValidField('state') && 
+			   '' + ciGr.getValue('state') != 'terminated' &&
+			   objectId.startsWith('/subscription')) {
+				if (!categorizedItems.hasOwnProperty(resourceType))
+					categorizedItems[resourceType] = [];
+
+				categorizedItems[resourceType].push(objectId);
+			}
+		}
+
+		return categorizedItems;
+	},
+	
+	getAzureTypes: function () {
+		var types = {};
+		var gr = new GlideRecord('sn_capi_resource_type');
+		gr.addQuery('product.provider.name', 'Azure');
+		gr.addNotNullQuery('ci_class');
+		gr.query();
+
+		while (gr.next())
+			types[''+ gr.ci_class] = '' + gr.name;
+		
+		return types;
+	},
+	
+	/**
+	 * For the Azure provider, walk through the types in our type table and order them
+	 * given the dependency order.  This is necessary because if a NIC is attached to a VM
+	 * for example, you can't delete it until the VM itself is deleted and gone.  The 
+	 * dependency sequence field gives the ability to specify order to delete types.  Types
+	 * without a dependency order specified and the generic cloud resource entries are
+	 * handled last.  If in the future some type is found that has to be deleted before any of
+	 * our supported types, field support can add the type with an order and the deprovision
+	 * sequence should get picked up here.
+	 */
+	getDeprovisionTypes: function () {
+		var orderedTypes = [];
+		var gr = new GlideRecord('sn_capi_resource_type');
+		gr.addQuery('product.provider.name', 'Azure');
+		gr.addNotNullQuery('dependency_sequence');
+		gr.orderBy('dependency_sequence');
+		gr.query();
+
+		while (gr.next())
+			orderedTypes.push('' + gr.name);
+
+		// Add unsequenced types
+		gr.initialize();
+		gr.addQuery('product.provider.name', 'Azure');
+		gr.addNullQuery('dependency_sequence');
+		gr.query();
+
+		while (gr.next())
+			orderedTypes.push('' + gr.name);
+
+		return orderedTypes;
+	},
+	
+	/**
+	 * Get GlideRecord to mapped to delete resource - it is the same operation used
+	 * generically for all types, so ignore the type parameter
+	 */
+	getOperationGR: function(type) {
+		var deproOpGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+		if (!deproOpGr.get('name', 'Azure Extensions Interface.DeleteResource')) {
+			this.log(gs.getMessage('No deprovision step for type {0}', [type]));
+			return null;
+		}
+
+		return deproOpGr;
+	},
+	
+	getStepParameters: function(contextInfo, resourcesInfo) {
+		var params = {};
+		params.ObjectID = resourcesInfo.ids.join();
+		params.ResourceType = resourcesInfo.type;
+		return params;
+	},	
+	
+	_isArray: function(testObject) {
+		return !gs.nil(testObject) && !(testObject.propertyIsEnumerable('length')) &&
+			typeof testObject === 'object' && typeof testObject.length === 'number';
+	},	
+	
+    type: 'AzureDeprovisionResponseProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-22 19:17:39</sys_created_on>
+        <sys_id>f898d0ea9f09320048111f80a57fcfae</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>AzureDeprovisionResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f898d0ea9f09320048111f80a57fcfae</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-19 00:09:21</sys_updated_on>
+    </sys_script_include>
+</record_update>

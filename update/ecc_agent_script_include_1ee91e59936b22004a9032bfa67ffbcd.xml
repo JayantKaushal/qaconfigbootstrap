@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Azure billing probe class that handles uses a REST call to download the bill from Azure and send back the output in chunks via the ECC queue.</description>
+        <name>AzureBillingProbe</name>
+        <script><![CDATA[/* jshint -W030 */
+
+var AzureBillingProbe = Class.create();
+
+(function() {
+	
+AzureBillingProbe.prototype = Object.extendsObject(CmpBillingProbe, {
+	CREDENTIAL_TYPE : 'azure_ea',
+	
+	connect : function(credential, endpoint, year, month) {
+		var enrollmentNum = credential.getAttribute("enrollment_number");
+		var authorization = new Encrypter().decrypt(credential.getAttribute("access_key"));
+		var reportType = this.getParameter("report_type", "detail");
+		
+		if (enrollmentNum && authorization) {
+			enrollmentNum = enrollmentNum.trim();
+			authorization = authorization.trim();
+
+			var authToken = "Bearer "+authorization;
+			endpoint = endpoint+enrollmentNum+"/usage-report?type="+reportType+"&month="+year+'-'+month;
+			
+			var cloudApiBase = new CloudAPIBase();
+			var request = cloudApiBase.fetchClient(endpoint);
+			
+			request.addHeader("Authorization", authToken);
+			
+			var response = request.get();
+			var respCode = response.getStatusCode();
+
+			if (respCode != 200) {
+				ms.log('Got error response:' + response.getErrorMessage());
+				this.setError("Cannot retrieve billing data from " + endpoint + ".\nResponse code " + respCode + ": " + response.getErrorMessage());
+				return false;
+			}
+
+			this.inputStream = response.getBodyAsStream();
+			var isr = new InputStreamReader(this.inputStream);
+			this.reader = new BufferedReader(isr);
+			if (this.reader.ready()) {
+				return true;
+			}
+		}
+		return false;
+    },
+
+	/**
+	* Get the (zero-indexed) day of the month associated with this line item.
+	*/
+	getDayForLine : function(line) {
+		// Find the spot with a date followed by month, day, year.
+		// The format should be: "mm/dd/yyyy","m","d","yyyy"
+		var dateIndex = line.search(/"\d{2}\/\d{2}\/\d{4}","\d{1,2}","\d{1,2}","\d{4}"/g);
+		if (dateIndex >= 0) {
+			// pull the 2-digit day out of the first date
+			var day = line.substring(dateIndex+4,dateIndex+6);
+			return (parseInt(day, 10) - 1);
+		}
+		return 0;
+	},	
+	
+    type: "AzureBillingProbe"
+});
+
+})();
+]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-06 17:56:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>1ee91e59936b22004a9032bfa67ffbcd</sys_id>
+        <sys_mod_count>87</sys_mod_count>
+        <sys_name>AzureBillingProbe</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>ecc_agent_script_include_1ee91e59936b22004a9032bfa67ffbcd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 23:59:06</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

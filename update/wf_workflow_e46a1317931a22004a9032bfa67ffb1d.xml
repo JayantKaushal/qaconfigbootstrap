@@ -1,0 +1,2869 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="wf_workflow_version">
+    <wf_workflow_version action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <activity_stages>{"activities":{},"stages":{},"subflows":[],"ends":["066e1a3687271300635fe54ea6cb0b55"]}</activity_stages>
+        <after_business_rules>false</after_business_rules>
+        <checked_out/>
+        <checked_out_by/>
+        <column_renderer display_value="Workflow-driven">a56213111b030100adca1e094f0713ac</column_renderer>
+        <condition/>
+        <condition_type/>
+        <description/>
+        <expected_sequences>8a6e1a3687271300635fe54ea6cb0b4c,c66e1a3687271300635fe54ea6cb0b56,066e1a3687271300635fe54ea6cb0b4d,0a6e1a3687271300635fe54ea6cb0b52,c26e1a3687271300635fe54ea6cb0b57,026e1a3687271300635fe54ea6cb0b54,066e1a3687271300635fe54ea6cb0b53,066e1a3687271300635fe54ea6cb0b55</expected_sequences>
+        <expected_time/>
+        <expected_time_type/>
+        <full_sequences>8a6e1a3687271300635fe54ea6cb0b4c,c66e1a3687271300635fe54ea6cb0b56,066e1a3687271300635fe54ea6cb0b4d,0a6e1a3687271300635fe54ea6cb0b52,0e6e1a3687271300635fe54ea6cb0b51,c26e1a3687271300635fe54ea6cb0b57,ca6e1a3687271300635fe54ea6cb0b55,026e1a3687271300635fe54ea6cb0b54,066e1a3687271300635fe54ea6cb0b55,066e1a3687271300635fe54ea6cb0b53,026e963687271300635fe54ea6cb0b8b,866e1a3687271300635fe54ea6cb0b4e</full_sequences>
+        <journal/>
+        <max_activity_count>1000</max_activity_count>
+        <name>Retrieve Cloud Billing Month</name>
+        <not_cacheable>false</not_cacheable>
+        <on_cancel><![CDATA[// This script executes if the workflow is cancelled.// The global variable context_sys_id contains the sys_id of the cancelled workflow context.]]></on_cancel>
+        <order>100</order>
+        <pin_type>set_by_activity</pin_type>
+        <published>true</published>
+        <relative_duration/>
+        <requires_ert>true</requires_ert>
+        <run_multiple>false</run_multiple>
+        <schedule/>
+        <stage_field/>
+        <stage_order>computed</stage_order>
+        <start display_value="Begin">8a6e1a3687271300635fe54ea6cb0b4c</start>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e963687271300635fe54ea6cb0b89</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:40</sys_updated_on>
+        <table>sys_import_set_row</table>
+        <timezone/>
+        <validated>false</validated>
+        <workflow display_value="Retrieve Cloud Billing Month">e46a1317931a22004a9032bfa67ffb1d</workflow>
+    </wf_workflow_version>
+    <wf_workflow action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <description/>
+        <name>Retrieve Cloud Billing Month</name>
+        <preview/>
+        <sys_class_name>wf_workflow</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 00:27:12</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e46a1317931a22004a9032bfa67ffb1d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>Retrieve Cloud Billing Month</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>wf_workflow_e46a1317931a22004a9032bfa67ffb1d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-05 20:22:39</sys_updated_on>
+        <table>sys_import_set_row</table>
+        <template>false</template>
+        <vars/>
+    </wf_workflow>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Begin">c7a5e32c0a0a0b3a002377c24ed8ea76</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id/>
+        <height/>
+        <input/>
+        <is_parent>false</is_parent>
+        <name>Begin</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b4c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width>80</width>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>20</x>
+        <y>20</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=8a6e1a3687271300635fe54ea6cb0b4c"/>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Begin">8a6e1a3687271300635fe54ea6cb0b4c</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b4c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Discover Cloud Billing Data">4a7a1cb6931113004a9032bfa67ffb31</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>12</databus_lookup_id>
+        <height/>
+        <input>{"probe_class":"${workflow.scratchpad.activityConfig.probeClass}","credential":"${workflow.scratchpad.activityConfig.credentialId}","account":"${workflow.scratchpad.activityConfig.accountNum}","bucket":"${workflow.scratchpad.activityConfig.bucket}","endpoint":"${workflow.scratchpad.activityConfig.endpoint}","year":"${workflow.scratchpad.activityConfig.year}","month":"${workflow.scratchpad.activityConfig.month}","chunk_size":"${workflow.scratchpad.activityConfig.chunkSize}","include_zero_cost_items":"${workflow.scratchpad.activityConfig.includeZeroCostItems}","provider":"${workflow.scratchpad.activityConfig.providerName}","included_days":"${workflow.scratchpad.activityConfig.includedDays}","report_type":"${workflow.scratchpad.activityConfig.reportType}"}</input>
+        <is_parent>false</is_parent>
+        <name>Discover Cloud Billing Data</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b4d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>185</x>
+        <y>159</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=066e1a3687271300635fe54ea6cb0b4d"/>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Discover Cloud Billing Data">066e1a3687271300635fe54ea6cb0b4d</activity>
+        <condition/>
+        <condition_default display_value="Failure">867a183a931113004a9032bfa67ffb4a</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>true</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Failure</name>
+        <order>20</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b4d</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Discover Cloud Billing Data">066e1a3687271300635fe54ea6cb0b4d</activity>
+        <condition>gs.nil(activityOutput.error_messages)</condition>
+        <condition_default display_value="Success">ca7a183a931113004a9032bfa67ffb49</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Success</name>
+        <order>10</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="If">98f621ca0a0a0b5900f7c291f5e45a0e</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>6</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Download Complete?</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>698</x>
+        <y>323</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=026e1a3687271300635fe54ea6cb0b54"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>answer = workflow.scratchpad.download_complete ? 'yes' : 'no';&#13;
+</value>
+        <variable display_value="">c35e50810a0a0ba96248a709b450fc32</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>466e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1</value>
+        <variable display_value="">493d2c1d0a6a803f3217a75738ea3289</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">493cba6a0a6a803f07df24b118473551</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">493cba6a0a6a803f07df24b118473551</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>466e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1</value>
+        <variable display_value="">493d2c1d0a6a803f3217a75738ea3289</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e1a3687271300635fe54ea6cb0b54</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>answer = workflow.scratchpad.download_complete ? 'yes' : 'no';&#13;
+</value>
+        <variable display_value="">c35e50810a0a0ba96248a709b450fc32</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Download Complete?">026e1a3687271300635fe54ea6cb0b54</activity>
+        <condition>activity.result == 'no'</condition>
+        <condition_default display_value="No">c1eff6430a0a0b59000f955abe842c94</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>No</name>
+        <order>200</order>
+        <short_description/>
+        <skip_during_generate>true</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Download Complete?">026e1a3687271300635fe54ea6cb0b54</activity>
+        <condition>activity.result == 'yes'</condition>
+        <condition_default display_value="Yes">c1ef63200a0a0b59005ef89bae78feb7</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Yes</name>
+        <order>100</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b54</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="If">98f621ca0a0a0b5900f7c291f5e45a0e</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>8</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Download Timed Out?</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>788</x>
+        <y>111</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=026e963687271300635fe54ea6cb0b8b"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>var now = new Date();&#13;
+var timeToStop = workflow.scratchpad.wait_until_time;&#13;
+&#13;
+if (now.getTime() - timeToStop &gt; 0) {&#13;
+	workflow.scratchpad.error_messages += 'Billing download timed out.';&#13;
+	answer = 'yes';&#13;
+} else {&#13;
+	answer = 'no';&#13;
+}</value>
+        <variable display_value="">c35e50810a0a0ba96248a709b450fc32</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">493cba6a0a6a803f07df24b118473551</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1</value>
+        <variable display_value="">493d2c1d0a6a803f3217a75738ea3289</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">493cba6a0a6a803f07df24b118473551</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>200</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1</value>
+        <variable display_value="">493d2c1d0a6a803f3217a75738ea3289</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>026e963687271300635fe54ea6cb0b8b</document_key>
+        <order>300</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e963687271300635fe54ea6cb0b8b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>var now = new Date();&#13;
+var timeToStop = workflow.scratchpad.wait_until_time;&#13;
+&#13;
+if (now.getTime() - timeToStop &gt; 0) {&#13;
+	workflow.scratchpad.error_messages += 'Billing download timed out.';&#13;
+	answer = 'yes';&#13;
+} else {&#13;
+	answer = 'no';&#13;
+}</value>
+        <variable display_value="">c35e50810a0a0ba96248a709b450fc32</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Download Timed Out?">026e963687271300635fe54ea6cb0b8b</activity>
+        <condition>activity.result == 'no'</condition>
+        <condition_default display_value="No">c1eff6430a0a0b59000f955abe842c94</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>No</name>
+        <order>200</order>
+        <short_description/>
+        <skip_during_generate>true</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>466e963687271300635fe54ea6cb0b8c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Download Timed Out?">026e963687271300635fe54ea6cb0b8b</activity>
+        <condition>activity.result == 'yes'</condition>
+        <condition_default display_value="Yes">c1ef63200a0a0b59005ef89bae78feb7</condition_default>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Yes</name>
+        <order>100</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c26e963687271300635fe54ea6cb0b8c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="End">c7a66f7d0a0a0b3a004544a6d2f14076</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id/>
+        <height/>
+        <input/>
+        <is_parent>false</is_parent>
+        <name>End</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b55</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width>80</width>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>1057</x>
+        <y>482</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=066e1a3687271300635fe54ea6cb0b55"/>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Run Script">db8c65aec0a8016501d00259bc7203a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>11</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Log Failure</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>1061</x>
+        <y>230</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=0e6e1a3687271300635fe54ea6cb0b51"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>0e6e1a3687271300635fe54ea6cb0b51</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>if (!gs.nil(data.get(12).error_messages))&#13;
+	workflow.scratchpad.error_messages += data.get(12).error_messages.replace(/\n/g, '\\n');&#13;
+</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>0e6e1a3687271300635fe54ea6cb0b51</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>if (!gs.nil(data.get(12).error_messages))&#13;
+	workflow.scratchpad.error_messages += data.get(12).error_messages.replace(/\n/g, '\\n');&#13;
+</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Log Failure">0e6e1a3687271300635fe54ea6cb0b51</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b52</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Run Script">db8c65aec0a8016501d00259bc7203a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>5</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Process downloaded data</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c26e1a3687271300635fe54ea6cb0b57</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>540</x>
+        <y>141</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=c26e1a3687271300635fe54ea6cb0b57"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>c26e1a3687271300635fe54ea6cb0b57</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>466e1a3687271300635fe54ea6cb0b57</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>var rowsRemaining = 1;&#13;
+&#13;
+var gr = getNextResult();&#13;
+var joinedOutput = '';&#13;
+var pageCount = 0;&#13;
+&#13;
+while (gr.next()) {&#13;
+	workflow.scratchpad.last_sequence = gr.sequence+'';&#13;
+	var payload = gr.payload+'';&#13;
+	if (payload == '&lt;see_attachment/&gt;') {&#13;
+        payload = getAttachmentData(gr)+'';&#13;
+	}&#13;
+	var resultIndex = payload.indexOf("&lt;result&gt;&lt;output&gt;");&#13;
+	if (resultIndex &gt;= 0) {&#13;
+		var output = payload.substring(resultIndex+16,&#13;
+						payload.indexOf("&lt;/output&gt;&lt;/result&gt;"));&#13;
+		if (output == 'Download complete') {&#13;
+			processCSV(joinedOutput);&#13;
+			workflow.scratchpad.download_complete = true;&#13;
+		} else {&#13;
+			if (pageCount % 2 == 0) {&#13;
+				processCSV(joinedOutput);&#13;
+				joinedOutput = output;&#13;
+			} else {&#13;
+				joinedOutput = joinedOutput+'\n'+output.substring(output.indexOf('\n')+1);&#13;
+			}&#13;
+				&#13;
+		}&#13;
+		pageCount++;&#13;
+	}&#13;
+	gr.state = 'processed';&#13;
+	gr.processed = new GlideDateTime().getDisplayValue();&#13;
+	gr.update();&#13;
+	&#13;
+	// Re-run query after each chunk is processed because more should be available by then&#13;
+	gr = getNextResult();&#13;
+}&#13;
+activity.result = 'success';&#13;
+&#13;
+function processCSV(output) {&#13;
+	&#13;
+	var progress = Math.floor((100.0*pageCount)/(pageCount+rowsRemaining));&#13;
+	var logGr = new GlideRecord('sn_cmp_billing_job_log');&#13;
+	if (logGr.get(workflow.inputs.u_log_id)) {&#13;
+		logGr.details = 'Parsing downloaded data ('+progress+'%)';&#13;
+		logGr.update();	&#13;
+	}&#13;
+	&#13;
+	if (!gs.nil(output)) {&#13;
+		ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+		ppGr.addQuery('provider', workflow.scratchpad.activityConfig.providerId);&#13;
+		ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+		ppGr.query();&#13;
+		var processor = null;&#13;
+		if(ppGr.next()) {&#13;
+			var evaluator = new GlideScopedEvaluator();&#13;
+			processor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+		} else {&#13;
+			activity.result = 'failure';&#13;
+		}&#13;
+		processor.setProperties(workflow.scratchpad.csv_processor);&#13;
+		processor.process(output);&#13;
+		workflow.scratchpad.csv_processor = processor;&#13;
+	}&#13;
+}&#13;
+&#13;
+function getAttachmentData(record) {&#13;
+  var gr, bytes;&#13;
+  gr = new GlideRecord('sys_attachment');&#13;
+  gr.addQuery('table_name', '=', record.getTableName());&#13;
+  gr.addQuery('table_sys_id', '=', record.sys_id);&#13;
+  gr.addQuery('file_name', '=', 'payload.txt');&#13;
+  gr.setLimit(1);&#13;
+  gr.query();&#13;
+  if (gr.next()) {&#13;
+	return new global.CmpImportHelper().getEccQueueAttachmentBytes(gr);&#13;
+  }&#13;
+  return '';&#13;
+}&#13;
+&#13;
+function getNextResult() {&#13;
+	var gr = new GlideRecord("ecc_queue");&#13;
+	gr.addQuery("name", workflow.scratchpad.activityConfig.probeClass);&#13;
+	gr.addQuery("queue", "input");&#13;
+	gr.addQuery("agent_correlator", workflow.scratchpad.agent_correlator);&#13;
+	gr.addQuery("sequence", "&gt;", workflow.scratchpad.last_sequence);&#13;
+	gr.orderBy("sequence");&#13;
+	gr.query();&#13;
+	rowsRemaining = gr.getRowCount();&#13;
+	return gr;&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>c26e1a3687271300635fe54ea6cb0b57</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>466e1a3687271300635fe54ea6cb0b57</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>var rowsRemaining = 1;&#13;
+&#13;
+var gr = getNextResult();&#13;
+var joinedOutput = '';&#13;
+var pageCount = 0;&#13;
+&#13;
+while (gr.next()) {&#13;
+	workflow.scratchpad.last_sequence = gr.sequence+'';&#13;
+	var payload = gr.payload+'';&#13;
+	if (payload == '&lt;see_attachment/&gt;') {&#13;
+        payload = getAttachmentData(gr)+'';&#13;
+	}&#13;
+	var resultIndex = payload.indexOf("&lt;result&gt;&lt;output&gt;");&#13;
+	if (resultIndex &gt;= 0) {&#13;
+		var output = payload.substring(resultIndex+16,&#13;
+						payload.indexOf("&lt;/output&gt;&lt;/result&gt;"));&#13;
+		if (output == 'Download complete') {&#13;
+			processCSV(joinedOutput);&#13;
+			workflow.scratchpad.download_complete = true;&#13;
+		} else {&#13;
+			if (pageCount % 2 == 0) {&#13;
+				processCSV(joinedOutput);&#13;
+				joinedOutput = output;&#13;
+			} else {&#13;
+				joinedOutput = joinedOutput+'\n'+output.substring(output.indexOf('\n')+1);&#13;
+			}&#13;
+				&#13;
+		}&#13;
+		pageCount++;&#13;
+	}&#13;
+	gr.state = 'processed';&#13;
+	gr.processed = new GlideDateTime().getDisplayValue();&#13;
+	gr.update();&#13;
+	&#13;
+	// Re-run query after each chunk is processed because more should be available by then&#13;
+	gr = getNextResult();&#13;
+}&#13;
+activity.result = 'success';&#13;
+&#13;
+function processCSV(output) {&#13;
+	&#13;
+	var progress = Math.floor((100.0*pageCount)/(pageCount+rowsRemaining));&#13;
+	var logGr = new GlideRecord('sn_cmp_billing_job_log');&#13;
+	if (logGr.get(workflow.inputs.u_log_id)) {&#13;
+		logGr.details = 'Parsing downloaded data ('+progress+'%)';&#13;
+		logGr.update();	&#13;
+	}&#13;
+	&#13;
+	if (!gs.nil(output)) {&#13;
+		ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+		ppGr.addQuery('provider', workflow.scratchpad.activityConfig.providerId);&#13;
+		ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+		ppGr.query();&#13;
+		var processor = null;&#13;
+		if(ppGr.next()) {&#13;
+			var evaluator = new GlideScopedEvaluator();&#13;
+			processor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+		} else {&#13;
+			activity.result = 'failure';&#13;
+		}&#13;
+		processor.setProperties(workflow.scratchpad.csv_processor);&#13;
+		processor.process(output);&#13;
+		workflow.scratchpad.csv_processor = processor;&#13;
+	}&#13;
+}&#13;
+&#13;
+function getAttachmentData(record) {&#13;
+  var gr, bytes;&#13;
+  gr = new GlideRecord('sys_attachment');&#13;
+  gr.addQuery('table_name', '=', record.getTableName());&#13;
+  gr.addQuery('table_sys_id', '=', record.sys_id);&#13;
+  gr.addQuery('file_name', '=', 'payload.txt');&#13;
+  gr.setLimit(1);&#13;
+  gr.query();&#13;
+  if (gr.next()) {&#13;
+	return new global.CmpImportHelper().getEccQueueAttachmentBytes(gr);&#13;
+  }&#13;
+  return '';&#13;
+}&#13;
+&#13;
+function getNextResult() {&#13;
+	var gr = new GlideRecord("ecc_queue");&#13;
+	gr.addQuery("name", workflow.scratchpad.activityConfig.probeClass);&#13;
+	gr.addQuery("queue", "input");&#13;
+	gr.addQuery("agent_correlator", workflow.scratchpad.agent_correlator);&#13;
+	gr.addQuery("sequence", "&gt;", workflow.scratchpad.last_sequence);&#13;
+	gr.orderBy("sequence");&#13;
+	gr.query();&#13;
+	rowsRemaining = gr.getRowCount();&#13;
+	return gr;&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</activity>
+        <condition/>
+        <condition_default/>
+        <condition_type>else_flag</condition_type>
+        <else_flag>true</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Failure</name>
+        <order>1</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b57</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</activity>
+        <condition>activity.result == 'success'</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Success</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ca6e1a3687271300635fe54ea6cb0b57</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Return Value">9b2dba250a0a0b6400396e341ba9d9a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id/>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Return failure</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ca6e1a3687271300635fe54ea6cb0b55</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>961</x>
+        <y>354</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=ca6e1a3687271300635fe54ea6cb0b55"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>ca6e1a3687271300635fe54ea6cb0b55</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b55</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>{"result":"failure", "error_messages":"${workflow.scratchpad.error_messages}"}</value>
+        <variable display_value="">9b2e2cdf0a0a0b6400b2257f77a7db13</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>ca6e1a3687271300635fe54ea6cb0b55</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b55</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>{"result":"failure", "error_messages":"${workflow.scratchpad.error_messages}"}</value>
+        <variable display_value="">9b2e2cdf0a0a0b6400b2257f77a7db13</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Return failure">ca6e1a3687271300635fe54ea6cb0b55</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>426e1a3687271300635fe54ea6cb0b56</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Return Value">9b2dba250a0a0b6400396e341ba9d9a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>2</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Return success</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b53</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>850</x>
+        <y>445</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=066e1a3687271300635fe54ea6cb0b53"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>066e1a3687271300635fe54ea6cb0b53</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b53</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>{"result":"success"}</value>
+        <variable display_value="">9b2e2cdf0a0a0b6400b2257f77a7db13</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>066e1a3687271300635fe54ea6cb0b53</document_key>
+        <order>100</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b53</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>{"result":"success"}</value>
+        <variable display_value="">9b2e2cdf0a0a0b6400b2257f77a7db13</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Return success">066e1a3687271300635fe54ea6cb0b53</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b53</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Run Script">db8c65aec0a8016501d00259bc7203a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id/>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Set the runtime context</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c66e1a3687271300635fe54ea6cb0b56</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:28</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>178</x>
+        <y>14</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=c66e1a3687271300635fe54ea6cb0b56"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>c66e1a3687271300635fe54ea6cb0b56</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b56</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:28</sys_updated_on>
+        <value>run();&#13;
+&#13;
+function run(){&#13;
+&#13;
+	// find the record from job config table.&#13;
+	var configGr = new GlideRecord('sn_cmp_billing_schedule');&#13;
+	configGr.get(workflow.inputs.u_config_id);&#13;
+&#13;
+	workflow.scratchpad.activityConfig = getActivityConfig(configGr);&#13;
+	workflow.scratchpad.error_messages = "";&#13;
+}&#13;
+&#13;
+function getActivityConfig(configGr){&#13;
+	&#13;
+	var config = {};&#13;
+	config.accountId = gs.nil(configGr.account) ? '' : configGr.account.sys_id;&#13;
+	config.accountNum = getSvcAccountNumber(config.accountId);&#13;
+	if (gs.nil(config.accountNum) &amp;&amp; !gs.nil(configGr.credential.enrollment_number)) {&#13;
+		config.accountNum = configGr.credential.enrollment_number;&#13;
+	}&#13;
+	config.credentialId = configGr.credential.sys_id;&#13;
+	config.jobConfigId=configGr.sys_id;&#13;
+	config.bucket = gs.nil(configGr.bucket) ? '(empty)' : configGr.bucket;&#13;
+	config.year=workflow.inputs.u_year;&#13;
+	config.month=workflow.inputs.u_month;&#13;
+	config.includeZeroCostItems=workflow.inputs.u_include_zero_cost_items;&#13;
+	config.masterWfContextId=workflow.inputs.u_master_wf_context;&#13;
+	config.chunkSize=gs.getProperty('sn_cmp.billing.page_size', 3000000);&#13;
+	&#13;
+	var util = new CmpBillingJobUtil();&#13;
+	config.providerName = configGr.provider.name;&#13;
+	config.providerId = configGr.provider;&#13;
+	config.probeClass = util.getProviderProperty(configGr.provider, 'billing_probe');&#13;
+	config.endpoint = util.getProviderProperty(configGr.provider, 'billing_endpoint');&#13;
+	config.reportType = util.getProviderProperty(configGr.provider, 'billing_report_type');&#13;
+	config.csvProcessorInit = util.getProviderProperty(configGr.provider, 'billing_processor_constructor');&#13;
+	&#13;
+	var csvProcessor;&#13;
+	ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+	ppGr.addQuery('provider', config.providerId);&#13;
+	ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+	ppGr.query();&#13;
+	if(ppGr.next()) {&#13;
+		var evaluator = new GlideScopedEvaluator();&#13;
+		csvProcessor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}	&#13;
+	config.includedDays = csvProcessor.getDaysToDownload(&#13;
+			config.accountNum+'', config.year+'', config.month+'',&#13;
+			workflow.inputs.u_clear_existing_data&#13;
+	);	&#13;
+	&#13;
+	return config;&#13;
+}&#13;
+&#13;
+function getSvcAccountNumber(accountId){&#13;
+	var gr = new GlideRecord('cmdb_ci_cloud_service_account');&#13;
+	if (gr.get(accountId)) {&#13;
+		return gr.account_id;&#13;
+	}&#13;
+	return '';&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>c66e1a3687271300635fe54ea6cb0b56</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b56</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:28</sys_updated_on>
+        <value>run();&#13;
+&#13;
+function run(){&#13;
+&#13;
+	// find the record from job config table.&#13;
+	var configGr = new GlideRecord('sn_cmp_billing_schedule');&#13;
+	configGr.get(workflow.inputs.u_config_id);&#13;
+&#13;
+	workflow.scratchpad.activityConfig = getActivityConfig(configGr);&#13;
+	workflow.scratchpad.error_messages = "";&#13;
+}&#13;
+&#13;
+function getActivityConfig(configGr){&#13;
+	&#13;
+	var config = {};&#13;
+	config.accountId = gs.nil(configGr.account) ? '' : configGr.account.sys_id;&#13;
+	config.accountNum = getSvcAccountNumber(config.accountId);&#13;
+	if (gs.nil(config.accountNum) &amp;&amp; !gs.nil(configGr.credential.enrollment_number)) {&#13;
+		config.accountNum = configGr.credential.enrollment_number;&#13;
+	}&#13;
+	config.credentialId = configGr.credential.sys_id;&#13;
+	config.jobConfigId=configGr.sys_id;&#13;
+	config.bucket = gs.nil(configGr.bucket) ? '(empty)' : configGr.bucket;&#13;
+	config.year=workflow.inputs.u_year;&#13;
+	config.month=workflow.inputs.u_month;&#13;
+	config.includeZeroCostItems=workflow.inputs.u_include_zero_cost_items;&#13;
+	config.masterWfContextId=workflow.inputs.u_master_wf_context;&#13;
+	config.chunkSize=gs.getProperty('sn_cmp.billing.page_size', 3000000);&#13;
+	&#13;
+	var util = new CmpBillingJobUtil();&#13;
+	config.providerName = configGr.provider.name;&#13;
+	config.providerId = configGr.provider;&#13;
+	config.probeClass = util.getProviderProperty(configGr.provider, 'billing_probe');&#13;
+	config.endpoint = util.getProviderProperty(configGr.provider, 'billing_endpoint');&#13;
+	config.reportType = util.getProviderProperty(configGr.provider, 'billing_report_type');&#13;
+	config.csvProcessorInit = util.getProviderProperty(configGr.provider, 'billing_processor_constructor');&#13;
+	&#13;
+	var csvProcessor;&#13;
+	ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+	ppGr.addQuery('provider', config.providerId);&#13;
+	ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+	ppGr.query();&#13;
+	if(ppGr.next()) {&#13;
+		var evaluator = new GlideScopedEvaluator();&#13;
+		csvProcessor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}	&#13;
+	config.includedDays = csvProcessor.getDaysToDownload(&#13;
+			config.accountNum+'', config.year+'', config.month+'',&#13;
+			workflow.inputs.u_clear_existing_data&#13;
+	);	&#13;
+	&#13;
+	return config;&#13;
+}&#13;
+&#13;
+function getSvcAccountNumber(accountId){&#13;
+	var gr = new GlideRecord('cmdb_ci_cloud_service_account');&#13;
+	if (gr.get(accountId)) {&#13;
+		return gr.account_id;&#13;
+	}&#13;
+	return '';&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Set the runtime context">c66e1a3687271300635fe54ea6cb0b56</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>false</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b56</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Run Script">db8c65aec0a8016501d00259bc7203a4</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>10</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Set up result processor</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e1a3687271300635fe54ea6cb0b52</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:37</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>468</x>
+        <y>291</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=0a6e1a3687271300635fe54ea6cb0b52"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>0a6e1a3687271300635fe54ea6cb0b52</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b52</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:37</sys_updated_on>
+        <value>process();&#13;
+&#13;
+function process() {&#13;
+	workflow.scratchpad.last_sequence = '0';&#13;
+	workflow.scratchpad.download_complete = false;&#13;
+&#13;
+	ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+	ppGr.addQuery('provider', workflow.scratchpad.activityConfig.providerId);&#13;
+	ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+	ppGr.query();&#13;
+	if(ppGr.next()) {&#13;
+		var evaluator = new GlideScopedEvaluator();&#13;
+		workflow.scratchpad.csv_processor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}&#13;
+&#13;
+	// Allow up to one hour for MID server to stream download&#13;
+	var now = new Date();&#13;
+	workflow.scratchpad.wait_until_time = now.setTime(now.getTime() + (20*60*1000));&#13;
+	&#13;
+	var eccGr = new GlideRecord('ecc_queue');&#13;
+	if (eccGr.get(data.get(12).ecc_queue)) {&#13;
+		workflow.scratchpad.agent_correlator = eccGr.getValue('agent_correlator');&#13;
+		workflow.scratchpad.csv_processor.config(&#13;
+			workflow.scratchpad.activityConfig.accountNum,&#13;
+			workflow.scratchpad.activityConfig.year,&#13;
+			workflow.scratchpad.activityConfig.month,&#13;
+			workflow.inputs.u_clear_existing_data&#13;
+		);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>0a6e1a3687271300635fe54ea6cb0b52</document_key>
+        <order>1</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b52</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:37</sys_updated_on>
+        <value>process();&#13;
+&#13;
+function process() {&#13;
+	workflow.scratchpad.last_sequence = '0';&#13;
+	workflow.scratchpad.download_complete = false;&#13;
+&#13;
+	ppGr = new GlideRecord('sn_capi_provider_property');&#13;
+	ppGr.addQuery('provider', workflow.scratchpad.activityConfig.providerId);&#13;
+	ppGr.addQuery('key', 'billing_processor_constructor');&#13;
+	ppGr.query();&#13;
+	if(ppGr.next()) {&#13;
+		var evaluator = new GlideScopedEvaluator();&#13;
+		workflow.scratchpad.csv_processor = evaluator.evaluateScript(ppGr,'value',null);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}&#13;
+&#13;
+	// Allow up to one hour for MID server to stream download&#13;
+	var now = new Date();&#13;
+	workflow.scratchpad.wait_until_time = now.setTime(now.getTime() + (20*60*1000));&#13;
+	&#13;
+	var eccGr = new GlideRecord('ecc_queue');&#13;
+	if (eccGr.get(data.get(12).ecc_queue)) {&#13;
+		workflow.scratchpad.agent_correlator = eccGr.getValue('agent_correlator');&#13;
+		workflow.scratchpad.csv_processor.config(&#13;
+			workflow.scratchpad.activityConfig.accountNum,&#13;
+			workflow.scratchpad.activityConfig.year,&#13;
+			workflow.scratchpad.activityConfig.month,&#13;
+			workflow.inputs.u_clear_existing_data&#13;
+		);&#13;
+	} else {&#13;
+		activity.result = 'failure';&#13;
+	}&#13;
+}</value>
+        <variable display_value="">c35ddef20a0a0ba96248a7090eccd518</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Set up result processor">0a6e1a3687271300635fe54ea6cb0b52</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b52</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_activity action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Timer">3961a1da0a0a0b5c00ecd84822f70d85</activity_definition>
+        <activity_definition_updated>false</activity_definition_updated>
+        <databus_lookup_id>7</databus_lookup_id>
+        <height/>
+        <input>{}</input>
+        <is_parent>false</is_parent>
+        <name>Wait for Results</name>
+        <new_activity_definition/>
+        <notes/>
+        <out_of_date>false</out_of_date>
+        <parent/>
+        <pinned>false</pinned>
+        <pinned_version/>
+        <stage/>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <timeout>1970-01-01 00:00:00</timeout>
+        <vars/>
+        <width/>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+        <x>476</x>
+        <y>31</y>
+    </wf_activity>
+    <sys_variable_value action="delete_multiple" query="document_key=866e1a3687271300635fe54ea6cb0b4e"/>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292bd15e0a0a0b215a040c701033e3c5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>3000</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>// Set 'answer' to the number of seconds this timer should wait&#13;
+answer = 0;</value>
+        <variable display_value="">293493710a0a0b2115e3e5b4fce1d12a</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cba34da0a0a0b5200798c86eafe1203</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292c91070a0a0b212543d91ffde5014c</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>426e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cbfe48a0a0a0b5200cf8b82cc6685f1</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc6788c0a0a0b5200e6743c94001b16</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">21fd462c0a0a0b211c997276d7806c03</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc740fe0a0a0b520025dcf8e2ff78e7</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>08fcd0830a0a0b2600079f56b1adb9ae</value>
+        <variable display_value="">4cc4a4030a0a0b52007334f001376dc5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>3bf802c20a0a0b52008e2859cd8abcf2</value>
+        <variable display_value="">220cd53d0a0a0b214103bdc2ec5c7ab4</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc836da0a0a0b520083ebc07da2f47c</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c26e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292b2f0e0a0a0b215aa2dd2cbc578dc5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c66e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1970-01-01 00:00:30</value>
+        <variable display_value="">c35dc0df0a0a0ba96248a7098d737925</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>500</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ca6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">220dc5a40a0a0b2109fbd28b8c4b6213</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ce6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">21f80cd00a0a0b2101fcd5b5defc0810</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ce6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">21f80cd00a0a0b2101fcd5b5defc0810</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0a6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cba34da0a0a0b5200798c86eafe1203</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>426e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cbfe48a0a0a0b5200cf8b82cc6685f1</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>500</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ca6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">220dc5a40a0a0b2109fbd28b8c4b6213</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4e6e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">21fd462c0a0a0b211c997276d7806c03</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>3bf802c20a0a0b52008e2859cd8abcf2</value>
+        <variable display_value="">220cd53d0a0a0b214103bdc2ec5c7ab4</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1310</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c66e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>1970-01-01 00:00:30</value>
+        <variable display_value="">c35dc0df0a0a0ba96248a7098d737925</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc6788c0a0a0b5200e6743c94001b16</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1320</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>08fcd0830a0a0b2600079f56b1adb9ae</value>
+        <variable display_value="">4cc4a4030a0a0b52007334f001376dc5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc740fe0a0a0b520025dcf8e2ff78e7</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1350</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">4cc836da0a0a0b520083ebc07da2f47c</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292bd15e0a0a0b215a040c701033e3c5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292c91070a0a0b212543d91ffde5014c</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>1360</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c26e1a3687271300635fe54ea6cb0b50</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value/>
+        <variable display_value="">292b2f0e0a0a0b215aa2dd2cbc578dc5</variable>
+    </sys_variable_value>
+    <sys_variable_value action="INSERT_OR_UPDATE">
+        <document>wf_activity</document>
+        <document_key>866e1a3687271300635fe54ea6cb0b4e</document_key>
+        <order>3000</order>
+        <sys_class_name>sys_variable_value</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <value>// Set 'answer' to the number of seconds this timer should wait&#13;
+answer = 0;</value>
+        <variable display_value="">293493710a0a0b2115e3e5b4fce1d12a</variable>
+    </sys_variable_value>
+    <wf_condition action="INSERT_OR_UPDATE">
+        <activity display_value="Wait for Results">866e1a3687271300635fe54ea6cb0b4e</activity>
+        <condition>true</condition>
+        <condition_default/>
+        <condition_type>standard</condition_type>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <is_positive>true</is_positive>
+        <name>Always</name>
+        <order>0</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b51</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+    </wf_condition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="No">466e963687271300635fe54ea6cb0b8c</condition>
+        <from display_value="Download Timed Out?">026e963687271300635fe54ea6cb0b8b</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>026e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Wait for Results">866e1a3687271300635fe54ea6cb0b4e</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="No">0e6e1a3687271300635fe54ea6cb0b54</condition>
+        <from display_value="Download Complete?">026e1a3687271300635fe54ea6cb0b54</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>066e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Download Timed Out?">026e963687271300635fe54ea6cb0b8b</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">8a6e1a3687271300635fe54ea6cb0b53</condition>
+        <from display_value="Return success">066e1a3687271300635fe54ea6cb0b53</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="End">066e1a3687271300635fe54ea6cb0b55</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Failure">4a6e1a3687271300635fe54ea6cb0b57</condition>
+        <from display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>0e6e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Log Failure">0e6e1a3687271300635fe54ea6cb0b51</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">8e6e1a3687271300635fe54ea6cb0b52</condition>
+        <from display_value="Set up result processor">0a6e1a3687271300635fe54ea6cb0b52</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Success">026e1a3687271300635fe54ea6cb0b4e</condition>
+        <from display_value="Discover Cloud Billing Data">066e1a3687271300635fe54ea6cb0b4d</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>4a6e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Set up result processor">0a6e1a3687271300635fe54ea6cb0b52</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Yes">8e6e1a3687271300635fe54ea6cb0b54</condition>
+        <from display_value="Download Complete?">026e1a3687271300635fe54ea6cb0b54</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Return success">066e1a3687271300635fe54ea6cb0b53</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">426e1a3687271300635fe54ea6cb0b56</condition>
+        <from display_value="Return failure">ca6e1a3687271300635fe54ea6cb0b55</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>826e1a3687271300635fe54ea6cb0b5b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="End">066e1a3687271300635fe54ea6cb0b55</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">4e6e1a3687271300635fe54ea6cb0b56</condition>
+        <from display_value="Set the runtime context">c66e1a3687271300635fe54ea6cb0b56</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>866e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Discover Cloud Billing Data">066e1a3687271300635fe54ea6cb0b4d</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Yes">c26e963687271300635fe54ea6cb0b8c</condition>
+        <from display_value="Download Timed Out?">026e963687271300635fe54ea6cb0b8b</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b58</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Return failure">ca6e1a3687271300635fe54ea6cb0b55</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Success">ca6e1a3687271300635fe54ea6cb0b57</condition>
+        <from display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8e6e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Download Complete?">026e1a3687271300635fe54ea6cb0b54</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">826e1a3687271300635fe54ea6cb0b52</condition>
+        <from display_value="Log Failure">0e6e1a3687271300635fe54ea6cb0b51</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c26e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Return failure">ca6e1a3687271300635fe54ea6cb0b55</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Failure">8e6e1a3687271300635fe54ea6cb0b4d</condition>
+        <from display_value="Discover Cloud Billing Data">066e1a3687271300635fe54ea6cb0b4d</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>c66e1a3687271300635fe54ea6cb0b5a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Log Failure">0e6e1a3687271300635fe54ea6cb0b51</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">4e6e1a3687271300635fe54ea6cb0b4c</condition>
+        <from display_value="Begin">8a6e1a3687271300635fe54ea6cb0b4c</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ca6e1a3687271300635fe54ea6cb0b58</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Set the runtime context">c66e1a3687271300635fe54ea6cb0b56</to>
+    </wf_transition>
+    <wf_transition action="INSERT_OR_UPDATE">
+        <condition display_value="Always">866e1a3687271300635fe54ea6cb0b51</condition>
+        <from display_value="Wait for Results">866e1a3687271300635fe54ea6cb0b4e</from>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>ce6e1a3687271300635fe54ea6cb0b59</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <to display_value="Process downloaded data">c26e1a3687271300635fe54ea6cb0b57</to>
+    </wf_transition>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes/>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Clear Existing Data</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value>False</default_value>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_clear_existing_data</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Clear Existing Data</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>100</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-10 18:38:26</sys_created_on>
+        <sys_id>2f2a6c8593c322004a9032bfa67ffb93</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Clear Existing Data</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_2f2a6c8593c322004a9032bfa67ffb93</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-10 18:38:26</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes/>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Include Zero Cost Items</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value>false</default_value>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_include_zero_cost_items</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="">boolean</internal_type>
+        <label>Include Zero Cost Items</label>
+        <mandatory>false</mandatory>
+        <max_length>40</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>100</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-04 22:35:25</sys_created_on>
+        <sys_id>60e27c9a73b203009c85406e2ff6a70b</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Include Zero Cost Items</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_60e27c9a73b203009c85406e2ff6a70b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-04 22:35:25</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>allow_invalid=true</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Report Job Config</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_config_id</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="Reference">reference</internal_type>
+        <label>Report Job Config</label>
+        <mandatory>true</mandatory>
+        <max_length>32</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>100</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference display_value="" name="sn_cmp_billing_schedule">sn_cmp_billing_schedule</reference>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 00:27:13</sys_created_on>
+        <sys_id>b06a1317931a22004a9032bfa67ffbe1</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Report Job Config</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_b06a1317931a22004a9032bfa67ffbe1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-15 00:32:25</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes/>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Year</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_year</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="String">string</internal_type>
+        <label>Year</label>
+        <mandatory>true</mandatory>
+        <max_length>4</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>200</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 00:27:15</sys_created_on>
+        <sys_id>0d6a5317931a22004a9032bfa67ffb16</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Year</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_0d6a5317931a22004a9032bfa67ffb16</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-12 00:27:15</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes/>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Month</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_month</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="String">string</internal_type>
+        <label>Month</label>
+        <mandatory>true</mandatory>
+        <max_length>40</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>300</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference/>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 00:27:14</sys_created_on>
+        <sys_id>b46a1317931a22004a9032bfa67ffbf8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Month</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_b46a1317931a22004a9032bfa67ffbf8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-12 00:27:14</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>allow_invalid=true,allow_invalid=true</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Master Workflow Context</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_master_wf_context</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="Reference">reference</internal_type>
+        <label>Master Workflow Context</label>
+        <mandatory>false</mandatory>
+        <max_length>32</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>400</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference display_value="" name="wf_context">wf_context</reference>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 00:27:14</sys_created_on>
+        <sys_id>0d6a5317931a22004a9032bfa67ffb04</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Master Workflow Context</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_0d6a5317931a22004a9032bfa67ffb04</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-12 00:27:14</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <var_dictionary action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <array>false</array>
+        <array_denormalized>false</array_denormalized>
+        <attributes>allow_invalid=true</attributes>
+        <audit>false</audit>
+        <calculation><![CDATA[(function calculatedFieldValue(current) {
+
+	// Add your code here
+	return '';  // return the calculated value
+
+})(current);]]></calculation>
+        <choice/>
+        <choice_field/>
+        <choice_table/>
+        <column_label>Report Log ID</column_label>
+        <comments/>
+        <create_roles/>
+        <default_value/>
+        <defaultsort/>
+        <delete_roles/>
+        <dependent/>
+        <dependent_on_field/>
+        <display>false</display>
+        <dynamic_creation>false</dynamic_creation>
+        <dynamic_creation_script/>
+        <dynamic_default_value/>
+        <dynamic_ref_qual/>
+        <element>u_log_id</element>
+        <element_reference>false</element_reference>
+        <foreign_database/>
+        <function_definition/>
+        <function_field>false</function_field>
+        <help/>
+        <hint/>
+        <internal_type display_value="Reference">reference</internal_type>
+        <label>Report Log ID</label>
+        <mandatory>false</mandatory>
+        <max_length>32</max_length>
+        <model_id>e46a1317931a22004a9032bfa67ffb1d</model_id>
+        <model_table>wf_workflow</model_table>
+        <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+        <next_element/>
+        <order>500</order>
+        <primary>false</primary>
+        <read_only>false</read_only>
+        <read_roles/>
+        <reference display_value="" name="sn_cmp_billing_job_log">sn_cmp_billing_job_log</reference>
+        <reference_cascade_rule/>
+        <reference_floats>false</reference_floats>
+        <reference_key/>
+        <reference_qual/>
+        <reference_qual_condition/>
+        <reference_type/>
+        <sizeclass/>
+        <spell_check>false</spell_check>
+        <staged>false</staged>
+        <sys_class_name>var_dictionary</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-06 23:57:08</sys_created_on>
+        <sys_id>975b4f16939932004a9032bfa67ffb10</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>Report Log ID</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>var_dictionary_975b4f16939932004a9032bfa67ffb10</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-07 00:50:54</sys_updated_on>
+        <table_reference>false</table_reference>
+        <text_index>false</text_index>
+        <unique>false</unique>
+        <use_dependent_field>false</use_dependent_field>
+        <use_dynamic_default>false</use_dynamic_default>
+        <use_reference_qualifier>simple</use_reference_qualifier>
+        <virtual>false</virtual>
+        <widget/>
+        <write_roles/>
+        <xml_view>false</xml_view>
+    </var_dictionary>
+    <sys_documentation element="u_month" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_month</element>
+            <help/>
+            <hint/>
+            <label>Month</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Month</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-12 00:27:14</sys_created_on>
+            <sys_id>096a1317931a22004a9032bfa67ffbfd</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Month</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_month_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-12 00:27:14</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_master_wf_context" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_master_wf_context</element>
+            <help/>
+            <hint/>
+            <label>Master Workflow Context</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Master Workflow Context</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-12 00:27:14</sys_created_on>
+            <sys_id>cd6a5317931a22004a9032bfa67ffb09</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Master Workflow Context</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_master_wf_context_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-12 00:27:14</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="job_log_id" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>job_log_id</element>
+            <help/>
+            <hint/>
+            <label>Job Log Id</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Job Log Id</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-21 05:25:17</sys_created_on>
+            <sys_id>bae43e5e936222004a9032bfa67ffb46</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Job Log Id</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_job_log_id_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-21 05:25:17</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_report_job_id" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_report_job_id</element>
+            <help/>
+            <hint/>
+            <label>Report Job Id</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Report Job Id</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-12 00:27:15</sys_created_on>
+            <sys_id>596a5317931a22004a9032bfa67ffb28</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Report Job Id</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_report_job_id_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-12 00:27:15</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_log_id" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_log_id</element>
+            <help/>
+            <hint/>
+            <label>Report Log ID</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Report Log ID</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-07 00:50:54</sys_created_on>
+            <sys_id>57e7db9a939932004a9032bfa67ffb20</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Report Log ID</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_log_id_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-07 00:50:54</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_config_id" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_config_id</element>
+            <help/>
+            <hint/>
+            <label>Report Job Config</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Report Job Config</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-12 00:27:13</sys_created_on>
+            <sys_id>346a1317931a22004a9032bfa67ffbea</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Report Job Config</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_config_id_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-12 00:27:13</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_clear_existing_data" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_clear_existing_data</element>
+            <help/>
+            <hint/>
+            <label>Clear Existing Data</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Clear Existing Data</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-10 18:38:26</sys_created_on>
+            <sys_id>184a6c8593c322004a9032bfa67ffbd3</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Clear Existing Data</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_clear_existing_data_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-11-10 18:38:26</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_include_zero_cost_items" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_include_zero_cost_items</element>
+            <help/>
+            <hint/>
+            <label>Include Zero Cost Items</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Include Zero Cost Items</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-12-04 22:35:25</sys_created_on>
+            <sys_id>14f23c9a73b203009c85406e2ff6a7b1</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Include Zero Cost Items</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_include_zero_cost_items_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-12-04 22:35:25</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_year" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_year</element>
+            <help/>
+            <hint/>
+            <label>Year</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Year</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-10-12 00:27:15</sys_created_on>
+            <sys_id>116a5317931a22004a9032bfa67ffb1c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Year</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_year_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-10-12 00:27:15</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <sys_documentation element="u_log_config" language="en" table="var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>u_log_config</element>
+            <help/>
+            <hint/>
+            <label>Report Log ID</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d</name>
+            <plural>Report Log ID</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-06 23:57:08</sys_created_on>
+            <sys_id>f79bcf16939932004a9032bfa67ffb17</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_name>Report Log ID</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_e46a1317931a22004a9032bfa67ffb1d_u_log_config_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-06 23:59:42</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+    <wf_estimated_runtime_config action="INSERT_OR_UPDATE">
+        <estimated_run_time/>
+        <no_of_data_points>1</no_of_data_points>
+        <percentage_threshold_ert>20</percentage_threshold_ert>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 22:40:09</sys_created_on>
+        <sys_id>8a6e963687271300635fe54ea6cb0b89</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 22:40:09</sys_updated_on>
+        <workflow_version display_value="Retrieve Cloud Billing Month">0a6e963687271300635fe54ea6cb0b89</workflow_version>
+    </wf_estimated_runtime_config>
+    <wf_workflow_version action="update_multiple" query="workflow=e46a1317931a22004a9032bfa67ffb1d^sys_id!=0a6e963687271300635fe54ea6cb0b89">
+        <published>false</published>
+    </wf_workflow_version>
+</record_update>

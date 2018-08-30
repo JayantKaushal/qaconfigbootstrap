@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_vSphere_NIC_VM_Response_Processor</name>
+        <resource display_value="vSphere Datacenter">5cc941360b632200e937c97193673a1a</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId) {
+	var nicInfohandler = [];
+	var vmResponse = global.JSON.parse(response);
+
+	if(vmResponse.networkInterfaces && vmResponse.networkInterfaces.length > 0){
+		for (var i=0; i< vmResponse.networkInterfaces.length; i++){
+			var nicIdTrim = vmResponse.networkInterfaces[i].networkInterfaceId.split("/");
+			var nicId;
+			var pubIP;
+			var privIP;
+			if (nicIdTrim.length == 2)
+				nicId = nicIdTrim[1];
+			else
+				nicId = nicIdTrim[0];
+			var endPointId = "nic-" + nicId + "_endpoint";
+
+			/*if(vmResponse.networkInterfaces[i].publicIPAddresses.length > 0){
+				pubIP = vmResponse.networkInterfaces[i].publicIPAddresses[0];
+			}
+
+			if(vmResponse.networkInterfaces[i].privateIPAddresses.length > 0){
+				privIP = vmResponse.networkInterfaces[i].privateIPAddresses[0];
+			}*/
+
+			var nicInfo = {
+				"cmdb_ci_nic": {
+					"validator": "nic_create_validator",
+					"validator_overrides": { },
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_vcenter_datacenter": {
+							"criterion": {
+								"object_id": getLDC()
+							}
+						},
+						"cmdb_ci_nic":{
+							"criterion":{
+							    "object_id": nicId
+							}
+						}
+					},
+					"attributes":{
+	                    "object_id": nicId,
+	                    "name": nicId,
+	                    "allocation_id":"",
+	                    "attach_time":"",
+	                    "gateway": vmResponse.networkInterfaces[i].gateway,
+	                    "host_name": vmResponse.nodeName,
+	                    "is_connected":"",
+	                    "is_static":"",
+	                    "netmask": vmResponse.networkInterfaces[i].netmask,
+	                    "owner": vmResponse.networkInterfaces[i].ownerId,
+	                    "private_dns": vmResponse.networkInterfaces[i].privateDnsName,
+	                    //"private_ip": privIP,
+	                    "public_dns":"",
+	                    "is_source_dest_check": vmResponse.networkInterfaces[i].sourceDestCheck,
+	                    //"public_ip": pubIP,
+	                    "node_id":"",
+						"ip_address":vmResponse.publicIps[0],
+	                    "status": vmResponse.networkInterfaces[i].status
+	                },
+					"bindings":[
+					{
+					   "attach_to":{
+						  "implemented_by":{
+							 "endpoint_ci":"cmdb_ci_endpoint_vnic",
+							 "endpoint_identification":{
+								"object_id": endPointId
+							 },
+							 "attributes":{
+								"name": endPointId,
+								"host": vmResponse.objectId,
+								"target_port":"",
+								"object_id": endPointId,
+								"uncertain":"",
+								"ip_address":"",
+								"region":"",
+								"dns_suffix":"",
+								"ipam_pool_id":"",
+								"port_id":""
+							}
+						  }
+					   }
+					}
+				  ]
+				}
+			};
+			nicInfohandler.push(nicInfo);
+		}
+	}
+	return global.JSON.stringify(nicInfohandler);
+}
+
+function getLDC(){
+	var stepResponse = global.JSON.parse(step);
+	return stepResponse.ldcObjectId;
+}
+]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-02 16:29:35</sys_created_on>
+        <sys_id>ddd6648b67b13200790a6c706785efa9</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Create_vSphere_NIC_VM_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_ddd6648b67b13200790a6c706785efa9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-11 11:43:04</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

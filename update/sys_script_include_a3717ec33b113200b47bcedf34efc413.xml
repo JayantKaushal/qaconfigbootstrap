@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateOpImplStepsSortOrderAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateOpImplStepsSortOrderAction</name>
+        <script><![CDATA[var CMPUpdateOpImplStepsSortOrderAction = Class.create();
+CMPUpdateOpImplStepsSortOrderAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.operationId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPUpdateOpImplStepsSortOrderAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			//Update steps sort order
+			var gr;
+			var getStepList = JSON.parse(params.stepList);
+			var getStepListLength = (getStepList) ? getStepList.length : 0;
+			for(var i=0; i < getStepListLength; i++) {
+				gr = new GlideRecord('sn_cmp_rb_op_impl_step');
+				if(getStepList[i].id || getStepList[i].id != "")
+					gr.addQuery("sys_id", getStepList[i].id);
+				gr.query();
+				if (gr.next()) {
+					gr.setValue('order', getStepList[i].order);
+					gr.update();
+				}
+			}
+			return true;
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update Operation Implementation steps sort order"),
+				"CMPUpdateOpImplStepsSortOrderAction.doAction(): Failed to update op Imple steps sort order",
+				error
+			);
+		}
+    },
+    type: 'CMPUpdateOpImplStepsSortOrderAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-09 06:12:42</sys_created_on>
+        <sys_id>a3717ec33b113200b47bcedf34efc413</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPUpdateOpImplStepsSortOrderAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a3717ec33b113200b47bcedf34efc413</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-09 06:26:22</sys_updated_on>
+    </sys_script_include>
+</record_update>

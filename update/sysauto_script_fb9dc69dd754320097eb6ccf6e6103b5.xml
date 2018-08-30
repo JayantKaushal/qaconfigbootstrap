@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition/>
+        <conditional>false</conditional>
+        <name>Cloud Event Scheduler</name>
+        <run_as display_value="System Administrator">6816f79cc0a8016401c5a33be04be441</run_as>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_period>1970-01-01 00:00:10</run_period>
+        <run_start>2017-01-12 23:49:32</run_start>
+        <run_time>1970-01-01 08:00:00</run_time>
+        <run_type>periodically</run_type>
+        <script><![CDATA[processEvent();
+function processEvent(){
+	var eventGr = new GlideRecord('sn_cmp_cloud_event');
+	eventGr.addQuery('state','ready');
+	eventGr.setLimit(500);
+	eventGr.orderBy('sys_created_on');
+	eventGr.query();
+	var matchedEventHandlerGr = null;
+	while(eventGr.next()){
+		var mutex = new global.CMPMutex(eventGr.getUniqueValue(), 1000, 10);
+		if (!mutex.get())
+			continue;
+		try {
+			eventGr.state = 'processing';
+			eventGr.update();
+			if (matchedEventHandlerGr != null){
+				if (findMatchedEventHandler(matchedEventHandlerGr, eventGr)){
+					processEventWithHandler(matchedEventHandlerGr, eventGr);
+					continue;
+				}		
+				else
+					matchedEventHandlerGr = null;			
+			}
+			var eventHandlerGr = new GlideRecord('sn_cmp_cloud_event_handler');
+			eventHandlerGr.addActiveQuery();
+			eventHandlerGr.query();
+			while(eventHandlerGr.next()){
+				if (findMatchedEventHandler(eventHandlerGr, eventGr)){
+					matchedEventHandlerGr = eventHandlerGr;
+					processEventWithHandler(matchedEventHandlerGr, eventGr);
+					break;
+				}
+			}		
+			if (matchedEventHandlerGr == null)
+				handleUnmatachedEvent(eventGr);
+		} finally {
+			//catch the error so we can release mutex
+			mutex.release();
+		}		
+		
+	}
+}
+
+function findMatchedEventHandler(eventHandlerGr, eventGr){
+	var headerName = eventHandlerGr.getValue('header_name');
+	var headerValue = eventHandlerGr.getValue('header_value');
+	var handlersource = eventHandlerGr.getValue('source');
+	var headers = new global.JSON().decode(eventGr.headers);
+	if (!headers)
+		return false;
+	
+	var queryParams = new global.JSON().decode(eventGr.query_params);
+	
+	//find matched handler if headers has the header name and value starts with headerValue
+	if (headers.hasOwnProperty(headerName) && (gs.nil(headerValue) || headers[headerName].indexOf(headerValue) == 0)) {
+		//if the event has source, make sure it matches handler source
+		if (queryParams) {
+			var sources = queryParams.source;
+			if (sources) {
+				var source = sources[0];
+				if (handlersource != source)
+					return false;
+			}
+		}
+		return true;
+	}		
+	else
+		return false;
+}
+
+function handleResponse(eventGr, response){
+	if (!response || (response.state != 'processed' && response.state != 'processing' && response.state != 'ready')){
+		if (response){
+			eventGr.state = response.state ? response.state : 'skipped';
+			eventGr.error_message = response.error_message ? response.error_message : gs.getMessage('Event handler returned state is not processed');
+			updateEventGr(eventGr, response);
+		}else{
+			eventGr.state = 'error';
+			eventGr.error_message = gs.getMessage('Error running event handler');
+		}
+		eventGr.processed = new GlideDateTime();	
+	}else{
+		eventGr.state = response.state;
+		if (response.state == 'ready') {
+			eventGr.update();
+			return;
+		}
+		if (response.state == 'processed') 
+			eventGr.processed = new GlideDateTime();
+		updateEventGr(eventGr, response);
+	}	
+	eventGr.update();
+}
+
+function handleUnmatachedEvent(eventGr){
+	eventGr.source = 'unknown';
+	eventGr.state = 'skipped';
+	eventGr.error_message = gs.getMessage('No event handler found');
+	eventGr.processed = new GlideDateTime();
+	eventGr.update();
+}
+
+function processEventWithHandler(handler, eventGr){
+	var source = handler.getValue('source');
+	eventGr.setValue('state','processing');
+	eventGr.setValue('source', source);
+	eventGr.update();
+	var evaluator = new GlideScopedEvaluator();
+	evaluator.putVariable('headersStr',eventGr.getValue('headers'));
+	evaluator.putVariable('bodyStr',eventGr.getValue('payload'));
+	evaluator.putVariable('queryParamsStr',eventGr.getValue('query_params'));
+	evaluator.putVariable('eventId',eventGr.getUniqueValue());
+	handleResponse(eventGr,evaluator.evaluateScript(handler, 'run_handler_script'));
+}
+
+function updateEventGr (eventGr, response){
+	eventGr.event_name = response.event_name ? response.event_name : null;
+	eventGr.event_time = response.event_time ? response.event_time : null;
+	eventGr.ci = response.ci ? response.ci : null;
+	eventGr.resource_type = response.resource_type ? response.resource_type : null;
+	eventGr.resource_block = response.resource_block ? response.resource_block : null;
+	eventGr.resource_id = response.resource_id ? response.resource_id : null;
+	eventGr.subject = response.subject ? response.subject : null;
+	eventGr.discovery_status = response.discovery_status ? response.discovery_status : null; 
+}
+]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-12 23:50:15</sys_created_on>
+        <sys_id>fb9dc69dd754320097eb6ccf6e6103b5</sys_id>
+        <sys_mod_count>37</sys_mod_count>
+        <sys_name>Cloud Event Scheduler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sysauto_script_fb9dc69dd754320097eb6ccf6e6103b5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-24 07:46:46</sys_updated_on>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

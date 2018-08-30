@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_pol_template">
+    <sn_cmp_pol_template action="INSERT_OR_UPDATE">
+        <logic_name>ipam_action_invocation</logic_name>
+        <name>ipam_action_invocation</name>
+        <sys_class_name>sn_cmp_pol_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-25 09:02:16</sys_created_on>
+        <sys_id>7e72a5105bbd3200ca17273a41f91a65</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>ipam_action_invocation</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_pol_template_7e72a5105bbd3200ca17273a41f91a65</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-19 19:34:35</sys_updated_on>
+        <template>	if(skipRules == "false"){  &#13;
+               ipamAction( rule, "${actionId}",  "${name}",  "${ipamProviderType}", "${ipamMethod}",  ${attributes});&#13;
+               skipRules = "true";&#13;
+	}&#13;
+        gs.info("Post IPAM Action     ${actionId}  " + outputMap.inputMap.moment +   "   last action id = "+ lastActionId);&#13;
+	if( skipRules == "true" &amp;&amp; lastActionId == "${actionId}"){&#13;
+	    skipRules = "false";&#13;
+           // check moment&#13;
+          // set property here&#13;
+          //propertyAction( rule, property, value, isScript, "${actionId}")&#13;
+         gs.info("Post IPAM Action before property action call " + outputMap.inputMap.moment);&#13;
+          if( !gs.nil(outputMap.inputMap.moment ) &amp;&amp; outputMap.inputMap.moment == 'pre'){&#13;
+               var ipVal = 'IPAssignMode=pre;IPAddress=${parameter.${name}.ALLOCATED_ADDRESS};Netmask=$(ci.cmdb_ci_cloud_subnet[${parameter.formData.SubnetId}].subnet_mask);Gateway=$(ci.cmdb_ci_cloud_subnet[${parameter.formData.SubnetId}].gateway);DNS1=$(ci.cmdb_ci_cloud_subnet[${parameter.formData.SubnetId}].primary_dns);DNS2=$(ci.cmdb_ci_cloud_subnet[${parameter.formData.SubnetId}].secondary_dns);MacAddress=';&#13;
+                  gs.info('ipVal = ' + ipVal);&#13;
+                    propertyAction( rule, '${property}',  ipVal, 'false', '${actionId}');&#13;
+           }&#13;
+	}&#13;
+</template>
+    </sn_cmp_pol_template>
+</record_update>

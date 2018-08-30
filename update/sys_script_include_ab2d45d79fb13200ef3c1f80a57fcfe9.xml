@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureV1DiscoUpgradeUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureV1DiscoUpgradeUtil</name>
+        <script><![CDATA[var AzureV1DiscoUpgradeUtil = Class.create();
+AzureV1DiscoUpgradeUtil.prototype = Object.extendsObject(CloudV1DiscoUpgradeUtil, {
+    initialize: function() {
+		CloudV1DiscoUpgradeUtil.prototype.initialize.call(this);
+		
+		this.accountType = 'azure_subscription';
+		this.accountIdField = 'id';
+		this.regionType = 'azure_region';
+		this.instanceType = 'cmdb_ci_azure_vm';
+		this.ldcType = 'cmdb_ci_azure_datacenter';
+    },
+	
+	upgrade: function() {
+		CloudV1DiscoUpgradeUtil.prototype.upgrade.call(this);
+		// Azure also has NICs that extends the base NIC table being reused
+		this.updateTable('cmdb_ci_azure_nic', 'cmdb_ci_nic');
+	},
+	
+	getAccountId: function(gr) {
+		return '' + gr.subscription.id;
+	},
+	
+	getV1Account: function(accountId) {
+		var sub = new GlideRecord('azure_subscription');
+		
+		if (sub.get('id', accountId))
+			return sub;
+
+		gs.info('ERROR: Account ID not found in aws_account_admin: ' + accountId);
+
+		return null;
+	},
+	
+	getCred: function(oldAcct) {
+		var gr = new GlideRecord('cloud_web_svc_acct_to_cred');
+		gr.addQuery('account.sys_id', '' + oldAcct.sys_id);
+		gr.query();
+		
+		if (gr.next())
+			return '' + gr.credential.sys_id;
+
+		gs.info('No credentials found for account with sys_id: ' + oldAcct.sys_id);
+		return '';
+	},
+
+    type: 'AzureV1DiscoUpgradeUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-03 13:50:11</sys_created_on>
+        <sys_id>ab2d45d79fb13200ef3c1f80a57fcfe9</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>AzureV1DiscoUpgradeUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_ab2d45d79fb13200ef3c1f80a57fcfe9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-05 23:43:59</sys_updated_on>
+    </sys_script_include>
+</record_update>

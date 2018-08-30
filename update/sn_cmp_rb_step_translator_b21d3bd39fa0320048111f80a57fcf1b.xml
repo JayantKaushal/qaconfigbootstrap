@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order/>
+        <script display_value="List_AvailabilitySets_Response_Processor">794cb3d39fa0320048111f80a57fcfc8</script>
+        <step display_value="ITapp Azure Compute.List availability zones">52b137139fa0320048111f80a57fcf94</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-31 23:20:20</sys_created_on>
+        <sys_id>b21d3bd39fa0320048111f80a57fcf1b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_b21d3bd39fa0320048111f80a57fcf1b</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-01-31 23:20:20</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

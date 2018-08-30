@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Resource Instance Status" max_length="40" name="sn_cmp_rb_ci_status" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="100" name="name" type="string"/>
+        <element label="Resource Block Ref" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

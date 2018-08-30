@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPImportBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPImportBlueprintAction</name>
+        <script><![CDATA[var CMPImportBlueprintAction = Class.create();
+CMPImportBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.content) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPImportBlueprintAction.doAction: Undefined content",
+				null
+				);
+			}
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var resourceServiceScript=	new sn_cmp_api.ResourceBlockServiceScript();
+			//import blueprint
+			var response = blueprintServiceScript.importBlueprint(params.content,"ServiceNow Blueprint");
+			var resObj = new global.JSON().decode(response);
+			var output = {};
+				if(resObj.status == "Success"){
+					var bpMap = new global.JSON().decode(resObj.objectJSON);
+					var bpName= bpMap.blueprintName;
+					var blueprintDTO = bpMap.blueprintDTO;
+					var stageResources=bpMap.stageResources;
+					if(bpMap.isBlueprintExist){
+						var output = {
+							"status":resObj.status,
+							"name":blueprintDTO.name,
+							"sys_id":blueprintDTO.id,
+							"layer_id":blueprintDTO.svcLayerId
+						};
+						return output;
+					}
+					var stageResourceMap = {};
+
+						//Add Node
+						for(var i in stageResources){
+							var stageRes = stageResources[i];
+							stageResourceMap[stageRes.aliasName]=stageRes;
+							var checkNodeObj ={
+								"nodeName":stageRes.aliasName,
+								"svcLayerId":blueprintDTO.svcLayerId
+							};
+
+							if(!this.checkNodeExist(checkNodeObj)){
+								var payload;
+								if(stageRes.type == 'Resource'){
+									var resourceJSON = resourceServiceScript.get(stageRes.resourceId);
+									var resourceBlockDTO = new global.JSON().decode(resourceJSON);
+									payload={
+										"ci_type":resourceBlockDTO.refCI,
+										"name":stageRes.aliasName,
+										"layer_id":blueprintDTO.svcLayerId,
+										"resblock_id":resourceBlockDTO.id,
+										"resourceblock_name":resourceBlockDTO.name
+									};
+								}else{
+									payload={
+										"ci_type":stageRes.hostCI,
+										"name":stageRes.aliasName,
+										"layer_id":blueprintDTO.svcLayerId
+									};
+								}
+								var cmpAddResourceBlockAction =  new CMPAddResourceBlockAction();
+								var node = cmpAddResourceBlockAction.doAction(payload);
+								if(stageRes.type == 'BaseHost'){
+									var constraintCSV = stageRes.constraintCSV;
+									if(constraintCSV && constraintCSV != ""){
+										var constraintRes = constraintCSV.split(",");
+										for(var i=0; i<constraintRes.length; i++){
+											var hostResJSON = resourceServiceScript.getResourceBlockByName(constraintRes[i].trim());
+											var hostResDTO = new global.JSON().decode(hostResJSON);
+											var versionObj =new sn_smd.SMSvcDefinition(blueprintDTO.svcLayerId, params.checkpoint_id, params.checkout_id);
+											var constraint = versionObj.addNewResourceConstraintToElement(stageRes.hostCI, node.nodeId);
+											constraint.setName(hostResDTO.name);
+											constraint.setValue("rbId", hostResDTO.id);
+											var newVersion = versionObj.getNewVersion();
+											constraint.checkpointId = newVersion.getCheckpointId();
+										}
+									}
+								}
+							}
+						}
+						var versionObj =new sn_smd.SMSvcDefinition(blueprintDTO.svcLayerId, params.checkpoint_id, params.checkout_id);
+						var connectionMap = {};
+							var elems  = versionObj.getElements();
+							for (var k = 0; k < elems.length; k++) {
+								connectionMap[elems[k].getName()] = elems[k].getId();
+							}
+							//add edges.
+							var deploymentModel=bpMap.deploymentModel;
+							for(var j in deploymentModel){
+								var depModel = deploymentModel[j];
+								if(depModel.deploymentType == "Direct"){
+									var source_id = connectionMap[depModel.guestAssociationName];
+									var target_id = connectionMap[depModel.hostAssociationName];
+
+									var reqObj ={
+										"source":depModel.guestAssociationName,
+										"target":depModel.hostAssociationName,
+										"svcLayerId":blueprintDTO.svcLayerId,
+										"relType":"Hosted On"
+									};
+
+									if(!this.checkConnectionExist(reqObj)){
+										var newRelationship = versionObj.addRelationship(source_id,target_id, 'Hosted on');
+										var newVersion = versionObj.getNewVersion();
+										newRelationship.checkpointId = newVersion.getCheckpointId();
+									}
+								}
+
+								if(depModel.deploymentType == "Attach"){
+									var source_id = connectionMap[depModel.hostAssociationName];
+									var target_id = connectionMap[depModel.guestAssociationName];
+
+									var reqObj ={
+										"source":depModel.hostAssociationName,
+										"target":depModel.guestAssociationName,
+										"svcLayerId":blueprintDTO.svcLayerId,
+										"relType":"Implement End Point To"
+									};
+
+									if(!this.checkConnectionExist(reqObj)){
+										var newRelationship = versionObj.addRelationship(source_id,target_id, 'Implement End Point To');
+										var newVersion = versionObj.getNewVersion();
+										newRelationship.checkpointId = newVersion.getCheckpointId();
+									}
+								}
+							}
+
+							output = {
+								"status":resObj.status,
+								"name":blueprintDTO.name,
+								"sys_id":blueprintDTO.id,
+								"layer_id":blueprintDTO.svcLayerId
+							};
+						}else{
+							output =  {
+								"status":resObj.status,
+								"errorMessage":resObj.message
+							};
+						}
+						return output;
+
+					}catch(error){
+						var e=error;
+						throw sn_smd.SMErrorHelper.createScriptAPIError(
+						gs.getMessage("Failed to import blueprint file."),
+						"CMPImportBlueprintAction.doAction(): Failed to import blueprint file.",
+						error
+						);
+					}
+				},
+
+				checkNodeExist: function(reqObj){
+					var versionObj =new sn_smd.SMSvcDefinition(reqObj.svcLayerId, reqObj.checkpoint_id, reqObj.checkout_id);
+					var connectionMap = {};
+						var elems  = versionObj.getElements();
+						for (var k = 0; k < elems.length; k++) {
+							if(elems[k].getName() == reqObj.nodeName)
+								return true;
+						}
+						return false;
+					},
+					checkConnectionExist: function(reqObj){
+						var versionObj =new sn_smd.SMSvcDefinition(reqObj.svcLayerId, reqObj.checkpoint_id, reqObj.checkout_id);
+						var rlns = versionObj.getRelationships();
+						for (var j = 0; j < rlns.length; j++) {
+							var epElem = rlns[j];
+							var target = epElem.getTarget();
+							var source = epElem.getSource();
+							var relType = epElem.getType();
+							if(reqObj.source == source.getName() && reqObj.target == target.getName() && reqObj.relType == relType)
+								return true;
+						}
+
+						return false;
+
+					},
+	           //Primarly Used by REST API Of Import Blueprint.
+					importBlueprint: function(yamlContent) {
+						var params = {"content":yamlContent};
+						var output = this.doAction(params);
+						return output;
+					},
+	
+	               checkPermissionForBlueprint: function(blueprintId) {
+						var checkPermissionObj = new CMPCheckPermission();
+					    var gr = new GlideRecord('sn_cmp_bp_blueprint');
+					    gr.addQuery('sys_id',blueprintId +'');
+					    gr.query();
+					    if(gr.next()){
+							var created_by = gr.getValue('sys_created_by');
+							return (checkPermissionObj.checkPermission('sn_cmp_bp_blueprint',blueprintId, gs.getUserID(), 'write')) || (created_by == gs.getUserName());
+						}
+					},
+
+					generateCatItem: function(formId){
+					var formGR = new GlideRecord("sn_cmp_bp_form_behavior");
+					formGR.addQuery("sys_id",formId);
+						formGR.query();
+						if(formGR.next()){
+						var catItemGr = new BlueprintSCItemCreator().createCatItem(formGR);
+						var catalogType = catItemGr.getValue("catalog_type");
+						if(catalogType == 1){//1 is for provision.
+							catItemGr.setValue("active",1);
+							catItemGr.update();
+							formGR.setValue("cat_item_association",catItemGr.getValue("sys_id"));
+								formGR.update();
+							}
+							return catItemGr.sys_id;
+					}
+					return null;
+				},
+	
+			   repairBlueprint: function(bpMap){
+					var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			        var resourceServiceScript=	new sn_cmp_api.ResourceBlockServiceScript();
+					var bpName= bpMap.blueprintName;
+					var blueprintDTO = bpMap.blueprintDTO;
+					var stageResourceMap = {};
+					var stageResources=bpMap.stageResources;
+						//Add Node
+						for(var i in stageResources){
+							var stageRes = stageResources[i];
+							stageResourceMap[stageRes.aliasName]=stageRes;
+							var checkNodeObj ={
+								"nodeName":stageRes.aliasName,
+								"svcLayerId":blueprintDTO.svcLayerId
+							};
+
+							if(!this.checkNodeExist(checkNodeObj)){
+								var payload;
+								if(stageRes.type == 'Resource'){
+									var resourceJSON = resourceServiceScript.get(stageRes.resourceId);
+									var resourceBlockDTO = new global.JSON().decode(resourceJSON);
+									payload={
+										"ci_type":resourceBlockDTO.refCI,
+										"name":stageRes.aliasName,
+										"layer_id":blueprintDTO.svcLayerId,
+										"resblock_id":resourceBlockDTO.id,
+										"resourceblock_name":resourceBlockDTO.name
+									};
+								}else{
+									payload={
+										"ci_type":stageRes.hostCI,
+										"name":stageRes.aliasName,
+										"layer_id":blueprintDTO.svcLayerId
+									};
+								}
+								var cmpAddResourceBlockAction =  new CMPAddResourceBlockAction();
+								var node = cmpAddResourceBlockAction.doAction(payload);
+								}
+								if(stageRes.type == 'BaseHost'){
+									var constraintCSV = stageRes.constraintCSV;
+									if(constraintCSV && constraintCSV != ""){
+										var constraintRes = constraintCSV.split(",");
+										for(var i=0; i<constraintRes.length; i++){
+											var hostResJSON = resourceServiceScript.getResourceBlockByName(constraintRes[i].trim());
+											var hostResDTO = new global.JSON().decode(hostResJSON);
+											var versionObj =new sn_smd.SMSvcDefinition(blueprintDTO.svcLayerId, bpMap.checkpoint_id, bpMap.checkout_id);
+											var constraint = versionObj.addNewResourceConstraintToElement(stageRes.hostCI, node.nodeId);
+											constraint.setName(hostResDTO.name);
+											constraint.setValue("rbId", hostResDTO.id);
+											var newVersion = versionObj.getNewVersion();
+											constraint.checkpointId = newVersion.getCheckpointId();
+										}
+									}
+								}
+							}
+						var versionObj =new sn_smd.SMSvcDefinition(blueprintDTO.svcLayerId, bpMap.checkpoint_id, bpMap.checkout_id);
+						var connectionMap = {};
+							var elems  = versionObj.getElements();
+							for (var k = 0; k < elems.length; k++) {
+								connectionMap[elems[k].getName()] = elems[k].getId();
+							}
+							//add edges.
+							var deploymentModel=bpMap.deploymentModel;
+							for(var j in deploymentModel){
+								var depModel = deploymentModel[j];
+								if(depModel.deploymentType == "Direct"){
+									var source_id = connectionMap[depModel.guestAssociationName];
+									var target_id = connectionMap[depModel.hostAssociationName];
+
+									var reqObj ={
+										"source":depModel.guestAssociationName,
+										"target":depModel.hostAssociationName,
+										"svcLayerId":blueprintDTO.svcLayerId,
+										"relType":"Hosted On"
+									};
+
+									if(!this.checkConnectionExist(reqObj)){
+										var newRelationship = versionObj.addRelationship(source_id,target_id, 'Hosted on');
+										var newVersion = versionObj.getNewVersion();
+										newRelationship.checkpointId = newVersion.getCheckpointId();
+									}
+								}
+
+								if(depModel.deploymentType == "Attach"){
+									var source_id = connectionMap[depModel.hostAssociationName];
+									var target_id = connectionMap[depModel.guestAssociationName];
+
+									var reqObj ={
+										"source":depModel.hostAssociationName,
+										"target":depModel.guestAssociationName,
+										"svcLayerId":blueprintDTO.svcLayerId,
+										"relType":"Implement End Point To"
+									};
+
+									if(!this.checkConnectionExist(reqObj)){
+										var newRelationship = versionObj.addRelationship(source_id,target_id, 'Implement End Point To');
+										var newVersion = versionObj.getNewVersion();
+										newRelationship.checkpointId = newVersion.getCheckpointId();
+									}
+								}
+							}
+					
+				},
+
+					type: 'CMPImportBlueprintAction'
+				});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-02 11:48:19</sys_created_on>
+        <sys_id>529880820b0432009e620bcb15673a11</sys_id>
+        <sys_mod_count>68</sys_mod_count>
+        <sys_name>CMPImportBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_529880820b0432009e620bcb15673a11</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-05 13:18:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

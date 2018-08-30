@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_page">
+    <sys_ui_page action="INSERT_OR_UPDATE">
+        <category>general</category>
+        <client_script><![CDATA[populateAvailableMonths();
+
+// Allow up to one year of lookback
+function getMonthOptions() {
+	var availableMonths = [];
+	var date = new Date();
+	var year = date.getFullYear();
+	var month = date.getMonth() + 1;
+	
+	for (var i=0; i<=12; i++) {
+		var strMonth = ''+month;
+		if (month < 10) {
+			strMonth = '0' + strMonth;
+		}
+		availableMonths.push(year + "-" + strMonth);
+		month = ((month+10)%12)+1;
+		if (month == 12) {
+			year--;
+		}
+	}
+	return availableMonths;
+}
+
+function populateAvailableMonths(){
+	var selectboxStart = document.getElementById("start_month_input");
+	var selectboxEnd = document.getElementById("end_month_input");
+	
+	var availableMonths = getMonthOptions();
+	// parse the months out of the response
+	for (var i = 0; i < availableMonths.length; i++) {
+		var month = availableMonths[i];
+		addOption(selectboxStart, month, month);
+		addOption(selectboxEnd, month, month);
+	}
+}
+
+
+function addOption(selectbox,text,value )
+{
+	var optn = document.createElement("OPTION");
+	optn.text = text;
+	optn.value = value;
+	selectbox.options.add(optn);
+}
+
+function retrieveBillingDataForMonths(){
+	var job_id = document.getElementById("job_id").value;
+	var start_month = document.getElementById("start_month_input").value;
+	var end_month = document.getElementById("end_month_input").value;
+	var clear_data = document.getElementById("clear_data_checkbox").checked;
+	
+	var ga = new GlideAjax('CmpBillingAjax');
+	ga.addParam('sysparm_name','runBillingJobForDialogBox');
+	ga.addParam('sysparm_job_id', job_id);
+	ga.addParam('sysparm_start_month', start_month);
+	ga.addParam('sysparm_end_month', end_month);
+	ga.addParam('sysparm_clear_data', clear_data);
+	ga.getXML();
+	
+	GlideDialogWindow.get().destroy();
+	notificationMessage(getMessage("Billing data retrieval has begun. Cost reports will be available when the job has finished."));
+	// dont return true otherwise it redirects to new page
+	return false;
+}
+
+function startSelected() {
+	var selectboxStart = document.getElementById("start_month_input");
+	var selectboxEnd = document.getElementById("end_month_input");
+	if (selectboxStart.value > selectboxEnd.value) {
+		selectboxEnd.value = selectboxStart.value;
+	}	
+}
+
+function endSelected() {
+	var selectboxStart = document.getElementById("start_month_input");
+	var selectboxEnd = document.getElementById("end_month_input");
+	if (selectboxStart.value > selectboxEnd.value) {
+		selectboxStart.value = selectboxEnd.value;
+	}	
+}
+
+function notificationMessage(msg) {
+	var options = {};
+	options.text = "<b style='color:blue;'>" + msg + "</b>";
+	options.type = "info";
+	options.closeDelay = "10000"; // 10 secs, in millisecs
+	new NotificationMessage(options);
+}
+]]></client_script>
+        <description/>
+        <direct>false</direct>
+        <endpoint>sn_cmp_retrieve_billing_data.do</endpoint>
+        <html><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+	 <form>
+		 <g:evaluate var="jvar_job_id" expression="RP.getParameterValue('sysparm_job_id')"/>
+		 <input id="job_id" value="${jvar_job_id}" type="hidden"/>
+		 <table>
+    		<tr style="margin-bottom:20px;">
+        		<td>
+					<label class="pull-left" for="start_month_label" style="text-align:right; padding-right:7px; position: relative; vertical-align: middle; width: 107px; height: 10px; font-family: Arial; font-size: 13px; display: inline-block;">
+          			Start Month
+					</label>
+				</td>
+        
+       	 	<td>
+			 	<select id="start_month_input" class="form-control" style="width:81px;" onchange="startSelected()">
+       	 	</select> 
+				</td>
+				<td>
+					<label class="pull-left" for="end_month_label" style="text-align:right; padding-right:7px; position: relative; vertical-align: middle; width: 107px; height: 10px; font-family: Arial; font-size: 13px; display: inline-block;">
+					End Month
+					</label>
+				</td>
+        	
+				<td>
+       	 		<select id="end_month_input" class="form-control" style="width:81px;" onchange="endSelected()">
+       	 		</select>
+				</td>
+			 </tr>
+			 <tr style="height: 40px"/>
+			 <tr>
+				<td>
+					<input id="clear_data_checkbox" type="checkbox" class="checkbox" style="margin-left:85px;"/>
+
+				</td>
+        	
+				<td>
+					<label class="pull-left" for="end_month_label" style="text-align:right; padding-right:7px; position: relative; vertical-align: middle; width: 115px; height: 10px; font-family: Arial; font-size: 13px; display: inline-block; padding-top:1px;">
+					Clear existing data
+					</label>
+				</td>
+			 </tr>
+		 </table>
+		 
+		<div class="pull-right">
+    		<button class="btn btn-default" data-dismiss="popover" onclick="return retrieveBillingDataForMonths()" style="margin-right: 5px; margin-top: 5px">
+         	Download</button>
+    	</div>
+	</form>
+</j:jelly>]]></html>
+        <name>retrieve_billing_data</name>
+        <processing_script/>
+        <sys_class_name>sys_ui_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-10 01:10:52</sys_created_on>
+        <sys_id>ac38b070930f22004a9032bfa67ffb63</sys_id>
+        <sys_mod_count>52</sys_mod_count>
+        <sys_name>retrieve_billing_data</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_page_ac38b070930f22004a9032bfa67ffb63</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-21 20:41:22</sys_updated_on>
+    </sys_ui_page>
+</record_update>

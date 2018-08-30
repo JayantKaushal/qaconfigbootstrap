@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudAjax</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>CloudAjax</name>
+        <script><![CDATA[var CloudAjax = Class.create();
+CloudAjax.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	getVariablesNotToBeChanged: function() {
+		var reqtemId = this.getParameter('sysparm_reqtemId');
+		
+		// Query cloud log
+		var answer = [];
+		var gr = new GlideRecord('sn_cmp_audit_log');
+		gr.addQuery('audit_log.tablename', 'sc_req_item');
+		gr.addQuery('audit_log.documentkey', reqtemId);
+		gr.addQuery('source', 1); // params changed by policy
+		gr.query();
+		while(gr.next()){
+			var fieldName = '' + gr.audit_log.fieldname;
+			if(fieldName.includes('VARIABLE'))
+				fieldName = fieldName.substring(9);
+			answer.push(fieldName);
+		}
+		return answer.toString();
+	},
+	
+    type: 'CloudAjax'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-13 20:16:14</sys_created_on>
+        <sys_id>bd1e2a7f87b3320053c9f4bbe3e3ec06</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>CloudAjax</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_bd1e2a7f87b3320053c9f4bbe3e3ec06</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-17 20:33:29</sys_updated_on>
+    </sys_script_include>
+</record_update>

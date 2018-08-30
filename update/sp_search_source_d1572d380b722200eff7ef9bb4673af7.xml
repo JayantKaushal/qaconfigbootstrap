@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_search_source">
+    <sp_search_source action="INSERT_OR_UPDATE">
+        <advanced_typeahead_config>false</advanced_typeahead_config>
+        <condition/>
+        <data_fetch_script><![CDATA[(function(query) {
+	var results = [];
+	//Here goes the logic. Compute results however you want!
+	if (!gs.isLoggedIn())
+		return results;
+
+	var sc = new GlideRecord('sc_req_item');
+	sc.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+	sc.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+	var q1 = sc.addQuery('request.requested_for',gs.getUserID());
+	q1.addOrCondition('request.opened_by',gs.getUserID());
+	sc.addQuery("number","STARTSWITH",query);
+	sc.query();
+	
+	while (sc.next()) {
+		if (!$sp.canReadRecord(sc))
+			continue;
+		
+		var item = {};
+		item.number = sc.getDisplayValue("number");
+		item.primary = item.number;
+		item.sys_id = sc.getUniqueValue();
+		item.url = "?id=cloud_activities&category=cloud_activities&sys_id=" + sc.sys_id +  "&active_tab=status&selected_card=" + sc.sys_id +"&filterText="+item.number;
+		results.push(item);
+	}
+	return results;
+})(query);]]></data_fetch_script>
+        <display_fields>number,cat_item,request</display_fields>
+        <enable_typeahead>true</enable_typeahead>
+        <facet_generation_script><![CDATA[(function(query, facetService, searchResults) {
+	/* Calculate your facets here using facetService */
+	/* var stateFacet = facetService.createFacet('State', 'state'); */
+	/* stateFacet.addFacetItem('Facet Item Label', '123'); */
+
+})(query, facetService, searchResults);]]></facet_generation_script>
+        <id>requests</id>
+        <is_scripted_source>true</is_scripted_source>
+        <name>Requests</name>
+        <page display_value="cloud_activities">6d33f72a0bc62200eff7ef9bb4673a9c</page>
+        <pagination_supported>false</pagination_supported>
+        <primary_display_field>cat_item</primary_display_field>
+        <roles/>
+        <search_page_template><![CDATA[<div>
+  <a href="?id=cloud_activities&category=cloud_activities&active_tab=status&sys_id={{item.sys_id}}&selected_card={{item.sys_id}}&filterText={{item.number}}" class="h4 text-primary m-b-sm block">
+    <span ng-bind-html="highlight(item.primary, data.q)"></span>
+  </a>
+  <span class="text-muted" ng-repeat="f in item.fields | limitTo: 4">
+    <span class="m-l-xs m-r-xs" ng-if="!$first"> &middot; </span>
+    {{f.label}}: <span ng-bind-html="highlight(f.display_value, data.q)"></span>
+  </span>
+</div>]]></search_page_template>
+        <source_table>sc_req_item</source_table>
+        <sys_class_name>sp_search_source</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-28 18:18:12</sys_created_on>
+        <sys_id>d1572d380b722200eff7ef9bb4673af7</sys_id>
+        <sys_mod_count>100</sys_mod_count>
+        <sys_name>Requests</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_search_source_d1572d380b722200eff7ef9bb4673af7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-01 07:55:30</sys_updated_on>
+        <typeahead_glyph>tasks</typeahead_glyph>
+        <typeahead_template/>
+    </sp_search_source>
+    <sys_translated_text action="delete_multiple" query="documentkey=d1572d380b722200eff7ef9bb4673af7"/>
+</record_update>

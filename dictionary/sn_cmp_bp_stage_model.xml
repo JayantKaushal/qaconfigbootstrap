@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Stage Model" max_length="40" name="sn_cmp_bp_stage_model" type="collection">
+        <element label="Blueprint" max_length="32" name="blueprint" reference="sn_cmp_bp_blueprint" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Blueprint Template" max_length="1000" name="blueprint_template" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Intent" max_length="1000" name="intent" type="string"/>
+        <element label="Stage" max_length="32" name="stage" reference="sn_cmp_bp_stage" type="reference"/>
+        <index name="index">
+            <element name="blueprint"/>
+        </index>
+        <index name="index2">
+            <element name="stage"/>
+        </index>
+    </element>
+</database>

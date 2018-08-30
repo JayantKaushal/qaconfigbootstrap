@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPPortalHelper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPPortalHelper</name>
+        <script><![CDATA[var CMPPortalHelper = Class.create();
+CMPPortalHelper.prototype = {
+	
+	initialize: function() {
+	},
+	
+	getProperties: function(queryObj) {
+		var result = [];
+		if (!queryObj.table || (!queryObj.sys_id && !queryObj.query)) {
+			gs.info("One or all parameters are missing");
+			return result;
+		}
+		
+		var tableGr = new GlideRecord(queryObj.table);
+		if ( !tableGr.isValid() ) {
+			gs.info("Table name is invalid");
+			return result;
+		}
+		
+		if (queryObj.sys_id)
+			tableGr.addQuery("sys_id", queryObj.sys_id);
+		else
+			tableGr.addEncodedQuery(queryObj.query);
+		
+		tableGr.query();
+		
+		var fields = this.getFormFields(queryObj.table, queryObj.view || "");
+		
+		while (tableGr.next())
+			result.push(this.getDisplayValuesForFields(tableGr, fields));
+		
+		return result;
+	},
+	
+	getDisplayValuesForFields: function(gr, fields) {
+		var resultObj = [];
+		for (var j = 0; j < fields.length; j++) {
+			var fieldLabel = gr.getElement(fields[j]).getLabel();
+			resultObj.push({"key" : fieldLabel, "value" : gr.getDisplayValue(fields[j])});
+		}
+		return resultObj;
+	},
+		
+	getFormFields: function(table, view) {
+		var cmpGlideUtil = new sn_cmp_api.CMPGlideUtil();
+		return cmpGlideUtil.getFieldsFromView(table, view);
+	},
+		
+	getReqItemVariables: function(reqItemSysId) {
+		var result = []
+		var reqItemvars = new global.CmpSCUtil().getVariablesForRequestItem(reqItemSysId);
+		Object.keys(reqItemvars).forEach( function(key) {
+			var varObj = {key: key, value:reqItemvars[key]};
+			result.push(varObj);
+		});
+		return result;
+	},
+		
+	getStackItemProperties: function(sysId) {
+		var attributes = [];
+		var status;
+		var ci_instance_id;
+		var item_gr = new GlideRecord("sn_cmp_stack_item");
+		item_gr.addQuery("sys_id", sysId);
+		item_gr.query();
+		if (item_gr.next() && item_gr.canRead()) {
+			status = item_gr.getValue('status');
+			ci_instance_id = item_gr.ci_instance_id.getDisplayValue();
+			if (item_gr.status == '2' && ci_instance_id) {		
+				var res = item_gr.ci_instance_id.sys_class_name;
+				var properties = new sn_cmp_api.CloudModelProcessorScript();
+				attributes = global.JSON.parse(properties.getCIAttributes(item_gr.ci_instance_id.sys_class_name,item_gr.ci_instance_id.sys_id));
+				if ( attributes.length ) {	
+					attributes.sort(function(a, b) {
+						var textA = a.key.toUpperCase();
+						var textB = b.key.toUpperCase();
+						return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+					});
+
+					for (var i =0 ; i< attributes.length; i++) {
+						if(attributes[i].key == "Type" && attributes[i].value == "VMware Virtual Machine Instance"){
+							var str = attributes[i].value;
+							attributes[i].value = str.replace("VMware ","");
+						}
+						if (attributes[i].key == "Password") {
+							attributes[i].hide = true;
+						}
+					}
+				}
+			}
+		}
+		var retObj = {};
+		retObj.status = status;
+		retObj.ci_instance_id = ci_instance_id;
+		retObj.attributes = attributes;
+		
+		return retObj;
+	},
+	
+	getTagsForResources: function(ciSysId) {
+		var tags = [];
+		var tagsGr = new GlideRecordSecure('sn_cmp_rsrc_tag_history');
+		tagsGr.addQuery('current', true);
+		tagsGr.addQuery('cmdb_ci', ciSysId);
+		tagsGr.query();
+		if (tagsGr.next()) {
+			var tagDefGr = new GlideRecordSecure('sn_cmp_tag_name');
+			tagDefGr.addQuery('visible', true);
+			var qc = tagDefGr.addQuery('tag_type', 'ServiceNow');
+			qc.addOrCondition('tag_type', 'Custom');
+			tagDefGr.orderBy('label');
+			tagDefGr.query();
+			while (tagDefGr.next()) {
+				if (!gs.nil(tagsGr.tag_values[tagDefGr.name])) {
+					var kvPair = {
+						'key': tagDefGr.getValue('label'),
+						'value': tagsGr.tag_values[tagDefGr.name].getDisplayValue()
+					};
+					tags.push(kvPair);
+				}
+			}	
+		}
+		return tags;
+		
+	},
+		
+	type: 'CMPPortalHelper'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-26 19:57:40</sys_created_on>
+        <sys_id>8d1299e50b63130031a567bff6673aa5</sys_id>
+        <sys_mod_count>27</sys_mod_count>
+        <sys_name>CMPPortalHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_8d1299e50b63130031a567bff6673aa5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 23:05:28</sys_updated_on>
+    </sys_script_include>
+</record_update>

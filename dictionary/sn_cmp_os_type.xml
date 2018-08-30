@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Operating System Type" max_length="40" name="sn_cmp_os_type" type="collection">
+        <element label="Normalizable" max_length="40" name="normalizable" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Operating system" max_length="40" name="os_type" type="string"/>
+    </element>
+</database>

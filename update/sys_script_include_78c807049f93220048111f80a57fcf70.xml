@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.RefQualsCMP</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>RefQualsCMP</name>
+        <script><![CDATA[var RefQualsCMP = Class.create();
+RefQualsCMP.prototype = {
+    initialize: function() {
+    },
+
+	getColumnsForTable : function (tableName) {
+		gs.info('current table: ' + current.getTableName() + ', ref table: '  + tableName);
+
+		var excludedTypes = ["collection"];
+		var systemColumns = ["sys_id","sys_created_on","sys_created_by","sys_updated_on","sys_updated_by"];
+		
+		//var dbom = GlideDBObjectManager.get();
+		//var includeTables = '' + dbom.getTables(tableName);
+		var includeTables = '' + new GlideTableHierarchy(tableName).getTables();
+		var refQual = 'nameIN' + includeTables;
+		// remove the leading and trailing square braces
+		// var refQual = 'nameIN' + includeTables.substring(1, includeTables.length-1);
+		refQual += '^elementNOT IN' + systemColumns.join();
+		refQual += '^internal_typeNOT IN' + excludedTypes.join();
+		return  refQual;
+	},	
+	getLogicalDatacenters : function( cloudAccountId){
+		if( !cloudAccountId){
+			cloudAccountId = this.getParameter("cloudAccountId");
+		}
+		var gr = new GlideRecord('sn_cmp_ca_assc_datacenter');
+		gr.addQuery('cloud_account', cloudAccountId);
+		gr.query();
+		var ldc_ids = "";
+		var i = 0;
+		while (gr.next()){
+			if( i > 0){
+				ldc_ids += ",";
+			}
+			i++;
+			ldc_ids += gr.getValue('ldc_id');
+
+		}
+		var outputStr = "sys_idIN"  + ldc_ids;
+		return outputStr;
+
+	},
+	getImagesForLDC : function( ldcId, type){
+		var ciObj = "cmdb_ci_os_template,cmdb_ci_vmware_template";// need this for vSphere
+		if( !ldcId){
+			ldcId = this.getParameter("ldcId");
+		}
+		if( !type){
+			type = this.getParameter("type");
+		}
+		if( !type){
+			type = "os";
+		}
+		if( type == "compute"){
+			ciObj = "cmdb_ci_compute_template";
+		} else if (type == "volume"){
+		    ciObj = "cmdb_ci_volume_template";
+		}else if( type == "securitygrp"){
+			ciObj =  "cmdb_ci_security_grp_template";
+		}
+
+		var expressionResolver = new sn_cmp_api.ExpressionResolverUtilScript();
+		var templates = expressionResolver.getMetadataRelations(ldcId, "Hosts", ciObj, "flat", 1);
+		var templatesObj = global.JSON.parse( templates);
+		var sysIds = [];
+		templatesObj.forEach(function(elem){
+			sysIds.push(elem.value);
+		});
+
+		
+		var table = ciObj;
+		var queryCondition = "";
+		if(type == 'os')
+		{
+			table = 'cmdb_ci_os_template';
+			queryCondition = "os_sys_class_name=cmdb_ci_os_template^ORos_sys_class_name=cmdb_ci_vmware_template";
+			
+		}
+		
+		var exclGr = new GlideRecord("sn_cmp_"+table+"_location");
+		exclGr.addNullQuery("relci_child");
+		if(!gs.nil(queryCondition))
+			exclGr.addEncodedQuery(queryCondition);
+		exclGr.query();
+		var col = type+"_sys_id";
+		while(exclGr.next())
+			sysIds.push(exclGr.getValue(col));
+		
+		var outputStr = "sys_idIN"  + sysIds.join(',');
+		return outputStr;
+	},
+	
+	getIntegrationUser : function() {
+		var validUserIds = [];
+		var user = new GlideRecord('sys_user_has_role');
+		user.addActiveQuery();
+		user.addQuery("role.name", "sn_cmp.cloud_event_integration");
+		user.query();
+		
+		while(user.next()) {
+			validUserIds.push(user.getValue("user"));
+		}
+		
+		return 'sys_idIN' + validUserIds.toString();
+	},
+	
+	getAzureServiceAccount : function() {
+		var validAccountIds = [];
+		var account = new GlideRecord('cmdb_ci_cloud_service_account');
+		account.addQuery("discovery_credentials.type", "azure");
+		account.addQuery("datacenter_type","cmdb_ci_azure_datacenter");
+		account.query();
+		
+		while(account.next()) {
+			validAccountIds.push(account.getUniqueValue());
+		}
+		
+		return 'sys_idIN' + validAccountIds.toString();
+	},
+	
+	getResourceGroupForSA : function(accountSysId) {
+		var validRGIds = [];
+		var rg = new GlideRecord('cmdb_ci_resource_group');
+		rg.query();
+		
+		while (rg.next()){
+			var rgRel = new GlideRecord('cmdb_rel_ci');
+			rgRel.addQuery('type.name','Contains::Contained by');
+			rgRel.addQuery('child',rg.getUniqueValue());
+			rgRel.query();
+			while (rgRel.next()){
+				var saRel = new GlideRecord('cmdb_rel_ci');
+				saRel.addQuery('type.name','Hosted on::Hosts');
+				saRel.addQuery('child',accountSysId);
+				saRel.addQuery('parent',rgRel.getValue('parent'));
+				saRel.query();
+				if (saRel.next())
+					validRGIds.push(rg.getUniqueValue());
+			}
+		}
+		
+		return 'sys_idIN' + validRGIds.toString();
+	},
+	getBasicCredential : function() {
+		var validCredentialTypes = [];
+		validCredentialTypes.push('basic_auth');
+		gs.info( 'RefQualsCMP = '  + validCredentialTypes.toString() );
+		return 'typeIN' + validCredentialTypes.toString();
+	},
+
+	getRuleSourceFilter : function(formBehavior, ruleId) {
+      var formBehaviorId="";
+      // if formBehaviorId is null fetching it from ruleID
+      if(gs.nil(formBehavior)) {
+          gs.info('Get form behavior from rule id = ' + ruleId);
+          var cMPFormBehaviorUtil = new sn_cmp.CMPFormBehaviorUtil();
+          formBehaviorId = cMPFormBehaviorUtil.fetchformBehavior(ruleId);
+      } else {
+          gs.info('Filtering source field based on formbehavior id' + formBehavior);
+          formBehaviorId = formBehavior;
+          }
+        return 'bp_cat_form_behaviorIN' + formBehaviorId;
+	},
+	getFormCatalogProperty : function(formBehaviorId) {
+	    return 'bp_cat_form_behaviorIN' + formBehaviorId;
+	},
+    type: 'RefQualsCMP'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-11-20 13:53:29</sys_created_on>
+        <sys_id>78c807049f93220048111f80a57fcf70</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>RefQualsCMP</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_78c807049f93220048111f80a57fcf70</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-16 01:19:08</sys_updated_on>
+    </sys_script_include>
+</record_update>

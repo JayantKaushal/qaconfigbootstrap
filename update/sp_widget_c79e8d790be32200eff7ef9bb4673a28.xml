@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope,$location,cloudEventScope,spUtil) { 
+	var c = this;
+	
+	$scope.spUtil = spUtil;
+	
+	cloudEventScope.registerListener('cloudResourceCardEvent', function(e,info) {
+		$location.search(info.url).search('spa', '1').replace();
+		c.server.update();
+	}, $scope);
+
+	
+	$scope.isShowPass = false;
+	$scope.showPassword = function(password) {
+		$scope.isShowPass = true;
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>  .card-default {&#13;
+    padding-left: 5px;&#13;
+    padding-top: 5px;&#13;
+    padding-bottom: 5px;&#13;
+    padding-right: 5px;&#13;
+    margin: 0px 25px 12px 25px;&#13;
+    border-width: 1px 1px 1px 5px;&#13;
+    border-style: solid;&#13;
+    border-left-color: #428bca;&#13;
+  }&#13;
+&#13;
+  .card-default:hover {&#13;
+    background-color: #ffffff;&#13;
+  }&#13;
+&#13;
+  .card-default .title {&#13;
+    font-size: 16px;&#13;
+    color: #000000;&#13;
+  }&#13;
+&#13;
+  .card-default .task {&#13;
+    padding-top: 0px;&#13;
+    font-size: 13px;&#13;
+    color: #828890;&#13;
+  }&#13;
+&#13;
+  .card-default .additional-info {&#13;
+    padding-top: 0px;&#13;
+    font-size: 12px;&#13;
+  }&#13;
+&#13;
+  .card-default .additional-info .right{&#13;
+    float: right;&#13;
+  }&#13;
+&#13;
+  .card-default .additional-info .circle {&#13;
+    font-size: 5px;&#13;
+    vertical-align: middle;&#13;
+  }&#13;
+&#13;
+  .card-not-selected {&#13;
+    border-color: #bdc0c4;&#13;
+    border-left-color: #FCC742;&#13;
+  }&#13;
+&#13;
+  .card-selected {&#13;
+    border-color: #1570bd;&#13;
+    border-top-width : 2px;&#13;
+    border-bottom-width : 2px;&#13;
+    border-right-width : 2px;&#13;
+  }&#13;
+&#13;
+  .card-failed{&#13;
+  border-left-color: #F00;&#13;
+  }&#13;
+&#13;
+  .card-complete{&#13;
+  border-left-color: #008000;&#13;
+  }&#13;
+&#13;
+  .card-progress{&#13;
+  border-left-color: #FFA500;&#13;
+  }&#13;
+&#13;
+  .selectable-card {&#13;
+    background-color: #ffffff;&#13;
+    cursor: pointer;&#13;
+  }&#13;
+&#13;
+  .non-selectable-card {&#13;
+    background-color: #ffffff;&#13;
+    cursor: default;&#13;
+  }&#13;
+&#13;
+  .panel-heading {&#13;
+    height: 52px;&#13;
+  }&#13;
+&#13;
+  .add_scroll{&#13;
+    overflow-y:auto;&#13;
+  }&#13;
+&#13;
+  .no-margin{&#13;
+    margin-top : 0px;&#13;
+  }&#13;
+&#13;
+  .list-group-item:hover {&#13;
+    cursor: pointer;  &#13;
+  }&#13;
+&#13;
+  .list-group-item { &#13;
+    border: none;&#13;
+  }&#13;
+&#13;
+  .properties {&#13;
+    margin-left: 5px;&#13;
+    margin-right: 5px;&#13;
+    margin-top: 25px;&#13;
+    line-height: 1.8;&#13;
+&#13;
+    .property-key {&#13;
+      width: 30%;&#13;
+      text-align: right;&#13;
+      white-space : nowrap;&#13;
+    }&#13;
+&#13;
+    .property-value {&#13;
+      color: black;&#13;
+      width: 70%;&#13;
+      text-align: left;&#13;
+      white-space: nowrap;&#13;
+      padding-left: 20px;&#13;
+    }&#13;
+  }&#13;
+&#13;
+  .no-properties {&#13;
+    text-align: center;&#13;
+    padding: 10px;&#13;
+  }&#13;
+&#13;
+  .text-blue {&#13;
+    color: #428bca !important;&#13;
+  }&#13;
+&#13;
+  .panel-body {&#13;
+    overflow: scroll;&#13;
+    height : calc(100vh - calc($cloud-stacks-details-header-height + $header-height + $panel-margin));&#13;
+  }</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-properties</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+	
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack_item","");
+
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_vm_instance","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_cloud_subnet","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_network","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_router","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_internet_gateway","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_cloud_load_balancer","");
+
+	scope.spUtil.recordWatch(scope, "cmdb_ci_storage_volume","");
+	
+	scope.spUtil.recordWatch(scope, "cmdb_ci_compute_security_group","");
+}]]></link>
+        <name>Cloud Stack Properties</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	data.stack_sys_id = $sp.getParameter('sys_id');
+	data.selected_card = $sp.getParameter('selected_card');
+	data.isTLR = false;
+	data.stack_properties = {};
+	data.attributes = [];
+	data.tags = [];
+	
+
+	if(data.stack_sys_id == data.selected_card){
+		data.isTLR = true;
+		var gr = new GlideRecord('sn_cmp_stack');
+		gr.addQuery('sys_id', data.stack_sys_id);
+		gr.query();
+		while(gr.next() && gr.canRead()){
+			data.stack_properties = {
+				Name: gr.getDisplayValue('name'),
+				Blueprint: gr.blueprint.getDisplayValue(),
+				Status: gr.getDisplayValue('stack_status'),
+				CloudAccount: gr.getDisplayValue('cloud_account'),
+				OwnedBy: gr.getDisplayValue('owned_by'),
+				AssignedTo: gr.getDisplayValue('assigned_to'),
+				CreatedOn: gr.getDisplayValue('sys_created_on'),
+				UpdatedOn: gr.getDisplayValue('sys_updated_on'),
+				RequestItem: gr.getDisplayValue('sc_req_item'),
+				Schedule: gr.getDisplayValue('schedule'),
+				EndDate: gr.getDisplayValue('end_date'),
+				Output: gr.getDisplayValue('short_description')
+			};
+			if (gs.nil(	data.stack_properties.Schedule))
+				data.stack_properties.Schedule = "None";
+			else if (!gs.nil(gr.time_zone))
+				data.stack_properties.Schedule += " ("+gr.getDisplayValue('time_zone')+")";
+			if (gs.nil(	data.stack_properties.EndDate))
+				data.stack_properties.EndDate = "None";
+		}
+
+	}
+
+
+	var item_gr = new GlideRecord("sn_cmp_stack_item");
+	item_gr.addQuery("sys_id",data.selected_card);
+	item_gr.query();
+	while(item_gr.next() && item_gr.canRead()){
+		data.status = item_gr.getValue('status');
+		data.ci_instance_id = item_gr.ci_instance_id.getDisplayValue();
+		if(item_gr.status == '2' && data.ci_instance_id){		
+			data.res = item_gr.ci_instance_id.sys_class_name;
+			var properties = new sn_cmp_api.CloudModelProcessorScript();
+			data.attributes = global.JSON.parse(properties.getCIAttributes(item_gr.ci_instance_id.sys_class_name,item_gr.ci_instance_id.sys_id));
+			if(data.attributes.length)
+			{	
+				data.attributes.sort(function(a, b) {
+					var textA = a.key.toUpperCase();
+					var textB = b.key.toUpperCase();
+					return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+				});
+
+				for(var i =0 ; i< data.attributes.length; i++){
+					if(data.attributes[i].key == "Type" && data.attributes[i].value == "VMware Virtual Machine Instance"){
+						var str = data.attributes[i].value;
+						data.attributes[i].value = str.replace("VMware ","");
+						break;
+					}
+				}
+			}
+
+			var tagsGr = new GlideRecordSecure('sn_cmp_rsrc_tag_history');
+			tagsGr.addQuery('current', true);
+			tagsGr.addQuery('cmdb_ci', $sp.getParameter('sys_id'));
+			tagsGr.query();
+			if (tagsGr.next()) {
+				var tagDefGr = new GlideRecordSecure('sn_cmp_tag_name');
+				tagDefGr.addQuery('visible', true);
+				var qc = tagDefGr.addQuery('tag_type', 'ServiceNow');
+				qc.addOrCondition('tag_type', 'Custom');
+				tagDefGr.orderBy('label');
+				tagDefGr.query();
+				while (tagDefGr.next()) {
+					if (!gs.nil(tagsGr.tag_values[tagDefGr.name])) {
+						var kvPair = {
+							'key': tagDefGr.getValue('label'),
+							'value': tagsGr.tag_values[tagDefGr.name].getDisplayValue()
+						};
+						data.tags.push(kvPair);
+					}
+				}	
+			}			
+		}
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-08 01:44:07</sys_created_on>
+        <sys_id>c79e8d790be32200eff7ef9bb4673a28</sys_id>
+        <sys_mod_count>448</sys_mod_count>
+        <sys_name>Cloud Stack Properties</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_c79e8d790be32200eff7ef9bb4673a28</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 22:31:15</sys_updated_on>
+        <template><![CDATA[<div class="panel b" >
+  <div class="panel-heading">
+    <h2 class="panel-title" style="padding-top:8px;">${Properties}</h2>
+  </div>
+  <div class="panel-body" ng-class="{add_scroll:data.status == '2'}">
+	
+    <div ng-if="data.isTLR">
+      <table class="properties">  
+        <tr ng-repeat="(key, value) in data.stack_properties">
+          <td class="property-key" >{{key}}</td>
+          <td>
+            <span class="property-value">{{value}}</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div ng-hide="data.isTLR">
+      <div class='row no-properties' ng-show="!data.ci_instance_id && data.status != '3'">
+        <div class="col-md-12">${The resource is processing..Please Wait.}</div>
+      </div>
+
+      <div class='row no-properties' ng-show="data.status == '3'">
+        <div class="col-md-12">${Error has occured during resource creation}</div>
+      </div>
+      <div ng-show="data.status == '2' &&  data.attributes.length">
+        <table class="properties">  
+          <tr ng-repeat="attribute in data.attributes">
+            <td class="property-key" >{{attribute.key}}</td>
+            <td >
+              <span ng-if="attribute.key == 'Password' && !isShowPass" class="property-value text-blue" ng-click="showPassword(attribute.value)" >${Show Password}</span>
+              <span class="property-value" ng-if="attribute.key != 'Password' || isShowPass">{{attribute.value}}</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div style="margin-top : 25px" ng-show="data.status == '2' && data.tags.length">
+        <div ng-class="{'card-default' : 2, 'selectable-card' : false, 'non-selectable-card': true}">
+          <div class="title">
+            ${Tags}
+          </div>
+          <div ng-repeat="tag in data.tags" class="task">
+            <span>{{tag.key}}
+            </span><span style="color:black">&nbsp;{{tag.value}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

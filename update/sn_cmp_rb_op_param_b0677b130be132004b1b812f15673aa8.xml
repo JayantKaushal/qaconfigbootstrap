@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_param">
+    <sn_cmp_rb_op_param action="INSERT_OR_UPDATE">
+        <interface display_value="Network Interface">1a9359bc67532200ff506c706785eff7</interface>
+        <name>DHCPEnabled</name>
+        <operation display_value="CreateSubnet">7b931dfc67532200ff506c706785ef0b</operation>
+        <order>1000</order>
+        <sys_class_name>sn_cmp_rb_op_param</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-22 15:57:59</sys_created_on>
+        <sys_id>b0677b130be132004b1b812f15673aa8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>DHCPEnabled</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_param_b0677b130be132004b1b812f15673aa8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-22 15:57:59</sys_updated_on>
+        <type/>
+    </sn_cmp_rb_op_param>
+</record_update>

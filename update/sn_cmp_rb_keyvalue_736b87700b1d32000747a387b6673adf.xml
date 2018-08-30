@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_keyvalue">
+    <sn_cmp_rb_keyvalue action="INSERT_OR_UPDATE">
+        <action/>
+        <key>NetworkInterfaceID</key>
+        <object_mapping>false</object_mapping>
+        <owner_instance/>
+        <owner_table/>
+        <step display_value="Network Service Container Interface.DetachNIC">20ca43700b1d32000747a387b6673ac5</step>
+        <sys_class_name>sn_cmp_rb_keyvalue</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-02 08:05:31</sys_created_on>
+        <sys_id>736b87700b1d32000747a387b6673adf</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>NetworkInterfaceID</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_keyvalue_736b87700b1d32000747a387b6673adf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-02 08:05:31</sys_updated_on>
+        <value>${parameter.NetworkInterfaceID}</value>
+    </sn_cmp_rb_keyvalue>
+</record_update>

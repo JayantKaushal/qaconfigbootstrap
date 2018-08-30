@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_page">
+    <sp_page action="INSERT_OR_UPDATE">
+        <category/>
+        <css>section.page, section.body {&#13;
+    padding-top: 0px !important;&#13;
+}&#13;
+section.page {&#13;
+&#13;
+  position: -ms-device-fixed !important;&#13;
+}&#13;
+&#13;
+_::-webkit-:not(:root:root), section.page { &#13;
+  &#13;
+  position: fixed !important;&#13;
+}&#13;
+</css>
+        <draft>false</draft>
+        <dynamic_title_structure/>
+        <id>cup_index</id>
+        <internal>false</internal>
+        <public>false</public>
+        <roles>sn_cmp.cloud_service_user</roles>
+        <short_description>A page</short_description>
+        <sys_class_name>sp_page</sys_class_name>
+        <sys_created_by>fredex</sys_created_by>
+        <sys_created_on>2014-09-19 21:30:53</sys_created_on>
+        <sys_id>d1dd43ddc3212200f7d1ca3adfba8f18</sys_id>
+        <sys_mod_count>97</sys_mod_count>
+        <sys_name>cup_index</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_page_d1dd43ddc3212200f7d1ca3adfba8f18</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-31 07:26:42</sys_updated_on>
+        <title>Cloud User Portal</title>
+    </sp_page>
+    <sys_translated_text action="delete_multiple" query="documentkey=d1dd43ddc3212200f7d1ca3adfba8f18"/>
+</record_update>

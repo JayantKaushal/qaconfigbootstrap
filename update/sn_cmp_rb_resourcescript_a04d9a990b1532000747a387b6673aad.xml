@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Azure_Delete_Network_Response_Processor</name>
+        <resource display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var cloudModelString = [];
+		var networkResp = global.JSON.parse(response);
+		var networkInfo = {
+			"cmdb_ci_network": {
+				"validator":"network_create_update_validator",
+				"validator_overrides": { },
+				"identification": {
+					"cmdb_ci_cloud_service_account": {
+						"criterion": {
+							"object_id": cloudServiceAccountId
+						}
+					},
+					"cmdb_ci_azure_datacenter": {
+						"criterion": {
+							"object_id": ldc
+						}
+					},
+					"cmdb_ci_network": {
+						"criterion": {
+							"object_id": networkResp.id
+						}
+					}
+				},
+				"attributes": {
+					"object_id": networkResp.id,
+					"state":"terminated"
+				}
+			}
+		};
+	cloudModelString.push(networkInfo);
+	return global.JSON.stringify(cloudModelString);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-03 18:03:57</sys_created_on>
+        <sys_id>a04d9a990b1532000747a387b6673aad</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Azure_Delete_Network_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_a04d9a990b1532000747a387b6673aad</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-19 11:48:51</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

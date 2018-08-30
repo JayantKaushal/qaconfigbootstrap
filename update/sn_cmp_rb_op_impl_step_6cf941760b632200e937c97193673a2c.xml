@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface display_value="Compute Interface">c7688c340b3222004b1b812f15673ae7</capi_interface>
+        <capi_method display_value="DeleteNode">af68cc340b3222004b1b812f15673a7f</capi_method>
+        <capi_version/>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <flow_type/>
+        <force_async>false</force_async>
+        <interface/>
+        <interface_operation/>
+        <name>Compute Interface.Destroy a virtual machine</name>
+        <operationimpl display_value="ConnectAndDestroyVirtualMachine">e0f941760b632200e937c97193673a1f</operationimpl>
+        <order>0</order>
+        <owner_type>1</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider>vmware-compute</provider>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-11 03:57:40</sys_created_on>
+        <sys_id>6cf941760b632200e937c97193673a2c</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Compute Interface.Destroy a virtual machine</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_6cf941760b632200e937c97193673a2c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-31 16:24:37</sys_updated_on>
+        <target_entity_flow/>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

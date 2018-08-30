@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>List_Datacenters_Response_Processor</name>
+        <resource display_value="vSphere Datacenter">5cc941360b632200e937c97193673a1a</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId,step, requestorContext) {
+    var rps = new sn_cmp_api.ResponseProcessorScript();
+    var cloudModelString = [];
+	var dcResponseArr = global.JSON.parse(response);
+	var reqContext = global.JSON.parse(requestorContext);
+	var stepObj = global.JSON.parse(step);
+
+	for(var i in dcResponseArr){
+		var dcResponse = dcResponseArr[i];
+		var vcenterHost = rps.extractHost(stepObj.endpointURL);
+		// Create vcenter_ref
+		var gr = new GlideRecord('cmdb_ci_vcenter');
+		var sysId;
+		gr.addQuery('instance_uuid',dcResponse.locationId);
+		gr.query();
+		if(gr.next())
+			sysId=gr.getValue('sys_id');
+		else{
+			gr.initialize();
+			gr.ip_address= vcenterHost;
+			gr.name = "VMware vCenter Server @ "+vcenterHost;
+			gr.url = stepObj.endpointURL;
+			gr.instance_uuid=dcResponse.locationId;
+			sysId = gr.insert();
+		}
+
+	var dcInfo = {
+		"cmdb_ci_vcenter_datacenter":{
+			"validator": "vcenter_location_update_validator",
+			"validator_overrides": { },
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId,
+					}
+				},
+				"cmdb_ci_vcenter_datacenter": {
+					"criterion": {
+						"object_id": dcResponse.morId
+					}
+				}
+			},
+			"attributes": {
+				"name": dcResponse.locationName,
+				"region": dcResponse.locationName,
+				"object_id": dcResponse.morId,
+				"morid": dcResponse.morId,
+				"vcenter_uuid": dcResponse.locationId,
+				"datacenter_url": stepObj.endpointURL,
+				"vcenter_ref":sysId
+			}
+		}
+	};
+		cloudModelString.push(dcInfo);
+}
+
+	return global.JSON.stringify(cloudModelString);
+	}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-11 03:56:51</sys_created_on>
+        <sys_id>a0c9c1360b632200e937c97193673adc</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>List_Datacenters_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_a0c9c1360b632200e937c97193673adc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-13 23:02:47</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Billing Job Log" max_length="40" name="sn_cmp_billing_job_log" type="collection">
+        <element attributes="no_truncate=true,edge_encryption_enabled=true" label="Details" max_length="1000" name="details" type="string"/>
+        <element hint="The time for when the job was done" label="End Time" max_length="40" name="end_time" type="glide_date_time"/>
+        <element hint="Report Job Config Id" label="Job Config" max_length="32" name="job_config" reference="sn_cmp_billing_schedule" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="The specific month for the report" label="Month" max_length="40" name="month" type="string"/>
+        <element hint="The time for when the job started" label="Start Time" max_length="40" name="start_time" type="glide_date_time"/>
+        <element choice="1" hint="The state of report downloading activity" label="State" max_length="40" name="state" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Success" sequence="1" value="success"/>
+                <element inactive_on_update="false" label="In Progress" sequence="2" value="in_progress"/>
+                <element inactive_on_update="false" label="Failure" sequence="3" value="failure"/>
+            </choice>
+        </element>
+        <element hint="The corresponding workflow context" label="Workflow Context" max_length="32" name="wf_context" reference="wf_context" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="The specific year for the report" label="Year" max_length="40" name="year" type="string"/>
+        <index name="index">
+            <element name="wf_context"/>
+        </index>
+        <index name="index2">
+            <element name="job_config"/>
+        </index>
+    </element>
+</database>

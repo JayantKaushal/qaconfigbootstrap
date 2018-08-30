@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Orchestration" max_length="40" name="sn_cmp_order" type="collection">
+        <element dependent="context_table" dependent_on_field="context_table" label="Context Instance" max_length="32" name="context_instance" type="document_id"/>
+        <element attributes="edge_encryption_enabled=true" label="Context Key" max_length="100" name="context_key" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Context Object" max_length="1000" name="context_obj" type="string"/>
+        <element attributes="base_start=true" label="Context Table" max_length="80" name="context_table" type="table_name"/>
+        <element choice="1" label="Entity Type" max_length="40" name="entity_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Blueprint" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Resource" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Mid name" max_length="100" name="mid_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Operation Name" max_length="1000" name="operation_name" type="string"/>
+        <element label="Order Date" max_length="40" name="order_date" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="OrderForm Data" max_length="1000" name="order_form_data" type="string"/>
+        <element dependent="owner_table" dependent_on_field="owner_table" label="Owner Instance" max_length="32" name="owner_instance" type="document_id"/>
+        <element attributes="base_start=true" label="Owner Table" max_length="80" name="owner_table" type="table_name"/>
+        <element label="Resource" max_length="32" name="resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Service Request Item" max_length="32" name="sc_req_item" reference="sc_req_item" type="reference"/>
+        <element label="Stack" max_length="32" name="stack" reference="sn_cmp_stack" type="reference"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Initialized" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Waiting for approval" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Approved" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Rejected" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Cancelled" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Processing" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Completed" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="Error" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="Processing with error" sequence="9" value="9"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Status Message" max_length="1000" name="status_msg" type="string"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element attributes="edge_encryption_enabled=true" label="Tag values" max_length="1000" name="tag_values" type="string"/>
+        <element label="User" max_length="32" name="user" reference="sys_user" type="reference"/>
+        <index name="index">
+            <element name="sc_req_item"/>
+        </index>
+        <index name="index2">
+            <element name="context_instance"/>
+        </index>
+        <index name="index3">
+            <element name="stack"/>
+        </index>
+        <index name="index4">
+            <element name="owner_instance"/>
+        </index>
+        <index name="index5">
+            <element name="resource"/>
+        </index>
+        <index name="index6">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index7">
+            <element name="user"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Policy Execution" max_length="40" name="sn_cmp_pol_execution" type="collection">
+        <element attributes="edge_encryption_enabled=true" hint="Policy Attributes associated with this action." label="Attributes" max_length="4000" name="attributes" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Request Item of Policy Execution" label="request Item" max_length="100" name="request_item" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Status of policy execution" label="Status" max_length="100" name="status" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="Type of policy executed." label="Policy Type" max_length="50" name="type" type="string"/>
+        <index name="index">
+            <element name="request_item"/>
+        </index>
+    </element>
+</database>

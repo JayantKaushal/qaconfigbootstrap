@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_rb_resourceinterface</collection>
+        <condition/>
+        <description>Restricts Insert and update operations if there exists interface with same name</description>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Unique ResourceInterface</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous) {
+
+	var currentInterfaceName = current.name;
+	var currentInterfaceSysID =current.getValue('sys_id');
+	var currentOperation = current.operation();
+	
+	if(new ResourceBlockDataValidator().validateResourceInterfaceName(currentInterfaceName)){
+		var gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+		if(gr.isValid() && gr.get('name', currentInterfaceName)){
+			if(currentOperation == 'insert' || (currentOperation == 'update' && currentInterfaceSysID != gr.getValue('sys_id'))){
+				current.setAbortAction(true);				
+				var errorMessage = gs.getMessage("Interface with name : {0} already exists", currentInterfaceName);
+				gs.addErrorMessage( errorMessage );
+			}
+		}
+	}else{
+		current.setAbortAction(true);
+		var invalidInterfaceMessage = gs.getMessage("Invalid interface with name : {0}. Interface name cannot contain any special characters except spaces and hyphen(-)", currentInterfaceName);
+		gs.addErrorMessage( invalidInterfaceMessage );
+	}
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-11 12:00:48</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>508c0ad667230300eccf6c706785ef49</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>Unique ResourceInterface</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_508c0ad667230300eccf6c706785ef49</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-06 05:36:14</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=508c0ad667230300eccf6c706785ef49"/>
+</record_update>

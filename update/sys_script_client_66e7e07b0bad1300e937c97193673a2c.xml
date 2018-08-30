@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description>Catalog name should not contain any special characters except [ ].</description>
+        <field>active</field>
+        <global>true</global>
+        <isolate_script>true</isolate_script>
+        <messages/>
+        <name>Validate catalog name on form submit</name>
+        <order/>
+        <script><![CDATA[function onSubmit() {
+	//getting the catalog name
+   var catalogName = g_form.getValue('name').trim();
+	//Regex to validate catalog should contain only alphanumerics, spaces, and []
+	var regexVal=/^[a-zA-Z0-9 [\]]*$/;
+	if(!regexVal.test(catalogName)) {
+		g_form.addErrorMessage("Catalog name should not contain special characters.Only alphanumeric and [ ] characters are allowed.");
+		return false;
+	}
+	g_form.setValue('name',catalogName);
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-25 06:40:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>66e7e07b0bad1300e937c97193673a2c</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Validate catalog name on form submit</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_66e7e07b0bad1300e937c97193673a2c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-25 16:06:02</sys_updated_on>
+        <table>sn_cmp_bp_cat_item</table>
+        <type>onSubmit</type>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rt_rb_m2m">
+    <sn_cmp_rt_rb_m2m action="INSERT_OR_UPDATE">
+        <resource_block display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource_block>
+        <resource_type display_value="Microsoft.Compute/virtualMachines">45a6aa7593a322004a9032bfa67ffb57</resource_type>
+        <sys_class_name>sn_cmp_rt_rb_m2m</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-06 22:45:55</sys_created_on>
+        <sys_id>1fce2a15d730320097eb6ccf6e610307</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rt_rb_m2m_1fce2a15d730320097eb6ccf6e610307</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-06 22:45:55</sys_updated_on>
+    </sn_cmp_rt_rb_m2m>
+</record_update>

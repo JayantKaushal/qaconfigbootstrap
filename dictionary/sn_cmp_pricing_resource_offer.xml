@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Pricing Resource Offer" max_length="40" name="sn_cmp_pricing_resource_offer" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="100" name="name" type="string"/>
+        <element hint="Cloud Provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element label="Resource Block" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="provider"/>
+        </index>
+        <index name="index2">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

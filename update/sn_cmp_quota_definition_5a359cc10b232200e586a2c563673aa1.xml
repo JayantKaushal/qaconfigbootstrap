@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_quota_definition">
+    <sn_cmp_quota_definition action="INSERT_OR_UPDATE">
+        <calculation_unit display_value="Single">c1a60af50b1132007bc4c73ef6673ae9</calculation_unit>
+        <name>vCPUs_Count</name>
+        <quota_type>Sum</quota_type>
+        <resource_attribute>cpus</resource_attribute>
+        <resource_name display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource_name>
+        <sys_class_name>sn_cmp_quota_definition</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-05 13:38:57</sys_created_on>
+        <sys_id>5a359cc10b232200e586a2c563673aa1</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>vCPUs_Count</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_quota_definition_5a359cc10b232200e586a2c563673aa1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-18 08:07:11</sys_updated_on>
+        <template>cmdb_ci_compute_template</template>
+        <template_attribute>vcpus</template_attribute>
+    </sn_cmp_quota_definition>
+</record_update>

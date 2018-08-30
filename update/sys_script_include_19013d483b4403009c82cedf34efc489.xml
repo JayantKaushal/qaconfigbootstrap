@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOrUpdateKeyValueMappingsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOrUpdateKeyValueMappingsAction</name>
+        <script><![CDATA[var CMPCreateOrUpdateKeyValueMappingsAction = Class.create();
+CMPCreateOrUpdateKeyValueMappingsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.stepInputParamId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOrUpdateKeyValueMappingsAction.doAction: Undefined step input parameter Id",
+					null
+				);
+			}
+			
+			var status;
+			var ErrMessage = '';
+			var postArray = [];
+			
+			//Add/Update Keyvalue mappings
+			var getParams = JSON.parse(params.postData);
+			var getParamsLength = getParams.length;
+			if(getParamsLength) {
+				for(var i = 0; i < getParamsLength; i++) {
+					var duplicateName = false;
+					var gr = new GlideRecord('sn_cmp_rb_keyvalue_mapping');
+					if(params.stepInputParamId && params.stepInputParamId != "")
+						gr.addQuery("keyvalue", params.stepInputParamId);
+					if(getParams[i].parameter && getParams[i].parameter != "")
+						gr.addQuery("parameter", getParams[i].parameter);
+					gr.query();
+					var getSysId;
+					
+					if (gr.next()) {
+						getSysId = gr.getValue('sys_id');
+						duplicateName = true;
+						gr.setValue("parameter_source", getParams[i].parameter_source);
+						gr.update();
+					} else {
+						var grInsert = new GlideRecord('sn_cmp_rb_keyvalue_mapping');
+						grInsert.setValue("keyvalue", params.stepInputParamId);
+						grInsert.setValue("parameter", getParams[i].parameter);
+						grInsert.setValue("parameter_source", getParams[i].parameter_source);
+						grInsert.insert();
+					}
+				}
+			}
+			return {status : true};
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add or update step input parameter keyvalue mappings."),
+				"CMPCreateOrUpdateKeyValueMappingsAction.doAction(): Failed to add or update step input parameter keyvalue mappings",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOrUpdateKeyValueMappingsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-14 10:35:14</sys_created_on>
+        <sys_id>19013d483b4403009c82cedf34efc489</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPCreateOrUpdateKeyValueMappingsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_19013d483b4403009c82cedf34efc489</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-14 12:24:05</sys_updated_on>
+    </sys_script_include>
+</record_update>

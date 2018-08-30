@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetLDCTypesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetLDCTypesAction</name>
+        <script><![CDATA[var CMPGetLDCTypesAction = Class.create();
+CMPGetLDCTypesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			var providerList = [];
+			var grProviders = new GlideRecord("sn_cmp_prov_cred_mapping");
+			grProviders.addQuery('available','true');
+			grProviders.query();
+		    while (grProviders.next()) {
+				var getProviderTable = new GlideRecord(grProviders.getValue('provider'));
+				if(this.resourceBlockExists(getProviderTable.getRecordClassName())) {
+			       var providerObj = {};
+
+					var displayLabel = grProviders.getValue('display_label');
+					if(gs.nil(displayLabel) && !gs.nil(getProviderTable.getLabel()))
+						displayLabel = getProviderTable.getLabel().replace('Datacenter', '');
+
+				  providerObj['name'] =displayLabel;
+				   providerObj['className'] = getProviderTable.getRecordClassName();
+				   providerObj['credentialName'] = new GlideRecord(grProviders.getValue('credential')).getRecordClassName();
+				   providerObj['isDatacenterUrlMandatory'] = grProviders.getValue('make_url_mandatory');
+				   providerList.push(providerObj);
+				}
+			}
+			return providerList;
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get LDC types"),
+			"CMPGetLDCTypesAction.doAction(): Failed to get LDC types",
+			error
+			);
+		}
+    },
+
+	 getLabel: function(sysClassName) {
+		var ciRecord = new GlideRecord("sys_db_object");
+		ciRecord.addQuery("name", sysClassName);
+		ciRecord.query();
+		if (ciRecord.next()) {
+			return ciRecord.getValue("label");
+		}
+		return null;
+	},
+
+	resourceBlockExists : function(ciType) {
+		var resourceGlide = new GlideRecord("sn_cmp_rb_resourceblock");
+		resourceGlide.addQuery("refcitype", ciType);
+		resourceGlide.query();
+		var resourceBlockDTOs =[];
+		if (resourceGlide.next()) {
+		 return true;
+		}
+		return false;
+	},
+    type: 'CMPGetLDCTypesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-19 11:13:42</sys_created_on>
+        <sys_id>5f5367d70b1032003bace58525673a65</sys_id>
+        <sys_mod_count>40</sys_mod_count>
+        <sys_name>CMPGetLDCTypesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5f5367d70b1032003bace58525673a65</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-12 09:49:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

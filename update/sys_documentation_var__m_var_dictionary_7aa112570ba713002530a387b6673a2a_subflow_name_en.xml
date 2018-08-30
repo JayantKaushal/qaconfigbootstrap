@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="subflow_name" label="Subflow Name" language="en" table="var__m_var_dictionary_7aa112570ba713002530a387b6673a2a">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>subflow_name</element>
+            <help/>
+            <hint/>
+            <label>Subflow Name</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_7aa112570ba713002530a387b6673a2a</name>
+            <plural>Subflow Name</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-08-01 11:08:41</sys_created_on>
+            <sys_id>b853da570ba713002530a387b6673a5b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Subflow Name</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_7aa112570ba713002530a387b6673a2a_subflow_name_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-08-01 11:08:41</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

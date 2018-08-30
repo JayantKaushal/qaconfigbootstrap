@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourceinterface">
+    <sn_cmp_rb_resourceinterface action="INSERT_OR_UPDATE">
+        <extends_from/>
+        <is_system_defined>true</is_system_defined>
+        <name>Discovery Interface</name>
+        <sys_class_name>sn_cmp_rb_resourceinterface</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-11 08:25:13</sys_created_on>
+        <sys_id>9c7039300b903200668daac125673ad8</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Discovery Interface</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourceinterface_9c7039300b903200668daac125673ad8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-06 14:52:44</sys_updated_on>
+        <type>Base</type>
+    </sn_cmp_rb_resourceinterface>
+</record_update>

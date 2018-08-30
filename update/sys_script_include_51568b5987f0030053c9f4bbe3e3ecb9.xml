@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyTriggerAction</api_name>
+        <client_callable>false</client_callable>
+        <description>Lists all policy rules</description>
+        <name>CMPGetAllPolicyTriggerAction</name>
+        <script><![CDATA[var CMPGetAllPolicyTriggerAction = Class.create();
+CMPGetAllPolicyTriggerAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{	
+			var nameValueTable = {};
+			var list = [];
+			nameValueTable['name'] = "on Blueprint provision";
+			nameValueTable['id'] = '2';
+			nameValueTable['table'] = 'sn_cmp_bp_blueprint';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Resource operation";
+			nameValueTable['id'] = '3';
+			nameValueTable['table'] = 'sn_cmp_rb_resourceblock';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Blueprint provision approval";
+			nameValueTable['id'] = '4';
+			nameValueTable['table'] = 'sn_cmp_bp_blueprint';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Stack operation approval";
+			nameValueTable['id'] = '5';
+			nameValueTable['table'] = 'sn_cmp_bp_blueprint';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Catalog item launch";
+			nameValueTable['id'] = '6';
+			nameValueTable['table'] = 'sn_cmp_bp_cat_item';
+			list.push(nameValueTable);
+					
+			nameValueTable = {};
+			nameValueTable['name'] = "on Catalog item request start";
+			nameValueTable['id'] = '8';
+			nameValueTable['table'] = 'sn_cmp_bp_cat_item';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Catalog item request end";
+			nameValueTable['id'] = '9';
+			nameValueTable['table'] = 'sn_cmp_bp_cat_item';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Stack resource operation approval";
+			nameValueTable['id'] = '10';
+			nameValueTable['table'] = 'sn_cmp_rb_resourceblock';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Lease end";
+			nameValueTable['id'] = '12';
+			nameValueTable['table'] = '';
+			list.push(nameValueTable);
+			
+			nameValueTable = {};
+			nameValueTable['name'] = "on Task Remediation";
+			nameValueTable['id'] = '13';
+			nameValueTable['table'] = '';
+			list.push(nameValueTable);			
+		
+			var responseObj = {
+				policyTriggerList : list,
+			};
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy triggers."),
+				"CMPGetAllPolicyTriggerAction.doAction(): Failed to get all policy triggers",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllPolicyTriggerAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-24 20:39:52</sys_created_on>
+        <sys_id>51568b5987f0030053c9f4bbe3e3ecb9</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>CMPGetAllPolicyTriggerAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_51568b5987f0030053c9f4bbe3e3ecb9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-01 08:14:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

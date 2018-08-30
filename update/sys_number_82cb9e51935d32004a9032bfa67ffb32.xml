@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_number">
+    <sys_number action="INSERT_OR_UPDATE">
+        <category display_value="" name="sn_cmp_cloud_trail">sn_cmp_cloud_trail</category>
+        <maximum_digits>9</maximum_digits>
+        <number>1</number>
+        <prefix>COT</prefix>
+        <sys_class_name>sys_number</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-03 17:54:12</sys_created_on>
+        <sys_id>82cb9e51935d32004a9032bfa67ffb32</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>COT</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_number_82cb9e51935d32004a9032bfa67ffb32</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-03 17:55:01</sys_updated_on>
+    </sys_number>
+</record_update>

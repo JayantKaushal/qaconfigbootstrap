@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPAddResourceBlockAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPAddResourceBlockAction</name>
+        <script><![CDATA[var CMPAddResourceBlockAction = Class.create();
+CMPAddResourceBlockAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.ci_type || !params.layer_id || !params.name) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPAddResourceBlockAction.doAction: Undefined element type, name, and/or layer id",
+				null
+				);
+			}
+			//this will take the checkpoints if passed.
+			var versionObj = new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			var newRB = versionObj.addElement(params.ci_type, params.name);
+			if(params.resblock_id && params.resourceblock_name){
+				var parameterBag = newRB.getParameterBag();
+				parameterBag.setValue("resourceBlockID",params.resblock_id);
+				parameterBag.setValue("resourceBlockName",params.resourceblock_name);
+				
+				//Add hosts to each node.TODO Get Host from MetadataRule.
+				//var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+				var hostJSONStr = new ResourceBlockServiceHelper().getHostsForResource(params.resblock_id);
+				//var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+				//var hostJSONStr = resourceBlockServiceScript.getHostsForResource(params.resblock_id);
+				parameterBag.setValue("hosts",JSON.stringify(hostJSONStr));
+
+				//Add binding resource to each nodes
+				var bindings = [];
+				var gr = new GlideRecordSecure('sn_cmp_rb_binding');
+				gr.addQuery('guest_resource',params.resblock_id);
+				gr.query();
+				while(gr.next()){
+					bindings.push(gr.getDisplayValue('binding_resource'));
+				}
+				parameterBag.setValue("bindings",new global.JSON().encode(bindings));
+
+			}
+
+			var newVersion = versionObj.commit();
+			newRB.checkpointId = newVersion.getCheckpointId();
+			var cmpGraphDTOTranslator = new CMPGraphDTOTranslator();
+			var nodeDTO = cmpGraphDTOTranslator._getNodeDTO(newRB);
+			newRB.nodeId = nodeDTO.id + "";
+			return newRB;
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to add the resource block"),
+			"CMPAddResourceBlockAction.doAction(): Failed to add the resource block",
+			error
+			);
+		}
+	},
+
+	type: 'CMPAddResourceBlockAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-24 10:55:58</sys_created_on>
+        <sys_id>fe2cfa9d9f132200a0d5b10f842e703e</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>CMPAddResourceBlockAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fe2cfa9d9f132200a0d5b10f842e703e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-10 14:16:00</sys_updated_on>
+    </sys_script_include>
+</record_update>

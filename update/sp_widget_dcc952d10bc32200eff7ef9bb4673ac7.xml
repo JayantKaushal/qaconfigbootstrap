@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function(spUtil,$rootScope,$scope,$location,$timeout) {
+	
+	var c = this;
+	$scope.data = $scope.options;
+	$scope.loadingData = true;
+	$scope.server.update().then(function() {
+		$scope.loadingData = false;
+	});
+
+	$scope.$on('view_changed', function(e,info) {
+		c.server.update().then(function(){
+		});
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_stack","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_stack_item","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "incident","category=Cloud Management",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_vm_instance","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_cloud_subnet","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_network","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_router","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_internet_gateway","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_cloud_load_balancer","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_storage_volume","",function(name,data){
+		spUtil.update($scope);
+	});
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-body {
+ 	 padding: 0px 10px;
+  	 min-height: 295px;
+  	 overflow-y:auto;
+}
+.card {
+	 border-bottom: 1px solid #f5f5f5;
+ 	 font-size: 14px;
+	 padding-bottom: 10px;
+}
+
+.card-status {
+ 	 font-size: 14px;
+  	 float: right;
+}
+
+.card-status &amp;gt; i {
+ 	 font-size: 22px;
+ 	 position: relative;
+  	 top: 5px;
+}
+
+.red {
+  	color: #F95050;
+}
+
+.grey {
+	color: #717171;
+}
+.orange {
+  	color: #D7AA01;
+}
+
+.card-name {
+ 	 margin-top: 10px;
+}
+
+.no-activities {
+  	text-align: center;
+ 	position: relative;
+ 	top:100px;
+  
+a {
+   	cursor: pointer;
+  }
+}
+
+.no-stacks {
+ 	text-align: center;
+  	position: relative;
+ 	top:100px;
+  
+  a {
+  	cursor: pointer;
+  }
+	    
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-service-health</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attr,ctrl) {
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 415) + 'px';
+		$(el).find('.panel-body').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Service Health</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	if (!input) 
+		return;
+
+	data.incidents = [];
+	data.stacks = [];
+	data.first_list = {};
+	data.is_group_admin = false;
+	data.is_admin = false;
+
+	var gr1 = new GlideRecord('sys_user_has_role');
+	gr1.addQuery('user',gs.getUserID());
+	gr1.addEncodedQuery('role.name=admin^ORrole.name=sn_cmp.cloud_group_admin');
+	gr1.query();
+	if (gr1.next())
+		data.is_group_admin = true;
+
+	var gr2 = new GlideRecord('sys_user_has_role');
+	gr2.addQuery('user',gs.getUserID());
+	gr2.addEncodedQuery('role.name=admin^ORrole.name=sn_cmp.cmp_root_admin');
+	gr2.query();
+	if (gr2.next())
+		data.is_admin = true;
+
+	data.gv = gs.getUser().getPreference('cloud_user_portal_view') || 'mine';
+
+	data.group_ids = []; 
+
+	if (data.is_group_admin || data.is_admin) {
+		var grm_rec = new GlideRecord('sys_user_grmember');  
+		grm_rec.addQuery('user',gs.getUserID());  
+		grm_rec.query();  
+		while (grm_rec.next())  
+			data.group_ids.push(grm_rec.group.sys_id);   
+	}
+
+	var count = new GlideAggregate('sn_cmp_stack');
+
+	if ((!data.is_group_admin && !data.is_admin) || ((data.is_admin || data.is_group_admin) && data.gv == 'mine'))
+		count.addEncodedQuery("assigned_to="+ gs.getUserID());
+	else if ((data.is_admin || data.is_group_admin) && data.gv == 'group')
+		count.addEncodedQuery("assigned_to="+ gs.getUserID()+"^ORowner_groupIN"+data.group_ids.join(','));
+
+	count.addQuery("stack_status","2");
+	count.addAggregate('COUNT');
+	count.query();
+
+	if (count.next()) 
+		data.count = count.getAggregate('COUNT');
+
+	function getSelectedCard(stack_id) {
+		var fGr = new GlideRecord('sn_cmp_stack_item');
+		fGr.addQuery("stack",stack_id);
+		fGr.addEncodedQuery("resource_block_id.layer!=4^resource_block_id.nameNOT LIKEBlueprint Resource^resource_block_id.type.name!=ARM Template^ORresource_block_id.type.nameISEMPTY^resource_block_id.type.name!=CloudFormation Template^ORresource_block_id.type.nameISEMPTY");
+		fGr.query();
+		if (fGr.next())
+			return fGr.getValue("sys_id");	
+	}
+
+	var inc = new GlideRecord("incident");
+	inc.addQuery("category","Cloud Management");
+	if ((!data.is_group_admin && !data.is_admin) || ((data.is_admin || data.is_group_admin) && data.gv == 'mine'))
+		inc.addEncodedQuery("cmdb_ci.assigned_to="+gs.getUserID());
+	else if ((data.is_admin || data.is_group_admin) && data.gv == 'group')
+		inc.addEncodedQuery("cmdb_ci.assigned_to="+gs.getUserID()+"^ORcmdb_ci.assignment_groupIN"+data.group_ids.join(','));
+
+	
+	inc.addQuery("state",'IN',"1,2,3");
+	inc.setLimit(10);
+	inc.orderByDesc("created_on");
+	inc.query();
+
+	while (inc.next()) {
+		var record = {};
+		record.sys_id = inc.getValue("sys_id");
+		record.number = inc.getValue("number");
+		record.inc_type = inc.getDisplayValue("subcategory");
+		record.inc_type_id = inc.getValue("subcategory");
+		record.type = "incident";
+		if (inc.cmdb_ci.sys_class_name == 'sn_cmp_stack') {
+			record.stack = true;
+			record.name = inc.getDisplayValue("cmdb_ci.name");
+			var ci = getSelectedCard(inc.cmdb_ci.sys_id);
+			record.url = "?id=cloud_stack_details&category=cloud_stacks&sys_id="+inc.getValue("cmdb_ci")+"&selected_card="+ci+"&active_tab=incidents";
+
+		} else {
+			var si = inc.getValue("cmdb_ci");
+			record.name = inc.getDisplayValue("cmdb_ci.name");
+			record.url = "?id=cloud_resource_details&category=cloud_resources&sys_id="+inc.getValue("cmdb_ci")+"&view=sp&resource_table="+inc.cmdb_ci.sys_class_name+"&active_tab=incidents";
+		}
+		data.incidents.push(record);
+	}
+
+
+	if (Object.keys(data.incidents).length < 10) {
+		var stack_items = new GlideRecord("sn_cmp_stack_item");
+		if ((!data.is_group_admin && !data.is_admin) || ((data.is_admin || data.is_group_admin) && data.gv == 'mine'))
+			stack_items.addEncodedQuery("stack.assigned_to="+ gs.getUserID());
+		else if ((data.is_admin || data.is_group_admin) && data.gv == 'group')
+			stack_items.addEncodedQuery("stack.assigned_to="+ gs.getUserID()+"^ORstack.owner_groupIN"+data.group_ids.join(','));
+		
+		stack_items.addQuery("stack.stack_status","2");
+		stack_items.addEncodedQuery("ci_instance_idISNOTEMPTY");
+
+		var qc = stack_items.addQuery("ci_instance_id.ref_cmdb_ci_vm_instance.state","terminated"); 
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_cloud_subnet.state","terminated");
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_network.state","terminated");
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_router.state","terminated");
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_storage_volume.state","terminated");
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_internet_gateway.state","terminated");
+		qc.addOrCondition("ci_instance_id.ref_cmdb_ci_cloud_load_balancer.state","terminated");
+
+		stack_items.query();
+
+		while (stack_items.next() && (Object.keys(data.incidents).length < 10)) {
+			if (data.stacks.indexOf(stack_items.stack.sys_id.toString())< 0) {
+				var record = {};
+				record.name = stack_items.stack.getDisplayValue("name");
+				record.type = "resource";
+				record.url = '?id=cloud_stack_details&category=cloud_stacks&sys_id='+stack_items.stack.sys_id+'&view=sp&active_tab=change_requests&selected_card='+stack_items.sys_id;
+				data.incidents.push(record);
+				data.stacks.push(stack_items.stack.sys_id.toString());
+			}
+		}
+	}
+
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-11 21:24:05</sys_created_on>
+        <sys_id>dcc952d10bc32200eff7ef9bb4673ac7</sys_id>
+        <sys_mod_count>217</sys_mod_count>
+        <sys_name>Cloud Service Health</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_dcc952d10bc32200eff7ef9bb4673ac7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 20:57:44</sys_updated_on>
+        <template><![CDATA[<div class="panel b widget-container">
+  <div class="panel-heading">
+    <h4 class="panel-title">${Stack Health}</h4>
+  </div>
+  <div class="panel-body">
+    <div class="alert alert-info" ng-if="loadingData">
+    <fa name="spinner" spin="true"></fa> ${Loading data}...
+  </div>
+    <div class="no-stacks" ng-if="data.count == 0 && !loadingData">
+      ${No active stacks}
+    </div>
+    <div class="no-activities" ng-if="data.count != 0 && data.incidents.length == 0 && !loadingData">
+      ${All stacks are good}
+    </div>
+    <div ng-if="data.count != 0 && data.incidents.length != 0 && !loadingData" class="card" ng-repeat="item in data.incidents | limitTo: 10">
+      <a ng-if="data.incidents.length > 0" href={{item.url}}>
+        <div class="card-status">
+          <span ng-class="{'red' : item.inc_type_id == 'outage', 'orange': item.inc_type_id == 'performance'|| item.inc_type_id == 'broken', 'grey': item.inc_type_id == 'question'|| item.inc_type_id == 'request'}"> {{item.number}} </span> 
+        </div>
+        <div class="card-name"> 
+          {{item.name}}
+        </div>
+        <small ng-show='item.type == "incident"' class="text-muted">{{item.inc_type}}</small>
+        <small style="color: #D7AA01;" ng-show='item.type == "resource"' class="text-muted">${Some resources are down}</small>
+      </a>
+    </div>  
+  </div>
+  <div class="panel-footer">
+    <a ng-hide="data.count == 0 || data.incidents.length == 0" href="?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&error=true" target="" class="pull-right">${View All}</a>
+    &nbsp;
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

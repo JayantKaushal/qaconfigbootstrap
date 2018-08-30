@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AWSOSTypeMapper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AWSOSTypeMapper</name>
+        <script><![CDATA[var AWSOSTypeMapper = Class.create();
+
+AWSOSTypeMapper.getOSType = function(name) {
+	return AWSOSTypeMapper._osTypeMap[name] || name;
+};
+
+/* The possible product descriptions are here - http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeReservedInstancesOfferings.html
+		   Create a mapping of this to our OS type metadata in table 'sn_cmp_aws_os_type'
+	*/
+
+AWSOSTypeMapper._osTypeMap = {
+	'Linux': 'Linux',
+	'SUSE' : 'SUSE',
+	'RHEL' : 'RHEL',
+	'Windows with SQL Std' : 'Windows with SQL Std',
+	'Windows with SQL Web': 'Windows with SQL Web',
+	'Windows with SQL Ent': 'Windows with SQL Ent',
+	'Linux/UNIX'                                        : 'Linux',
+	'Linux/UNIX (Amazon VPC)'                           : 'Linux',
+	'Windows'                                           : 'Windows',
+	'Windows (Amazon VPC)'                              : 'Windows',
+	'SUSE Linux'                                        : 'SUSE',
+	'SUSE Linux (Amazon VPC)'                           : 'SUSE',
+	'Red Hat Enterprise Linux'                          : 'RHEL',
+	'Red Hat Enterprise Linux (Amazon VPC)'             : 'RHEL',
+	'Windows with SQL Server Standard'                  : 'Windows with SQL Std',
+	'Windows with SQL Server Standard (Amazon VPC)'     : 'Windows with SQL Std',
+	'Windows with SQL Server Web'                       : 'Windows with SQL Web',
+	'Windows with SQL Server Web (Amazon VPC)'          : 'Windows with SQL Web',
+	'Windows with SQL Server Enterprise'                : 'Windows with SQL Ent',
+	'Windows with SQL Server Enterprise (Amazon VPC)'   : 'Windows with SQL Ent'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-19 23:28:46</sys_created_on>
+        <sys_id>fdb4d542732513006cf439282bf6a787</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>AWSOSTypeMapper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fdb4d542732513006cf439282bf6a787</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-19 23:31:33</sys_updated_on>
+    </sys_script_include>
+</record_update>

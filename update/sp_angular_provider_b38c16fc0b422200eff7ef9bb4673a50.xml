@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>cloudDropdownTree</name>
+        <script><![CDATA[function () {
+	return {
+		restrict: 'E',
+		scope: {items: '='},
+		replace: true,
+		template: '<ul class="dropdown-menu">' +
+		'<li ng-repeat="mi in items" style="min-width: 20em;" ng-class="{\'dropdown-submenu\': mi.type == \'menu\', \'dropdown-menu-line\':$index < items.length - 1}" ng-include="getURL()">' +
+		'</ul>',
+		link : function(scope, element, attrs, controller) {
+			scope.getURL = function() {
+				return 'cloudDropdownTreeTemplate';
+			}
+
+			$("body").on( "click", "a.menu_trigger", function(e) {
+				var current = $(this).next();
+				var grandparent = $(this).parent().parent();
+				if ($(this).hasClass('left-caret') || $(this).hasClass('right-caret'))
+					$(this).toggleClass('right-caret left-caret');
+				grandparent.find('.left-caret').not(this).toggleClass('right-caret left-caret');
+				current.toggle();
+				$(".dropdown-menu").each(function(i, elem) {
+					var elemClosest = $(elem).closest('.dropdown');
+					var currentClosest = current.closest('.dropdown');
+					if (!elem.contains(current[0]) && elem != current[0] && (!currentClosest.length || !elemClosest.length || elemClosest[0] == currentClosest[0]))
+						$(elem).hide();
+				})
+				e.stopPropagation();
+			});
+			$("body").on( "click", "a:not(.menu_trigger)", function() {
+				var root=$(this).closest('.dropdown');
+				root.find('.left-caret').toggleClass('right-caret left-caret');
+			});
+		}
+	}
+}
+
+]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-09-21 15:19:27</sys_created_on>
+        <sys_id>b38c16fc0b422200eff7ef9bb4673a50</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>cloudDropdownTree</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_b38c16fc0b422200eff7ef9bb4673a50</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-22 02:37:32</sys_updated_on>
+        <type>directive</type>
+    </sp_angular_provider>
+</record_update>

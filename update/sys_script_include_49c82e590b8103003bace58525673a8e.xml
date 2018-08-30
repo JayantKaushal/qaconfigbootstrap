@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCsdDeployPackCrudOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCsdDeployPackCrudOperationAction</name>
+        <script><![CDATA[var CMPCsdDeployPackCrudOperationAction = Class.create();
+CMPCsdDeployPackCrudOperationAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			
+			var cmpPackUtils = new CMPPackUtils();
+			//Deploy Summary info list to be shown in the UI
+
+			if (params.context == 'deploySummary') {
+				var deploySummary = cmpPackUtils.getAllPackItems(params.packSysId);
+				return deploySummary;
+			}
+			
+			//Checking whether the deploy is progress
+			if (params.context == 'isDeployInProgress') {
+				var isDeployInProgress = cmpPackUtils.ifDeploymentInProgress(params.packSysId);
+				var responseObj = {
+					'deployStatus' : isDeployInProgress
+				};
+				return responseObj;
+			}
+			
+			//Validate and deploy pack
+			if (params.context == 'validateDeploySummary') {
+				var packList = JSON.parse(params.validatePackList);
+				var packJson = {
+					'pack' : params.packSysId,
+					'packItems' : packList
+				};
+				var validatedObj = cmpPackUtils.validateDeploy(packJson, '', true);
+				if (validatedObj) {
+
+					var depSysId=cmpPackUtils.createDepRecord(packJson);
+					var worker = new GlideScriptedHierarchicalWorker();
+					worker.setBackground(true);
+					worker.setScriptIncludeName('sn_cmp.CMPPackDeployUtils');
+					worker.setScriptIncludeMethod('deploy');
+					//worker.putMethodArg('packJSON',packJson);
+					worker.putMethodArg('depSysId',depSysId);
+					worker.start();
+
+					return depSysId;
+
+				} else {
+					//Fails when deploy
+					return validatedObj;
+				}	
+			}
+			
+			if (params.context == 'deployInfoLog') {
+				var deploymentInfo = cmpPackUtils.getDeploymentRecords(params.packSysId);
+				return deploymentInfo;
+			}
+			
+			if (params.context == 'deploySummaryInfoLog') {
+				var deploySummaryLogRecords=[];
+				var deploySummaryLogGr = new GlideRecord('sn_cmp_dep_item_run_info');
+				deploySummaryLogGr.addQuery('sn_cmp_deployment_run', params.deployInfoId);
+				deploySummaryLogGr.orderBy('dep_item_order');
+				deploySummaryLogGr.query();
+				while(deploySummaryLogGr.next()){
+					var deployRecordObj={};
+					
+					deployRecordObj['id'] = deploySummaryLogGr.getValue('sys_id');
+					deployRecordObj['depStartTime'] = deploySummaryLogGr.getDisplayValue('dep_item_start_time');
+					deployRecordObj['depEndTime'] = deploySummaryLogGr.getDisplayValue('dep_item_end_time');
+					deployRecordObj['depStatus'] = deploySummaryLogGr.getValue('status');
+					deployRecordObj['depRunStatusMsg'] = deploySummaryLogGr.getValue('dep_run_status_msg');
+					deployRecordObj['packItem'] = deploySummaryLogGr.getDisplayValue('pack_item');
+					deployRecordObj['action'] = deploySummaryLogGr.getDisplayValue('deployment_option');
+					var packItem = new GlideRecord('sn_cmp_pack_item');
+					if(packItem.get(deploySummaryLogGr.getValue('pack_item'))){
+						deployRecordObj['type']=packItem.getValue('entity_type');
+					}
+					deploySummaryLogRecords.push(deployRecordObj);
+				}
+
+				return deploySummaryLogRecords;
+			} 
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Fails to do action on the cloud solution deployer."),
+				"CMPCsdDeployPackCrudOperationAction.doAction(): Fails to do action on the cloud solution deployer.",
+				error
+			);
+		}
+    },
+
+    type: 'CMPCsdDeployPackCrudOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-06 04:47:18</sys_created_on>
+        <sys_id>49c82e590b8103003bace58525673a8e</sys_id>
+        <sys_mod_count>55</sys_mod_count>
+        <sys_name>CMPCsdDeployPackCrudOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_49c82e590b8103003bace58525673a8e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-28 18:53:03</sys_updated_on>
+    </sys_script_include>
+</record_update>

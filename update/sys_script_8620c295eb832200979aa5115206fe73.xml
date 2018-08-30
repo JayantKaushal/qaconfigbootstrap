@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_cloud_template</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition table="sn_cmp_cloud_template">bodyVALCHANGES^ORtypeVALCHANGES^EQ<item endquery="false" field="body" goto="false" newquery="false" operator="VALCHANGES" or="false" value=""/>
+            <item endquery="false" field="type" goto="false" newquery="false" operator="VALCHANGES" or="true" value=""/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </filter_condition>
+        <is_rest>false</is_rest>
+        <message><![CDATA[<p>TRT:</p>
+<p>TRT:</p>
+<p>TRT:</p>
+<p>TRT:</p>
+<p>TRT: null</p>]]></message>
+        <name>ValidateTemplate</name>
+        <order>500</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+	
+	var formatInvalid = false;
+	if (!current.type.nil() && current.type.name != 'ServiceNow Blueprint') {
+		var answer = new BlueprintTemplateUtil().validate(current.body+'', current.type.name+'');
+		if (answer.format)
+			current.format = answer.format;
+		else
+			current.format = '';
+		if (!answer.isValid) {
+			addErrorMessage(answer.errorMessage, current);
+			formatInvalid = true;
+		}
+	} else {
+		// need to validate YAML here
+		try {
+			var bps = new sn_cmp_api.BlueprintServiceScript();
+			var ret = '' + bps.isValidYAML(''+current.body);
+			if (ret != '') {
+				// log the error for now, once backend can return a one-line summary
+				// will use it to show to end user
+				gs.info('Cloud Template validation error: \n' + ret);
+				addErrorMessage('Supplied template is not valid ' + ret, current);
+				formatInvalid = true;				
+			}
+		} catch (e) {
+			gs.info('Cloud Template validation error: \n' + e.message);
+			addErrorMessage('Supplied template is not valid', current);
+			formatInvalid = true;
+		}
+	}
+	// if the format is valid
+	if(!formatInvalid) {
+		// Reset message field first
+		current.status_message = gs.getMessage('Template is valid and saved.');
+		current.status = 'success';
+	    current.update();
+		
+		var rb_namevalid = true;
+		var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+		gr.addQuery("name", current.name);
+		gr.query();
+		if(gr.hasNext()) {
+			gs.info('Cloud Template validation error: \n ResourceBlock by the name ' +current.name+' already exists. Please choose a new one.' );
+			addErrorMessage("ResourceBlock by the name {0} already exists. Please choose a new one.", current);
+			rb_namevalid = false;
+		}
+		if(rb_namevalid) {
+			gr = new GlideRecord('sn_cmp_bp_blueprint');
+			gr.addQuery("name", current.name);
+			gr.query();
+			if(gr.hasNext()) {
+				gs.info('Cloud Template validation error: \n Blueprint by the name ' +current.name+' already exists. Please choose a new one.' );
+				addErrorMessage("Blueprint by the name {0} already exists. Please choose a new one.", current);
+				rb_namevalid = false;
+			}
+
+		}
+	} 
+}
+)(current, previous);
+
+function addErrorMessage(message, current) {
+	gs.addErrorMessage(gs.getMessage(message));
+	message = message.replace(/<BR>/g, '\n');
+	var errMsg = "Error: " + message;
+	current.status_message = gs.getMessage(errMsg);
+	current.status = 'failed';
+	current.update();
+}
+]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-11 19:37:24</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>8620c295eb832200979aa5115206fe73</sys_id>
+        <sys_mod_count>76</sys_mod_count>
+        <sys_name>ValidateTemplate</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_8620c295eb832200979aa5115206fe73</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-09 20:54:06</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=8620c295eb832200979aa5115206fe73"/>
+</record_update>

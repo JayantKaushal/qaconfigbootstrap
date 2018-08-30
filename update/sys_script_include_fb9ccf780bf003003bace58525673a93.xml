@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCsdPackCrudOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCsdPackCrudOperationAction</name>
+        <script><![CDATA[/*
+*  CMPCsdPackCrudOperation is used for adding, getting, delete, update the pack
+*  @Author thiyagu
+*/  
+
+var CMPCsdPackCrudOperationAction = Class.create();
+CMPCsdPackCrudOperationAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			var context = ['add', 'delete', 'update', 'get'];
+			var CMPPackUtilsObj = new CMPPackUtils();
+			//This is used for getting the pack list
+			if (params.context == 'get') {
+				var packListObj = CMPPackUtilsObj.getAllPack(params.searchName, params.currentPage, params.limit, params.selectedStatusId, params.packCategoryId);
+				return packListObj;
+			}
+			
+			//This is used for getting packInfo by packSysId
+			if (params.context == 'getPackInfoBySysId') {
+				var packInfo = CMPPackUtilsObj.getPackInfo(params.packSysId);
+				return packInfo;
+			}
+			
+			//This is used for add the pack
+			if (params.context == 'add') {
+				var author = gs.getUserName();
+				//Todo: source value should get from glide record
+				var source = 'localsys';
+				var addedPackId = CMPPackUtilsObj.savePack(params.name, params.description, author, params.status, source, params.category);
+				return addedPackId;
+			}
+			
+			//This is used for delete the pack
+			if (params.context == 'delete') {
+				//TODO: Due to scope access can't able to delete the pack items
+				//var deletedPackId = CMPPackUtilsObj.deletePack(params.id);
+				//return deletedPackId;
+				var packGr = new GlideRecord('sn_cmp_pack');
+				packGr.addQuery("sys_id", params.id);
+				packGr.query();
+				if (packGr.next()) {
+					packGr.deleteRecord();
+				}
+				return true;
+			}
+			
+			//This is used for update the pack
+			if (params.context == 'update') {
+				var updatePack = CMPPackUtilsObj.updatePack(params.id, params.name, params.description, params.category);
+				return updatePack;
+			}
+			
+			//This is used for getting the supported entity for adding the entity to pack
+			if (params.context == 'supportedEntity') {
+				var supportedEntity = CMPPackUtilsObj.supportedEntity();
+				return supportedEntity;
+			}
+			
+			//This is used for getting the published entites for selected entity
+			if (params.context == 'publishedEntity') {
+				var publishedEntity = CMPPackUtilsObj.getPublishedEntitiesForType(params.entityType);
+				return publishedEntity;
+			}
+			
+			//This is used for removing the entities from the pack
+			if (params.context == 'removeEntity') {
+				var removedEntity = CMPPackUtilsObj.removeEntityFromPack(params.packSysId, params.entityId);
+				return true;
+			}
+			
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Fails to do action on the cloud solution deployer."),
+				"CMPCsdPackCrudOperationAction.doAction(): Fails to do action on the cloud solution deployer.",
+				error
+			);
+		}
+    },
+
+    type: 'CMPCsdPackCrudOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-23 08:15:15</sys_created_on>
+        <sys_id>fb9ccf780bf003003bace58525673a93</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>CMPCsdPackCrudOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fb9ccf780bf003003bace58525673a93</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-12 06:05:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

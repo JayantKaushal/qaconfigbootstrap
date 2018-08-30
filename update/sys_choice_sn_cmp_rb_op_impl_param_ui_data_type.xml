@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_choice action="INSERT_OR_UPDATE" field="ui_data_type" table="sn_cmp_rb_op_impl_param" version="3">
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Grid</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>1</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:48:35</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>bf948b5967010300a7526c706785efd1</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:48:39</sys_updated_on>
+            <value>1</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Date</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>2</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:48:57</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>5fb48b5967010300a7526c706785eff3</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:49:01</sys_updated_on>
+            <value>2</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>DateTime</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>3</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:49:09</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>24d4cb5967010300a7526c706785efd9</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:49:12</sys_updated_on>
+            <value>3</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Hidden</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>4</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:49:20</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>ebd40f5967010300a7526c706785ef29</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:49:23</sys_updated_on>
+            <value>4</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>MultiSelect</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>5</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:49:43</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>4ee4cb5967010300a7526c706785efca</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:49:46</sys_updated_on>
+            <value>5</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Password</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>6</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:49:53</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>77f40f5967010300a7526c706785efad</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:49:56</sys_updated_on>
+            <value>6</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Select</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>7</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:50:04</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>d6054f5967010300a7526c706785ef39</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:50:07</sys_updated_on>
+            <value>7</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>TextArea</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>8</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:50:16</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>30154f5967010300a7526c706785ef6b</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:50:20</sys_updated_on>
+            <value>8</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>TextBox</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>9</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:50:31</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>b3154f5967010300a7526c706785ef71</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:50:35</sys_updated_on>
+            <value>9</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>LookupSelect</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>10</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:50:43</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>6f254f5967010300a7526c706785effa</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:50:47</sys_updated_on>
+            <value>10</value>
+        </sys_choice>
+        <sys_choice action="INSERT_OR_UPDATE">
+            <dependent_value/>
+            <element>ui_data_type</element>
+            <hint/>
+            <inactive>false</inactive>
+            <label>Reference</label>
+            <language>en</language>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sequence>11</sequence>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:50:55</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>a2358f5967010300a7526c706785ef68</sys_id>
+            <sys_mod_count>2</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:50:59</sys_updated_on>
+            <value>11</value>
+        </sys_choice>
+        <sys_choice_set action="INSERT_OR_UPDATE">
+            <element>ui_data_type</element>
+            <name>sn_cmp_rb_op_impl_param</name>
+            <sys_class_name>sys_choice_set</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-09-06 06:48:35</sys_created_on>
+            <sys_id>6c3c032c0bd82300d9f9ad4363673a35</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>ui_data_type</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_choice_sn_cmp_rb_op_impl_param_ui_data_type</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-09-06 06:48:35</sys_updated_on>
+        </sys_choice_set>
+    </sys_choice>
+</record_update>

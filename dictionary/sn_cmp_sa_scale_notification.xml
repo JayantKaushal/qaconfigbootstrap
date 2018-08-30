@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Auto Scaling Notification" max_length="40" name="sn_cmp_sa_scale_notification" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="40" name="name" type="string"/>
+        <element label="Topic" max_length="32" name="topic" reference="cmdb_ci_cloud_topic" type="reference"/>
+        <index name="index">
+            <element name="topic"/>
+        </index>
+    </element>
+</database>

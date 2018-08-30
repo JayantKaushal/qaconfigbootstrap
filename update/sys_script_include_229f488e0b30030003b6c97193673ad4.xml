@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintOrchestrationSchedularHelper</api_name>
+        <client_callable>false</client_callable>
+        <description>Due to race condition if any of the order step didn't executed, schedular will kick start the job which is pending.&#13;
+        </description>
+        <name>BlueprintOrchestrationSchedularHelper</name>
+        <script><![CDATA[var BlueprintOrchestrationSchedularHelper = Class.create();
+BlueprintOrchestrationSchedularHelper.prototype = {
+    initialize: function() {
+    },
+
+	findAndStartInCompleteJobs : function() {
+		gs.info("Executing sechdular script");
+		var orderId = "";
+		var orderGR = new GlideRecord("sn_cmp_order");
+		orderGR.addQuery("status",6);
+		orderGR.query();
+		while(orderGR.next()){
+			orderId = orderGR.getUniqueValue();
+			var nowTime = new GlideDateTime().getNumericValue();
+			var orderTime = new GlideDateTime(orderGR.order_date+"").getNumericValue();
+			var timeDifferenceInMin = (nowTime - orderTime)/60000;
+			gs.info("Time difference :- "+timeDifferenceInMin );
+			if(timeDifferenceInMin > 15) {
+				var orderStepStuck = [];
+				var orderStepsGR = new GlideRecord("sn_cmp_order_step_status");
+				orderStepsGR.addQuery("status",1);
+				orderStepsGR.addQuery("order",orderId);
+				orderStepsGR.query();
+				while(orderStepsGR.next()) {
+					var parentsExecutedFlag = false;
+					var parentsStep = new GlideRecord("sn_cmp_order_step_graph_edge");
+					parentsStep.addQuery("child_step",orderStepsGR.getUniqueValue());
+					parentsStep.query();
+					while(parentsStep.next()){
+						if(parentsStep.parent_step.status == 3){
+							parentsExecutedFlag = true;
+						} else {
+							parentsExecutedFlag = false;
+							break;
+						}
+					}
+					if(parentsExecutedFlag) {
+						orderStepStuck.push(orderStepsGR.getUniqueValue());
+					}
+				}
+				if(orderStepStuck.length > 0)
+					new sn_cmp_api.BPOrchestratorServiceScript().orchestrateStuckOrderSteps(orderId,orderStepStuck);
+
+			}
+
+		}
+
+	},
+    type: 'BlueprintOrchestrationSchedularHelper'
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-26 15:17:16</sys_created_on>
+        <sys_id>229f488e0b30030003b6c97193673ad4</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>BlueprintOrchestrationSchedularHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_229f488e0b30030003b6c97193673ad4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-26 17:51:31</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="" section_id="85ce97dc9fc21300e78d317f842e702f" sys_domain="global" table="discovery_log" version="3" view="cmpview">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>status</element>
+            <position>0</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>29ced7dc9fc21300e78d317f842e700f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>message</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>2dced7dc9fc21300e78d317f842e700f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>level</element>
+            <position>2</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>21ced7dc9fc21300e78d317f842e7010</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sys_created_on</element>
+            <position>3</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>25ced7dc9fc21300e78d317f842e7010</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.split</element>
+            <position>4</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>29ced7dc9fc21300e78d317f842e7010</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type>.split</type>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>source</element>
+            <position>5</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>a5ced7dc9fc21300e78d317f842e705b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>cmdb_ci</element>
+            <position>6</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>a9ced7dc9fc21300e78d317f842e705b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sensor</element>
+            <position>7</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>adced7dc9fc21300e78d317f842e705b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.end_split</element>
+            <position>8</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>a1ced7dc9fc21300e78d317f842e705c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type>.end_split</type>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>device_history</element>
+            <position>9</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:21</sys_created_on>
+            <sys_id>a5ced7dc9fc21300e78d317f842e705c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="discovery_log" sys_domain="global" view="8dce97dc9fc21300e78d317f842e702a">85ce97dc9fc21300e78d317f842e702f</sys_ui_section>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:21</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption/>
+            <header>false</header>
+            <name>discovery_log</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-09 19:22:20</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>85ce97dc9fc21300e78d317f842e702f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>discovery_log</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_section_85ce97dc9fc21300e78d317f842e702f</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-09 19:22:20</sys_updated_on>
+            <sys_user/>
+            <title>false</title>
+            <view display_value="cmpView" name="cmpview">8dce97dc9fc21300e78d317f842e702a</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

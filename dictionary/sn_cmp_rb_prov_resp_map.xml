@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Provider Response Processor Mapping" max_length="40" name="sn_cmp_rb_prov_resp_map" type="collection">
+        <element label="Application Profile" max_length="32" name="config_script" reference="sn_cmp_application_profile" reference_qual="javascript:new sn_cmp.CfgMgmtUtils().getApplicationProfiles(current.provider_type);" type="reference" use_reference_qualifier="advanced"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element label="Operation" max_length="32" name="operation" reference="sn_cmp_rb_op_signature" reference_qual="javascript:new sn_cmp.CfgMgmtUtils().getOperationsForInterface(current.resource_interface);" type="reference"/>
+        <element label="Provider Type" max_length="32" name="provider_type" reference="sn_cmp_workload_provider_type" type="reference"/>
+        <element label="Resource" max_length="32" name="resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Resource Interface" max_length="32" name="resource_interface" reference="sn_cmp_rb_resourceinterface" reference_qual="javascript:new sn_cmp.CfgMgmtUtils().getAllInterfaces(current.resource);" type="reference"/>
+        <index name="index">
+            <element name="provider_type"/>
+        </index>
+        <index name="index2">
+            <element name="config_script"/>
+        </index>
+        <index name="index3">
+            <element name="resource"/>
+        </index>
+        <index name="index4">
+            <element name="resource_interface"/>
+        </index>
+        <index name="index5">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

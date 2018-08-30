@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudFormationResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudFormationResponseProcessor</name>
+        <script><![CDATA[var CloudFormationResponseProcessor = Class.create();
+CloudFormationResponseProcessor.prototype = Object.extendsObject(CloudTemplateResponseProcessor, {
+	GROUPKEY: 'GroupName',
+	
+    initialize: function() {
+		CloudTemplateResponseProcessor.prototype.initialize.call(this);
+		this.datasource = 'AWS CloudFormation';
+		this.IGNORED_CLASS = gs.getProperty('sn.cmp.cloudformation.ignored.class', 'cmdb_ci_route_table,cmdb_ci_network_acl,cmdb_ci_cloud_ip_address,cmdb_ci_internet_gateway');
+    },
+	
+	getResourceTypesToProcess: function(response) {
+		var responseObj = response.stackResources;
+		
+		if (!responseObj.hasOwnProperty('ListStackResourcesResult') ||
+		    !responseObj.ListStackResourcesResult.hasOwnProperty('StackResourceSummaries') ||
+			gs.nil(responseObj.ListStackResourcesResult.StackResourceSummaries) ||
+		    !responseObj.ListStackResourcesResult.StackResourceSummaries.hasOwnProperty('member')) {
+			this.log(gs.getMessage('No resources to process'));
+			return {};
+		}
+		
+		var resources = responseObj.ListStackResourcesResult.StackResourceSummaries.member;
+		// In some cases, we need this for some part of the identifier
+		var stackId = response.stackInfo.DescribeStacksResult.Stacks.member.StackId;
+		
+		// If there is only one resource, AWS returns a single object - force it to be
+		// an array so the rest of the code can be consistent
+		var au = new global.ArrayUtil();
+		resources = au.ensureArray(resources);
+		var resourcesToProcess = {};
+		
+		this.log(gs.getMessage('Number of resources: {0}', [resources.length]));
+		
+		for (var i = 0; i < resources.length; i++) {
+			var resource = resources[i];
+			var resourceType = resource.ResourceType.toLowerCase();
+			
+			if (resource.hasOwnProperty('ResourceStatus') &&
+			    resource.ResourceStatus == 'CREATE_COMPLETE') {
+
+				if (!resourcesToProcess.hasOwnProperty(resourceType))
+					resourcesToProcess[resourceType] = [];
+				
+				var resourceInfo = {};
+				resourceInfo.id = resources[i].PhysicalResourceId;
+				resourceInfo.name = !gs.nil(resources[i].LogicalResourceId) ? 
+					resources[i].LogicalResourceId : '';
+				resourceInfo.stackId = stackId;
+				resourceInfo.type = resource.ResourceType;
+				resourcesToProcess[resourceType].push(resourceInfo);
+			}
+		}
+		
+		this.log(gs.getMessage('Resources to process: {0}', [global.JSON.stringify(resourcesToProcess)]));
+		
+		return resourcesToProcess;
+	},
+	
+	getStackName: function(response) {
+		return response.stackInfo.DescribeStacksResult.Stacks.member.StackName;
+	},	
+	
+	getStepParameters: function(contextInfo, resourcesInfo) {
+		if (resourcesInfo.length == 0)
+			return {};
+		
+		var objectIdStr = '';
+		
+		if (resourcesInfo[0].type == 'AWS::EC2::SecurityGroup') {
+			// Security groups behave specially in CloudFormation - if it is a VPC security group
+			// it gives the ID back as the sg-<id> as expected.  If it is a non-VPC security group
+			// it returns the name.  Assume the template isn't creating both types and construct
+			// the object IDs to filter on appropriately - IDs is comma separated, name is map
+			// Use the first ID as the respresentative that all are the same format
+			var sgId = resourcesInfo[0].id;
+			
+			var parts = /sg-.*/.exec(sgId);
+			if (!parts) {
+				var names = {};
+				names['filterBy'] = this.GROUPKEY;
+				for (var x = 0; x < resourcesInfo.length; x++)
+					names[this.GROUPKEY + (x + 1)] = resourcesInfo[x].id;
+				
+				return {"ObjectID": global.JSON.stringify(names)};
+			}
+		}
+			
+		var objectIds = [];
+		for (var i = 0; i < resourcesInfo.length; i++) {
+			var id = resourcesInfo[i].id;
+
+			// for ELBv2, the name is embedded in the ARN which is the ID given
+			if (resourcesInfo[i].type == 'AWS::ElasticLoadBalancingV2::LoadBalancer')
+				id = this.getLoadBalancerId(id);
+
+			objectIds.push(id);
+		}
+
+		objectIdStr = objectIds.join();
+		
+		return {"ObjectID": objectIdStr};
+	},
+	
+	getLoadBalancerId: function(id) {
+		var lbId = id;
+		var parts = /arn:aws:elasticloadbalancing:.*:.*:.*\/.*\/(.*)\/.*/.exec(id);
+
+		if (parts)
+			lbId = parts[1];
+		
+		return lbId;
+	},
+	
+	/**
+	 * Add CloudFormation stack info for cloud model API
+	 */
+	getResourceBlockObject: function(response, serviceAccount, ldc, stackId) {
+		var stackObject = response.stackInfo;
+		var processor = new sn_cmp.ResponseProcessor(serviceAccount, 
+													 ldc,
+													 'Cloud API');	
+
+		processor.addRelatedData({"stackId": stackId, "stackResources": response.stackResources}, 
+								 'StoreCFResources');
+		processor.addRelatedData({"stackId": stackId, "stackEvents": response.stackEvents}, 
+								 'StoreCFEvents');
+		processor.addRelatedData({"stackId": stackId, "stackInfo": response.stackInfo}, 
+								 'CheckStackSuccess');
+		
+		return processor.processResponseObject(stackObject, 
+											   'AWS::CloudFormation::Stack',
+											   'cloudformation_stack_create_validator');
+	},
+	
+	updateStackOutput: function(responseObj, stackId) {
+		var stack = new GlideRecord('sn_cmp_stack');
+		if (stack.get(stackId)) {
+			var outputs = responseObj.outputs;
+			outputs = this.serializeMessage(outputs);
+			if (outputs) {
+				stack.short_description = outputs;
+				stack.update();
+			}		
+		}
+	},
+	
+    type: 'CloudFormationResponseProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-23 22:19:35</sys_created_on>
+        <sys_id>5182e2f89fa0720048111f80a57fcf8a</sys_id>
+        <sys_mod_count>54</sys_mod_count>
+        <sys_name>CloudFormationResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5182e2f89fa0720048111f80a57fcf8a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-12 17:03:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

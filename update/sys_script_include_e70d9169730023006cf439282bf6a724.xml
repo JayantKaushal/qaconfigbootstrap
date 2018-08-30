@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudPortalActivitiesPage</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudPortalActivitiesPage</name>
+        <script><![CDATA[var CloudPortalActivitiesPage = Class.create();
+
+CloudPortalActivitiesPage.prototype = {
+    initialize: function(sp) {
+		this.sp = sp;
+		this.isAdmin = CMPUserPortalHelper.isAdmin();
+		this.isGroupAdmin = CMPUserPortalHelper.isGroupAdmin();
+		this.viewPreference = CMPUserPortalHelper.getUserPortalViewPreference();
+    },
+
+	getLeftNavContent: function() {
+		var content = {};
+		content.title = gs.getMessage('Activities');
+		content.list = [
+			{
+				label: gs.getMessage('Track'),
+				id: 'track',
+				children: [
+					{
+						label: gs.getMessage('Requests'),
+						id: 'request'
+					},
+					{
+						label: gs.getMessage('Change Requests'),
+						id: 'change_request'
+					},
+					{
+						label: gs.getMessage('Incidents'),
+						id: 'incident'
+					},
+					{
+						label: gs.getMessage('Tasks'),
+						id: 'sc_task'
+					},
+					{
+						label: gs.getMessage('Lease Operations'),
+						id: 'sn_cmp_lease_status'
+					},
+					{
+						label: gs.getMessage('Business Schedule Operations'),
+						id: 'sn_cmp_scheduled_operation'
+					}
+				]
+			},
+			{
+				label: gs.getMessage('Monitor'),
+				id: 'network',
+				children: [
+					{
+						label: gs.getMessage('Cloud Events'),
+						id: 'sn_cmp_cloud_event'
+					}
+				]
+			},
+			{
+				label: gs.getMessage('Manage'),
+				id: 'manage',
+				children: [
+					{
+						label: gs.getMessage('Keys'),
+						id: 'sn_cmp_ssh_credentials'
+					}
+				]
+			}
+		];
+		
+		return content;
+	},
+	
+	getTableTitleAndFilter: function() {
+		//TODO
+		var filter = '';
+		
+		return {
+			title: undefined,
+			filter: filter
+		};
+	},
+
+    type: 'CloudPortalActivitiesPage'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-20 17:13:36</sys_created_on>
+        <sys_id>e70d9169730023006cf439282bf6a724</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CloudPortalActivitiesPage</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e70d9169730023006cf439282bf6a724</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 20:40:43</sys_updated_on>
+    </sys_script_include>
+</record_update>

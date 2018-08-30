@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Azure_Delete_RouteTable_Response_Processor</name>
+        <resource display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {
+      var cloudModelString = [];
+      var routeTableResponse = global.JSON.parse(response);
+      var router = new sn_cmp.RouterObjectIdBuilder().build(routeTableResponse.networkId, stackId);
+      var routeTable = {
+        "cmdb_ci_route_table": {
+          "validator": "route_table_create_validator",
+          "validator_overrides": { },
+          "identification": {
+            "cmdb_ci_cloud_service_account": {
+              "criterion": {
+                "object_id": cloudServiceAccountId
+              }
+            },
+            "cmdb_ci_azure_datacenter": {
+              "criterion": {
+                "object_id": ldc
+              }
+            },
+            "cmdb_ci_router": {
+              "criterion": {
+                "object_id": router
+              }
+            },
+            "cmdb_ci_route_table": {
+              "criterion": {
+                "object_id":routeTableResponse.id
+              }
+            }
+          },
+          "attributes": {
+            "object_id":routeTableResponse.id,
+            "route_table_id":routeTableResponse.id,
+            "state":"terminated"
+          }
+        }
+      };
+      cloudModelString.push(routeTable);
+      return global.JSON.stringify(cloudModelString);
+    }</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {
+	var cloudModelString = [];
+	var routeTableResponse = global.JSON.parse(response);
+	var router = new sn_cmp.RouterObjectIdBuilder().build(routeTableResponse.networkId, stackId);
+	var routeTable = {
+		"cmdb_ci_route_table": {
+			"validator": "route_table_create_validator",
+			"validator_overrides": { },
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_azure_datacenter": {
+					"criterion": {
+						"object_id": ldc
+					}
+				},
+				"cmdb_ci_router": {
+					"criterion": {
+						"object_id": router
+					}
+				},
+				"cmdb_ci_route_table": {
+					"criterion": {
+						"object_id":routeTableResponse.id
+					}
+				}
+			},
+			"attributes": {
+				"object_id":routeTableResponse.id,
+				"route_table_id":routeTableResponse.id,
+				"state":"terminated"
+			}
+		}
+	};
+	cloudModelString.push(routeTable);
+	return global.JSON.stringify(cloudModelString);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-17 08:13:19</sys_created_on>
+        <sys_id>5a2c18bd0b6132003969a387b6673a26</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Azure_Delete_RouteTable_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_5a2c18bd0b6132003969a387b6673a26</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-22 03:10:05</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

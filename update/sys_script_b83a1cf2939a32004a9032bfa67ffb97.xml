@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_tag_name</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Sanitize tag fields</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	// Prefix tag name with "u_" so that it works as an sn_cmp_tag_value_set table column name
+	if (current.getValue("name").substring(0, 2) != 'u_')
+		current.name = 'u_'+current.name;
+	current.name = current.name.toLowerCase();
+	
+	// Remove any spaces from variable name
+	if (!gs.nil(current.variable_name))
+		current.variable_name = current.getValue("variable_name").replace(/[ :-]/g, "");
+
+	// Add a number to the end of the name or variable name if they collide with another
+	avoidDuplicate('name');
+	avoidDuplicate('variable_name');
+
+
+	function avoidDuplicate(fieldName) {
+		if (!gs.nil(current[fieldName])) {
+			var orig = current[fieldName];
+			var i = 2;
+			while (true) {
+				var gr = new GlideRecord('sn_cmp_tag_name');
+				gr.addQuery('sys_id','!=', current.sys_id);
+				gr.addQuery(fieldName, current[fieldName]);
+				gr.query();
+				if (gr.hasNext()) {
+					current[fieldName] = orig+"_"+i;
+					i++;
+				} else
+					break;
+			}
+		}		
+	}
+	
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-26 17:21:43</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b83a1cf2939a32004a9032bfa67ffb97</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>Sanitize tag fields</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_b83a1cf2939a32004a9032bfa67ffb97</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-14 00:09:58</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=b83a1cf2939a32004a9032bfa67ffb97"/>
+</record_update>

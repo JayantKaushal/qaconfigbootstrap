@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Deployment Item Run Information" max_length="40" name="sn_cmp_dep_item_run_info" type="collection">
+        <element choice="1" label="Deployment Option" max_length="40" name="deployment_option" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Deploy" value="Deploy"/>
+                <element inactive_on_update="false" label="Override" value="Override"/>
+                <element inactive_on_update="false" label="Skip" value="Skip"/>
+            </choice>
+        </element>
+        <element label="Deployment End Time" max_length="40" name="dep_item_end_time" type="glide_date_time"/>
+        <element label="Deployment Order" max_length="40" name="dep_item_order" type="integer"/>
+        <element label="Deployment Start Time" max_length="40" name="dep_item_start_time" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Run Status Message" max_length="1024" name="dep_run_status_msg" type="string"/>
+        <element label="Pack Item" max_length="32" name="pack_item" reference="sn_cmp_pack_item" type="reference"/>
+        <element label="Deployment Run" max_length="32" name="sn_cmp_deployment_run" reference="sn_cmp_deployment_run" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Status" max_length="40" name="status" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Not Started" sequence="1" value="Not Started"/>
+                <element inactive_on_update="false" label="Initialized" sequence="2" value="Initialized"/>
+                <element inactive_on_update="false" label="In Progress" sequence="3" value="In Progress"/>
+                <element inactive_on_update="false" label="Completed" sequence="4" value="Completed"/>
+                <element inactive_on_update="false" label="Failed" sequence="5" value="Failed"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="sn_cmp_deployment_run"/>
+        </index>
+        <index name="index2">
+            <element name="pack_item"/>
+        </index>
+    </element>
+</database>

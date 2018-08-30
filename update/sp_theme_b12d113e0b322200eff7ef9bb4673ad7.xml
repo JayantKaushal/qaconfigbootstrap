@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_theme">
+    <sp_theme action="INSERT_OR_UPDATE">
+        <css_variables>$sp-logo-margin-x: 		15px !default;&#13;
+$sp-tagline-color:		$text-color !default;&#13;
+$navbar-inverse-bg: 	#000 !default;&#13;
+$navbar-inverse-link-color: #bdc0c4 !default;&#13;
+$navbar-inverse-link-hover-color: #ffffff !default;&#13;
+$body-bg: 				#f0f3f4 !default;&#13;
+$primary: 				#1570bd !default;&#13;
+$header-height:			52px;&#13;
+$panel-margin: 22px;&#13;
+$footer-height:45px;&#13;
+$list-header:47px;&#13;
+$search-panel: 40px;&#13;
+$tabs-height: 42px;&#13;
+&#13;
+&#13;
+$cloud-stacks-header-height: 158px;&#13;
+&#13;
+$cloud-stacks-details-header-height:222px;&#13;
+</css_variables>
+        <footer/>
+        <footer_fixed>false</footer_fixed>
+        <header display_value="Cloud Portal Header">abed153e0b322200eff7ef9bb4673a37</header>
+        <name>Cloud Portal Theme</name>
+        <navbar_fixed>false</navbar_fixed>
+        <sys_class_name>sp_theme</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-03 22:34:57</sys_created_on>
+        <sys_id>b12d113e0b322200eff7ef9bb4673ad7</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>Cloud Portal Theme</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_theme_b12d113e0b322200eff7ef9bb4673ad7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 22:02:50</sys_updated_on>
+    </sp_theme>
+</record_update>

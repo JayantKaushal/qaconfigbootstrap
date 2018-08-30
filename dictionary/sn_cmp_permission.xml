@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Management Permission" max_length="40" name="sn_cmp_permission" type="collection">
+        <element label="All Entities" max_length="40" name="allinstance" type="boolean"/>
+        <element label="Group" mandatory="true" max_length="32" name="group" reference="sys_user_group" type="reference"/>
+        <element choice="1" label="Permission" mandatory="true" max_length="40" name="permission" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Access [Read]" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Manage [Create &amp; Update]" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Delete" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Execute" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="All" sequence="5" value="5"/>
+            </choice>
+        </element>
+        <element dependent="target_type_choice" label="Target Entity" max_length="32" name="target_instance" type="document_id"/>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPPermissionChoiceTables,show_table_names_on_label=true" label="Target Type" mandatory="true" max_length="80" name="target_type_choice" type="table_name"/>
+        <index name="index">
+            <element name="target_instance"/>
+        </index>
+        <index name="index2">
+            <element name="group"/>
+        </index>
+    </element>
+</database>

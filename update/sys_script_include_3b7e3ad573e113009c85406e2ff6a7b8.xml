@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCheckActionNameExistsForPolicy</api_name>
+        <client_callable>false</client_callable>
+        <description>Checks if there is an action with the same name for the given policy across all of its rules</description>
+        <name>CMPCheckActionNameExistsForPolicy</name>
+        <script><![CDATA[var CMPCheckActionNameExistsForPolicy = Class.create();
+CMPCheckActionNameExistsForPolicy.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			var response = {};
+			response.nameExists = new PolicyUtils().checkActionNameExistsForPolicy(params.action_name, params.policy_id, params.action_id);
+			return response;
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Check Action Name exists API failed"),
+				"CMPCheckActionNameExistsForPolicy.doAction(): Unable to check if the action name already exists for this policy",
+				error
+			);
+		}
+	},
+
+	type: 'CMPCheckActionNameExistsForPolicy'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-17 23:03:53</sys_created_on>
+        <sys_id>3b7e3ad573e113009c85406e2ff6a7b8</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>CMPCheckActionNameExistsForPolicy</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_3b7e3ad573e113009c85406e2ff6a7b8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-18 00:06:00</sys_updated_on>
+    </sys_script_include>
+</record_update>

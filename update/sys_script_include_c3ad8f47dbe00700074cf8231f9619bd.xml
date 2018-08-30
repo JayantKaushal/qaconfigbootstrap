@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureStartStopStackResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureStartStopStackResponseProcessor</name>
+        <script><![CDATA[var AzureStartStopStackResponseProcessor = Class.create();
+AzureStartStopStackResponseProcessor.prototype = Object.extendsObject(CloudTemplateResponseProcessor, {
+    initialize: function() {
+		CloudTemplateResponseProcessor.prototype.initialize.call(this);
+    },
+	
+	processResponse: function(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId, operation) {
+		
+		this.operation = operation;
+		
+		if (gs.nil(response)) {
+			this.log(gs.getMessage('Response is invalid'));
+			return [];
+		}
+		
+		var arrayUtil = new global.ArrayUtil();
+		response = arrayUtil.ensureArray(response);
+		
+		var resourceTypesOperationSteps = [];
+		var categorizedItems = this.getStackItems(response[0].id);
+		this.log(gs.getMessage('Categorized items to {0}: {1}', 
+							   [this.operation, global.JSON.stringify(categorizedItems)]));
+		var types = this.getOpTypes();
+		this.log(gs.getMessage('Types to {0}: {1}' , 
+							   [this.operation, global.JSON.stringify(types)]));
+
+		var contextInfo = {};
+		contextInfo.serviceAccount = cloudServiceAccountId;
+		contextInfo.ldc = ldc;
+		contextInfo.step = step;
+		contextInfo.correlationId = correlationId;
+		contextInfo.requestorContext = requestorContext;
+		contextInfo.stackId = stackId;
+		
+		for (var i = 0; i < types.length; i++) {
+			if (categorizedItems.hasOwnProperty(types[i])) {
+				this.log(gs.getMessage('Adding step for {0}: {1}: {2}', 
+					[this.operation, types[i], global.JSON.stringify(categorizedItems[types[i]])]));
+				
+				var resourceInfo = {};
+				resourceInfo.type = types[i];
+				resourceInfo.ids = categorizedItems[types[i]];
+				var stepMessage = gs.getMessage('{0} of resource type: {1}', [this.operation, types[i]]);
+				this.addOperationStepForType(types[i], 
+											 resourceInfo,
+											 resourceTypesOperationSteps,
+											 '', // top-level so doesn't matter
+											 contextInfo,
+											 stepMessage);				
+			}
+		}
+		
+		var orchestratorServiceScript = new sn_cmp_api.BPOrchestratorServiceScript();
+		orchestratorServiceScript.addToOrchestration(global.JSON.stringify(resourceTypesOperationSteps),
+													 correlationId);
+		return [];
+	},
+	
+	/**
+	 * For the given deployment, which is expected to tie 1:1 with a stack, find the resources
+	 * in the stack that are successfully processed and not the deployment itself, and return
+	 * a categorization of type to IDs.
+	 */
+	getStackItems: function(deploymentId) {
+		var gr = new GlideRecord('cmdb_ci_azure_deployment');
+		if (!gr.get('object_id', deploymentId))
+			return {};
+
+		var stackItemGr = new GlideRecord('sn_cmp_stack_item');
+		if (!stackItemGr.get('ci_instance_id', '' + gr.sys_id))
+			return {};
+
+		var stackId = '' + stackItemGr.stack.sys_id;	
+
+		stackItemGr.initialize();
+		stackItemGr.addQuery('stack.sys_id', stackId);
+		stackItemGr.addQuery('status', '2'); // Processed
+		stackItemGr.addQuery('ci_instance_id.sys_class_name', '!=', 'cmdb_ci_azure_deployment');
+		stackItemGr.query();
+
+		var categorizedItems = {};
+
+		while (stackItemGr.next()) {
+			var type = '' + stackItemGr.ci_instance_id.sys_class_name;
+			gs.info('type: ' + type);
+			var objectId = '' + stackItemGr.ci_instance_id.object_id;
+			gs.info('object id: ' + objectId);
+			
+			// Pick out non-terminated Azure resources as best as we can
+			var ciGr = new GlideRecord(type);
+			ciGr.get(stackItemGr.ci_instance_id);
+
+			if (ciGr.isValidField('state') && 
+			   '' + ciGr.getValue('state') != 'terminated' &&
+			   objectId.startsWith('/subscription')) {
+				if (!categorizedItems.hasOwnProperty(type))
+					categorizedItems[type] = [];
+
+				categorizedItems[type].push(objectId);
+			}
+		}
+
+		return categorizedItems;
+	},
+
+	/**
+	 * For the Azure provider, walk through the types in our type table and order them
+	 * given the dependency order.  This is necessary because if a NIC is attached to a VM
+	 * for example, you can't delete it until the VM itself is deleted and gone.  The 
+	 * dependency sequence field gives the ability to specify order to delete types.  Types
+	 * without a dependency order specified and the generic cloud resource entries are
+	 * handled last.  If in the future some type is found that has to be deleted before any of
+	 * our supported types, field support can add the type with an order and the deprovision
+	 * sequence should get picked up here.
+	 */
+	getOpTypes: function () {
+		var orderedTypes = [];
+		orderedTypes.push('cmdb_ci_vm_instance');
+
+		return orderedTypes;
+	},
+	
+	/**
+	 * Get GlideRecord to mapped to perform operation on resource
+	 */
+	getOperationGR: function(type) {
+		// Should pull this out to a lookup
+		gs.info('operation type: ' + this.operation);
+		var opName = this.operation == 'start' ? 'Compute Interface.StartNode' : 'Compute Interface.StopNode';
+		
+		var opGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+		opGr.addQuery('name', opName);
+		opGr.addQuery('provider', 'azure-compute');
+		opGr.query();
+		if (!opGr.next()) {
+			this.log(gs.getMessage('No step found for operation {0}', [this.operation]));
+			return null;
+		}
+
+		this.log(gs.getMessage('Step found for operation {0}, sys_id :{1}', [this.operation, opGr.sys_id]));
+		
+		return opGr;
+	},
+	
+	getStepParameters: function(contextInfo, resourcesInfo) {
+		var params = {};
+		params.NodeID = resourcesInfo.ids.join();
+		params.ResourceType = resourcesInfo.type;
+		return params;
+	},
+	
+    type: 'AzureStartStopStackResponseProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-08-17 21:25:36</sys_created_on>
+        <sys_id>c3ad8f47dbe00700074cf8231f9619bd</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>AzureStartStopStackResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c3ad8f47dbe00700074cf8231f9619bd</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-09-08 11:42:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

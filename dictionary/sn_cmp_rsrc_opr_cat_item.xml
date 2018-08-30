@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sc_cat_item" label="Resource Operation Catalog Item" max_length="40" name="sn_cmp_rsrc_opr_cat_item" type="collection"/>
+</database>

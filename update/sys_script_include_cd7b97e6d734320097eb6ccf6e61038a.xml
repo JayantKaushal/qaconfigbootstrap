@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.VMwareEventHandler</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>VMwareEventHandler</name>
+        <script><![CDATA[var VMwareEventHandler = Class.create();
+VMwareEventHandler.prototype = Object.extendsObject(CloudEventHandler, {
+	
+    processEvent : function(headersStr, bodyStr, queryParamsStr){
+		var response = {};
+		var json = new global.JSON();
+		var headers = json.decode(headersStr);
+		var body = json.decode(bodyStr);
+		var queryParams = json.decode(queryParamsStr);
+		
+		var eccQueueSysId = headers.eccQueueSysId;
+		var eventName = headers.eventName;
+		var ciSysId = headers.ciSysId;
+		var status = headers.status;
+		var statusSysId = headers.statusSysId;
+		var ciTable = headers.ciTable;
+		var data = body.data;
+		var subject;
+		if (data)
+			subject = data.fullFormattedMessage;
+		
+		if (!status || status == 'error') {
+			response.state = 'error';
+			response.error_message = gs.getMessage('Error processing event {0}', [eventName]);
+			return response;
+		}
+		
+		if (!ciSysId || !ciTable) {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot locate CI with event {0}', [eventName]);
+			return response;
+		}
+		var gr = new GlideRecord(ciTable);
+		if (!gr.get(ciSysId)) {
+			response.state = 'skipped';
+			response.error_message = gs.getMessage('Cannot locate CI with event {0}', [eventName]);
+			return response;
+		}
+		
+		if (status == 'discovering'){
+			if (!statusSysId)
+				status = 'error';
+			var statusGr = new GlideRecord('discovery_status');
+			if (!statusGr.get(statusSysId))
+				status = 'error';
+			status = statusGr.getValue('state');
+			if (status == 'error') {
+				response.state = 'error';
+				response.error_message = gs.getMessage('Error discovering CI with event {0}', [eventName]);
+				return response;
+			}
+			if (status == 'Canceled') {
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('Discovery canceled for CI with event {0}', [eventName]);
+				return response;
+			}
+			if (status != 'Completed') {
+				response.state = 'ready'; // discovery is still going for this CI, set event state to ready so it can be re-processed
+				return response;
+			} 
+		}
+		if (subject)
+			response.subject = subject;
+		
+		response.event_name = eventName;
+		response.ci = ciSysId;
+		
+		var resourceId = gr.getValue('object_id');
+		if (resourceId)
+			response.resource_id = resourceId;
+		var resourceTypeGr = this._getResourceTypeGr(ciTable);
+		if (resourceTypeGr) {
+			response.resource_type = resourceTypeGr.getUniqueValue();
+			response.resource_block = this._getResourceblock(resourceTypeGr.getUniqueValue());
+		}
+		
+		response.state = 'processed';
+		return response;
+	},
+	
+	_getResourceTypeGr : function(tableName){
+		var resourceTypeGr = new GlideRecord('sn_capi_resource_type');
+		resourceTypeGr.addQuery('ci_class', tableName);
+		var qc = resourceTypeGr.addQuery('product.name','VMware vSphere');
+		qc.addOrCondition('product.name','VMware VDisk');
+		resourceTypeGr.query();
+		if (resourceTypeGr.next())
+			return resourceTypeGr;
+		return null;
+	},
+
+    type: 'VMwareEventHandler'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-10 23:20:44</sys_created_on>
+        <sys_id>cd7b97e6d734320097eb6ccf6e61038a</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>VMwareEventHandler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cd7b97e6d734320097eb6ccf6e61038a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-19 22:17:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

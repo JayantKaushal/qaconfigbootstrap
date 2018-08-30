@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>The number of most-recent days that a billing download will assume to be incomplete (default = 2)</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>sn_cmp.billing.incremental_lookback</name>
+        <read_roles/>
+        <suffix>billing.incremental_lookback</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-20 18:27:26</sys_created_on>
+        <sys_id>55b2b154934993004a9032bfa67ffb85</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_cmp.billing.incremental_lookback</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_properties_55b2b154934993004a9032bfa67ffb85</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-20 18:27:26</sys_updated_on>
+        <type>integer</type>
+        <value>2</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=55b2b154934993004a9032bfa67ffb85"/>
+</record_update>

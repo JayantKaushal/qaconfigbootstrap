@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetConstraintsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetConstraintsAction</name>
+        <script><![CDATA[var CMPGetConstraintsAction = Class.create();
+CMPGetConstraintsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+	try {
+			if (!params.elementId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetConstraintsAction.doAction: Undefined elementId",
+				null
+				);
+			}
+		
+		var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+		var elem  = versionObj.model.findElement(params.elementId);
+		if (elem) {
+          		var outputConstraints = [];
+          		var constraints = elem.constraintBindings();
+          		for (var i =0; i < constraints.length; i++){
+              			var constraint = {
+                                	name: constraints[i].getName(),
+                                	id:constraints[i].getStableId(),
+                                	rb_id: constraints[i].getValueOrDefault("rbId", ""),
+                                	ci_type: constraints[i].getCiType()
+                        	};
+              			outputConstraints.push(constraint);
+          		}
+
+          		return outputConstraints;
+        	}
+	}catch(error){
+		var e = error;
+		throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage('{0}', errorMessage),
+			"CMPGetConstraintsAction.doAction(): Failed to get constraints.",
+			error
+			);
+	}
+	},
+
+    type: 'CMPGetConstraintsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-01 10:46:31</sys_created_on>
+        <sys_id>5a066e240b5132009e620bcb15673a4a</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPGetConstraintsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5a066e240b5132009e620bcb15673a4a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-16 10:42:31</sys_updated_on>
+    </sys_script_include>
+</record_update>

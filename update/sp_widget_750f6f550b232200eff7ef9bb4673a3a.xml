@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope,$location,cloudEventScope,$timeout,spUtil,spModal) {
+	var c = this;
+	$scope.spUtil = spUtil;
+
+	const stackStatus = {
+		INITIALIZING: 1,
+		ACTIVE: 2,
+		ERROR: 3,
+		PROCESSING: 4,
+		TERMINATING: 5,
+		TERMINATED: 6,
+		UNMANAGED: 7,
+		RESOLVING_ERROR: 8
+	};
+	var stackFailedState = [stackStatus.TERMINATED, stackStatus.RESOLVING_ERROR, stackStatus.ERROR];
+	var stackInProgressState = [stackStatus.PROCESSING, stackStatus.UNMANAGED];
+	var stackCompletedState = [stackStatus.ACTIVE];
+
+	c.selectContent = function(btnInfo) {
+		if(!btnInfo.isActive)
+			return;
+		c.data.selectedBtn = btnInfo.id;
+		c.data.selectedBtnName = btnInfo.lable;
+		cloudEventScope.broadcast("$sp.stack.detail.content", btnInfo.id );
+	};
+
+	c.setButton = function(buttonId){
+		c.data.selectedBtn = c.data.stackDetailsBtns[buttonId].id;
+		c.data.selectedBtnName = c.data.stackDetailsBtns[buttonId].lable;
+		c.selectContent(c.data.stackDetailsBtns[buttonId]);
+	};
+	
+	c.getStatusClass = function(statusId) {
+		if(stackFailedState.indexOf(Number(statusId)) >= 0)
+			return 'failed';
+		
+		else if(stackInProgressState.indexOf(Number(statusId)) >= 0)
+			return 'in-progress';
+		
+		else if(stackCompletedState.indexOf(Number(statusId)) >= 0)
+			return 'complete';
+	};
+
+	var search = $location.search();
+	c.setButton(0);
+
+	// Breadcrumbs
+	var bc = [{label: "${Cloud Stacks}", url: '?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack'}];
+	if(c.data.stacks[0].blueprint){
+		bc[bc.length] = {label: c.data.stacks[0].sc_cat_item, url: '?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&blueprint='+c.data.stacks[0].sc_cat_item};
+		bc[bc.length] = {label: c.data.stacks[0].name, url: '#'};
+	}
+	else{
+		bc[bc.length] = {label: "${Discovered Stacks}", url: "?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&blueprint=null"};
+		bc[bc.length] = {label: c.data.stacks[0].name, url: '#'};
+
+	}
+	cloudEventScope.broadcast('sp.update.breadcrumbs', bc);
+	spUtil.setSearchPage('sc');
+
+	c.isActive = function(sys_id) {
+		return search.sys_id == sys_id;
+	};
+
+	c.showBSMView = function(widgetId) {
+		spModal.open({
+			title: "Dependency View",
+			buttons: [],
+			widget: widgetId,
+			size: 'lg',
+			widgetInput:	{ci: c.data.ci}
+		}).then(function(){
+		})
+	};
+
+	c.operate = function(actionName) {
+		c.data.action = actionName;
+		c.data.stacks = c.data.stacks;
+		c.server.update().then(function() {
+			c.data.action = '';
+			if(actionName == 'Delete')
+			{
+				$location.url("?id=cloud_stacks&category=cloud_stacks");
+			}
+		});
+	};
+
+	c.showStackCatItem = function(blueprintId,operationName,operationId) {
+		c.data.blueprint_id = blueprintId;
+		c.data.operation_id = operationId;
+		c.server.update().then(function() {
+			spModal.open({
+				title: operationName,
+				size: 'lg',
+				widget: 'cloud-stack-operation-modal',
+				widgetInput:{sys_id:c.data.catItemSysId,resourceId: c.data.stack_id,operationName: operationName}
+			}).then(function(){
+				cloudEventScope.broadcast("$sp.stack.operation_cat_item.submit");
+				c.data.blueprint_id = '';
+				c.data.operation_id = '';
+				c.data.operation = '';
+			},function() {
+				c.data.operation = '';
+			})
+		});
+	};
+
+	c.showResourceCatItem = function(operationName,operationId,resourceBlock,resourceInterface){
+		c.data.resource_operation_id = operationId;
+		c.data.resource_block = resourceBlock;
+		c.server.update().then(function() {
+			spModal.open({
+				title: operationName,
+				size: 'lg',
+				widget: 'cloud-resource-operation-modal',
+				widgetInput: {sys_id:c.data.resourceCatItemSysId,resourceId: c.data.ci, operationName: operationName,resourceBlock: resourceBlock,resourceInterface: resourceInterface }
+			}).then(function(){
+				c.data.resourceOperation = '';
+				cloudEventScope.broadcast("$sp.resource.operation_cat_item.submit");
+			},function() {
+				c.data.resourceOperation = '';
+			})   
+		});
+	}
+
+	cloudEventScope.registerListener('cloudResourceCardEvent', function(e,info) {
+		$location.search(info.url).search('spa', '1').replace();
+		c.server.update();
+	}, $scope);
+
+	cloudEventScope.registerListener("$sp.resource.operation_cat_item.submit", function(event,contentId, data) {
+		c.setButton(2);
+	}, $scope);
+
+	cloudEventScope.registerListener("$sp.stack.operation_cat_item.submit", function(event, data) {
+		c.setButton(2);
+	}, $scope);
+
+	cloudEventScope.registerListener('$sp.cloud.stack.operation.cat.item.submitted', function(e, request_id){
+		$location.search('request_id', request_id).replace();
+		c.server.update().then(function() {
+			$location.search('req_item_sys_id', c.data.req_item_sys_id);
+			$location.search('req_item_card', c.data.req_item_sys_id);
+		});
+	}, $scope);
+
+	cloudEventScope.registerListener('$sp.cloud.resource.operation.cat.item.submitted', function(e, request_id){
+		$location.search('request_id', request_id).replace();
+		c.server.update().then(function() {
+			$location.search('req_item_sys_id', c.data.req_item_sys_id);
+			$location.search('req_item_card', c.data.req_item_sys_id);
+		});
+	}, $scope);
+
+}
+]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.nav-segmented {&#13;
+	float: left;&#13;
+}&#13;
+&#13;
+.operations-div {&#13;
+  float: right;&#13;
+}&#13;
+&#13;
+.operation-status {&#13;
+  display: inline-block;&#13;
+  margin-right: 10px;&#13;
+  margin-top: 15px;&#13;
+  color: #FFA500;&#13;
+}&#13;
+&#13;
+.btn-primary {&#13;
+  background-color: #428bca;&#13;
+  border-color: #428bca;&#13;
+}&#13;
+&#13;
+.btn-primary:hover, .btn-primary:focus {&#13;
+  background-color: #2a6496;&#13;
+}&#13;
+&#13;
+.stack-header {&#13;
+  background-color: rgba(250, 250, 250, 1);&#13;
+  width: 100%;&#13;
+  border-bottom: 1px solid #ddd;&#13;
+  padding: 8px 10px;&#13;
+  font-size: 14px;&#13;
+  margin-bottom: 10px;&#13;
+}&#13;
+&#13;
+.stack-title {&#13;
+  float: left;&#13;
+}&#13;
+&#13;
+.stack-title h1 {&#13;
+  display: inline-block;&#13;
+  margin: 0 10px 0 0;&#13;
+  line-height: 32px;&#13;
+  font-size: 24px;&#13;
+}&#13;
+&#13;
+.stack-title .stack-status {&#13;
+  margin: -8px 15px 0 0;&#13;
+  display: inline-block;&#13;
+  padding: 2px 5px;&#13;
+  background: #bdc0c4;&#13;
+  color: #fff;&#13;
+  border-radius: 3px;&#13;
+  vertical-align: middle;&#13;
+  font-size: 12px;&#13;
+  min-width: 36px;&#13;
+  text-align: center;&#13;
+}&#13;
+&#13;
+.stack-title span.complete {&#13;
+  background-color: #6CE474; /* green */&#13;
+  color: #242424;&#13;
+}&#13;
+&#13;
+.stack-title span.failed {&#13;
+  background-color: #FC4E4B; /* red */&#13;
+  color: #242424;&#13;
+}&#13;
+&#13;
+.stack-title span.in-progress {&#13;
+  background-color: #278EFC; /* blue */&#13;
+  color: #242424;&#13;
+}&#13;
+&#13;
+.btn-group-sm &gt; .btn {&#13;
+  margin: 10px;&#13;
+  padding: 5px 15px;&#13;
+}&#13;
+&#13;
+.operation_dropdown {&#13;
+  width: auto;&#13;
+}&#13;
+&#13;
+#bsm_view {&#13;
+  margin-left: 10px;&#13;
+  top: -5px;&#13;
+  position: relative;&#13;
+}&#13;
+&#13;
+.stack-btn {&#13;
+  margin-left:8px;&#13;
+  outline: 0;&#13;
+}&#13;
+&#13;
+.stack-image-icon {&#13;
+  vertical-align: initial;&#13;
+}&#13;
+&#13;
+.active-btn {&#13;
+  border-color:rgb(21, 112, 189);&#13;
+  background-color: #ccc;&#13;
+}&#13;
+&#13;
+.sd-page-content-title {&#13;
+  font-size: 18px;&#13;
+  margin-left: 10px;&#13;
+  text-align: center;&#13;
+  display: inline-block;&#13;
+}&#13;
+&#13;
+.no-stack {&#13;
+  font-size: 2em;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-details-header</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack", "sys_id=" + scope.data.stack_id);
+}]]></link>
+        <name>Cloud Stack Details Header</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[// populate the 'data' variable with catalog item, variables, and variable view
+(function() {
+
+	data.stack_id = $sp.getParameter('sys_id');
+	data.selected_card = $sp.getParameter('selected_card');
+	data.request_id = $sp.getParameter('request_id');
+	data.isTLR = false;
+
+	if(data.request_id && data.selected_card){
+		var req_gr = new GlideRecord('sc_req_item');
+		req_gr.addQuery('request', data.request_id);
+		req_gr.query();
+		if(req_gr.next()){
+			if(gs.nil(req_gr.getValue('configuration_item'))){
+				req_gr.configuration_item = data.selected_card;
+				req_gr.update();
+			}
+			data.req_item_state = req_gr.getValue('state');
+			data.req_item_sys_id = req_gr.getUniqueValue();
+		}
+	}
+
+	if(data.stack_id == data.selected_card){
+		data.isTLR = true;
+	}
+
+	var blueprintServiceScript = new sn_cmp_api.BlueprintServiceScript();
+
+	data.stackDetailsBtns = [
+		{id:'isShowStackManage', lable:gs.getMessage('Manage Stack'), icon:'fa-cubes', isActive: true, isShowBtn: true},
+		{id:'isShowDependency', lable:gs.getMessage('View Dependency'), icon:'fa-sitemap', isActive: true, isShowBtn: true},
+		{id:'isShowTrackOperation', lable:gs.getMessage('Track Operations'), icon:'fa-tasks', isActive: true, isShowBtn: true}
+	];
+
+	var isInstanceIdAvaialable = false;
+	var stack_item = new GlideRecord('sn_cmp_stack_item');
+	stack_item.addQuery('sys_id',data.selected_card);
+	stack_item.query();
+	if(stack_item.next() && stack_item.canRead()){
+
+		data.isTLR = false;
+		data.ci = stack_item.getValue('ci_instance_id');
+		data.ci_status = stack_item.ci_instance_id.getDisplayValue('state');
+		data.table = stack_item.resource_block_id.refcitype.getDisplayValue();
+
+		isInstanceIdAvaialable = true;
+	}
+
+	if(input && input.action == 'Delete'){
+		var err_stack = new GlideRecord('sn_cmp_stack');
+		err_stack.addQuery('sys_id',data.stack_id);
+		err_stack.query();
+		if (err_stack.next() && err_stack.canRead()) {
+			err_stack.deleteRecord();
+		}
+	}	else if (input && input.blueprint_id && input.operation_id) {
+		var catItemSysId = new BlueprintServiceHelper().getFirstCatalogItemForBlueprintOperation(input.blueprint_id,input.operation_id);
+		data.catItemSysId = catItemSysId;
+	}  else if(data.stack_id) {
+		data.stacks = [];
+		data.stack_items = [];
+
+		var gr = new GlideRecord('sn_cmp_stack');
+		gr.addQuery('sys_id', data.stack_id);
+		gr.query();
+		while(gr.next() && gr.canRead()){
+			var stack = {
+				name: gr.getDisplayValue(),
+				blueprint: gr.blueprint.getDisplayValue(),
+				blueprint_id: gr.blueprint.sys_id.getDisplayValue(),
+				sc_cat_item: gr.sc_cat_item.getDisplayValue(),
+				sys_id: gr.getUniqueValue(),
+				status: gr.getDisplayValue('stack_status'),
+				status_id: gr.getValue('stack_status'),
+				canDelete : gr.canDelete(),
+				sc_req_item: gr.getValue('sc_req_item')
+			};
+			data.stacks.push(stack);
+		}
+
+		if(data.stacks.length == 0)
+			return;
+
+		if(data.stacks[0].status_id == 2 && data.stacks[0].blueprint_id) {
+			data.operations = global.JSON.parse(blueprintServiceScript.getBlueprintOperationsForCloudPortal(
+				data.stacks[0].blueprint_id, data.stack_id));
+		}
+		if(data.stacks[0].status_id != 2 && data.stacks[0].status_id != 5) {
+			data.stackDetailsBtns[2].isActive = false;
+		}
+	}
+
+	if(!data.isTLR && data.ci){
+		if (input && input.resource_block && input.resource_operation_id) {
+			data.resourceCatItemSysId = CMPUtil.getResourceOperationCatalogItem(input.resource_block,input.resource_operation_id);
+		} else {
+			var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			var resource_block = new GlideRecord('sn_cmp_rb_resourceblock');
+			resource_block.addQuery('refcitype',data.table);
+			resource_block.query();
+			if(resource_block.next()){		
+				data.resource_operations = global.JSON.parse(resourceBlockServiceScript.getPublicOperationsForResource(resource_block.getValue('sys_id'), data.ci));
+			}
+		}
+	}
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-07 00:08:02</sys_created_on>
+        <sys_id>750f6f550b232200eff7ef9bb4673a3a</sys_id>
+        <sys_mod_count>962</sys_mod_count>
+        <sys_name>Cloud Stack Details Header</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_750f6f550b232200eff7ef9bb4673a3a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-23 20:55:12</sys_updated_on>
+        <template><![CDATA[<div class="stack-header clearfix">
+  <div class="no-stack" ng-show="c.data.stacks.length == 0">
+    ${No stacks available}
+  </div>
+  <div ng-if="c.data.stacks.length">
+    <div class="stack-title">
+      <h1 ng-bind="c.data.stacks[0].name" aria-label="${Stack} {{c.data.stacks[0].name}}"></h1>
+      <span class="stack-status" ng-class="c.getStatusClass(c.data.stacks[0].status_id)" aria-hidden="true">{{c.data.stacks[0].status}}</span>
+      <span class="sr-only">${Status} {{c.data.stacks[0].status}}</span>
+    </div>
+    
+    <ul role="tablist" class="nav nav-segmented sn-tabs-basic">
+       <li ng-if="actionBtnInfo.isShowBtn" role="tab" ng-repeat="actionBtnInfo in c.data.stackDetailsBtns" 
+           ng-class="{'active' : actionBtnInfo.id==c.data.selectedBtn}" ng-disabled="!actionBtnInfo.isActive" 
+           aria-selected="{{actionBtnInfo.id==c.data.selectedBtn}}" ng-click="c.selectContent(actionBtnInfo)" 
+           id="{{actionBtnInfo.id}}" tabindex="0">
+           <a ng-bind="actionBtnInfo.lable" tabindex="-1" href="javascript:void(0)"></a>
+       </li>
+    </ul>
+
+    <div class="operations-div" ng-if="!c.data.isTLR && data.resource_operations.length > 0 && c.data.stacks[0].status_id == 2">
+      <span class="operation-status" ng-if="c.data.req_item_state && c.data.req_item_state == 1">${Processing Request...}</span>
+      <label for="resource_operation_dropdown" class="sr-only">${Select Resource Operation}</label>
+      <select id="resource_operation_dropdown" name="resource_operation_dropdown" ng-disabled="c.data.req_item_state && c.data.req_item_state == 1" 
+      ng-options="item as item.operation for item in data.resource_operations track by item.id" ng-model="data.resourceOperation" class="form-control pull-right operation_dropdown" 
+      ng-change="c.showResourceCatItem(data.resourceOperation.operation,data.resourceOperation.operationId,data.resourceOperation.resourceBlock,data.resourceOperation.resourceInterface)">
+       <option value='' disabled>${Select Resource Operation}</option></select>
+    </div>
+    
+    <div class="operations-div" ng-if="c.data.isTLR && c.data.stacks[0].status_id == 2 && data.operations.length > 0">
+      <span class="operation-status" ng-if="c.data.req_item_state && c.data.req_item_state == 1">${Processing Request...}</span>
+      <label for="operation_dropdown" class="sr-only">${Select Stack Operation}</label>
+      <select id="operation_dropdown" ng-disabled="c.data.req_item_state && c.data.req_item_state == 1" 
+      ng-options="item as item.operationName for item in data.operations track by item.id" ng-model="data.operation" class="form-control pull-right operation_dropdown" 
+      ng-change="c.showStackCatItem(data.stacks[0].blueprint_id,data.operation.operationName,data.operation.id)"> 
+       <option value='' disabled>${Select Stack Operation}</option>
+      </select>
+    </div>
+    
+    <button ng-if="(c.data.stacks[0].status_id == 3 || c.data.stacks[0].status_id == 8) && c.data.stacks[0].canDelete" 
+       	id="detele_stack" title="${Delete Stack}" aria-label="${Delete Stack}" 
+        class="btn btn-default pull-right" ng-click="c.operate('Delete')">
+       <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

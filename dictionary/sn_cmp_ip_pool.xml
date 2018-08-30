@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="IP Pool" max_length="40" name="sn_cmp_ip_pool" type="collection">
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPIPAMChoiceTables,show_table_names_on_label=false" label="IPAM Provider" mandatory="true" max_length="80" name="ipam_provider" type="table_name"/>
+        <element choice="1" label="Mode" mandatory="true" max_length="40" name="mode" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Pre" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Post" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="DHCP" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="100" name="name" type="string"/>
+        <element dependent="ipam_provider" label="Provider Instance" max_length="32" name="provider_instance" type="document_id"/>
+        <element attributes="edge_encryption_enabled=true" label="Provider Version" max_length="100" name="provider_version" type="string"/>
+        <element label="Subnet" mandatory="true" max_length="32" name="subnet" reference="cmdb_ci_cloud_subnet" type="reference"/>
+        <index name="index">
+            <element name="subnet"/>
+        </index>
+        <index name="index2">
+            <element name="provider_instance"/>
+        </index>
+    </element>
+</database>

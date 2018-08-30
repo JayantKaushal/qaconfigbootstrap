@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="" relationship="" sys_domain="global" table="sn_cmp_rb_binding" version="2" view="rbuiview">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>guest_resource</element>
+            <list_id display_value="sn_cmp_rb_binding" element="NULL" name="sn_cmp_rb_binding" parent="NULL" relationship="NULL" sys_domain="global" view="60abb1409fa11300e78d317f842e70f4">61079e0c9fa11300e78d317f842e7040</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-04-13 22:59:00</sys_created_on>
+            <sys_id>e9079e0c9fa11300e78d317f842e7040</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-04-13 22:59:00</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>sn_cmp_rb_binding</name>
+            <parent/>
+            <position/>
+            <relationship/>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-04-13 22:59:00</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>61079e0c9fa11300e78d317f842e7040</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_rb_binding</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_sn_cmp_rb_binding_rbuiview</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-04-13 22:59:00</sys_updated_on>
+            <sys_user/>
+            <view display_value="rbUiView" name="rbuiview">60abb1409fa11300e78d317f842e70f4</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

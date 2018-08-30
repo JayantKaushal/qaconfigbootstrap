@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_workload_provider_type">
+    <sn_cmp_workload_provider_type action="INSERT_OR_UPDATE">
+        <config_ci>sn_cfg_chef_server</config_ci>
+        <credential_resolver display_value="ChefServerCredentialResolver">99aa0e5e0b30320021cd05ae37673a08</credential_resolver>
+        <credential_type>sn_cfg_chef_credentials</credential_type>
+        <name>Chef Server 12</name>
+        <product_type display_value="Chef Server">a10d07790b2322004b1b812f15673a91</product_type>
+        <provider_version>11,12,13</provider_version>
+        <server_type>Hosted,Private,Enterprise</server_type>
+        <sys_class_name>sn_cmp_workload_provider_type</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-06 19:07:33</sys_created_on>
+        <sys_id>5b8de9a90b8503003246ad4363673a6a</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Chef Server 12</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_workload_provider_type_5b8de9a90b8503003246ad4363673a6a</sys_update_name>
+        <sys_updated_by>jayant.kaushal</sys_updated_by>
+        <sys_updated_on>2018-03-05 12:22:03</sys_updated_on>
+    </sn_cmp_workload_provider_type>
+</record_update>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Stage Resource" max_length="40" name="sn_cmp_bp_stage_resource" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Alias Name" max_length="200" name="alias_name" type="string"/>
+        <element label="Blueprint Stage Model" max_length="32" name="bp_stage_model" reference="sn_cmp_bp_stage_model" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Constraint" max_length="4000" name="constraint" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Host CI" max_length="200" name="host_ci" type="string"/>
+        <element label="Resource Block" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element choice="1" label="Type" max_length="40" name="type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Resource" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="BaseHost" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="bp_stage_model"/>
+        </index>
+        <index name="index2">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

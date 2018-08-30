@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>GroupsUserBelongsTo</name>
+        <resource_pool display_value="UserGroupPool">9eacbc1a0b803200e937c97193673aa7</resource_pool>
+        <script><![CDATA[getFilteredRecords();
+// Do not remove function declaration
+/**
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords() {
+	var filteredRecords = [];
+	var userId = gs.getUserID();
+	var groupMemberGr = new GlideRecord('sys_user_group');
+	var qc = groupMemberGr.addJoinQuery('sys_user_grmember', 'sys_id', 'group');
+	qc = qc.addCondition( 'user', userId);
+	groupMemberGr.addQuery('active', true);
+	groupMemberGr.query();
+	while (groupMemberGr.next()){
+		var group = {};
+			group.value = groupMemberGr.getUniqueValue();
+			group.label = groupMemberGr.getValue('name');
+			filteredRecords.push(group);
+	}
+   gs.info('UserGroupPool::GroupsUserBelongsTo::info =  ' + JSON.stringify(filteredRecords));
+
+	//force to string
+	return new global.JSON().encode(filteredRecords);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-26 22:19:12</sys_created_on>
+        <sys_id>aa1fb5b1d760320097eb6ccf6e61039c</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>GroupsUserBelongsTo</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_aa1fb5b1d760320097eb6ccf6e61039c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-27 21:33:07</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

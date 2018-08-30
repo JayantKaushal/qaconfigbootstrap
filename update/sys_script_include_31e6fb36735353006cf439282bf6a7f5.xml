@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUserPortalHelper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUserPortalHelper</name>
+        <script><![CDATA[var CMPUserPortalHelper = Class.create();
+CMPUserPortalHelper.prototype = {
+	CLOUD_STACKS_PAGE_ID: 'cloud_stacks',
+	CLOUD_RESOURCES_PAGE_ID: 'cloud_resources',
+	CLOUD_ACTIVITIES_PAGE_ID: 'cloud_activities',
+	CUP_INDEX: 'cup_index',
+	
+    initialize: function(sp) {
+		if (typeof $sp == 'undefined')
+			throw 'Cannot initialize User portal helper without service portal context';
+		
+		this.sp = sp || $sp;
+    },
+	
+	getWidget: function(id, params) {
+		//Intention of this method is to process id dynamically to resolve appropriate widget 
+		return this.sp.getWidget(id, params || {});
+	},
+	
+	getTableWidget: function(table, view, tableOptions) {
+		if (!table)
+			throw 'Illegal argument: table name is a required field';
+		
+		var tableGr = new GlideRecord(table);
+		if (!tableGr.isValid()) 
+			throw 'Illegal argument: Invalid table name';
+		
+		tableOptions = tableOptions || {};
+		var pageWithTable = this.getPage(this.sp.getParameter('id'));
+		
+		var options = { table: table, view: view };
+		
+		// widget parameters
+		//Lets not pass options.fields so that we can enforce data table to get if from the view passed.
+		options.table_label = tableOptions.table_label || tableGr.getLabel();
+		this._copyParameters(options, ['p', 'o', 'd']);
+		this._copyParameters(options, ['relationship_id', 'apply_to', 'apply_to_sys_id']);
+		options.filterACLs = tableOptions.filterACLs || true;
+		options.show_new = tableOptions.show_new || false;
+		options.show_keywords  = tableOptions.show_keywords || false;
+		options.show_breadcrumbs = tableOptions.show_breadcrumbs || false;
+		
+		var titleAndFilter = pageWithTable.getTableTitleAndFilter();
+		options.title = titleAndFilter.title;
+		options.filter = titleAndFilter.filter;
+
+		return  this.getWidget('widget-data-table', options);
+	},
+	
+	getPage: function(pageId) {
+		switch (pageId) {
+			case this.CLOUD_STACKS_PAGE_ID:
+				return new CloudPortalStacksPage(this.sp);
+			case this.CLOUD_RESOURCES_PAGE_ID:
+				return new CloudPortalResourcesPage(this.sp);
+			case this.CLOUD_ACTIVITIES_PAGE_ID:
+				return new CloudPortalActivitiesPage(this.sp);	
+			case this.CUP_INDEX:
+				return new CMPCloudPortalOverviewPage();
+			default:
+				throw 'Unsupported page';
+		}
+	},
+	
+	_copyParameters: function(to, names) {
+		names.forEach(function(name) {
+			to[name] = this.sp.getParameter(name);
+		}, this);
+	},
+
+    type: 'CMPUserPortalHelper'
+};
+
+CMPUserPortalHelper.USER_PORTAL_VIEW_NAME = 'cmp_user_portal_view';
+
+CMPUserPortalHelper.isAdmin = function() {
+	return gs.hasRole('admin') || gs.hasRole('sn_cmp.cmp_root_admin');
+};
+
+CMPUserPortalHelper.isGroupAdmin = function() {
+	return gs.hasRole('sn_cmp.cloud_group_admin');
+};
+
+CMPUserPortalHelper.getUserPortalViewPreference = function(defaultValue) {
+	return gs.getUser().getPreference('cloud_user_portal_view') || defaultValue || 'mine';
+};
+
+/**
+userId - optional userId, if not provided current user id is taken
+return an array of group sysIds where the user belongs to
+**/
+CMPUserPortalHelper.getMemberOfGroupSysIdsByUser = function(userId) {
+	userId = userId || gs.getUserID();
+	
+	var groupIds = [];
+	var userGroupGr = new GlideRecord('sys_user_grmember');  
+	userGroupGr.addQuery('user', userId);  
+	userGroupGr.query();  
+	while (userGroupGr.next())  
+		groupIds.push(userGroupGr.getValue('group')); 
+	
+	return groupIds;
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-18 18:55:26</sys_created_on>
+        <sys_id>31e6fb36735353006cf439282bf6a7f5</sys_id>
+        <sys_mod_count>49</sys_mod_count>
+        <sys_name>CMPUserPortalHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_31e6fb36735353006cf439282bf6a7f5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 16:30:29</sys_updated_on>
+    </sys_script_include>
+</record_update>

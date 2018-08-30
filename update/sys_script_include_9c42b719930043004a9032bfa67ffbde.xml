@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBusinessScheduleUtil</api_name>
+        <client_callable>true</client_callable>
+        <description>Utility for managing business-hour schedules and the  status of stack and resources with respect to those schedules.</description>
+        <name>CmpBusinessScheduleUtil</name>
+        <script><![CDATA[var CmpBusinessScheduleUtil = Class.create();
+CmpBusinessScheduleUtil.prototype = {
+	
+	SCHEDULE_TABLE : 'cmn_schedule',
+	SCHEDULE_PROFILE_TABLE : "sn_cmp_schedule_profile",
+	SCHEDULED_OPERATION_TABLE : 'sn_cmp_scheduled_operation',
+	STACK_TABLE : 'sn_cmp_stack',
+	POLICY_TABLE : 'sn_cmp_pol_policy',
+	POL_ACTION_TABLE : 'sn_cmp_pol_action',
+	POL_CONDITION_TABLE : 'sn_cmp_pol_condition',
+	POL_CONDITION_RULE : 'sn_cmp_pol_rule',
+	
+	initialize: function() {
+	},
+
+	runInBackground: function(method, params) {
+		var worker = new GlideScriptedHierarchicalWorker();  
+		worker.setBackground(true);  
+		worker.setScriptIncludeName('sn_cmp.CmpBusinessScheduleUtil');  
+		worker.setScriptIncludeMethod(method);  
+		worker.putMethodArg('params', params);  
+		worker.start();
+		var pid = worker.getProgressID();
+		var et = new GlideRecord('sys_execution_tracker');
+		while (et.get(pid)) {
+			if (et.getValue("percent_complete") == "100" || et.getValue("state") >= 2)
+				break;
+			new global.CmpSCUtil().sleep(100);
+		}
+		return et.getValue("message");
+	},
+	
+	modifyLease: function(params) {
+		return this.runInBackground("_modifyLease", global.JSON.parse(params));
+	},
+	
+	_modifyLease: function(params) {
+		var success = false;
+		var stackId = "-1";
+		if (params.hasOwnProperty("StackID") && !gs.nil(params["StackID"]))
+			stackId = params["StackID"];
+		try {
+			var tracker = GlideExecutionTracker.getLastRunning();
+			var gr = new GlideRecord('sn_cmp_stack');
+			if (gr.get(stackId)) {
+				if (params.hasOwnProperty("LeaseEndDate") && !gs.nil(params["LeaseEndDate"]))
+					gr.end_date = new GlideDateTime(params["LeaseEndDate"]).getDisplayValue();
+				else
+					gr.end_date = "";
+
+				if (gr.update()) {
+					var rv = "Stack "+gr.getDisplayValue()+" end_date set to "+gr.end_date;
+					tracker.success(rv.toString());
+					success = true;
+				}
+			}
+			if (!success) {
+				var rv2 = "Failed to update end_date for stack ID "+stackId;
+				tracker.fail(rv2.toString());
+			}
+		} catch (e) {
+			var rv3 =  "Error while updating end_date for stack ID "+stackId+": "+e;
+			tracker.fail(rv3.toString());
+		}
+
+		// Find the in progress order(s) for this stack and operation,
+		// and mark them "Completed" or "Error" as appropriate
+		var orderGr = new GlideRecord('sn_cmp_order');
+		orderGr.addQuery('status', '6');
+		orderGr.addQuery('owner_instance', stackId);
+		orderGr.addQuery('operation_name', 'ModifyLease');
+		orderGr.query();
+		orderGr.setValue('status', (success ? 7 : 8));
+		orderGr.updateMultiple();
+		
+	},
+
+	modifySchedule: function(params) {
+		return this.runInBackground("_modifySchedule", global.JSON.parse(params));
+	},
+
+	_modifySchedule: function(params) {
+		var success = false;
+		var stackId = "-1";
+		if (params.hasOwnProperty("StackID") && !gs.nil(params["StackID"]))
+			stackId = params["StackID"];
+		try {
+			var tracker = GlideExecutionTracker.getLastRunning();
+			var gr = new GlideRecord(this.STACK_TABLE);
+			if (gr.get(stackId)) {
+				if (params.hasOwnProperty("ScheduleProfile")) {
+					if (gs.nil(params["ScheduleProfile"]))
+						gr.schedule = "";
+					else {
+						var spGr = new GlideRecord(this.SCHEDULE_PROFILE_TABLE);
+						if (spGr.get("name", params["ScheduleProfile"]))
+							gr.schedule = spGr.getValue("schedule");
+					}
+					gr.time_zone = params["ScheduleTimeZone"];
+
+					if (gr.update()) {	
+						var rv = "Stack "+gr.getDisplayValue()+" schedule set to "+gr.schedule;
+						tracker.success(rv.toString());
+						success = true;
+					}
+				}
+			}
+			var rv2 = "Failed to update schedule for stack ID "+stackId;
+			tracker.fail(rv2.toString());
+		} catch (e) {
+			var rv3 = "Error while updating schedule for stack ID "+stackId+": "+e;
+			tracker.fail(rv3.toString());
+		}
+
+		// Find the in progress order(s) for this stack and operation,
+		// and mark them "Completed" or "Error" as appropriate
+		var orderGr = new GlideRecord('sn_cmp_order');
+		orderGr.addQuery('status', 6);
+		orderGr.addQuery('owner_instance', stackId);
+		orderGr.addQuery('operation_name', 'ModifySchedule');
+		orderGr.query();
+		orderGr.setValue('status', (success ? 7 : 8));
+		orderGr.updateMultiple();
+	},
+		
+	runScheduledActions : function() {
+		var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+		ssGr.addQuery("status", "IN", "Scheduled,Skip");
+		ssGr.addQuery("operation_time", "<=", new GlideDateTime());
+		ssGr.orderBy("operation_time");
+		ssGr.query();
+		while (ssGr.next()) {
+			if (ssGr.getValue("status") == "Scheduled") {
+				// only run if all earlier actions on the target are complete
+				var prevGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+				prevGr.addQuery("target", ssGr.getValue("target"));
+				prevGr.addQuery("status", "IN", "Scheduled,Skip,In Progress");
+				prevGr.addQuery("operation_time", "<", ssGr.getValue("operation_time"));
+				prevGr.query();
+				if (!prevGr.hasNext()) {
+					if (ssGr.getValue('operation_type') == "Operation") {
+						var opName = ssGr.getValue('operation');
+						this.runAction(opName, ssGr.getValue("target"));
+					}
+					ssGr.status = "In Progress";
+					ssGr.update();
+				}
+			} else {
+				// If "Skip" status, do nothing but schedule the next action
+				var stackGr = new GlideRecord(this.STACK_TABLE);
+				if (stackGr.get(ssGr.getValue("target"))) {				
+					var thisAction = ssGr.getValue("operation");
+					var nextAction = (thisAction == "Start" ? "Stop" : "Start");
+					this.updateScheduledOperation(ssGr.getValue("target"), stackGr.getValue("schedule"), nextAction);
+				}
+				ssGr.deleteRecord();
+			}
+		}
+	},
+	
+	/**
+	 * Recalculate the scheduled lease operations for all active stacks having an end date
+	 */
+	updateAllLeaseOperations : function() {
+		var stackGr = new GlideRecord(this.STACK_TABLE);
+		stackGr.addNotNullQuery('end_date');
+		stackGr.addQuery('stack_status', 2);
+		stackGr.orderBy('end_date');
+		stackGr.query();
+		while (stackGr.next())
+			this.updateLeaseOperations(stackGr.getUniqueValue(), stackGr.getValue("end_date"));
+	},
+	
+	runAction : function(opName, target) {
+		var stackGr = new GlideRecord('sn_cmp_stack');
+		if (stackGr.get(target)) {
+			if (!gs.nil(stackGr.blueprint)) {
+				var json = {
+					"stack":stackGr.getUniqueValue(),
+					"operationName": opName,
+					"entityType": "Blueprint",
+					"blueprint": stackGr.blueprint.name+"",
+					"userId":gs.getUserID(),
+					"orderFormData":{}
+				};
+
+				var orderScript = new sn_cmp_api.OrderServiceScript();
+				order = orderScript.submitOrder(new global.JSON().encode(json));
+			}
+		}
+	},
+
+	handleFinishedOrder : function(orderGr) {
+		var ciGr = new GlideRecord(this.STACK_TABLE);
+		if (ciGr.get(orderGr.getValue('owner_instance'))) {
+			
+			var schedule = ciGr.getValue('schedule');
+			var thisAction = orderGr.getValue('operation_name');
+			
+			if (!gs.nil(schedule) && thisAction == "Provision") {
+				this.updateScheduledOperation(ciGr.getUniqueValue(), schedule, "Stop");
+				this.updateLeaseOperations(ciGr.getUniqueValue(), ciGr.getValue("end_date"));
+			}
+			
+			var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+			ssGr.query("target", ciGr.getUniqueValue());
+			ssGr.query("operation", orderGr.getValue("operation_name"));
+			ssGr.query("status", "In Progress");
+			if (ssGr.next()) {
+				ssGr.status = (orderGr.getValue("status") == 7 ? "Completed" : "Failed");
+				ssGr.update();			
+				if (!gs.nil(schedule)) {
+					if (thisAction == "Start")
+						this.updateScheduledOperation(ciGr.getUniqueValue(), schedule, "Stop");
+					if (thisAction == "Stop")
+						this.updateScheduledOperation(ciGr.getUniqueValue(), schedule, "Start");
+				}
+			}
+		}		
+	},
+		
+	updateScheduledOperation : function(ciId, scheduleId, nextActionType) {
+		var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+		ssGr.initialize();
+		ssGr.target = ciId;
+		ssGr.source = "Schedule";
+		ssGr.operation_type = "Operation";
+
+		var stackGr = new GlideRecord(this.STACK_TABLE);
+		if (stackGr.get(ciId)) {			
+			var tz = stackGr.getValue("time_zone");
+			if (gs.nil(tz))
+				tz = gs.getProperty("glide.sys.default.tz", "America/Los_Angeles");
+			var schedule = new GlideSchedule();
+			schedule.load(scheduleId);
+			
+			var schTZ = schedule.getTimeZone();	
+			var gsdt = new GlideScheduleDateTime();
+			
+			// Calculate a difference between the time zone on the schedule and tha
+			// time zone that we actually want to use (from the stack). Adjust the
+			// current time forward or backward by that much while doing scheduling
+			// calculations, then adjust the schedule time back to the system
+			// time zone before storing it.
+			var schDate = new GlideDateTime(gsdt.convertTimeZone(schTZ, schTZ));
+			var localDate = new GlideDateTime(gsdt.convertTimeZone(tz, tz));
+			var dateDiff = GlideDateTime.subtract(schDate, localDate);
+			var date = new GlideDateTime();
+			date.add(dateDiff.getNumericValue());			
+			
+			// If no action type is provided, assume an action should be immediately
+			// scheduled to ensure the current state shown on the schedule.
+			if (gs.nil(nextActionType)) {
+				ssGr.operation = (schedule.isInSchedule(date) ? "Start": "Stop");
+				date.add(-dateDiff.getNumericValue());
+				ssGr.operation_time = date;		
+			} else {
+
+				// Get the ms from now that the next Start or Stop should happen.
+				// Update the next action time as appropriate, or delete if no action needed.
+				ssGr.operation = nextActionType;
+				var nextOffset = (nextActionType == "Start" ? schedule.whenNext(date) : this.whenNextEnd(schedule, date));
+
+				if (nextOffset >= 0) {
+					date.addSeconds(nextOffset/1000);
+					date.add(-dateDiff.getNumericValue());
+					ssGr.operation_time = date;
+				} else {
+					ssGr.deleteRecord();
+					return;
+				}
+			}
+
+			// Abandon / delete the next operation is if is after
+			// or within 5 minutes of the stack's end date
+			date.addSeconds(300);
+			if (!gs.nil(stackGr.end_date) && stackGr.end_date <= date) {
+				ssGr.deleteRecord();
+				return;			
+			}				
+		
+			ssGr.status = "Scheduled";
+			ssGr.insert();
+		} else
+			ssGr.deleteRecord();
+	},
+
+	updateLeaseOperations: function(ciId, endDate) {
+		this.removeScheduledOperations(ciId, "Lease");
+		if (!gs.nil(endDate)) {
+			var policyGr = new GlideRecord(this.POLICY_TABLE);
+			policyGr.addQuery('target_entity_id', '12'); // Query for policy of trigger type lease end
+			policyGr.addQuery('status', 1); // published
+			policyGr.query();
+			while(policyGr.next()) { 
+				var ruleGr = new GlideRecord(this.POL_CONDITION_RULE);
+				ruleGr.addQuery('policy', policyGr.sys_id + '');
+				ruleGr.orderBy('rule_order');
+				ruleGr.query();
+				while(ruleGr.next()){
+					var polActionGr = new GlideRecord(this.POL_ACTION_TABLE);
+					polActionGr.addQuery('policy_rule', ruleGr.sys_id + '');
+					polActionGr.orderBy('action_order');
+					polActionGr.query();
+					while (polActionGr.next()) {
+						var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+						ssGr.initialize();
+						ssGr.target = ciId;
+						ssGr.source = "Lease";
+						if (polActionGr.getValue('action_type') == "12") {
+							ssGr.operation_type = "Operation";
+							ssGr.operation = polActionGr.getValue('bp_operation');
+							ssGr.name = ssGr.getValue("operation");
+						} else {
+							ssGr.operation_type = "Notification";
+							ssGr.notification = polActionGr.getValue("notification");
+							ssGr.name = "Notification : " + ssGr.notification.name;
+						}
+						var opDate = new GlideDateTime(endDate);
+						var encodedQuery = ruleGr.condition + '';
+						var sc = new global.CmpSCUtil();
+						opDate = sc.buildRelative(encodedQuery, opDate);
+						// Ensure actions defined in the same lease policy rule are executed in order
+						opDate.addSeconds(polActionGr.action_order-1);
+
+						ssGr.operation_time = new GlideDateTime(opDate).getDisplayValue();
+						ssGr.status = "Scheduled";
+						ssGr.insert();
+					} // end of action 
+				} // end of each rule
+			}
+			// Abandon / delete the next operation if it is after the stack's end date
+			var sGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+			sGr.addQuery('target', ciId);
+			sGr.addQuery('source', "Schedule");
+			sGr.addQuery('operation_time','>=', new GlideDateTime(endDate).getDisplayValue());
+			sGr.deleteMultiple();
+		}
+	},
+	
+	markOperationComplete : function(schOpId) {
+		var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+		if (ssGr.get(schOpId)) {
+			ssGr.status = "Completed";
+			ssGr.update();
+		}
+	},
+	
+	removeScheduledOperations : function(ciId, source) {
+		var ssGr = new GlideRecord(this.SCHEDULED_OPERATION_TABLE);
+		ssGr.addQuery('target', ciId);
+		ssGr.addQuery('source', source);
+		ssGr.addQuery('status',"IN", "Scheduled,Skip");
+		ssGr.deleteMultiple();
+	},
+	
+	getMultiplier : function(scheduleId) {
+		if (gs.nil(scheduleId))
+			return 1;
+		var schedule = new GlideSchedule();
+		schedule.load(scheduleId);
+		var now = new GlideDateTime();
+		var later = new GlideDateTime();
+		later.addDaysUTC(364);		
+		var dur = schedule.duration(now, later);
+		
+		// get percentage of in-schedule milliseconds in the next year
+		var multiplier = dur.getNumericValue() / 31449600000.0;
+		return multiplier;
+	},
+	
+	
+	/* Find the lowest number of milliseconds after the given startDate that is
+	 * not within the given schedule.
+	 */
+	whenNextEnd : function(schedule, startDt) {
+		var maxSeconds = 86400; // seconds in one day
+		var endDt;
+		var dur;
+				
+		// Double the search range maximum until a timespan is reached that is not
+		// entirely in the schedule (or stop at hundreds of years if everything is in)
+		while (maxSeconds < 5000000000) {
+			endDt = new GlideDateTime(startDt);
+			endDt.addSeconds(maxSeconds);
+			dur = schedule.duration(startDt, endDt).getNumericValue() / 1000;
+			if (dur >= maxSeconds) {
+				maxSeconds *= 2;
+			} else {
+				break;
+			}
+		}
+		var minSeconds = 0;
+
+		// Binary search for the second at which the schedule
+		// stops covering the full time span
+		while (minSeconds+1 < maxSeconds) {
+			var mid = Math.floor((minSeconds+maxSeconds)/2);
+			endDt = new GlideDateTime(startDt);
+			endDt.addSeconds(mid);
+			dur = Math.round(schedule.duration(startDt, endDt).getNumericValue()/1000);
+			if (dur >= mid) {
+				minSeconds = mid;
+			} else {
+				maxSeconds = mid;
+			}
+		}
+		
+		// If maxSeconds remained at the limit, assume this means no end time
+		if (maxSeconds >= 5000000000)
+			maxSeconds = -1;
+		
+		return maxSeconds*1000;
+	},
+		
+	type: 'CmpBusinessScheduleUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-18 17:04:41</sys_created_on>
+        <sys_id>9c42b719930043004a9032bfa67ffbde</sys_id>
+        <sys_mod_count>168</sys_mod_count>
+        <sys_name>CmpBusinessScheduleUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_9c42b719930043004a9032bfa67ffbde</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-08 22:30:57</sys_updated_on>
+    </sys_script_include>
+</record_update>

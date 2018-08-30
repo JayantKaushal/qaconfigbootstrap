@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBlueprintUpgradeUtil</api_name>
+        <client_callable>false</client_callable>
+        <description>Functions to aid in retrofitting an existing blueprint with newly  added TLR operations and/or operation attributes.</description>
+        <name>CmpBlueprintUpgradeUtil</name>
+        <script><![CDATA[var CmpBlueprintUpgradeUtil = Class.create();
+CmpBlueprintUpgradeUtil.prototype = {
+	
+	TAG: '[CmpBlueprintUpgradeUtil] ',
+	newOps: {},
+	newParams: {},
+	
+	initialize: function() {},
+
+	upgradeAllBlueprintTLRs: function() {
+		gs.info(this.TAG+"Begin adding new operations and parameters to existing blueprints...");
+		var bpGr = new GlideRecord('sn_cmp_bp_blueprint');
+		bpGr.query();
+		while (bpGr.next())
+			this.upgradeBlueprintTLR(bpGr, null);
+		
+		var newOpsArr = [];
+		for (var j in this.newOps) {
+			newOpsArr.push(j);
+		}
+		var newParamsArr = [];
+		for (var k in this.newParams) {
+			newParamsArr.push(k);
+		}
+		gs.info(this.TAG+"Finished adding new blueprint operations: "+newOpsArr.join());
+		gs.info(this.TAG+"Finished adding new blueprint operation parameters: "+newParamsArr.join());
+	},
+	
+	upgradeAllBlueprintTLRsWithAttr: function(attrGr) {
+		gs.info(this.TAG+"Begin adding new parameter "+attrGr.operation+"."+attrGr.attribute+" to existing blueprints...");
+		var bpGr = new GlideRecord('sn_cmp_bp_blueprint');
+		bpGr.query();
+		while (bpGr.next())
+			this.upgradeBlueprintTLR(bpGr, attrGr);
+
+		var newParamsArr = [];
+		for (var k in this.newParams) {
+			newParamsArr.push(k);
+		}
+		gs.info(this.TAG+"Finished adding new blueprint operation parameter: "+newParamsArr.join());
+	},
+	
+	
+	upgradeBlueprintTLR: function(bpGr, attrGr) {
+		var opGr = new GlideRecord('sn_cmp_bp_operation');
+		if (!gs.nil(attrGr))
+			opGr.addQuery('name', attrGr.operation);
+		opGr.query();
+		while(opGr.next()) {
+			this.findOrAddOpSig(bpGr, opGr, attrGr);
+		}
+	},
+	
+	findOrAddOpSig: function(bpGr, opGr, attrGr) {
+				
+		var tlrID = bpGr.getValue("tlr");
+		var opSigID = '';
+		var opName = opGr.getValue('name');
+		
+		var rbGr = new GlideRecord('sn_cmp_rb_resourceblock');
+		if (rbGr.get(tlrID)) {
+			var interfaceID = rbGr.getValue('guestinterface');
+			var opSigGr = new GlideRecord('sn_cmp_rb_op_signature');
+			opSigGr.addQuery('name', opName);
+			opSigGr.addQuery('interface', interfaceID);
+			opSigGr.query();
+			if (opSigGr.next()) {
+				opSigID = opSigGr.getUniqueValue();
+			} else {
+				opSigGr.name = opName;
+				opSigGr.setValue('interface', interfaceID);
+				var opTypeGr = new GlideRecord('sn_cmp_rb_op_type');
+				if (opTypeGr.get('name', opGr.type))
+					opSigGr.operation_type = opTypeGr.getUniqueValue();
+				opSigGr.access_type = 2;
+				if (!this.newOps.hasOwnProperty(opName))
+					this.newOps[opName] = opName;
+				opSigID = opSigGr.insert();
+			}
+			this.findOrAddOpParams(interfaceID, opName, opSigID, attrGr);
+			this.findOrAddOpImpl(bpGr, interfaceID, opName, opSigID, attrGr);
+		}
+	},
+	
+	findOrAddOpParams: function(interfaceID, opName, opSigID, attrGr) {
+		
+		var toaGr = new GlideRecord('sn_cmp_tlr_op_attr');
+		toaGr.addNullQuery('template_type');
+		toaGr.addQuery('operation', opName);
+		if (!gs.nil(attrGr))
+			toaGr.addQuery('attribute', attrGr.getValue("attribute"));
+		toaGr.query();
+		while (toaGr.next()) {
+			var opParamGr = new GlideRecord('sn_cmp_rb_op_param');
+			opParamGr.addQuery('operation', opSigID);
+			opParamGr.addQuery('name', toaGr.getValue('attribute'));
+			opParamGr.query();
+			if (!opParamGr.next()) {
+				var paramName = toaGr.getValue('attribute');
+				opParamGr.operation = opSigID;
+				opParamGr.setValue('interface', interfaceID);
+				opParamGr.name = paramName;
+				opParamGr.type = toaGr.getValue('parameter_type');
+				opParamGr.order = toaGr.getValue('order');
+				if (gs.nil(opParamGr.order))
+					opParamGr.order = -1;
+				if (!this.newParams.hasOwnProperty(opName+"."+paramName))
+					this.newParams[opName+"."+paramName] = opName+"."+paramName;
+				opParamGr.insert();
+			}
+		}		
+	},
+
+	findOrAddOpImpl: function(bpGr, interfaceID, opName, opSigID, attrGr) {
+		var tlrID = bpGr.getValue("tlr");
+		var opImplID = '';
+		
+		var oiGr = new GlideRecord('sn_cmp_rb_op_impl');
+		oiGr.addQuery('operation', opSigID);
+		oiGr.addQuery('interface', interfaceID);
+		oiGr.query();
+		if (oiGr.next()) {
+			opImplID = oiGr.getUniqueValue();
+		} else {
+			oiGr.setValue('interface', interfaceID);
+			oiGr.operation = opSigID;
+			oiGr.resource = tlrID;
+			opImplID = oiGr.insert();
+		}
+		var paramMap = this.findOrAddOpImplParams(interfaceID, opName, opImplID, attrGr);
+		this.findOrAddStageOp(bpGr, opName, opImplID, paramMap, attrGr);
+	},	
+
+	findOrAddOpImplParams: function(interfaceID, opName, opImplID, attrGr) {
+		var paramMap = {};
+		var toaGr = new GlideRecord('sn_cmp_tlr_op_attr');
+		toaGr.addNullQuery('template_type');
+		toaGr.addQuery('operation', opName);
+		if (!gs.nil(attrGr))
+			toaGr.addQuery('attribute', attrGr.getValue("attribute"));
+		toaGr.query();
+		while (toaGr.next()) {
+			var oiParamGr = new GlideRecord('sn_cmp_rb_op_impl_param');
+			oiParamGr.addQuery('operation', opImplID);
+			oiParamGr.addQuery('name', toaGr.getValue('attribute'));
+			oiParamGr.query();
+			if (!oiParamGr.next()) {
+				oiParamGr.operation = opImplID;
+				oiParamGr.name = toaGr.getValue('attribute');
+				oiParamGr.datasource = (toaGr.getValue('data_source_type') == "Text" ? 1 : 2);
+				oiParamGr.datasourcevalue = toaGr.getValue('data_source_value');
+				oiParamGr.ismandatory = toaGr.getValue('mandatory');
+				oiParamGr.visibilty = toaGr.getValue('visible');
+				oiParamGr.regex = toaGr.getValue('regex');
+				oiParamGr.defaultvalue = toaGr.getValue('defaultvalue');
+				if (gs.nil(oiParamGr.defaultvalue))
+					oiParamGr.defaultvalue = "${parameter."+oiParamGr.name+"}";
+				oiParamGr.value = toaGr.getValue('value');
+				oiParamGr.help_text = toaGr.getValue('help_text');				
+				oiParamGr.order = toaGr.getValue('order');
+				if (gs.nil(oiParamGr.order))
+					oiParamGr.order = -1;
+				paramMap[oiParamGr.name] = oiParamGr.insert();
+			}
+		}
+		return paramMap;
+	},
+	
+	findOrAddStageOp: function(bpGr, opName, opImplID, paramMap, attrGr) {
+		var stageOpID = '';
+		
+		var soGr = new GlideRecord('sn_cmp_bp_stage_op');
+		soGr.addQuery('operation_impl', opImplID);
+		soGr.query();
+		if (soGr.next()) {
+			stageOpID = soGr.getUniqueValue();
+		} else {
+			var bpsmGr = new GlideRecord('sn_cmp_bp_stage_model');
+			bpsmGr.addQuery('blueprint', bpGr.getUniqueValue());
+			bpsmGr.orderByDesc('sys_created_on');
+			bpsmGr.query();
+			if (bpsmGr.next()) {
+				soGr.blueprint_stage_model = bpsmGr.getUniqueValue();
+				soGr.operation_impl = opImplID;
+				soGr.name = opName;
+				stageOpID = soGr.insert();
+			}
+		}
+		if (!gs.nil(stageOpID))
+			this.findOrAddStageResourceOp(bpGr, opName, opImplID, stageOpID, paramMap, attrGr);
+	},		
+
+	findOrAddStageResourceOp: function(bpGr, opName, opImplID, stageOpID, paramMap, attrGr) {
+		var tlrID = bpGr.getValue("tlr");
+		var srOpID = '';
+		
+		var sroGr = new GlideRecord('sn_cmp_bp_stage_resource_op');
+		sroGr.addQuery('bp_stage_operation', stageOpID);
+		sroGr.addQuery('resource_block', tlrID);
+		sroGr.query();
+		if (sroGr.next()) {
+			srOpID = sroGr.getUniqueValue();
+		} else {	
+			var bpsrGr = new GlideRecord('sn_cmp_bp_stage_resource');
+			bpsrGr.addQuery('bp_stage_model.blueprint', bpGr.getUniqueValue());
+			bpsrGr.addQuery('alias_name', 'Blueprint Container Resource');
+			bpsrGr.query();
+			if (bpsrGr.next()) {
+				sroGr.bp_stage_resource = bpsrGr.getUniqueValue();
+				sroGr.bp_stage_operation = stageOpID;
+				sroGr.alias_name = bpsrGr.getValue('alias_name')+"."+opName;
+				sroGr.rb_operation_impl = opImplID;
+				sroGr.operation_order = "1";
+				sroGr.resource_block = tlrID;
+				sroGr.unique_id = Math.floor(Math.random() * 10000).toString();
+				srOpID = sroGr.insert();
+				
+				var graphGr = new GlideRecord('sn_cmp_bp_stage_res_op_graph');
+				graphGr.blueprint_stage_op = stageOpID;
+				graphGr.parent_operation = srOpID;
+				graphGr.in_degree = "0";
+				graphGr.status = "true";
+				graphGr.insert();
+			}
+		}
+		if (!gs.nil(srOpID))
+			this.findOrAddStageResourceOpAttrs(bpGr, opName, stageOpID, srOpID, paramMap, sroGr.unique_id, attrGr);
+	},		
+	
+	findOrAddStageResourceOpAttrs: function(bpGr, opName, stageOpID, srOpID, paramMap, sroUniqueID, attrGr) {
+		var toaGr = new GlideRecord('sn_cmp_tlr_op_attr');
+		toaGr.addNullQuery('template_type');
+		toaGr.addQuery('operation', opName);
+		if (!gs.nil(attrGr))
+			toaGr.addQuery('attribute', attrGr.getValue("attribute"));
+		toaGr.addQuery('visible',true);
+		toaGr.query();
+		while (toaGr.next()) {
+			var opAttrGr = new GlideRecord('sn_cmp_bp_stage_res_op_attr');
+			opAttrGr.addQuery('stage_resource_operation', srOpID);
+			opAttrGr.addQuery('name', toaGr.getValue('attribute'));
+			opAttrGr.query();
+			var attrID = '';
+			if (!opAttrGr.next()) {
+				opAttrGr.stage_resource_operation = srOpID;
+				opAttrGr.name = toaGr.getValue('attribute');
+				opAttrGr.default_value = toaGr.getValue('defaultvalue');
+				if (gs.nil(opAttrGr.default_value))
+					opAttrGr.default_value = "${parameter."+opAttrGr.name+"}";
+				opAttrGr.type_of_map = 1;
+				opAttrGr.use_in_operation = toaGr.getValue('visible');
+				
+				opAttrGr.rb_operation_attribute = paramMap[opAttrGr.name];
+				attrID = opAttrGr.insert();
+			} else {
+				attrID = opAttrGr.getUniqueValue();
+			}
+			var propGr = new GlideRecord('sn_cmp_bp_global_prop');
+			propGr.addQuery('bp_stage_operation', stageOpID);
+			propGr.addQuery('bp_stage_res_op_attr', attrID);
+			propGr.query();
+			if (!propGr.next()) {
+				propGr.bp_stage_operation = stageOpID;
+				propGr.bp_stage_res_op_attr = attrID;
+				propGr.mandatory = toaGr.getValue('mandatory');
+				propGr.name = opAttrGr.getValue('name');
+				propGr.order = toaGr.getValue('order');
+				propGr.resource_op_unique_id = sroUniqueID;
+				var propID = propGr.insert();
+			}	
+		}
+	},
+	
+    type: 'CmpBlueprintUpgradeUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-13 17:35:59</sys_created_on>
+        <sys_id>7e0c917b930103004a9032bfa67ffb71</sys_id>
+        <sys_mod_count>48</sys_mod_count>
+        <sys_name>CmpBlueprintUpgradeUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_7e0c917b930103004a9032bfa67ffb71</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-14 19:13:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

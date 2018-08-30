@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>false</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_stack</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition table="sn_cmp_stack">stack_status=2^EQ<item endquery="false" field="stack_status" goto="false" newquery="false" operator="=" or="false" value="2"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </filter_condition>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Create And Populate Manual Service</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[// Calling execute rule method.
+executeRule();
+
+function executeRule() {
+
+	  var sys_db_gr = new GlideRecord("sys_db_object");
+      sys_db_gr.addQuery("name","cmdb_ci_service_manual");
+      sys_db_gr.query();
+	  if(sys_db_gr.next()){
+
+
+
+		 var stack_name = current.name;
+
+         //1. Getting stack by name.
+         var stack_gr = new GlideRecord("sn_cmp_stack");
+         stack_gr.addQuery("name",stack_name);
+         stack_gr.query();
+         var stack_sys_id = "";
+
+
+        if(stack_gr.next()){
+
+	           stack_sys_id = stack_gr.sys_id;
+	           gs.info("Found stack by name  --- "+stack_sys_id);
+
+	           // As we found stack will create manual service.
+
+	           //2. Creating manual service
+				var ms = new GlideRecord("cmdb_ci_service_manual");
+				var stack_name_temp = stack_name+" Service";
+				var manual_service_name = checkUniqueName(stack_name_temp,stack_name_temp,0);
+
+
+				gs.info("Manual Service Name --- "+manual_service_name);
+				ms.name = manual_service_name ;
+				ms.operational_status = "1";
+				var ms_sysId = ms.insert();
+				gs.info("Created manual Service --- "+ms_sysId);
+
+
+				//3. Adding relation ship with stack.
+				var relation_ship_type = new GlideRecord("cmdb_rel_type");
+				relation_ship_type.addQuery("name","Connects to::Connected by");
+				relation_ship_type.query();
+
+				if(relation_ship_type.next()){
+	                gs.info("Found relation ship type ---   "+relation_ship_type.sys_id);
+					var relationShip = new GlideRecord("cmdb_rel_ci");
+					relationShip.parent = ms_sysId;
+					relationShip.type = relation_ship_type.sys_id;
+					relationShip.child = stack_sys_id;
+					relationShip.insert();
+	            }
+
+	            //4. Now needs to populate it.
+				new global.CmpSCUtil().populateEventManagement(ms_sysId);
+
+				// delete unneeded records
+				new global.CmpSCUtil().deleteUnNeededRecord(ms_sysId);
+        }
+
+
+    }
+
+
+
+}
+
+
+
+ function checkUniqueName(name,tempName,count){
+	var ms = new GlideRecord("cmdb_ci_service_manual");
+	ms.addQuery("name",tempName);
+	ms.query();
+    if(ms.next()){
+		count = count+1;
+		tempName = name+" "+count;
+		return checkUniqueName(name,tempName,count);
+	}else{
+		if(count != 0){
+			name = name+" "+count;
+		}
+		return name;
+	}
+ }
+
+
+
+
+
+]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-20 12:32:09</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>9310f044537003002111620143dc34e1</sys_id>
+        <sys_mod_count>47</sys_mod_count>
+        <sys_name>Create And Populate Manual Service</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_9310f044537003002111620143dc34e1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 20:21:00</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=9310f044537003002111620143dc34e1"/>
+</record_update>

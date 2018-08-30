@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Stage Resource Deployment" max_length="40" name="sn_cmp_bp_stage_resource_dep" type="collection">
+        <element label="Blueprint Stage Model" max_length="32" name="bp_stage_model" reference="sn_cmp_bp_stage_model" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="Deployment Type" max_length="40" name="deployment_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Direct" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Attach" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Endpoint" max_length="200" name="endpoint" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Guest Association Name" max_length="200" name="guest_association_name" type="string"/>
+        <element label="Guest Resource" max_length="32" name="guest_resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Host Association Name" max_length="200" name="host_association_name" type="string"/>
+        <element label="Host Resource" max_length="32" name="host_resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="host_resource"/>
+        </index>
+        <index name="index2">
+            <element name="bp_stage_model"/>
+        </index>
+        <index name="index3">
+            <element name="guest_resource"/>
+        </index>
+    </element>
+</database>

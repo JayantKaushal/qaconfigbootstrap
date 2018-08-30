@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_AWS_Topics</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {&#13;
+&#13;
+	var cloudModelString = [];&#13;
+	var topicResponse = global.JSON.parse(response);&#13;
+	if ((!isEmpty(topicResponse.ListTopicsResult)) &amp;&amp; (!isEmpty(topicResponse.ListTopicsResult.Topics)) &amp;&amp; (!isEmpty(topicResponse.ListTopicsResult.Topics.member))) {&#13;
+		var topics = convertMapToList(topicResponse.ListTopicsResult.Topics.member);&#13;
+		for (var i = 0; i &lt; topics.length; i++) {&#13;
+			var topicARNValue=topics[i].TopicArn;&#13;
+			var name=topicARNValue.split(':')[5];&#13;
+			var topicInfo = {&#13;
+				"cmdb_ci_cloud_topic": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_aws_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": ldc&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_cloud_topic": {&#13;
+							"criterion": {&#13;
+								"object_id": topics[i].TopicArn&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"name": name&#13;
+					}&#13;
+				}&#13;
+			};&#13;
+			cloudModelString.push(topicInfo);&#13;
+		}&#13;
+	}&#13;
+	return global.JSON.stringify(cloudModelString);&#13;
+}&#13;
+&#13;
+//Following Function converts Map to List&#13;
+function convertMapToList(value) {&#13;
+	if (!(Array.isArray(value))) {&#13;
+		//Converting to List to Map&#13;
+		var loadList = [];&#13;
+		loadList.push(value);&#13;
+		return loadList;&#13;
+	}&#13;
+	else&#13;
+		return value;&#13;
+}&#13;
+&#13;
+&#13;
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)&#13;
+function isEmpty(value) {&#13;
+	return (value == null || value.length === 0);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {
+
+	var cloudModelString = [];
+	var topicResponse = global.JSON.parse(response);
+	if ((!isEmpty(topicResponse.ListTopicsResult)) && (!isEmpty(topicResponse.ListTopicsResult.Topics)) && (!isEmpty(topicResponse.ListTopicsResult.Topics.member))) {
+		var topics = convertMapToList(topicResponse.ListTopicsResult.Topics.member);
+		for (var i = 0; i < topics.length; i++) {
+			var topicARNValue=topics[i].TopicArn;
+			var name=topicARNValue.split(':')[5];
+			var topicInfo = {
+				"cmdb_ci_cloud_topic": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_aws_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_cloud_topic": {
+							"criterion": {
+								"object_id": topics[i].TopicArn
+							}
+						}
+					},
+					"attributes": {
+						"name": name
+					}
+				}
+			};
+			cloudModelString.push(topicInfo);
+		}
+	}
+	return global.JSON.stringify(cloudModelString);
+}
+
+//Following Function converts Map to List
+function convertMapToList(value) {
+	if (!(Array.isArray(value))) {
+		//Converting to List to Map
+		var loadList = [];
+		loadList.push(value);
+		return loadList;
+	}
+	else
+		return value;
+}
+
+
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)
+function isEmpty(value) {
+	return (value == null || value.length === 0);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-08 11:56:14</sys_created_on>
+        <sys_id>cb81f6400b6003003246ad4363673a12</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Create_AWS_Topics</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_cb81f6400b6003003246ad4363673a12</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-08 13:27:26</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface/>
+        <capi_method/>
+        <capi_version/>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <flow_type/>
+        <force_async>false</force_async>
+        <interface display_value="Router Interface">2805c6e50b632200e937c97193673a15</interface>
+        <interface_operation display_value="RouteTableDetachInternetGateway">5e63a1120b353200668daac125673a56</interface_operation>
+        <name>Router Interface.RouteTableDetachInternetGateway</name>
+        <operationimpl display_value="Route Table Detach Internet Gateway">3d335d5a0bf13200668daac125673a74</operationimpl>
+        <order/>
+        <owner_type>2</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider/>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-31 13:07:04</sys_created_on>
+        <sys_id>c276a1520b353200668daac125673afd</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Router Interface.RouteTableDetachInternetGateway</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_c276a1520b353200668daac125673afd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-31 13:07:04</sys_updated_on>
+        <target_entity_flow/>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

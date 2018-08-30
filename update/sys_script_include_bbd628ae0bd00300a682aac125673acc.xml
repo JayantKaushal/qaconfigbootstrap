@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.PriceDiscoveryUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>PriceDiscoveryUtil</name>
+        <script><![CDATA[var PriceDiscoveryUtil = Class.create();
+    PriceDiscoveryUtil.prototype = {
+      initialize: function(provider) {
+          this.provider = provider;
+      },
+
+      getDatacentersByProvider : function () {
+          var datacenters = {};
+          var resource;
+
+          var providerGR = new GlideRecord ('sn_capi_provider');
+          providerGR.addQuery('sys_id', this.provider);
+          providerGR.query();
+          
+		  if (providerGR.next()) {
+			  var resourceRefCI = providerGR.getValue('datacenter_class');
+
+			  var resourceBlockGR = new GlideRecord('sn_cmp_rb_resourceblock');
+			  resourceBlockGR.addQuery('refcitype', resourceRefCI);
+			  resourceBlockGR.query();
+			  
+			  if (resourceBlockGR.next()) {
+				  resource = resourceBlockGR.getValue('name');
+				  if (resource == 'AWS Datacenter')
+					  datacenters = this.getAWSDatacentersAssociatedWithCloudAccounts();
+				  else if (resource == 'Azure Datacenter')
+					  datacenters = ['West US']; 
+			  }	  
+          }
+		  
+          return {'resource' : resource, 'locations' : datacenters};
+      },
+
+      getDiscoveryPropertiesByProvider : function () {
+          var discoveryProperties = {};
+          var discoverPropertyGR = new GlideRecord('sn_cmp_price_discovery_property');
+          discoverPropertyGR.addQuery('provider', this.provider);
+          discoverPropertyGR.query();
+          while (discoverPropertyGR.next()){
+              discoveryProperties[discoverPropertyGR.getDisplayValue('offer')+''] =  discoverPropertyGR.getValue('url')+'';
+          }
+          return discoveryProperties;
+      },
+		
+	  /*
+	   * Returns a distinct list of datacenters across service accounts
+	   * which the user has selected
+	  */
+	  getAWSDatacentersAssociatedWithCloudAccounts: function() {
+		  var awsDatacenters = [];
+		  var ga = new GlideAggregate('sn_cmp_ca_assc_datacenter');
+		  ga.groupBy('ldc_id');
+		  ga.addQuery('ldc_id.sys_class_name', 'cmdb_ci_aws_datacenter');
+
+		  ga.query();
+
+		  while (ga.next())
+			  awsDatacenters.push(ga.getDisplayValue('ldc_id'));
+		  
+		  return awsDatacenters;
+	  },
+
+      createOrder : function (order) {
+          var orderScript = new sn_cmp_api.OrderServiceScript();
+          orderScript.submitOrder(order);
+      },
+    type: 'PriceDiscoveryUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-03 09:47:19</sys_created_on>
+        <sys_id>bbd628ae0bd00300a682aac125673acc</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>PriceDiscoveryUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_bbd628ae0bd00300a682aac125673acc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-16 21:11:53</sys_updated_on>
+    </sys_script_include>
+</record_update>

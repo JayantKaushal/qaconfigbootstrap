@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.DynamicFormAjax</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>DynamicFormAjax</name>
+        <script><![CDATA[var DynamicFormAjax = Class.create();
+DynamicFormAjax.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	loadForm : function () {
+		gs.info("Calling form load execution....");
+		var runtimeMap = this.getParameter("runtimeMap");
+		var catalogItemId = this.getParameter("catalogItemId");
+		var bluePrintId = this._getBluePrintId(catalogItemId);
+		var dynamicFormService = new sn_cmp_api.BlueprintServiceScript();
+		var result =  dynamicFormService.executeFormLoadRules(catalogItemId, bluePrintId,"", runtimeMap,"");
+		return result;
+	},
+	
+	_getBluePrintId : function (catItemId) {
+		var gr = new GlideRecord("sn_cmp_bp_cat_item");
+		if (gr.get(catItemId)) {
+			return gr.blue_print + '';
+		}
+	},
+	
+	loadFieldChange : function(){
+	  gs.info("Calling field change execution....");
+	  var catalogItemId = this.getParameter("catalogItemId");
+	  var runtimeMap =  this.getParameter("runtimeMap");
+	  var bluePrintId = this._getBluePrintId(catalogItemId);
+		var attributeName = this.getParameter("name");
+		var attributeValue = this.getParameter("value");
+	  var dynamicFormService = new sn_cmp_api.BlueprintServiceScript();
+	  var result =  dynamicFormService.executeFieldChangeRules(catalogItemId, bluePrintId, "",runtimeMap,"",attributeName,attributeValue);
+	  return result;	
+	  
+	},
+	
+	prefillForm : function(){
+		gs.info("Calling prefill execution ....");
+		var catalogItemId = this.getParameter("catalogItemId");
+		var resourceId = this.getParameter("resourceId");
+		var bluePrintId = this._getBluePrintId(catalogItemId);
+		var dynamicFormService = new sn_cmp_api.BlueprintServiceScript();
+		var result =  dynamicFormService.prefillCatalogForm(catalogItemId, bluePrintId, "" ,"", resourceId);
+		return result;	
+	},
+	
+    type: 'DynamicFormAjax'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-21 00:48:22</sys_created_on>
+        <sys_id>5a4e7fb5933322007472f23a767ffbcb</sys_id>
+        <sys_mod_count>47</sys_mod_count>
+        <sys_name>DynamicFormAjax</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5a4e7fb5933322007472f23a767ffbcb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-16 22:23:51</sys_updated_on>
+    </sys_script_include>
+</record_update>

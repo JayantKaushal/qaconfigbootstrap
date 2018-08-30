@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Provider Credential Mapping" max_length="40" name="sn_cmp_prov_cred_mapping" type="collection">
+        <element default="true" hint="Whether this provider is available to be used in Cloud Account as a datacenter." label="Available" max_length="40" name="available" type="boolean"/>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPCredentialChoices,show_table_names_on_label=true" hint="The credential that needs to be associated with this provider." label="Credential" mandatory="true" max_length="80" name="credential" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" hint="Display label for the provider." label="Display Label" max_length="255" name="display_label" type="string"/>
+        <element hint="Whether URL is needed to be provided by the cloud admin in Cloud Account screen." label="URL Mandatory" max_length="40" name="make_url_mandatory" type="boolean"/>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPProviderChoices,show_table_names_on_label=true" hint="Provider" label="Provider" mandatory="true" max_length="80" name="provider" type="table_name"/>
+        <element label="Resource block" mandatory="true" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="provider"/>
+            <element name="credential"/>
+        </index>
+        <index name="index2">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

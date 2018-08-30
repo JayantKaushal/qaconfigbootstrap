@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="VM Node Mgmt Credentials" max_length="40" name="sn_cmp_vm_node_mgmt_creds" type="collection">
+        <element label="Credential" max_length="32" name="cred_id" reference="sn_cmp_node_credentials" type="reference"/>
+        <element label="Node" max_length="32" name="node" reference="cmdb_ci_vm_instance" type="reference"/>
+        <index name="index">
+            <element name="node"/>
+        </index>
+        <index name="index2">
+            <element name="cred_id"/>
+        </index>
+    </element>
+</database>

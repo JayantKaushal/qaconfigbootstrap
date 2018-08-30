@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Response Processor Container" max_length="40" name="sn_cmp_rb_rbscript_container" type="collection">
+        <element default="0" label="Order" max_length="40" name="order" type="integer"/>
+        <element label="Response Processor Mapper" max_length="32" name="prov_resp_mapping" reference="sn_cmp_rb_prov_resp_map" type="reference"/>
+        <element label="Response Processor" max_length="32" name="response_processor" reference="sn_cmp_rb_resourcescript" type="reference"/>
+        <index name="index">
+            <element name="prov_resp_mapping"/>
+        </index>
+        <index name="index2">
+            <element name="response_processor"/>
+        </index>
+    </element>
+</database>

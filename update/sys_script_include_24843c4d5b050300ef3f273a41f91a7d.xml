@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.PolicyUtils</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>PolicyUtils</name>
+        <script><![CDATA[var PolicyUtils = Class.create();
+PolicyUtils.prototype = {
+
+	initialize: function() {
+	},
+
+	fetchFields: function(tableName) {
+		var fields;
+		var recordArray = [];
+		var fieldName = '';
+
+		var gr = new GlideRecord(tableName);
+		gr.query();
+		while (gr.next()) {
+			var sysID = gr.getUniqueValue();
+			var directURL = (gs.getProperty('glide.servlet.uri') + "nav_to.do?uri=" + tableName + ".do?sys_id=" + sysID);
+			fields = new global.GlideRecordUtil().getFields(gr);
+			for (var i = 0; i < fields.length; i++) {
+				fieldName = fields[i];
+				recordArray.push({
+					field_name: fieldName,
+					value: gr.getDisplayValue(fieldName),
+					url: directURL,
+					label: fieldName
+				});
+			}
+			return new JSON().encode(recordArray);
+		}
+		return null;
+	},
+
+	checkActionNameExistsForPolicy: function(actionName, policyId, actionId) {
+		// Find all the rules for this policy
+		var polRuleGR = new GlideRecord('sn_cmp_pol_rule');
+		polRuleGR.addQuery('policy', policyId);
+		polRuleGR.query();
+		var policyRuleIDs = [];
+		while (polRuleGR.next()) {
+			policyRuleIDs.push(polRuleGR.getValue('sys_id'));
+		}
+
+		// This should only happen when the action is loaded before the corresponding rule is loaded
+		if (policyRuleIDs.length == 0)
+			return false;
+
+		var actionGR = new GlideRecord('sn_cmp_pol_action');
+		actionGR.addQuery('policy_rule', 'IN', policyRuleIDs);
+		actionGR.addQuery('name', actionName);
+		actionGR.query();
+		gs.info('looking for action name : ' + actionName + ', actionId : ' + actionId + ', next is :' + actionGR.hasNext());
+		// Handle new action here
+		if (!actionId && actionGR.hasNext())
+			return true;
+
+		// Exclude the current actionId (for the update use case)
+		while (actionGR.next() && actionId != actionGR.getUniqueValue()) {
+			return true;
+		}
+
+		return false;
+	},
+	
+  appendRuleIfSameNameAsPolicy : function (policyId, name) {
+	var gr = new GlideRecord('sn_cmp_pol_policy');
+	gr.get(policyId);
+	if(!gr.isValidRecord())
+		return name;
+	
+	if (this.areNamesEqual(name, gr.getValue('name')))
+		return name+'rule';
+	return name;
+  },
+
+  hasSameRuleName : function(policyId, ruleGr) {
+	  var gr = new GlideRecord('sn_cmp_pol_rule');
+	  gr.addQuery('policy', policyId);
+	  if (!ruleGr.isNewRecord())
+		  gr.addQuery('sys_id', '!=', ruleGr.getUniqueValue());
+	  gr.query();
+	  while (gr.next()) {
+		  if (this.areNamesEqual(ruleGr.getValue('name'), gr.getValue('name')))
+			  return true;
+	  }
+	  return false;
+  },
+  
+  areNamesEqual : function (ruleName1, ruleName2) {
+	  ruleName1 = ruleName1.replace(/ /g, "");
+	  ruleName2 = ruleName2.replace(/ /g, "");
+	  return ruleName1 == ruleName2;
+  },
+	
+  type: 'PolicyUtils'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 01:41:36</sys_created_on>
+        <sys_id>24843c4d5b050300ef3f273a41f91a7d</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>PolicyUtils</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_24843c4d5b050300ef3f273a41f91a7d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-18 18:29:00</sys_updated_on>
+    </sys_script_include>
+</record_update>

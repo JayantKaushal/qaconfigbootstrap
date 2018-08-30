@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Azure Deployment Operation Resource" max_length="40" name="sn_cmp_arm_operation_resource" type="collection">
+        <element label="Deployment operation" max_length="32" name="deployment_operation" reference="sn_cmp_arm_deployment_operation" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="ID" max_length="512" name="id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="128" name="name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource type" max_length="128" name="resource_type" type="string"/>
+        <index name="index">
+            <element name="deployment_operation"/>
+        </index>
+    </element>
+</database>

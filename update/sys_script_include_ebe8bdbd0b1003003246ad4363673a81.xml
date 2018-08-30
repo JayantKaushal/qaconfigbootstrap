@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPVMUtils</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPVMUtils</name>
+        <script><![CDATA[var CMPVMUtils = Class.create();
+CMPVMUtils.prototype = {
+	initialize: function() {
+
+	},
+
+	getIPAddresses: function(vmId) {
+		var ipaddr=this._getIPAddressObject(vmId);
+		var ipAddress = {};
+		if(gs.nil(ipaddr))
+			return "";
+		var privateIp= ipaddr.getValue('private_ip');
+		var publicIp=  ipaddr.getValue('public_ip');
+		var ip_address=  ipaddr.getValue('ip_address');
+		ipAddress['private_ip']=privateIp;
+		ipAddress['public_ip']=publicIp;
+		// vmware points to a different table and has its custom attribute for storing ip_adderess,need to be relooked.
+		if(gs.nil(publicIp) && gs.nil(privateIp))
+			ipAddress['public_ip']=ip_address;
+
+		return global.JSON.stringify(ipAddress);
+	},
+	getReachableIp: function(vmId){
+		var ipaddr=this._getIPAddressObject(vmId);
+		if(gs.nil(ipaddr))
+			return "";
+		var privateIp= ipaddr.getValue('private_ip');
+		var publicIp=  ipaddr.getValue('public_ip');
+		var ip_address=  ipaddr.getValue('ip_address');
+		var ipAddress = "";
+
+		if(!gs.nil(publicIp))
+			return publicIp;
+
+		if(!gs.nil(privateIp))
+			return privateIp;
+
+		if(!gs.nil(ip_address))
+			return ip_address;
+
+		// send back directly the address,this will work for use cases where we were always querying the VM and finding the ip,now we will query the nic and find if public/private ip has been set, and return that.
+		return ipAddress;
+	},
+	_getIPAddressObject: function(vmId) {
+		var useTypeId, implementTypeId,endpoint,ipaddr;
+		var gRelType = new GlideRecord("cmdb_rel_type");
+		gRelType.query("name","Use End Point To::Use End Point From");
+		if(gRelType.next())
+			useTypeId  = gRelType.getUniqueValue();
+
+		var grRelTypeImpl = new GlideRecord("cmdb_rel_type");
+		grRelTypeImpl.query("name","Implement End Point To::Implement End Point From");
+		if(grRelTypeImpl.next())
+			implementTypeId  = grRelTypeImpl.getUniqueValue();
+
+		var gsCI = new GlideRecord("cmdb_rel_ci");
+		gsCI.addQuery("parent",vmId);
+		gsCI.addQuery("type",useTypeId);
+		gsCI.query();
+		var endpoints = [];
+
+		if(gsCI.hasNext()){
+			while(gsCI.next()){
+			var useEndpoint = gsCI.getValue("child");
+			endpoints.push(useEndpoint);
+		}
+		}
+		for(var myendpoint in endpoints){
+		var gsCINet = new GlideRecord("cmdb_rel_ci");
+		gsCINet.addQuery("parent",endpoints[myendpoint]);
+		gsCINet.addQuery("type",implementTypeId);
+		gsCINet.query();
+		if(gsCINet.hasNext()){
+				while(gsCINet.next()){
+					var endpointTable = gsCINet.child.getRefRecord().getTableName();
+					var isNicTable= (endpointTable == "cmdb_ci_vmware_nic" )|| (endpointTable == "cmdb_ci_nic");
+					if(isNicTable){
+					ipaddr=new GlideRecord(gsCINet.child.getRefRecord().getTableName());
+					ipaddr.get(gsCINet.getValue("child"));
+					return ipaddr;
+					}
+				}
+			}
+		}
+
+			return "";
+		},
+
+		getOSType: function (vmId){
+			var osType;
+			var rel_ci = new GlideRecord('cmdb_rel_ci');
+			rel_ci.addQuery('parent', vmId);
+			rel_ci.addQuery('child.sys_class_name', 'cmdb_ci_os_template').addOrCondition('child.sys_class_name', 'cmdb_ci_vmware_template');
+			rel_ci.addJoinQuery('cmdb_rel_type', 'type', 'sys_id').addCondition('name', 'Provisioned From::Provisioned');
+			rel_ci.query();
+			if(rel_ci.next())
+				osType = rel_ci.child.guest_os;
+			gs.info("Guest os info: "+osType);
+			return osType;
+		},
+
+
+		type: 'CMPVMUtils'
+	};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-01 07:49:38</sys_created_on>
+        <sys_id>ebe8bdbd0b1003003246ad4363673a81</sys_id>
+        <sys_mod_count>56</sys_mod_count>
+        <sys_name>CMPVMUtils</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_ebe8bdbd0b1003003246ad4363673a81</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-19 17:07:35</sys_updated_on>
+    </sys_script_include>
+</record_update>

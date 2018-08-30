@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPoliciesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllPoliciesAction</name>
+        <script><![CDATA[var CMPGetAllPoliciesAction = Class.create();
+CMPGetAllPoliciesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			//Get policy list
+			//Based on selected layer
+			//and pagination
+			var policyGroupName = params.selectedGroup;
+			var policyGroupId = params.selectedGroupId;
+			var searchText = params.search_name;
+			var currentPage= gs.nil(params.current_page) ? 1 : params.current_page;
+			var policyStatusId = params.selected_status_id;
+			var limit = params.limit;
+			var policyTriggerId = params.selected_category_id;
+            
+			var policyList = this.getAllPoliciesWithCount(policyGroupId, currentPage,limit, policyStatusId, policyTriggerId, searchText);
+			var policies = policyList.policies;
+			var policyLength = policyList.totalRecords;
+			//Setting permission for each policy
+			for (var i=0; i< policies.length; i++) {
+				var checkPermissionObj = new CMPCheckPermission();
+	            var sys_id = policies[i].id;
+				if (gs.getUserName() == 'admin' || gs.getUser().hasRole('sn_cmp.cmp_root_admin') || gs.getUser().hasRole('sn_cmp.cloud_governor')) {
+					policies[i]['editPermission'] = true;
+					policies[i]['deletePermission'] = true;
+				} else {
+					policies[i]['editPermission'] = false;
+					policies[i]['deletePermission'] = false;
+				}
+			}
+
+			var responseObj = {
+				policiesList : policies,
+				totalRecords : policyLength
+			};
+			return responseObj;
+
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policies."),
+				"CMPGetAllPoliciesAction.doAction(): Failed to get all policies",
+				error
+			);
+		}
+    },
+
+    getAllPoliciesWithCount: function(policyGroupId, currentPage, limit, policyStatusId, policyTriggerId, searchText) {
+		var policyDTOs = [];
+		var getRowCount = false;
+		var limitRecordIndex = 1;
+		var policyList = {};
+		var currentRecordIndex = parseInt(currentPage, 10);
+		if(!gs.nil(limit))
+			limitRecordIndex = parseInt(limit, 10);
+		var policyGR = new GlideRecordSecure("sn_cmp_pol_policy");
+		if (!gs.nil(policyGroupId))
+			policyGR.addQuery("group_id", policyGroupId);
+		if(policyStatusId && !gs.nil(policyStatusId))
+			policyGR.addQuery("status", policyStatusId);
+		if(!gs.nil(policyTriggerId))
+			policyGR.addQuery("target_entity_id", policyTriggerId);
+		if(!gs.nil(limit) && gs.nil(searchText))
+			policyGR.chooseWindow(--currentRecordIndex, currentRecordIndex + limitRecordIndex, getRowCount);
+		
+		policyGR.orderBy("name");
+		policyGR.query();
+		var policyDTO;
+		if(!gs.nil(searchText)){
+			while (policyGR.next()) {
+				if(this._filterData(searchText, policyGR)){
+					policyDTO = this.convertPolicyGRToDTO(policyGR);
+					policyDTOs.push(policyDTO);
+				}
+			}
+			policyList.totalRecords = policyDTOs.length;
+			policyList.policies = this.getPoliciesForCurrentPage(currentRecordIndex, parseInt(limit, 10), policyDTOs);
+		} else {
+			while (policyGR.next()) {
+				policyDTO = this.convertPolicyGRToDTO(policyGR);
+				policyDTOs.push(policyDTO);
+			}
+			policyList.totalRecords = policyGR.getRowCount();
+			policyList.policies = policyDTOs;
+		}
+		return policyList;
+    },
+
+    convertPolicyGRToDTO : function(policyGR) {
+		var policyDTO = {};
+		policyDTO['name'] = policyGR.getValue("name");
+		policyDTO['id'] = policyGR.getValue("sys_id");
+		policyDTO['description'] = policyGR.getValue("description");
+		policyDTO['status'] = policyGR.getDisplayValue("status");
+		policyDTO['group'] = policyGR.getDisplayValue("group_id");
+		policyDTO['trigger'] = policyGR.getDisplayValue("target_entity_id");
+		policyDTO['start_date'] =  this._getDate(policyGR.getValue("start_date"));
+		policyDTO['end_date'] = this._getDate(policyGR.getValue("end_date"));
+		policyDTO['created'] = policyGR.getValue("sys_created_on");
+		policyDTO['createdBy'] = policyGR.getValue("sys_created_by");
+		policyDTO['targetEntityTable'] = policyGR.getValue("target_entity_table");
+		policyDTO['targetInstanceId'] = policyGR.getValue("target_entity_instance_id");
+		policyDTO['targetName'] = this._getObjectName(policyDTO['targetEntityTable'], policyDTO['targetInstanceId']);
+		policyDTO['targetTableName'] = this._getTableLabel(policyDTO['targetEntityTable']);
+		policyDTO['operationName'] = policyGR.getValue("operation_name");
+		policyDTO['operationId'] = policyGR.getValue("operation_id");
+		return policyDTO;
+	},
+	
+	getPoliciesForCurrentPage : function(currentRecordIndex, limit, policyDTOs) {
+		var policies = [];
+		var finalIndex = (--currentRecordIndex + limit) - 1;
+		var startIndex = finalIndex - (limit -1);
+		var counter;
+		for (counter = 0; counter < policyDTOs.length; counter++) {
+			if(startIndex > counter)
+				continue;
+			policies.push(policyDTOs[counter]);
+			if(counter ==  (limit - 1))
+				break;
+		}
+		return policies;		
+	},
+	//filter data if search text matched any policy name or object name or trigger name
+	_filterData: function(searchText, policyGr){
+		if(!gs.nil(searchText)){
+			if(this._containsIgnoreCase(searchText, policyGr.getValue("name")))
+				return true;
+			
+			if(this._containsIgnoreCase(searchText, policyGr.getDisplayValue("target_entity_id")))
+				return true;
+			
+			var targetTable = policyGr.getValue("target_entity_table");
+			var targetId = policyGr.getValue("target_entity_instance_id");
+			if(!gs.nil(targetTable) && !gs.nil(targetId)) {
+				var targetName = this._getObjectName(targetTable, targetId);
+				targetName = targetName.toLowerCase();
+				if(this._containsIgnoreCase(searchText, targetName)) 
+					return true;
+			}
+		}
+		
+		return false;
+	},
+	
+	_containsIgnoreCase: function(text, inText) {
+		text = text.toLowerCase();
+		inText = inText.toLowerCase();
+		return inText.indexOf(text) > -1;
+	},
+	
+	_getDate: function(date){
+		if(!gs.nil(date)){
+			var gdt = new GlideDateTime(date);
+			return gdt.getLocalDate().getDisplayValue();
+		}
+		return null;
+	},
+	
+	_getTableLabel: function(tableName){
+		if(!gs.nil(tableName)){
+			var gr = new GlideRecord("sys_db_object");
+			gr.get("name", tableName);
+			return gr.getValue("label");
+		}
+		return null;
+	},
+	
+	_getObjectName: function(tableName, sysId){
+		if(gs.nil(tableName) || gs.nil(sysId))
+			return '';
+		var gr = new GlideRecord(tableName);
+		if(gr.get(sysId))
+			return gr.getValue("name");
+		return null;
+	},
+    type: 'CMPGetAllPoliciesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-18 22:42:30</sys_created_on>
+        <sys_id>61d8ac238760030053c9f4bbe3e3ec9c</sys_id>
+        <sys_mod_count>54</sys_mod_count>
+        <sys_name>CMPGetAllPoliciesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_61d8ac238760030053c9f4bbe3e3ec9c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 23:34:12</sys_updated_on>
+    </sys_script_include>
+</record_update>

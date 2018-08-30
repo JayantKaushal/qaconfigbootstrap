@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="content_block_programmatic">
+    <content_block_programmatic action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <category>general</category>
+        <condition/>
+        <conditional>false</conditional>
+        <frame/>
+        <logged_on>false</logged_on>
+        <name>Tags</name>
+        <programmatic_content><![CDATA[<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+
+	<script>
+		var tagId = '';
+		var tagNameHandler = new HomepagePublisherHandler("65605e0293f5b2004a9032bfa67ffb03",
+				"select",
+				JSON.stringify({
+					"isPublisher":"false",
+					"display_field":"label",
+					"filterType":"2",
+					"config":[],
+					"unique_field":"sys_id"}),
+				"true");
+		var tagValueHandler = new HomepagePublisherHandler("7240268693f5b2004a9032bfa67ffb2b",
+				"select",
+				JSON.stringify({
+					"isPublisher":"true",
+					"display_field":"display_value",
+					"filterType":"2",
+					"config": [],
+					"unique_field":"sys_id"}),
+				"true");
+		
+		function tagSelected(select) {
+		
+			var tagValueInput = document.getElementById('reference_7240268693f5b2004a9032bfa67ffb2b');
+			if (select.value == "All") {
+				tagValueInput.setAttribute("link", "/api/now/v2/table/sn_cmp_tag_value?sysparm_query=tagISEMPTY^EQ");
+				tagValueHandler.filter._config[0] = {};
+			} else {
+				tagValueInput.setAttribute("link",
+						"/api/now/v2/table/sn_cmp_tag_value?sysparm_query=tag="+select.value+"^EQ");
+				var gr = new GlideRecord('sn_cmp_tag_name');
+				if (gr.get(select.value)) {
+					tagValueHandler.filter._config[0] = {"st":"sn_cmp_cost","sf":"tag_values."+gr.name};
+					tagValueHandler.filter._config[1] = {"st":"sn_cmp_cost_monthly","sf":"tag_values."+gr.name};
+					tagValueHandler.filter._config[2] = {"st":"sn_cmp_cost_daily","sf":"tag_values."+gr.name};
+				}
+			}
+		
+			var select = $j('#select_' + tagValueHandler.filter._ref);
+			if (select.select2) {
+				select = $j('#reference_' + tagValueHandler.filter._ref);
+		
+				tagValueHandler.filter._referenceFilter = new tagValueHandler.filter._referenceFilter.constructor(tagValueHandler.filter, select);
+			}
+
+		};
+	</script>
+	
+	<link type="text/css" rel="stylesheet" href="/styles/interactive_filters.cssx?v=Mon_Mar_27_23_59_49_PDT_2017&amp;c=2015-08-22_14:42:14_873936719335b2004a9032bfa67ffb46&amp;theme="/>
+	<div class="interactive-filter">						
+
+		<div class="select2-container form-control interactive-filter__form-control select2 widget-content interactive-filter__widget-content" id="s2id_reference_65605e0293f5b2004a9032bfa67ffb03" style="padding-left: 0px; padding-right:0px; width: 100%;">
+			<input link="/api/now/v2/table/sn_cmp_tag_name?sysparm_query=tag_typeINServiceNow,Custom^active=true^visible=true^label!=User^EQ" default_value="All" id="reference_65605e0293f5b2004a9032bfa67ffb03" type="hidden" aria-label="Tag Name" disp_value="Select a Tag Name" tabindex="-1" title="" class="select2-offscreen" onchange="tagSelected(this);"></input>
+		</div>		
+		
+		<div class="select2-container form-control interactive-filter__form-control select2 widget-content interactive-filter__widget-content" id="s3id_reference_7240268693f5b2004a9032bfa67ffb2b" style="padding-left: 0px; padding-right:0px; width: 100%;">
+			<input link="/api/now/v2/table/sn_cmp_tag_value?sysparm_query=^EQ" default_value="All" id="reference_7240268693f5b2004a9032bfa67ffb2b" type="hidden" aria-label="Tag Value" disp_value="All" tabindex="-1" title="" class="select2-offscreen"></input>
+		</div>
+	</div>	
+
+</j:jelly>]]></programmatic_content>
+        <sys_class_name>content_block_programmatic</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-30 17:02:34</sys_created_on>
+        <sys_id>b47211469375b2004a9032bfa67ffbd6</sys_id>
+        <sys_mod_count>129</sys_mod_count>
+        <sys_name>Tags</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>content_block_programmatic_b47211469375b2004a9032bfa67ffbd6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-27 07:27:24</sys_updated_on>
+        <two_phase>false</two_phase>
+    </content_block_programmatic>
+</record_update>

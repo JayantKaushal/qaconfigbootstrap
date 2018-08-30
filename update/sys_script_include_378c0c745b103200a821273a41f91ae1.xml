@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.PolicyOperationsUtil</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>PolicyOperationsUtil</name>
+        <script><![CDATA[var PolicyOperationsUtil = Class.create();
+PolicyOperationsUtil.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	BLUEPRINT_PROVISION : '2',
+	RESOURCE : '3',
+	BLUEPRINT_APPROVAL : '4',
+	STACK_APPROVAL : '5',
+	CATALOG_ITEM : '6',
+	CLOUD_EVENT : '7',
+	CATALOG_REQUEST_START : '8',
+	CATALOG_REQUEST_END : '9',
+	STACK_RESOURCE_APPROVAL : '10',
+	TASK_REMEDIATION : '13',
+	EVENT_MANAGEMENT : '14',
+	fetchPolicyNames : function( entityType, entityName, operationName){
+		var policyNames = [];
+		if( entityType != null && entityType.toLowerCase() === 'blueprint'){
+			//get policies associated with blueprint
+			
+			var blueprintId = '';
+			var blueprintGR = new GlideRecord('sn_cmp_bp_blueprint');
+			if(blueprintGR.get('name', entityName)){
+				blueprintId = blueprintGR.getUniqueValue();
+			}
+			var output = [];
+			//retrieve generic polcies
+			var targetTypes = this.BLUEPRINT_PROVISION + ',' + this.BLUEPRINT_APPROVAL + ',' + this.STACK_APPROVAL + ',' + this.CATALOG_REQUEST_START + ',' + this.CATALOG_REQUEST_END + ',' + this.CATALOG_ITEM;
+			policyNames = this.getPolicy( targetTypes, '');
+			output = this.getPolicy( targetTypes, blueprintId);
+			if( output != null && output.length > 0){
+				for( var i=0;i<output.length;i++){
+					policyNames.push(output[i]);
+				}
+			}
+			
+			// retireve policies associated with catalog item
+			var catalogGR = new GlideRecord('sn_cmp_bp_cat_item');
+			catalogGR.addQuery( 'blue_print', blueprintId);
+			catalogGR.query();
+			
+			while( catalogGR.next()){
+				output = this.getPolicy( this.CATALOG_ITEM, catalogGR.getUniqueValue());
+				if( output != null && output.length > 0){
+					for( var i=0;i<output.length;i++){
+						policyNames.push(output[i]);
+					}
+				}
+			}
+			
+			//get policies associated with blueprint
+			
+		}else if( entityType != null && entityType.toLowerCase() === 'resource block'){
+			var resourceBlockId = '';
+			var resourceBlockGR = new GlideRecord('sn_cmp_rb_resourceblock');
+			if(resourceBlockGR.get('name', entityName)){
+				resourceBlockId = resourceBlockGR.getUniqueValue();
+			}
+			if( gs.nil(resourceBlockId))
+				return policyNames;
+			//retrieve generic polcies
+			var targetTypes = this.RESOURCE + ',' + this.STACK_RESOURCE_APPROVAL;
+			policyNames = this.getPolicy( targetTypes, resourceBlockId);
+			if( policyNames != null && policyNames.length > 0){
+				return policyNames;
+			}
+		}
+		return policyNames;
+	},
+	getPolicy : function( targetEntityId, targetEntityInstanceId){
+		var policyNames = [];
+		var policyGR = new GlideRecord("sn_cmp_pol_policy");
+		//retrieve generic polcies
+		policyGR.initialize();
+		policyGR.addQuery('target_entity_id', 'IN', targetEntityId);
+		policyGR.addQuery( 'target_entity_instance_id', targetEntityInstanceId);
+		policyGR.query();
+		while(policyGR.next()){
+			policyNames.push( policyGR.getValue('name'));
+		}
+		return policyNames;
+		
+	},
+	checkPolicyContainsRules : function(policy){
+		var gr = new GlideRecord("sn_cmp_pol_rule");
+		gr.addQuery("policy", this.getParameter("policy"));
+		gr.query();
+		return gr.next();
+	},
+	fetchPolicyOperations: function(triggerType, targetEntityId)  {
+		if( !targetEntityId)
+			targetEntityId = this.getParameter("targetEntityId");
+		if( !triggerType)
+			triggerType = this.getParameter("triggerType");
+		var operations = [];
+		if( targetEntityId === undefined || triggerType === undefined)
+			return JSON.stringify(operations);
+		if( triggerType == "2"){ //BLUEPRINT_PROVISION
+			return this.fetchBlueprintOperations(triggerType,targetEntityId, true);
+		} else if( triggerType == "3") { //RESOURCE_OPERATION
+			return this.fetchResourceOperations(targetEntityId);
+		} else if( triggerType == "4") {//BLUEPRINT_APPROVAL
+			return this.fetchBlueprintOperations(triggerType,targetEntityId, false);
+		} else if( triggerType == "5") {//STACK_APPROVAL
+			return this.fetchBlueprintOperations(triggerType,targetEntityId, false);
+		} else if( triggerType == "6") {//CATALOG_ITEM_LAUNCH
+			return this.fetchResourceNamingOperations( targetEntityId);
+		} else if( triggerType == "7") {//Cloud Event
+			return this.fetchCloudEventOperations( targetEntityId);
+		}else if( triggerType == "8") {//CATALOG_ITEM_REQUEST_START
+			return this.fetchBlueprintOperations(triggerType,targetEntityId, false);
+		} else if( triggerType == "9") {//CATALOG_ITEM_REQUEST_END
+			return this.fetchBlueprintOperations(triggerType,targetEntityId, false);
+		} else if( triggerType == "10") {//STACK_RESOURCE_OPERATION_APPROVAL
+			return this.fetchResourceOperations(targetEntityId);
+		}
+		return JSON.stringify(operations);
+	},
+	RESERVEIP : "1",
+	RELEASEIP : "2",
+	REGISTERIP : "3",
+	fetchBlueprintOperations : function( triggerType, targetEntityId, filterStackOperation){
+		var operations = [];
+		var bp = new sn_cmp_api.BlueprintServiceScript();
+		var blueprintOperationsStr = bp.getBlueprintOperations(targetEntityId);
+		var blueprintOperationsObj = JSON.parse(blueprintOperationsStr);
+		for( var i=0; i<blueprintOperationsObj.length;i++ ){
+			if( (triggerType == "2" || triggerType == "4") && blueprintOperationsObj[i].operationName.toLowerCase() != 'provision'){
+				continue;
+			} else if( triggerType == "5" && blueprintOperationsObj[i].operationName != null && blueprintOperationsObj[i].operationName.toLowerCase() == 'provision') {
+				continue;
+			}
+
+			var operation = {};
+			operation.id = blueprintOperationsObj[i].id;
+			operation.name = blueprintOperationsObj[i].operationName;
+			operation.label = blueprintOperationsObj[i].operationName;
+			operations[operations.length] = operation;
+		}
+		return JSON.stringify(operations);
+	},
+	fetchResourceOperations : function(targetEntityInstanceId){
+		var operations = [];
+		if( !gs.nil(targetEntityInstanceId)){
+			var rb = new sn_cmp_api.ResourceBlockServiceScript();
+			var resourceOperationStr = rb.getResourceOperations(targetEntityInstanceId, false);
+			var resourceOperationObj = JSON.parse( resourceOperationStr);
+			for( var i=0; i<resourceOperationObj.length;i++ ){
+				var operation = {};
+				operation.id = resourceOperationObj[i].id;
+				operation.name = resourceOperationObj[i].operation;
+				operation.label = resourceOperationObj[i].resourceInterface +"."+resourceOperationObj[i].operation;
+				operations[operations.length] = operation;
+			}
+		}
+		return JSON.stringify(operations);
+	},
+	fetchResourceNamingOperations : function( targetEntityInstanceId){
+		var operations = this.fetchResourceOperations( targetEntityInstanceId);
+		var operationsObj = JSON.parse( operations);
+		var modifiedOperations = [];
+		for( var i=0; i<operationsObj.length;i++ ){
+			if( operationsObj[i].name.toLowerCase() == 'provision'){
+				modifiedOperations[modifiedOperations.length] = operationsObj[i];
+			}
+		}
+		return JSON.stringify(modifiedOperations);
+	},
+	fetchCloudEventOperations : function( triggerType, targetEntityId, filterStackOperation){
+		var operations = [];
+		var gr = new GlideRecord(tableName);
+		gr.addQuery('sys_id', sysID);
+		gr.query();
+
+		var fields;
+		var recordArray = [];
+		var fieldName = '';
+
+		if (gr.next())
+		{
+			var directURL = (gs.getProperty('glide.servlet.uri') + "nav_to.do?uri=" + tableName + ".do?sys_id=" + sysID);
+
+			fields = new GlideRecordUtil().getFields(gr);
+			for (var i = 0; i < fields.length; i++)
+			{
+				var operation = {};
+				operation.id = fields[i];
+				operation.name = gr.getDisplayValue(fieldName);
+				operation.label = fields[i];
+				operations[operations.length] = operation;
+			}
+		}
+		return (new JSON().encode(operations));
+	},
+	fetchOperationParameters : function( ruleId) {
+		if( !ruleId)
+			ruleId = this.getParameter("ruleId");
+		var operationParameters = [];
+		var policyService = new sn_cmp_api.PolicyServiceScript();
+		var operationParameterStr = policyService.getOperationParametersForRule(ruleId);
+		var operationParameterCompleteObj = JSON.parse(operationParameterStr);
+		for( var i=0; i<operationParameterCompleteObj.length;i++){
+			var operationParameter = {};
+			operationParameter.id = operationParameterCompleteObj[i].id;
+			operationParameter.name = operationParameterCompleteObj[i].name;
+			operationParameters[operationParameters.length] = operationParameter;
+		}
+		return JSON.stringify(operationParameters);
+	},
+	updatePolicyScript : function( policyName) {
+		var policyService = new sn_cmp_api.PolicyServiceScript();
+		var policyStr = policyService.updatePolicyScript( policyName);
+	},
+	fetchPolicyInfoByRuleId : function( ruleId){
+		if( !ruleId)
+			ruleId = this.getParameter("ruleId");
+		var policyService = new sn_cmp_api.PolicyServiceScript();
+		return JSON.stringify(policyService.getPolicyInformationFromRule(ruleId));
+	},
+	fetchActiveRuleAction : function(ruleId){
+		if( !ruleId)
+			ruleId = this.getParameter("ruleId");
+		var policyService = new sn_cmp_api.PolicyServiceScript();
+		return JSON.stringify(policyService.getActiveRuleAction(ruleId));
+	},
+	fetchPolicyActionScriptTemplate : function(){
+		// called from sn_cmp_pol_action_script.name onChange event
+		var script = "";
+		try{
+			var glideRecord = new GlideRecord( "sys_script_include");
+			glideRecord.addQuery( "name", "CMPTemplateClass");
+			glideRecord.query();
+			if(glideRecord.next()){
+				script = glideRecord.getValue("script");
+			}
+		}catch(error){
+			gs.info("&&&&&&&&& fetchScriptTemplate glide record Error &&&&&&&&&&&" + error);
+		}
+		return script;
+	},
+	fetchScriptNameOnChangeEvent : function(scriptId){
+		// called during action script on change event
+		if( !scriptId)
+			scriptId = this.getParameter("scriptId");
+		var script = "";
+		try{
+			var glideRecord = new GlideRecord( "sn_cmp_pol_action_script");
+			if(glideRecord.get(scriptId)){
+				script = glideRecord.getValue("script");
+			}
+		}catch(error){
+			gs.info("&&&&&&&&& fetchScriptTemplate glide record Error &&&&&&&&&&&" + error);
+		}
+		return script;
+	},
+	isUserApprovalAttrRequired : function(targetEntityInstanceId, operationId){
+		var isApprovalRequired = {};
+		if( !targetEntityInstanceId)
+			targetEntityInstanceId = this.getParameter("targetEntityInstanceId");
+		if( !operationId)
+			operationId = this.getParameter("operationId");
+		var bp = new sn_cmp_api.BlueprintServiceScript();
+		var blueprintOperationsStr = bp.getBlueprintOperations(targetEntityInstanceId);
+		var blueprintOperationsObj = JSON.parse(blueprintOperationsStr);
+		for( var i=0; i<blueprintOperationsObj.length;i++ ){
+			if( operationId == blueprintOperationsObj[i].id && blueprintOperationsObj[i].operationName.toLowerCase() == 'provision'){
+				isApprovalRequired.required = true;
+				break;
+			}else{
+				isApprovalRequired.required = false;
+			}
+		}
+		return JSON.stringify(isApprovalRequired);
+	},
+	fetchNextOrder : function( type, parentId){
+		if( !type){
+			type = this.getParameter("type");
+		}
+		if( !parentId){
+			parentId = this.getParameter("parentId");
+		}
+		var policyServiceScript = new sn_cmp_api.PolicyServiceScript();
+		var nextValue = policyServiceScript.getNextOrderNumber( type,parentId);
+		return nextValue;
+	},
+	fetchIPAMMethod : function( interfaceMethodId){
+		var methodName = "";
+		if( interfaceMethodId == "1" || interfaceMethodId == "3"){
+			methodName = "CreateHostRecord";
+		}else if( interfaceMethodId == "2"){
+			methodName = "DeleteHostRecord";
+		}
+		if( gs.nil(methodName)){
+			return "";
+		}
+		var interfaceId = this.fetchInterfaceId("IPAM Interface");
+		return this.fetchMethodName(interfaceId, methodName);
+	},
+	fetchInterfaceId : function( interfaceName){
+		var interfaceGlideRecord = new GlideRecord("sn_capi_interface");
+		if( interfaceGlideRecord.isValid()){
+			interfaceGlideRecord.initialize();
+			if(interfaceGlideRecord.get("interface_name", interfaceName)){
+				return interfaceGlideRecord.getUniqueValue();
+			}
+		}
+		return "";
+	},
+	fetchMethodName : function( interfaceId, methodName){
+		var methodGlideRecord = new GlideRecord("sn_capi_interface_operation");
+		if(methodGlideRecord.isValid()){
+			methodGlideRecord.initialize();
+			methodGlideRecord.addQuery("operation_name", methodName);
+			methodGlideRecord.addQuery("cloud_api_interface", interfaceId);
+			methodGlideRecord.query();
+			if( methodGlideRecord.next()){
+				return methodGlideRecord.getUniqueValue();
+			}
+		}
+		return "";
+
+	},
+	fetchIPAMActionAttribute : function( property, ipamMethod){
+		var value = "";
+		var mode = "Post";
+		if( ipamMethod == this.RESERVEIP){
+			mode = "Pre";
+		}
+		if( !gs.nil(ipamMethod) ){
+			switch( property){
+				case "ProviderAttributes":
+					value = '{"ProviderAttributes": [{ "Key": "NetworkView", "Value": "default" },{ "Key": "DnsView", "Value": "default" }],"IPAssignMode": { "Name": "' + mode + '" }}';
+					break;
+				case "NodeName":
+					if( ipamMethod == this.RESERVEIP || ipamMethod == this.REGISTERIP)
+						value = '${parameter.formData.NodeName}';
+					else
+						value = '$(ci.cmdb_ci_vm_instance[${parameter.formData.ServerID}].name)';
+					break;
+				case "IPAddress":
+					if( ipamMethod == this.REGISTERIP)
+						value = '${parameter.formData.IPAddress}';
+					break;
+				case "FailIfFound":
+					value = 'true';
+					break;
+				case "CidrBlock":
+					value = '$(ci.cmdb_ci_cloud_subnet[${parameter.formData.SubnetId}].cidr)';
+					break;
+				default:
+			}
+		}
+		return value;
+
+	},
+	parseEncodedCondition : function(conditions){
+		var util = new global.CmpSCUtil();
+		var encodedConditions = util.getConditionsFromEncodedQuery(conditions);
+		var conditionExpr = "";
+		var conditionTemp = "";
+		var policyExecutionUtil = new sn_cmp.PolicyExecutionUtil();
+		var queue = [];
+		var newQueryQueue = [];
+		for( var i=0; i<encodedConditions.length; i++){
+			var conditionStr = encodedConditions[i];
+			var termStr = conditionStr.term;
+			if(gs.nil(conditionStr.term))
+				continue;
+			var termArr = String(termStr).valueOf().split('.');
+			var relationalOperator = policyExecutionUtil.getOperator(String(conditionStr.relational_operator).valueOf());
+			switch( termArr[0]){
+				case "user":
+					var templateGR = new GlideRecord('sn_cmp_pol_template');
+					if( templateGR.get( 'name', 'user_condition_invocation')){
+						var userCondition = templateGR.getValue('template');
+						userCondition = userCondition.replace( '${type}', termArr[1]);
+						userCondition = userCondition.replace( '${value}', conditionStr.value);
+						userCondition = userCondition.replace( '${validateIn}', "'" + relationalOperator + "'");
+						conditionTemp = "  " + userCondition;
+					}
+					break;
+				case "formdata":
+					conditionTemp = "   checkValue( outputMap.inputMap.formData." + termArr[1] + ", '" +  relationalOperator + "','" + conditionStr.value + "') ";
+					break;
+				case "budgetconsumption":
+					conditionTemp = "   checkBudgetConditionBuilder( '" + termArr[1] + "', '" +  relationalOperator + "','" + conditionStr.value + "') ";
+					break;
+				default:
+			}
+
+			var logicalOperator = String(conditionStr.logical_operator).valueOf();
+
+			if( i == 0){
+				queue.push(conditionTemp);
+			} else if(i != (encodedConditions.length)){
+				switch( logicalOperator){
+					case "1":
+						conditionExpr =  this.pushAnd( queue, conditionTemp, conditionExpr);
+						queue.push(conditionTemp);
+						break;
+					case "2":
+						queue.push(conditionTemp);
+						break;
+					case "3":
+						conditionExpr =  this.pushAnd( queue, conditionTemp, conditionExpr);
+						newQueryQueue.push(conditionExpr);
+						conditionExpr = "";
+						queue = [];
+						queue.push(conditionTemp);
+
+
+						// same as 1
+						// push data to newQueryQueue
+						// conditionExpr to empty
+						break;
+					default :
+				}
+			}
+
+
+		}
+
+		if( queue.length > 0)
+			conditionExpr =  this.pushAnd( queue, conditionTemp, conditionExpr);
+
+		if( newQueryQueue.length > 0){
+			var tempConditionalExpr = "";
+			for( var i=0; i<newQueryQueue.length; i++){
+				if( i > 0){
+					tempConditionalExpr += "  ||  ";
+				}
+				tempConditionalExpr += "(" + newQueryQueue[i] + ")";
+			}
+			conditionExpr  = tempConditionalExpr + "  || " + "(" + conditionExpr + ")";
+		}
+		return conditionExpr;
+	},
+	pushAnd : function( queue, conditionTemp, conditionExpr){
+		var addBraces = false;
+		var tempCondition = "";
+		while( queue.length > 0){
+			var orStr = "";
+			if(!gs.nil(tempCondition)){
+				tempCondition += " || ";
+				addBraces = true;
+			}
+			tempCondition += queue.shift() ;
+		}
+		if(!gs.nil(conditionExpr))
+			conditionExpr += " && ";
+		if(addBraces){
+			if(!gs.nil(tempCondition)){
+				conditionExpr += "(" + tempCondition + ")";
+			}
+		}else{
+			if(!gs.nil(tempCondition))
+				conditionExpr += tempCondition;
+		}
+		return conditionExpr;
+	},
+	type: 'PolicyOperationsUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-11 01:09:30</sys_created_on>
+        <sys_id>378c0c745b103200a821273a41f91ae1</sys_id>
+        <sys_mod_count>82</sys_mod_count>
+        <sys_name>PolicyOperationsUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_378c0c745b103200a821273a41f91ae1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-08 18:14:19</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_tlr_op_attr">
+    <sn_cmp_tlr_op_attr action="INSERT_OR_UPDATE">
+        <applicable_to/>
+        <attribute>WorkloadConfigProvider</attribute>
+        <data_source_type>Pools</data_source_type>
+        <data_source_value>ServiceNow::Pools::ConfigMgmtPool.FetchWorklodCfgProviderByType</data_source_value>
+        <defaultvalue/>
+        <error_text/>
+        <help_text/>
+        <mandatory>false</mandatory>
+        <operation>Provision</operation>
+        <order>1100</order>
+        <parameter_type>1</parameter_type>
+        <regex/>
+        <sys_class_name>sn_cmp_tlr_op_attr</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-26 03:43:31</sys_created_on>
+        <sys_id>6d85fd640b313200f353c9bf15673a35</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>WorkloadConfigProvider</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_tlr_op_attr_6d85fd640b313200f353c9bf15673a35</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-01 22:20:50</sys_updated_on>
+        <template_type/>
+        <value/>
+        <visible>false</visible>
+    </sn_cmp_tlr_op_attr>
+</record_update>

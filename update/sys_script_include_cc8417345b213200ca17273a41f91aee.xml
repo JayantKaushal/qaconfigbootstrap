@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.PolicyExecutionUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>PolicyExecutionUtil</name>
+        <script><![CDATA[var PolicyExecutionUtil = Class.create();
+PolicyExecutionUtil.prototype = {
+	initialize: function() {
+	},
+	evaluateUserCondition : function(userId, type, value, operator, outputMapStr){
+		var outputMap = JSON.parse(outputMapStr);
+		var sysId = '';
+		var sysUsersGR = new GlideRecord('sys_user');
+		sysUsersGR.addQuery('sys_id', userId);
+		sysUsersGR.addQuery(type, value);
+		sysUsersGR.query();
+		if(sysUsersGR.next()){
+			sysId = sysUsersGR.getValue(type);
+		}
+		return this.checkValue(sysId, operator, value, outputMap);		
+	},
+	isGroupMember : function( userId, groupId, relOperator) {
+		var isMember = false;
+		try{
+			if( userId == ''){
+				isMember = false;
+			}else{
+				var grGroup = new GlideRecord('sys_user_grmember');
+				grGroup.addQuery('user', userId);
+				if( relOperator ==null || (relOperator != 'ISEMPTY' && relOperator != 'ISNOTEMPTY')) 
+					grGroup.addQuery('group', groupId);
+				grGroup.query();
+				if( relOperator!= null){
+					switch(relOperator){
+						case 'ISEMPTY':
+						isMember = (grGroup.getRowCount() == 0);	
+						break;						
+						case 'ISNOTEMPTY':
+						isMember = (grGroup.getRowCount() > 0);							
+						break;						
+						case '!=':
+						isMember = (grGroup.getRowCount() == 0);							
+						break;						
+						case '==':
+						isMember = grGroup.next();	
+						break;	
+					}					
+				}else{
+					isMember = grGroup.next();	
+				}
+			}
+		}catch( err){
+			gs.warn('isGroupMember(' + userId +',' + groupId +') failed: ' + err  );
+			isMember = false;
+		}
+		return isMember;
+	},
+	checkFreeFormCondition : function( conditionId, inputMap, outputMap){
+		var operand = '';
+		var cgr = new GlideRecord('sn_cmp_pol_condition');
+		if(cgr.get(conditionId)){
+			var conditionType = cgr.getValue( 'criteria_type');
+			if( conditionType == '5'){
+				var operandAttr = cgr.getValue('operand');
+				if( !gs.nil(inputMap[operandAttr])) //check attributes like general attributes 
+					operand = inputMap[operandAttr];
+				else if( !gs.nil(inputMap.formData[operandAttr])) //check attributes like form data attributes
+					operand = inputMap.formData[operandAttr];
+				else // return false if attribute doesn't belong to either of them.
+					return false;
+			}
+		}
+		return this.checkValue( operand, this.getOperator(cgr.getValue('relational_operator')), value);
+	},
+	checkBudgetConsumptionBuilder : function( inputMap, outputMap, budgetConsumptionType, operator, value){
+		var cmpBudget = new sn_cmp.CMPBudgetBasedNotification();	
+		var userId = '';
+		operator = this.getOperator(operator);
+		var groupId = inputMap.formData.UserGroup;
+		if( gs.nil( value)){
+			return true;
+		}
+		if( gs.nil(groupId)){
+			return false;
+		}
+		userId = inputMap.userData.userId;	
+		var budgetConsumption = cmpBudget.getBudgetConsumptionPercentage(userId,groupId);
+		if( budgetConsumption == null)
+			return false;
+		var operand = 0;
+		if( (budgetConsumptionType == '1' || budgetConsumptionType == 'group')  && !gs.nil(budgetConsumption.GroupPercentage)){
+			operand = budgetConsumption.GroupPercentage;
+		}
+		if( (budgetConsumptionType == '2' || budgetConsumptionType == 'user') && !gs.nil( userId) && !gs.nil(budgetConsumption.UserPercentage)){
+			operand = budgetConsumption.UserPercentage;
+		}
+		var output = true;
+		if( !gs.nil(operator) && !gs.nil(value)){
+			output = this.checkValue( operand, operator, value, outputMap);
+		}
+		return output;		
+	},
+	checkBudgetConsumption : function( conditionId, inputMap, outputMap){
+		var cgr = new GlideRecord('sn_cmp_pol_condition');
+		if(cgr.get(conditionId)){
+			var conditionType = cgr.getValue( 'criteria_type');
+			if( conditionType == '6'){
+				var budgetConsumptionType = cgr.getValue( 'budget_consumption');
+				var operator = cgr.getValue('relational_operator');	
+				var value = cgr.getValue( 'value');
+				return checkBudgetConsumptionBuilder(inputMap, outputMap, budgetConsumptionType, operator, value);
+			}
+		}
+		return false;
+	},
+	getOperator : function( relationalOperator){
+		var operator = '';
+		switch(relationalOperator){
+			case '1':
+			operator = '==';	
+			break;	
+			case '2':	
+			operator = '!=';				
+			break;	
+			case '3':	
+			operator = '>';					
+			break;	
+			case '4':	
+			operator = '<';					
+			break;	
+			case '5':	
+			operator = 'equalsIgnoreCase';					
+			break;	
+			case '6':	
+			operator = 'contains';					
+			break;	
+			case '7':	
+			operator = 'containsIgnoreCase';					
+			break;	
+			case '8':	
+			operator = 'isEmpty';					
+			break;	
+			case '9':		
+			operator = 'isNotEmpty';					
+			break;	
+			case '=':
+			operator = '==';	
+			break;	
+			default:
+			operator = relationalOperator;	
+		}
+		return operator;
+	},
+	
+	checkValue : function( operand, operator, value, outputMap){
+		var isSuccessful = false;
+		var action ={};
+		action.operation= '';
+		value = this.resolveExpressions( action, value, outputMap.inputMap);	
+		if(operand == null){
+			if( typeof value  == 'number'){
+				operand = 0;
+			}else{
+				operand = '';
+			}
+		}
+		switch(operator.toLowerCase()){
+			case 'equalsIgnoreCase':
+			isSuccessful = false;
+			if(operand != null && value != null){
+				isSuccessful = (operand.toLowerCase() == value.toLowerCase());
+			} 
+			break;
+			case 'contains':
+			//handle array and collection later
+			isSuccessful = false;
+			if(operand != null && value != null)
+				isSuccessful = (operand.indexOf(value) != -1);
+			break;
+			case 'containsIgnoreCase':
+			isSuccessful = false;
+			if(operand != null && value != null)
+				isSuccessful = (operand.toLowerCase().indexOf(value.toLowerCase()) != -1);
+			break; 	        
+			case '==':
+			isSuccessful = (operand == value);
+			break;
+			case '!=':
+			isSuccessful = (operand != value);
+			break;
+			case '>':
+			isSuccessful = (operand > value);
+			break;
+			case '<':
+			isSuccessful = (operand < value);
+			break;		
+			case '>=':
+			isSuccessful = (operand >= value);
+			break;
+			case '<=':
+			isSuccessful = (operand <= value);
+			break;		
+			case 'isEmpty':
+			isSuccessful = gs.nil(operand);	
+			break;
+			case 'isNotEmpty':	
+			isSuccessful = !gs.nil(operand);	
+			break;			
+			default:
+		}
+		return isSuccessful;
+	},	
+	isRoleMember : function( userId, roleId, relOperator) {
+		var isMember = false;
+		try{
+			if( userId == ''){
+				isMember = false;
+			}else{
+				var grRole = new GlideRecord('sys_user_has_role');
+				grRole.addQuery('user', userId);
+				if( relOperator ==null || (relOperator != 'ISEMPTY' && relOperator != 'ISNOTEMPTY')) 
+					grRole.addQuery('role', roleId);
+				grRole.addQuery('state', 'active');
+				grRole.query();
+				if( relOperator!= null){
+					switch(relOperator){
+						case 'ISEMPTY':
+						isMember = (grRole.getRowCount() == 0);	
+						break;						
+						case 'ISNOTEMPTY':
+						isMember = (grRole.getRowCount() > 0);							
+						break;						
+						case '!=':
+						isMember = (grRole.getRowCount() == 0);							
+						break;						
+						case '==':
+						isMember = grRole.next();	
+						break;	
+					}					
+				}else{
+					isMember = grRole.next();	
+				}				
+			}
+		}catch( err){
+			gs.warn('isRoleMember(' + userId +',' + roleId +') failed: ' + err);
+			isMember = false;
+		}
+		return isMember;
+	},
+	resolveExpressions : function( action, value, dataMap){
+		if( action.operation == null){
+			action.operation = '';
+		}
+		var inputVal = value;
+		var evaluationLog = '';
+		if(dataMap !=null && (value.indexOf( '$(')  != -1 || value.indexOf( '${')  != -1)){
+			evaluationLog = 'Value ' + value;
+			if( value.indexOf( '${randomNumber}') != -1){
+				var number = '';
+				try{
+					number = this.getRandomIntInclusive(0,999);
+				}catch(err){
+					gs.info( 'resolveExpressions() error =' +err);
+				}
+				
+				value = value.replace( '${randomNumber}', number);
+				}
+				
+				try{
+					var policyService = new sn_cmp_api.PolicyServiceScript();
+					value = policyService.resolvePolicyRuntimeExpression(value, '', JSON.stringify(dataMap));
+				}catch(err){
+					gs.info( 'resolveExpressions() error = ' + err);
+				}
+				
+				evaluationLog = 'resolved as ' + value + '\n';
+				action.operation += evaluationLog;
+			}
+			return value;
+		},
+		updateRuleLog : function( outputMap, messageType, step, rule, milestone){
+			try{
+				if( milestone === 'undefined'){
+					milestone = false;
+				}
+				var addCloudTrail =  new sn_cmp.AddCloudTrail();
+				var userId = '';
+				if( outputMap.inputMap.userData != null && outputMap.inputMap.userData.userId != null){
+					userId = outputMap.inputMap.userData.userId;
+				}
+				var groupId = '';
+				/*	if( outputMap.inputMap.userData != null && outputMap.inputMap.userData.groups != null && outputMap.inputMap.userData.groups.length > 0){
+					if( outputMap.inputMap.userData.groups[0] !== 'undefined'){
+						groupId = outputMap.inputMap.userData.groups[0].name;
+					}
+				}*/
+				var messageDetails = JSON.stringify( rule);
+				var messageSummary = (rule === 'undefined') ? '' : rule.message;
+				var catalogItemId = '';
+				if( outputMap.inputMap.catalogItemId !== 'undefined'){
+					catalogItemId = outputMap.inputMap.catalogItemId;
+				}
+				var requestItemId = '';
+				if( outputMap.inputMap.requestItemId !== 'undefined'){
+					requestItemId = outputMap.inputMap.requestItemId;
+				}
+				
+				var orderId = '';
+				if( outputMap.inputMap.orderId !== 'undefined'){
+					orderId = outputMap.inputMap.orderId;
+				}
+				
+				var contextKey = '';
+				if( outputMap.inputMap.contextKey !== 'undefined'){
+					contextKey = outputMap.inputMap.contextKey;
+				}
+				
+				var entityId = '';
+				if( outputMap.inputMap.entityId !== 'undefined'){
+					entityId = outputMap.inputMap.entityId;
+				}
+				var stackId = '';
+				if( outputMap.inputMap.stackId !== 'undefined'){
+					stackId = outputMap.inputMap.stackId;
+				}
+				var trailId = addCloudTrail.createTrailRecord(
+				catalogItemId,
+				requestItemId,
+				orderId,
+				contextKey,
+				stackId,
+				entityId,
+				stackId,
+				messageType,
+				milestone,
+				messageDetails,
+				messageSummary,
+				step,
+				userId,
+				groupId);
+			}catch(error){
+				gs.info( ' updateRuleLog()  error =   ' + error);
+			}
+		},
+		getNextNumber : function(){
+			var number = '';
+			try{
+				var nm = new global.NumberManager('sn_cmp_pol_policy');
+				number = nm.getNextObjNumber();
+				number = number.replace('Policy', '');
+			}catch(err){
+				gs.info('getNextNumber() error = '+ error);
+			}
+			return number;
+		},
+		padObjNumber : function(number, digits) {
+			var num = number + '';
+			while (num.length < digits)
+				num = '0' + num;
+			
+			return num;
+		},
+		getRandomIntInclusive : function(min, max) {
+			min = Math.ceil(min);
+			max = Math.floor(max);
+			return this.padObjNumber(Math.floor(Math.random() * (max - min + 1)) + min, 3);
+		},
+		getOrderFormData : function( orderId){
+			var orderFormData = '';
+			var orderInfo = new GlideRecord('sn_cmp_order');
+			if( orderInfo.isValid()){
+				if( orderInfo.get(orderId)){
+					orderFormData = orderInfo.getValue('order_form_data');
+				}
+			}
+			return orderFormData;
+		},
+		getIPAMInfoForNode : function( nodeId, orderId){
+			var ipamInfo = {};
+			ipamInfo.privateIP = '';
+			ipamInfo.subnet = '';
+			var expressionUtil = new sn_cmp_api.ExpressionResolverUtilScript();
+			var endPointIdObj = expressionUtil.getMetadataRelations(nodeId, 'Use End Point To::Use End Point From', 'cmdb_ci_endpoint_vnic', 'flat', 1);
+			gs.info('getIPAMInfoForNode() endPointIdObj:' + endPointIdObj);
+			var endPointValue = '';
+			try{
+				endPointValue = JSON.parse(endPointIdObj)[0].value;
+			}catch( err){
+			}
+				
+			gs.info('getIPAMInfoForNode() endPointValue:' + endPointValue);
+			if( !gs.nil(endPointValue)){
+				var nicSysIdObj = expressionUtil.getMetadataAssociations(endPointValue, 'Implement End Point To::Implement End Point From', 'cmdb_ci_vmware_nic, cmdb_ci_nic', true, {});
+				gs.info(nicSysIdObj);
+				var nicSysIdValue = '';
+				try{
+					nicSysIdValue = JSON.parse(nicSysIdObj)[0].value;
+				}catch( err){
+				}
+				if(!gs.nil(nicSysIdValue)){
+					var gr = new GlideRecord('cmdb_ci_nic');
+					if(gr.isValid()){
+						if( gr.get( nicSysIdValue)){
+							var privateIP = gr.getValue('private_ip');
+							ipamInfo.privateIP = privateIP;
+							gs.info('getIPAMInfoForNode() privateIP:' + privateIP);
+						}
+					}
+					var subnetObj = expressionUtil.getMetadataAssociations(nicSysIdValue, 'Contains::Contained by', 'cmdb_ci_cloud_subnet', false, {});
+					gs.info('getIPAMInfoForNode() subnet:' + subnetObj);
+					var subnetIdValue = '';
+					try{
+						subnetIdValue = JSON.parse(subnetObj)[0].value;
+					}catch( err){
+					}
+					if( !gs.nil( subnetIdValue)){
+						ipamInfo.subnet = subnetIdValue;
+					}			
+				}
+			}
+			if(gs.nil(ipamInfo.subnet)){
+				if( !gs.nil(orderId)){
+					var orderFormData = this.getOrderFormData( orderId);
+					if(!gs.nil(orderFormData)){
+						var orderFormDataObj = JSON.parse(orderFormData);
+						gs.info( 'getIPAMInfoForNode() subnet id:' + orderFormDataObj.Virtual_Server_SubnetId);
+						ipamInfo.subnet = orderFormDataObj.Virtual_Server_SubnetId;
+					}
+				}
+			}
+			return ipamInfo;
+		},
+		type: 'PolicyExecutionUtil'
+	};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-14 19:11:51</sys_created_on>
+        <sys_id>cc8417345b213200ca17273a41f91aee</sys_id>
+        <sys_mod_count>78</sys_mod_count>
+        <sys_name>PolicyExecutionUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cc8417345b213200ca17273a41f91aee</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-13 19:55:34</sys_updated_on>
+    </sys_script_include>
+</record_update>

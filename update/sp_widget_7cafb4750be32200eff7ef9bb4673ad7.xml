@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope, $location, spUtil, cloudEventScope) {
+	var c = this;
+	$scope.spUtil = spUtil;
+	
+	var queryParams = $location.search();
+	
+	var selectedListItem = null;
+	if (!queryParams.error) {	//error takes precedence over blueprint name	
+		selectedListItem = $scope.data.listItems.find(function(item) {
+			return item.name == queryParams.blueprint;
+		});	
+	}
+	
+	selectedListItem = selectedListItem || $scope.data.defaultListItem;
+	
+	$scope.onItemClicked = function(item) {
+		selectItem(item);
+	};
+	
+	$scope.setPageNum = function(num) {
+		c.data.page_index = num;
+		c.server.update().then($scope.selectDefaultItem);
+	};
+	
+	$scope.mathMin = function(v1,v2) {
+		return Math.min(v1,v2);
+	};
+	
+	$scope.isActiveItem = function(itemName) {
+		return itemName == selectedListItem.name;
+	};
+	
+	//accessed by link function
+	$scope.selectDefaultItem = function() {
+		selectItem($scope.data.defaultListItem);
+	};
+	
+	$scope.$on('view_changed', function(evt, info) {
+		c.server.update();
+		cloudEventScope.broadcast("cloudStacksEvent");
+	});
+	
+	function selectItem(item) {
+		selectedListItem = item;
+		cloudEventScope.broadcast("cloudStacksEvent", { url: item.url });
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-heading {&#13;
+  height: $header-height;&#13;
+  padding-top:18px;&#13;
+}&#13;
+&#13;
+.panel-subheading {&#13;
+  height: 45px;&#13;
+  padding-top: 12px;&#13;
+  padding-left: 12px;&#13;
+  border-top: 1px solid #E6E8EA;&#13;
+  border-bottom: 1px solid #E6E8EA;&#13;
+  color: white;&#13;
+  font-size: 15px;&#13;
+  background: #455464;&#13;
+  margin: 0;&#13;
+}&#13;
+&#13;
+.panel-body {&#13;
+  padding: 0px;&#13;
+  height: calc(100vh - calc($cloud-stacks-header-height + $header-height + $footer-height + $panel-margin));&#13;
+  overflow-y: auto;&#13;
+}&#13;
+&#13;
+.list-group {&#13;
+  margin-bottom: 0;&#13;
+  margin-top: 6px;&#13;
+  margin-bottom: 6px;&#13;
+}&#13;
+&#13;
+.list-group-item:hover {&#13;
+  cursor: pointer;  &#13;
+}&#13;
+&#13;
+.list-group-item { &#13;
+  border: none;&#13;
+  border-radius: 0;&#13;
+  padding-top: 4px;&#13;
+}&#13;
+&#13;
+.active-item,&#13;
+.active-item:hover,&#13;
+.active-item:focus {&#13;
+  color : #1570bd;&#13;
+  background-color: transparent;&#13;
+}&#13;
+&#13;
+.list-group &gt; .list-group-item &gt; span {&#13;
+	margin-top: 2.3px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stacks-nav</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope, elem, attrs, ctrl) {
+	scope.spUtil.recordWatch(scope, "sn_cmp_stack", "", function(name, data) {
+		ctrl.server.update().then(scope.selectDefaultItem);		
+	});
+}]]></link>
+        <name>Cloud Stacks Nav</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	if (input)
+		data.page_index = input.page_index;
+	
+	data.window_size = 12;
+	data.page_index = parseInt(data.page_index || $sp.getParameter('page') || 1);
+	data.window_start = parseInt((data.page_index - 1) * data.window_size);
+	data.window_end = parseInt(data.page_index * data.window_size);
+
+	var allStacks = {
+		name: gs.getMessage('All Stacks'), 
+		url :"?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack"
+	};
+	var errorStacks = {
+		name: gs.getMessage('Stacks with Issues'), 
+		url :"?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&error=true"
+	};
+	var discoveredStacks = {
+		name: gs.getMessage('Discovered Stacks'), 
+		url :"?id=cloud_stacks&category=cloud_stacks&table=sn_cmp_stack&blueprint=null"
+	};
+	
+	var userPortalHelper = new CMPUserPortalHelper($sp);
+	var stacksPage = userPortalHelper.getPage($sp.getParameter('id'));
+	
+	data.staticList = [ allStacks, errorStacks, discoveredStacks ];
+	var catalogItemsInfo = stacksPage.getCatalogItemsWithStacks(data.window_start, data.window_end - 1);
+	data.listItems = catalogItemsInfo.list;
+	
+	data.row_count = catalogItemsInfo.totalCount;
+	data.num_pages = Math.ceil(data.row_count/ data.window_size);	
+	data.defaultListItem = getDefaultCatalogItem();
+	
+	function getDefaultCatalogItem() {
+		if ($sp.getParameter('error')) 
+			return errorStacks;
+
+		if ($sp.getParameter('blueprint') == 'null')
+			return discoveredStacks;
+
+		return allStacks;
+	}
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-08 00:38:42</sys_created_on>
+        <sys_id>7cafb4750be32200eff7ef9bb4673ad7</sys_id>
+        <sys_mod_count>498</sys_mod_count>
+        <sys_name>Cloud Stacks Nav</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_7cafb4750be32200eff7ef9bb4673ad7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 22:25:10</sys_updated_on>
+        <template><![CDATA[<div class="panel b" >
+  <div class="panel-heading">
+    <h2 class="panel-title">${Stacks}</h2>
+  </div>
+  <div class="panel-body">
+    <div class="list-group">
+      <a href="javascript:void(0)" 
+         ng-click="onItemClicked(item)"
+         ng-class="{'active-item': isActiveItem(item.name)}" 
+         class="list-group-item" 
+         ng-repeat="item in data.staticList" 
+         ng-if="data.staticList.length > 0"
+         tabindex="0">
+        {{item.name}}  
+        <span class="sr-only" ng-if="isActiveItem(item.name)" aria-label="${Selected link}"></span>     
+      </a>
+    </div>
+    <h3 ng-if="data.listItems.length > 0" class="panel-subheading">
+      ${Catalog Items}
+    </h3>
+    <div class="list-group">
+      <a href="javascript:void(0)"
+         ng-click="onItemClicked(item)" 
+         ng-class="{'active-item': isActiveItem(item.name) }" 
+         class="list-group-item" 
+         ng-repeat="item in data.listItems" 
+         ng-if="data.listItems.length > 0"
+         tabindex="0">
+        {{item.name}}
+        <span class="sr-only" ng-if="isActiveItem(item.name)" aria-label="${Selected link}"></span>       
+      </a>
+    </div>
+  </div>
+  <div class="panel-footer" ng-hide="options.hide_footer || data.listItems.length < 1">
+    <div class="btn-toolbar m-r pull-left">
+      <div class="btn-group">
+        <button ng-disabled="data.page_index == 1" ng-click="setPageNum(data.page_index - 1)" aria-label="${Previous page}" class="btn btn-default"><i class="fa fa-chevron-left"></i></button>
+      </div>
+      <div class="btn-group">
+        <button ng-disabled="data.page_index == data.num_pages" ng-click="setPageNum(data.page_index + 1)" aria-label="${Next page}" class="btn btn-default"><i class="fa fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="m-t-xs panel-title">${{{data.window_start + 1}} - {{ mathMin(data.window_end, data.row_count) }} of {{data.row_count}}}</div>
+    <span class="clearfix"></span>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

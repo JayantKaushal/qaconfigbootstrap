@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Audit Log" max_length="40" name="cmp_audit_log" type="collection">
+        <element label="Acknowledge" max_length="40" name="acknowledge" type="integer"/>
+        <element label="Acknowledged By" max_length="40" name="acknowledged_by" type="integer"/>
+        <element label="Assigned Group" max_length="40" name="assigned_group" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" label="Audit Text" max_length="1000" name="audit_text" type="string"/>
+        <element label="Audit Time" max_length="40" name="audit_time" type="glide_date_time"/>
+        <element label="Audit Type" max_length="32" name="audit_type" reference="cmp_audit_type" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Event Source" max_length="100" name="event_source" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="External Source" max_length="100" name="external_source" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Module" max_length="100" name="module" type="string"/>
+        <element label="Need Acknowledge" max_length="40" name="need_acknowledge" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" hint="Type of the object.Sys ID of the CI Type" label="Object ID" max_length="512" name="object_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Object Instance ID" max_length="512" name="object_instance_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Severity" max_length="100" name="severity" type="string"/>
+        <element label="Target Group ID" max_length="40" name="target_group_id" type="integer"/>
+        <element label="Target User ID" max_length="40" name="target_user_id" type="integer"/>
+        <element label="User ID" max_length="40" name="user_id" type="integer"/>
+        <index name="index">
+            <element name="audit_type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRemoveResourceBlockAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRemoveResourceBlockAction</name>
+        <script><![CDATA[var CMPRemoveResourceBlockAction = Class.create();
+CMPRemoveResourceBlockAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.id || !params.layer_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPRemoveResourceBlockAction.doAction: Undefined element or layer id",
+					null
+				);
+			}
+			//this will take the checkpoints if passed.
+			var versionObj = new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			versionObj.removeElement(params.id);
+			var newVersion = versionObj.getNewVersion();
+			//delete stage resource while deleting block from canvas.
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			//delete stage resource deployment
+			//delete stage resource operation
+			//delete stage resource operation Attribute
+			//delete stage global property.
+
+			var stageModelJSON = blueprintServiceScript.getStageModelForBlueprint(params.blueprint_id);
+			var stageModel = JSON.parse(stageModelJSON);
+			var stageModelID = stageModel.id;
+			var stageResouce = new sn_cmp.BlueprintServiceHelper().getStageResourceByAliasName(stageModelID, params.name);
+			if(stageResouce !=null && stageResouce['hostCI'] == "cmdb_ci_logical_datacenter" && stageResouce['type'] == "BaseHost") {
+				var stageOperation = new BlueprintServiceHelper().getBlueprintStageOperationByName(stageModelID, "Provision");
+				var stageOperationId =stageOperation['id'];
+			    var StageResourceOperationAlias  = "Blueprint Container Resource.Provision";
+			    var stageResourceOperation = new BlueprintServiceHelper().getStageResourceOperationByAlias(stageOperationId, StageResourceOperationAlias);
+				var stageResOpAtGR = new GlideRecord('sn_cmp_bp_stage_res_op_attr');
+				stageResOpAtGR.addQuery("name", "Logical_Datacenter");
+				stageResOpAtGR.addQuery("stage_resource_operation", stageResourceOperation['id']);
+				stageResOpAtGR.query();
+				if(stageResOpAtGR.next()) {
+					var bpStageResOpAttId = stageResOpAtGR.getUniqueValue();
+					CMPRemoveResourceBlockAction.deleteGlobalProperty("Logical_Datacenter", stageResourceOperation['id'], stageOperationId, bpStageResOpAttId);
+					stageResOpAtGR.deleteRecord();
+				}
+				
+				CMPRemoveResourceBlockAction.updateOperationAttributes("CreateResourceGroup", stageResourceOperation['id'], stageOperationId);
+				CMPRemoveResourceBlockAction.updateOperationAttributes("ResourceGroup", stageResourceOperation['id'], stageOperationId);
+				CMPRemoveResourceBlockAction.updateOperationAttributes("ResourceGroupName", stageResourceOperation['id'], stageOperationId);
+				CMPRemoveResourceBlockAction.updateOperationAttributes("SubscriptionId", stageResourceOperation['id'], stageOperationId);
+				
+			}
+			
+			blueprintServiceScript.deleteNode(params.blueprint_id,params.name);
+		    blueprintServiceScript.deleteStageResource(params.blueprint_id,params.name);
+			return newVersion;
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to remove the resource block"),
+				"CMPRemoveResourceBlockAction.doAction(): Failed to remove the resource block",
+				error
+			);
+		}
+	},
+
+    type: 'CMPRemoveResourceBlockAction'
+});
+
+CMPRemoveResourceBlockAction.updateOperationAttributes = function(name, stageResourceOperationId, bpStageOperationId){
+		var subIdOpAtGR = new GlideRecord('sn_cmp_bp_stage_res_op_attr');
+		subIdOpAtGR.addQuery("name", name);
+		subIdOpAtGR.addQuery("stage_resource_operation", stageResourceOperationId);
+		subIdOpAtGR.query();
+		if(subIdOpAtGR.next()){
+			subIdOpAtGR.setValue("use_in_operation","0");
+			subIdOpAtGR.update();
+			var bpStageResOpAttId = subIdOpAtGR.getUniqueValue();
+			CMPRemoveResourceBlockAction.deleteGlobalProperty(name, stageResourceOperationId, bpStageOperationId, bpStageResOpAttId);
+
+		}
+};
+
+CMPRemoveResourceBlockAction.deleteGlobalProperty = function(name, stageResourceOperationId, bpStageOperationId, bpStageResOpAttId){
+		var glPropGR = new GlideRecord('sn_cmp_bp_global_prop');
+		glPropGR.addQuery("name", name);
+		glPropGR.addQuery("bp_stage_operation", bpStageOperationId);
+		glPropGR.addQuery("bp_stage_res_op_attr", bpStageResOpAttId);
+		glPropGR.query();
+		if(glPropGR.next())
+			glPropGR.deleteRecord();
+				
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-24 11:15:40</sys_created_on>
+        <sys_id>b14843919f532200a0d5b10f842e707e</sys_id>
+        <sys_mod_count>41</sys_mod_count>
+        <sys_name>CMPRemoveResourceBlockAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b14843919f532200a0d5b10f842e707e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-30 11:06:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope) {
+	/* widget controller */
+	var c = this;
+	var g_form = $scope.page.g_form;
+	c.field = $scope.page.field;
+	var variableName = c.field.variable_name;
+	c.init = function () {
+		c.data.variableSysId = c.field.sys_id;
+		c.server.update().then(function(){
+			c.headers	= c.data.headers;
+			c.rowName = c.data.rowName;
+			c.rows = [];// initialize it to empty
+			if (g_form.getValue(variableName)) {
+				var ar = JSON.parse(g_form.getValue(variableName));
+				var zz = [];
+				for(var v = 0 ; v < ar.length; v++) {
+					var newRow = [];
+					for (var i = 0; i < c.headers.length; i++) {
+						var row = angular.copy(c.headers[i]);
+						row.value = ar[v][row.name];
+						row.allowedValues = ar[v].allowedValues;
+						row.datatype = ar[v].datatype;
+						if(row.type =='dynamic') {
+							row.value = ar[v].value;
+						}
+						newRow.push(row);
+					}
+					c.rows.push(newRow);
+				}
+				c.update();
+			} else {
+				c.rows = [];
+			}
+
+		});
+	};
+
+	c.addRow = function() {
+		var newRow = [];
+		for (var i = 0; i < c.headers.length; i++) {
+			newRow.push(angular.copy(c.headers[i]));
+		}
+		c.rows.push(newRow);
+		c.update();
+	};
+
+	c.update = function update() {
+		g_form.setValue(variableName, JSON.stringify(c.rows));
+	};
+
+	c.removeRow = function(index) {
+		c.rows.splice(index, 1);
+		c.update();
+	};
+
+	c.removeAll =  function() {
+		var l = c.rows.length;
+		for(var i = 0; i < l; i ++) {
+			c.removeRow(0);
+		}
+	}
+	c.getValueAsJSON = function getValueAsJSON() {
+		if (c.field.value) {
+			return JSON.parse(c.field.value);
+		}
+		return "";
+	};
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.table &gt; tbody &gt; tr &gt; td {&#13;
+  border: none;&#13;
+}&#13;
+&#13;
+.table td &gt; div &gt; input,&#13;
+.table td &gt; div &gt; select {&#13;
+  width: 100% ;&#13;
+  height: 34px;&#13;
+  padding: 6px 12px;&#13;
+  font-size: 14px;&#13;
+  line-height: 1.42857;&#13;
+  color: #555555;&#13;
+  background-color: #fff;&#13;
+  background-image: none;&#13;
+  border: 1px solid #ccc;&#13;
+  border-radius: 4px;&#13;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;&#13;
+}&#13;
+&#13;
+&#13;
+.table  td &gt; i {&#13;
+  font-size: 25px;&#13;
+  margin-top: 5px;&#13;
+}&#13;
+&#13;
+.btn-default:focus {&#13;
+  color: #333;&#13;
+  background-color: #fff;&#13;
+  border-color: #ccc;&#13;
+}&#13;
+.btn-default:hover {&#13;
+  color: #333;&#13;
+  background-color: #ddd;&#13;
+  border-color: #ccc;&#13;
+}&#13;
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id/>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,el,attr,ctrl){
+	$(document).ready(function () {
+		//$('select').select2().select2('val','big');
+		$('body').on('DOMNodeInserted', 'select', function () {
+		//	$(this).select2();
+		});
+		
+	});
+	setTimeout(function(){
+		var width = 100 / (scope.data.headers.length);
+		$(el).find('td').css({"width" : width + '%'});
+	});
+}]]></link>
+        <name>MyGrid</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+  /* populate the 'data' object */
+  /* e.g., data.table = $sp.getValue('table'); */
+
+	if (input && input.variableSysId) {
+		var metaDatas = [];
+		data.rowName =  getGridName();
+		var grid = new GlideRecord("sn_cmp_grid_definition");
+		grid.addQuery("name", data.rowName);
+		grid.query();
+		if(grid.next()) {
+			data.add_remove_rows = grid.add_remove_rows != 4 ? true : false;
+		} else {
+			data.add_remove_rows = true;
+		}
+
+		var gr = new GlideRecord("sn_cmp_grid_detail");
+		gr.addActiveQuery();
+
+		gr.addQuery('grid.name', getGridName());
+		gr.orderBy('order');
+		gr.query();
+
+		 while(gr.next()) {
+			 var meta = {};
+			 meta.name = gr.name + '';
+			 meta.type = gr.uidatatype + '';
+			 meta.label = gr.label + '';
+			 meta.value= gr.value + '';
+			 meta.visibility = gr.visibility + '';
+			 meta.readonly = gr.read_only +'';
+			 if (meta.type == "selectBox") {
+				 meta.choices = getChoices(gr.datasource, gr.datasource_value);
+			 }
+			 metaDatas.push(meta);
+		 }
+		 data.headers = metaDatas;
+	}
+
+	//TODO: hardcode the choice list now
+	function getChoices(dataSource, dataSourceValue) {
+	var arr = new Array();
+	    if(dataSource == 'csv') {
+	      if(dataSourceValue != null) {
+	        var dsArray = dataSourceValue.split(",");
+	        for(var v =0; v<dsArray.length; v++) {
+	            var obj = {};
+	            obj.name = dsArray[v];
+	            obj.value = dsArray[v];
+	            arr.push(obj);
+	        }
+	      }
+	    } else if (dataSource == 'pools' ) {
+
+	    }
+	    return arr;
+	}
+	function getGridName() {
+		var gr = new GlideRecord("item_option_new");
+		if (gr.get(input.variableSysId)) {
+			return gr.variable_name + '';
+		}
+		gs.info("Can not find grid name with sysId " + input.variableSysId);
+		return '';
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>qili.zhou@snc</sys_created_by>
+        <sys_created_on>2016-11-22 19:54:49</sys_created_on>
+        <sys_id>b84e227013176200ca9d5f7f3244b019</sys_id>
+        <sys_mod_count>229</sys_mod_count>
+        <sys_name>MyGrid</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_b84e227013176200ca9d5f7f3244b019</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-11 06:18:34</sys_updated_on>
+        <template><![CDATA[<div ng-init="c.init()"  id="{{c.field.name}}CMPGrid" class="cmp-my-grid">
+  <!-- your widget template -->
+  <table class="table">
+    <thead>
+      <tr>
+        <th ng-repeat = "header in c.headers">{{header.label}}</th>
+        <th style= "width: 20px"></th>
+      <tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="(index, row) in c.rows">
+        <td ng-repeat="col in row">
+          <div ng-if="col.type == 'text'">
+            <input type="text" ng-model="col.value" ng-change="c.update()" ng-readonly="{{col.readonly}}"/>
+          </div>
+          <div ng-if="col.type == 'selectBox'" >
+            <select ng-model="col.value"
+                    ng-change="c.update()"
+                    ng-init="col.value = col.value || col.choices[0].value"
+                     >
+				<option ng-repeat="choice in col.choices" value="{{choice.value}}">{{choice.name}}</option>
+            </select>
+          </div>
+          <div ng-if="col.type == 'dynamic' && col.datatype == 'textBox'" >
+              <input type="text" ng-model="col.value" ng-change="c.update()" ng-readonly="{{col.readonly}}"/>
+          </div>
+          <div ng-if="col.type == 'dynamic' && col.datatype == 'selectBox'" >
+              <select ng-model="col.value"
+                      ng-change="c.update()"
+                      ng-init="col.value = col.value || col.choices[0].value"
+                       >
+                    <option ng-repeat="choice in col.allowedValues" value="{{choice.value}}">{{choice.name}}</option>
+              </select>
+          </div>
+        </td>
+        <td> <i class="fa fa-times-circle-o" arai-hidden="true" ng-click="c.removeRow(index)"/></td>
+      </tr>
+    </tbody>
+  </table>
+  <button class="btn btn-default" ng-click="c.addRow()" arai-hidden="true" id= "addRow" ng-show="data.add_remove_rows">Add</button>
+
+</div>]]></template>
+    </sp_widget>
+</record_update>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Describe_AWS_CloudFormation_Stack</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, 
+						  correlationId, step, requestorContext, stackId) {
+	var processor = new CloudFormationResponseProcessor();
+	processor.topLevel(false);
+	var rps = new sn_cmp_api.ResponseProcessorScript();
+	var responseToProcess = rps.extractResponse(response);
+	var responseObj = global.JSON.parse(responseToProcess);
+	
+	var arrayUtil = new global.ArrayUtil();
+	responseObj = arrayUtil.ensureArray(responseObj);
+	var processedResponses = [];
+
+	// response can have multiple items - process them one by one
+	for (var i = 0; i < responseObj.length; i++) {
+		var processed = processor.processResponse(responseObj[i], cloudServiceAccountId, ldc, 
+												  correlationId, step, requestorContext, stackId);
+		processedResponses = arrayUtil.union(processedResponses, processed);
+	}
+	
+	return global.JSON.stringify(processedResponses);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-19 07:37:38</sys_created_on>
+        <sys_id>199b5e159fc5320048111f80a57fcf76</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Describe_AWS_CloudFormation_Stack</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_199b5e159fc5320048111f80a57fcf76</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-02-20 02:26:06</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_pol_policy">
+    <sn_cmp_pol_policy action="INSERT_OR_UPDATE">
+        <description>Policy covering actions taken before, at, and after a stack's End Date is reached.</description>
+        <end_date/>
+        <group_id/>
+        <is_global>false</is_global>
+        <is_system>true</is_system>
+        <moment/>
+        <name>Lease End ServiceNow</name>
+        <operation_id/>
+        <operation_name/>
+        <policy_order>1</policy_order>
+        <script/>
+        <start_date/>
+        <status>1</status>
+        <sys_class_name>sn_cmp_pol_policy</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-08 18:46:42</sys_created_on>
+        <sys_id>bc3c37ca8781030053c9f4bbe3e3ec01</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Lease End ServiceNow</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_pol_policy_bc3c37ca8781030053c9f4bbe3e3ec01</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-14 07:09:18</sys_updated_on>
+        <target_entity_id>12</target_entity_id>
+        <target_entity_instance_id/>
+        <target_entity_table/>
+    </sn_cmp_pol_policy>
+</record_update>

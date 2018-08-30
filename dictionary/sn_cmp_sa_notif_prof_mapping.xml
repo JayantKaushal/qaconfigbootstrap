@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Scaling Notification Mapping" max_length="40" name="sn_cmp_sa_notif_prof_mapping" type="collection">
+        <element label="Cloud Account" max_length="32" name="cloud_account" reference="cmdb_ci_cmp_cloud_account" type="reference"/>
+        <element label="Location" max_length="32" name="location" reference="cmdb_ci_logical_datacenter" type="reference"/>
+        <element label="Scaling Notification Profile" max_length="32" name="profile" reference="sn_cmp_notification_profile" reference_cascade_rule="delete" type="reference"/>
+        <element label="Scaling Policy Notification" max_length="32" name="template" reference="sn_cmp_sa_scale_notification" type="reference"/>
+        <index name="index">
+            <element name="template"/>
+        </index>
+        <index name="index2">
+            <element name="cloud_account"/>
+        </index>
+        <index name="index3">
+            <element name="profile"/>
+            <element name="cloud_account"/>
+            <element name="location"/>
+        </index>
+        <index name="index4">
+            <element name="location"/>
+        </index>
+        <index name="index5">
+            <element name="profile"/>
+        </index>
+    </element>
+</database>

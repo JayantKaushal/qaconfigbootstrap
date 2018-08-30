@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_response_value_mapping">
+    <sn_cmp_response_value_mapping action="INSERT_OR_UPDATE">
+        <key display_value="VolumeState">0fcafca70b913200668daac125673a72</key>
+        <source_value>in-use</source_value>
+        <sys_class_name>sn_cmp_response_value_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-10 10:42:58</sys_created_on>
+        <sys_id>691c74e70b913200668daac125673ada</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>0fcafca70b913200668daac125673a72</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_response_value_mapping_691c74e70b913200668daac125673ada</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-10 10:42:58</sys_updated_on>
+        <translated_value>in_use</translated_value>
+    </sn_cmp_response_value_mapping>
+</record_update>

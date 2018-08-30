@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope, $location, cloudEventScope, spUtil) { 
+	var c = this;
+	var queryParams = $location.search();
+	$scope.spUtil = spUtil;
+	var selectedListItem = null;
+	
+	for (var i = 0; i < $scope.data.leftNavContent.list.length; i++) {
+		var item = $scope.data.leftNavContent.list[i];
+		selectedListItem = item.children.find(function(subItem) {
+			return subItem.id == queryParams.table;
+		});
+		
+		if (selectedListItem)
+			break;
+	}
+	
+	selectedListItem = selectedListItem || $scope.data.leftNavContent.list[0].children[0];
+	$scope.onItemClick = function(item) {
+		item = item || selectedListItem; 
+		cloudEventScope.broadcast('cloudResourcesEvent', item);
+		selectedListItem = item;
+	};
+
+	$scope.isActiveItem = function(item) {
+		return selectedListItem.id == item.id;
+	};
+	
+	//In order to make sure that the data is loaded for the selected item at the begining
+	cloudEventScope.registerListener('cmp.right_content_widget_loaded', function(evt) {
+		$scope.onItemClick();
+	}, $scope);
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-heading {
+  height: 52px;
+}
+
+.panel-body {
+  padding: 0px;
+  //min-height: 235px; 
+}
+
+.list {
+  margin-bottom: -21px;
+}
+
+.list-group-item:hover {
+  cursor: pointer;  
+}
+
+.group-heading,
+.group-heading:hover{
+  font-size: 1.em;
+  background-color: #f5f5f5;
+}
+
+.list-group-item { 
+  border: none;
+  border-radius: 0;
+}
+
+.list-group .list-group-item &gt; img {
+  height: 20px;
+  margin-left: 15px;
+  margin-right: 10px;
+}
+
+
+a.active-item,
+a.active-item:hover,
+a.active-item:focus {
+  color : #1570bd;
+  background-color: transparent;
+}
+
+span.fa {
+	margin-top:-2px;
+  margin-right:5px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-resources-nav</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+	
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 235) + 'px';
+		$(elem).find('.panel-body').css('height',panel_height);
+	}
+	
+	$('.collapse').on('hidden.bs.collapse', function () {
+		$(".collapsed .fa-minus-square-o").addClass("fa-plus-square-o").removeClass("fa-minus-square-o");
+	});
+	
+	$('.collapse').on('shown.bs.collapse', function () {
+		$("a[aria-expanded=true] .fa-plus-square-o").addClass("fa-minus-square-o").removeClass("fa-plus-square-o");
+	});
+	
+	if (scope.data.leftNavContent.recordWatcher) {
+		for (var table in scope.data.leftNavContent.recordWatcher) 
+			scope.spUtil.recordWatch(scope, table, scope.data.leftNavContent.recordWatcher[table], updateServer);
+	}
+	
+	function updateServer() {
+		ctrl.server.update();
+	}
+}]]></link>
+        <name>Cloud Resources Nav</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+	var userPortalHelper = new CMPUserPortalHelper($sp);
+	var resourcesPage = userPortalHelper.getPage($sp.getParameter('id'));
+	data.leftNavContent = resourcesPage.getLeftNavContent();
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-31 14:16:07</sys_created_on>
+        <sys_id>885e44bd0bf22200eff7ef9bb4673aa1</sys_id>
+        <sys_mod_count>407</sys_mod_count>
+        <sys_name>Cloud Resources Nav</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_885e44bd0bf22200eff7ef9bb4673aa1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-23 18:53:38</sys_updated_on>
+        <template><![CDATA[<div class="panel b widget-container" >
+  <div class="panel-heading">
+    <h4 class="panel-title" style="padding-top:8px;" ng-bind="data.leftNavContent.title"></h4>
+  </div>
+  <div class="panel-body">
+    <div class="list-group">
+      <div ng-repeat="item in data.leftNavContent.list">
+        <a data-target="#{{item.id}}" class="list-group-item group-heading" data-toggle="collapse" aria-expanded="true">
+          <span class="fa fa-minus-square-o "></span>{{item.label}} 
+        </a>
+        <div class="collapse in" id="{{item.id}}">
+          <div class="list">
+            <div class="list-group">
+              <a ng-repeat="val in item.children" href="javascript:void(0)" ng-click="onItemClick(val)" ng-class="{'active-item': isActiveItem(val)}" class="list-group-item" ng-bind="val.label">
+              <span class="sr-only" ng-if="isActiveItem(val)" aria-label="${Selected link}"></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Operation Type" max_length="40" name="sn_cmp_rb_op_type" type="collection">
+        <element choice="1" label="Flow Direction" max_length="40" name="flow_direction" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="BottomsUp" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="TopDown" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+    </element>
+</database>

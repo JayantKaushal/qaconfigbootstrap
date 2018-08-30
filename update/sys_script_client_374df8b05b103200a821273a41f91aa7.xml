@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>action_type</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_Rule_Action_On_Load</name>
+        <order/>
+        <script><![CDATA[var BLUEPRINT_PROVISION = "2";
+var BLUEPRINT_APPROVAL = "4";
+var CATALOG_ITEM_LAUNCH = "6";
+var CATALOG_ITEM_REQUEST_START = "8";
+var CATALOG_ITEM_REQUEST_END = "9";
+var CLOUD_EVENT = "7";
+var RESOURCE_OPERATION = "3";
+var STACK_APPROVAL = "5";
+var STACK_RESOURCE_OPERATION_APPROVAL = "10";
+var LEASE_END = "12";
+var ON_TASK_CLEANUP = "13";
+
+var PROPERTY_OVERRIDE = 1;
+var SERVICE_NOW_APPROVAL = 2;
+var EXECUTE_SCRIPT = 3;
+var EXECUTE_WORKFLOW = 4;
+var CLOUD_API = 5;
+var ABORT_PROCESS = 6;
+var CUSTOM_APPROVAL = 7;
+var IPAM = 11;
+var RUN_OPERATION = 12;
+var NOTIFY = 13;
+
+function onLoad() {
+	var ruleId = g_form.getValue( "policy_rule");
+	console.info("rule = " + ruleId);
+	validateActionInputs();
+	setParentAttributes();	
+	hideFields();
+	displayMandatoryFields();	
+	renderAction( ruleId);
+	disableForPublishedPolicies();
+	hideSearchBtn( "policy_rule");
+	hideSearchBtn( "policy_rule.policy");
+}
+
+function validateActionInputs(){
+	if( g_form.getValue( "policy_rule.policy").trim() == "" || g_form.getValue( "policy_rule").trim() == ""){
+		g_form.addErrorMessage( getMessage("Policy Action Mandatory Rule"));
+	}
+}
+
+function setParentAttributes(){
+	g_form.setDisplay( "policy_rule", true);
+	g_form.setDisplay( "policy_rule.policy.status", false);
+	g_form.setDisplay( "policy_rule.policy.target_entity_id", false);
+	g_form.setDisplay( "policy_rule.policy.operation_id", false);
+	g_form.setDisplay( "policy_rule.policy.target_entity_instance_id", false);
+	g_form.setDisplay( "policy_rule.policy.moment", false);
+}
+
+function hideFields(){
+	g_form.setMandatory( "name", false);
+	g_form.setMandatory( "workflow", false);	
+	g_form.setMandatory( "provider", false);
+	g_form.setMandatory( "version", false);
+	g_form.setMandatory( "credentials", false);
+	g_form.setMandatory( "interface_id", false);
+	g_form.setMandatory( "method", false);		
+	g_form.setMandatory("ipam_method_name", false);
+	g_form.setMandatory( "group_id", false);
+	g_form.setMandatory( "property", false);
+	g_form.setMandatory( "property_name", false);
+	g_form.setMandatory( "ipam_provider_type", false);	
+	g_form.setMandatory( "bp_operation", false);	
+	g_form.setMandatory( "notification", false);	
+	g_form.setDisplay( "bp_operation", false);
+	g_form.setDisplay( "notification", false);
+	g_form.setDisplay( "policy_rule", true);
+	g_form.setDisplay( "property_name", false);
+	g_form.setDisplay( "property", false);
+	g_form.setDisplay( "value", false);
+	g_form.setDisplay( "action_type", false);
+	g_form.setDisplay( "is_active", false);
+	g_form.setDisplay( "is_user_approval", false);
+	g_form.setDisplay( "user_id", false);
+	g_form.setDisplay( "is_manager_approval", false);
+	g_form.setDisplay( "is_group_approval", false);
+	g_form.setDisplay( "group_id", false);
+	g_form.setDisplay( "comments", false);
+	g_form.setDisplay( "name", false);
+	g_form.setDisplay( "workflow", false);
+	g_form.setDisplay( "method", false);
+	g_form.setDisplay( "action_script_name", false);
+	g_form.setDisplay( "script", false);
+	g_form.setDisplay( "is_script", false);
+	g_form.setDisplay( "action_order", false);
+	g_form.setReadOnly( "policy_rule", true);
+	g_form.setReadOnly( "policy_rule.policy", true);
+	g_form.setDisplay( "is_script", false);
+	g_form.setDisplay( "provider", false);
+	g_form.setDisplay( "credentials", false);
+	g_form.setDisplay( "version", false);
+	g_form.setDisplay( "endpoint_url", false);
+	g_form.setDisplay( "interface_id", false);
+	g_form.setDisplay( "method", false);
+	g_form.setDisplay( "action_script_cat", false);
+	g_form.setDisabled("script", true);
+	g_form.setDisplay("ipam_method_name", false);
+	g_form.setDisplay( "ipam_provider_type", false);			
+	g_form.hideRelatedLists();
+}
+
+function displayMandatoryFields(){
+	g_form.setDisplay( "action_type", true);
+	g_form.setDisplay( "action_order", true);
+}
+
+function renderAction( ruleId){
+	var actionType = 0;
+	if( g_form.getValue( "action_type") != ""){
+		try{
+			actionType = parseInt(g_form.getValue( "action_type"));
+		}catch(err){
+			
+		}
+	}
+	removeUnusedActions();
+	if( actionType == 0){
+		fetchOrderNumber();
+		actionType = setActionTypeNewMode();
+	}
+	switch( actionType){
+		case PROPERTY_OVERRIDE:
+		renderProperty( ruleId);
+		break;
+		case SERVICE_NOW_APPROVAL:
+		renderApproval();
+		break;
+		case EXECUTE_SCRIPT:
+		renderScript( ruleId);
+		break;
+		case EXECUTE_WORKFLOW:
+		renderWorkflow( ruleId);
+		break;
+		case CLOUD_API:
+		renderCloudAPI( ruleId);
+		break;
+		case ABORT_PROCESS:
+		renderAbort(ruleId);
+		break;
+		case CUSTOM_APPROVAL:
+		renderWorkflow( ruleId);
+		break;
+		case IPAM:
+		renderIPAM( ruleId);
+		break;
+		case RUN_OPERATION:
+		renderOperation( ruleId);
+		break;
+		case NOTIFY:
+		renderNotify( ruleId);
+		break;
+		default:
+		
+	}
+	setReadOnlyOnPublishedPolicies();
+}
+
+function renderIPAM(ruleId){
+	g_form.setDisplay("ipam_method_name", true);
+	g_form.setDisabled("ipam_method_name", false);
+	g_form.setMandatory("ipam_method_name", true);
+	g_form.setMandatory( "ipam_provider_type", true);	
+	g_form.setDisplay( "ipam_provider_type", true);			
+	g_form.setDisplay("name", false);
+	g_form.setMandatory("name", false);
+	if(g_form.getValue("policy_rule.policy.moment").toLowerCase() == 'pre'){
+		displayPropertyField( ruleId);
+		g_form.removeOption( "ipam_method_name", "3");
+		g_form.removeOption( "ipam_method_name", "2");
+	}else{
+		g_form.removeOption( "ipam_method_name", "1");
+	}
+	if(!g_form.isNewRecord()){
+		g_form.showRelatedLists();
+	}
+}
+
+function renderOperation(ruleId){
+	g_form.setDisplay( "bp_operation", true);
+	g_form.setMandatory( "bp_operation", true);	
+}
+
+function renderNotify(ruleId){
+	g_form.setDisplay( "notification", true);
+	g_form.setMandatory( "notification", true);	
+}
+
+
+function renderCloudAPI( ruleId){
+	g_form.setDisplay( "provider", true);
+	g_form.setDisplay( "credentials", true);
+	g_form.setDisplay( "version", true);
+	g_form.setDisplay( "endpoint_url", true);
+	g_form.setDisplay( "interface_id", true);
+	g_form.setDisplay( "method", true);
+	g_form.setDisplay( "name", true);
+	g_form.setMandatory( "name", true);
+	g_form.setMandatory( "provider", true);
+	g_form.setMandatory( "version", true);
+	g_form.setMandatory( "credentials", true);
+	g_form.setMandatory( "interface_id", true);
+	g_form.setMandatory( "method", true);	
+	if(!g_form.isNewRecord()){
+		g_form.showRelatedLists();
+	}
+}
+
+function removeUnusedActions( ){
+	var unsupportedAction = [];
+	var targetEntityId = g_form.getValue("policy_rule.policy.target_entity_id");
+	switch(targetEntityId){
+		case BLUEPRINT_PROVISION :
+		unsupportedAction = [EXECUTE_WORKFLOW, SERVICE_NOW_APPROVAL, CUSTOM_APPROVAL, CLOUD_API, IPAM, RUN_OPERATION, NOTIFY];
+		break;
+		case RESOURCE_OPERATION :
+		unsupportedAction = [EXECUTE_WORKFLOW, SERVICE_NOW_APPROVAL, CUSTOM_APPROVAL, ABORT_PROCESS, NOTIFY];
+		break;
+		case BLUEPRINT_APPROVAL:
+		case STACK_APPROVAL:
+		case STACK_RESOURCE_OPERATION_APPROVAL:
+		case ON_TASK_CLEANUP:	
+		unsupportedAction = [EXECUTE_SCRIPT, EXECUTE_WORKFLOW, CLOUD_API, PROPERTY_OVERRIDE,ABORT_PROCESS, IPAM, RUN_OPERATION, NOTIFY];
+		break;
+		case CLOUD_EVENT :
+		unsupportedAction = [SERVICE_NOW_APPROVAL, CUSTOM_APPROVAL, EXECUTE_WORKFLOW, CLOUD_API, PROPERTY_OVERRIDE,ABORT_PROCESS, IPAM, RUN_OPERATION, NOTIFY];
+		break;
+		case CATALOG_ITEM_LAUNCH :
+		unsupportedAction = [SERVICE_NOW_APPROVAL, CUSTOM_APPROVAL, EXECUTE_WORKFLOW, CLOUD_API, ABORT_PROCESS,IPAM, RUN_OPERATION, NOTIFY];
+		break;
+		case CATALOG_ITEM_REQUEST_START :
+		case CATALOG_ITEM_REQUEST_END :
+		unsupportedAction = [SERVICE_NOW_APPROVAL, CUSTOM_APPROVAL, CLOUD_API, ABORT_PROCESS, PROPERTY_OVERRIDE,IPAM, RUN_OPERATION, NOTIFY];
+		break;
+		case LEASE_END :
+		unsupportedAction = [PROPERTY_OVERRIDE, SERVICE_NOW_APPROVAL, EXECUTE_SCRIPT, CLOUD_API, ABORT_PROCESS, CUSTOM_APPROVAL, EXECUTE_WORKFLOW, IPAM];
+		break;
+		default:
+		break;
+	}
+	for( var i=0; i<unsupportedAction.length; i++){
+		g_form.removeOption("action_type", unsupportedAction[i]);
+	}
+}
+
+function setActionTypeNewMode( ){
+	var actionType;
+	var targetEntityId = g_form.getValue("policy_rule.policy.target_entity_id");
+	switch(targetEntityId){
+		case BLUEPRINT_PROVISION:
+		actionType = PROPERTY_OVERRIDE;
+		g_form.setValue( "action_type", PROPERTY_OVERRIDE);
+		break;
+		case BLUEPRINT_APPROVAL:
+		actionType = SERVICE_NOW_APPROVAL;
+		g_form.setValue( "action_type", SERVICE_NOW_APPROVAL);
+		break;
+		case CATALOG_ITEM_LAUNCH:
+		actionType = PROPERTY_OVERRIDE;
+		g_form.setValue( "action_type", PROPERTY_OVERRIDE);
+		break;
+		case CATALOG_ITEM_REQUEST_START:
+		actionType = EXECUTE_WORKFLOW;
+		g_form.setValue( "action_type", EXECUTE_WORKFLOW);
+		break;
+		case CATALOG_ITEM_REQUEST_END:
+		actionType = EXECUTE_WORKFLOW;
+		g_form.setValue( "action_type", EXECUTE_WORKFLOW);
+		break;
+		case CLOUD_EVENT:
+		actionType = EXECUTE_SCRIPT;
+		g_form.setValue( "action_type", QUOTA);
+		break;
+		case RESOURCE_OPERATION:
+		actionType = PROPERTY_OVERRIDE;
+		g_form.setValue( "action_type", PROPERTY_OVERRIDE);
+		break;
+		case STACK_APPROVAL:
+		actionType = SERVICE_NOW_APPROVAL;
+		g_form.setValue( "action_type", SERVICE_NOW_APPROVAL);
+		break;
+		case STACK_RESOURCE_OPERATION_APPROVAL:
+		actionType = SERVICE_NOW_APPROVAL;
+		g_form.setValue( "action_type", SERVICE_NOW_APPROVAL);
+		break;
+		case ON_TASK_CLEANUP:
+		actionType = SERVICE_NOW_APPROVAL;
+		g_form.setValue( "action_type", SERVICE_NOW_APPROVAL);
+		break;	
+		case LEASE_END :
+		actionType = RUN_OPERATION;
+		g_form.setValue( "action_type", RUN_OPERATION);
+		break;
+		default:
+	}
+	return actionType;
+}
+
+function displayPropertyField( ruleId){
+	var displayTextbox = false;
+	var targetEntityInstanceId = g_form.getValue("policy_rule.policy.target_entity_instance_id");
+	if(g_form.getValue("policy_rule.policy.target_entity_id") == CATALOG_ITEM_LAUNCH && g_form.getValue("policy_rule.policy.target_entity_instance_id") == ""){
+		displayTextbox = true;
+	} else if(g_form.getValue("policy_rule.policy.target_entity_id") != CATALOG_ITEM_LAUNCH && g_form.getValue("policy_rule.policy.operation_id") == ""){
+		displayTextbox = true;
+	}
+	if( displayTextbox){
+		g_form.setDisplay( "property", true);
+		g_form.setMandatory( "property", true);
+	}else{
+		fetchOperationParameters( ruleId);
+		g_form.setDisplay( "property_name", true);
+		g_form.setMandatory( "property_name", true);
+	}	
+}
+
+function renderProperty( ruleId){
+	displayPropertyField( ruleId);
+	g_form.setDisplay("is_script", true);
+	if(g_form.getValue("is_script")  == "true"){
+		g_form.setMandatory( "value", false);
+		g_form.setDisplay( "value", false);
+		g_form.setDisplay( "script", true);
+		g_form.setDisplay( "action_script_cat", true);
+		g_form.setDisplay( "action_script_name", true);
+		g_form.setDisabled( "script", true);
+	}else{
+		g_form.setDisplay( "value", true);
+		g_form.setDisplay( "script", false);
+		g_form.setDisplay( "action_script_cat", false);
+		g_form.setDisplay( "action_script_name", false);		
+	}
+}
+
+function fetchOperationParameters( ruleId){
+	var selectedPropertyValue = g_form.getValue("property");
+	var ajax = new GlideAjax("PolicyOperationsUtil");
+	ajax.addParam("sysparm_name", "fetchOperationParameters");
+	ajax.addParam("ruleId", ruleId);
+	ajax.getXML(function(serverResponse) {
+		g_form.clearOptions( "property_name");
+		var optionsObj = JSON.parse(serverResponse.responseXML.getElementsByTagName("xml")[0].getAttribute("answer"));
+		if (typeof optionsObj != "undefined") {
+			console.info("optionsObj = " + optionsObj);
+			for (var i = 0; i < optionsObj.length; i++) {
+				g_form.addOption("property_name", optionsObj[i].name, optionsObj[i].name);
+			}
+			if( selectedPropertyValue != ""){
+				g_form.setValue( "property_name",selectedPropertyValue);
+			}
+		}
+	});
+}
+
+function renderApproval(){
+	g_form.setDisplay( "property", false);
+	g_form.setDisplay( "is_manager_approval", true);
+	g_form.setDisplay( "is_group_approval", false);
+	g_form.setDisplay( "is_user_approval", false);
+	g_form.setDisplay( "user_id", true);
+	g_form.setDisplay( "value", false);
+	g_form.setDisplay( "property_name", false);
+	g_form.setDisplay( "comments", false);
+	g_form.setDisplay( "group_id", true);
+	g_form.setValue( "is_group_approval", true);
+	g_form.setDisplay( "is_active", false);
+	g_form.setMandatory( "group_id", false);	
+	renderStackApproval();
+}
+
+function renderStackApproval(){
+	var targetEntityId = g_form.getValue("policy_rule.policy.target_entity_id");
+	if( targetEntityId == STACK_RESOURCE_OPERATION_APPROVAL || targetEntityId == STACK_APPROVAL){
+		g_form.setDisplay( "user_id", false);
+		g_form.setDisplay( "is_manager_approval", false);
+		g_form.setMandatory( "group_id", true);
+	}
+}
+
+function renderEmail( ruleId){
+	g_form.addInfoMessage( "Feature is not supported yet");
+}
+
+function renderAbort( ruleId){
+	g_form.setDisplay( "comments", true);
+	g_form.setLabelOf( "comments", getMessage("Message"));
+}
+
+function renderNaming( ruleId){
+	g_form.setDisplay( "script", true);
+	g_form.setDisplay( "action_script_name", true);
+}
+
+function renderWorkflow( ruleId){
+	g_form.setDisplay( "workflow", true);
+	g_form.setMandatory( "workflow", true);	
+	g_form.setDisabled( "workflow", false);
+}
+
+function renderScript( ruleId){
+	g_form.setDisplay( "action_script_cat", true);
+	g_form.setDisplay( "script", true);
+	g_form.setDisplay( "action_script_name", true);
+	g_form.setDisabled( "script", true);
+	g_form.setReadOnly("script", true);
+}
+
+function setReadOnlyOnPublishedPolicies(){
+	if( g_form.getValue( "policy_rule.policy.status") == 1){
+		g_form.setReadOnly( "property", true);
+		g_form.setReadOnly( "is_manager_approval", true);
+		g_form.setReadOnly( "is_user_approval", true);
+		g_form.setReadOnly( "user_id", true);
+		g_form.setReadOnly( "value", true);
+		g_form.setReadOnly( "property_name", false);
+		g_form.setReadOnly( "comments", true);
+		g_form.setReadOnly( "is_group_approval", true);
+		g_form.setReadOnly( "group_id", true);
+		g_form.setReadOnly( "action_order", true);
+		g_form.setReadOnly( "workflows", true);
+		g_form.setDisabled( "action_order", true);
+		g_form.setDisabled( "action_type", false);
+		g_form.setDisabled( "workflows", true);
+		g_form.setDisabled( "property", false);
+		g_form.setDisabled( "script", true);
+		g_form.setDisabled( "action_script_name", false);
+		g_form.setDisabled( "action_script_cat", false);
+		g_form.addInfoMessage( getMessage("Policy Action Published Policies"));
+	}
+}
+
+function hideSearchBtn( name){
+	var policy_rule = g_form.getControl( name);
+	var btnName = "sn_cmp_pol_action." + name + ".ui_policy_sensitive";
+	if( policy_rule != null && policy_rule.parentNode != null){
+		//get elements by tag name under policy rule
+		var policyParent = policy_rule.parentNode;
+		for( var i=0;i<policyParent.parentNode.children.length;i++){
+			if( policyParent.parentNode.children[i].className.indexOf("form-field-addons") != -1){
+				if( policyParent != null && policyParent.parentNode != null){
+					var iconParentDiv = policyParent.parentNode.children[i];
+					if( iconParentDiv != null && iconParentDiv.children != null){
+						for( var j=0;j<iconParentDiv.children.length;j++){
+							if(iconParentDiv.children[j].getAttribute("name") == btnName){
+								iconParentDiv.children[j].style.display="block";
+							}
+						}
+					}
+				}
+				
+			}
+		}
+	}
+}
+
+function hideSearchBtnWrapper( hideList){
+	for( var i=0; i<hideList.length; i++){
+		hideSearchBtn( hideList[i]);
+	}
+}
+
+function disableForPublishedPolicies(){
+	if( g_form.getValue("policy_rule.policy.status")  == "1"){
+		g_form.setDisabled( "property_name", true);
+		g_form.setDisabled( "property", true);
+		g_form.setDisabled( "value", true);
+		g_form.setDisabled( "action_type", true);
+		g_form.setDisabled( "is_active", true);
+		g_form.setDisabled( "is_user_approval", true);
+		g_form.setDisabled( "is_group_approval", true);
+		g_form.setDisabled( "is_manager_approval", true);
+		g_form.setDisabled( "user_id", true);
+		g_form.setDisabled( "group_id", true);
+		g_form.setDisabled( "comments", true);
+		g_form.setDisabled( "name", true);
+		g_form.setDisabled( "workflow", true);
+		g_form.setDisabled( "action_script_name", true);
+		g_form.setDisabled( "script", true);
+		g_form.setDisabled( "is_script", true);
+		g_form.setDisabled( "action_order", true);
+		g_form.setDisabled( "provider", true);
+		g_form.setDisabled( "credentials", true);
+		g_form.setDisabled( "version", true);
+		g_form.setDisabled( "endpoint_url", true);
+		g_form.setDisabled( "interface_id", true);
+		g_form.setDisabled( "method", true);
+		g_form.setDisabled( "action_script_cat", true);
+		g_form.setDisabled( "ipam_method_name", true);
+		g_form.setDisabled( "ipam_provider_type", true);		
+		
+	}
+}
+
+function fetchOrderNumber(){
+	var ruleId = g_form.getValue( "policy_rule");
+	if ( ruleId != "") {
+		var ajax = new GlideAjax("PolicyOperationsUtil");
+		ajax.addParam("sysparm_name", "fetchNextOrder");
+		ajax.addParam("type", "action");
+		ajax.addParam("parentId", ruleId);
+		ajax.getXML(function(serverResponse) {
+			console.info(serverResponse);
+			var optionsObj = JSON.parse(serverResponse.responseXML.getElementsByTagName("xml")[0].getAttribute("answer"));
+			if (typeof optionsObj != "undefined") {
+				g_form.setValue( "action_order", optionsObj.order);
+			}
+		});
+	}
+}
+]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-11 04:43:49</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>374df8b05b103200a821273a41f91aa7</sys_id>
+        <sys_mod_count>277</sys_mod_count>
+        <sys_name>Policy_Rule_Action_On_Load</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_374df8b05b103200a821273a41f91aa7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-07 19:26:33</sys_updated_on>
+        <table>sn_cmp_pol_action</table>
+        <type>onLoad</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

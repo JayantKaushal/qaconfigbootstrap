@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_action_view">
+    <sys_ui_action_view action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_ui_action_view</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-11 17:58:59</sys_created_on>
+        <sys_id>882e87cf87810300bf4a471c97cb0ba6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Submit.policies_from_card</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_ui_action display_value="Save">bb6d43cf87810300bf4a471c97cb0ba0</sys_ui_action>
+        <sys_ui_view display_value="policies_from_card" name="policies_from_card">9f66340c0b010300d4682f15d6673abc</sys_ui_view>
+        <sys_update_name>sys_ui_action_view_882e87cf87810300bf4a471c97cb0ba6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-11 17:58:59</sys_updated_on>
+        <visibility>include</visibility>
+    </sys_ui_action_view>
+</record_update>

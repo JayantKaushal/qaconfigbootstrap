@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPBlueprintOrchestrationHelper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPBlueprintOrchestrationHelper</name>
+        <script><![CDATA[var CMPBlueprintOrchestrationHelper = Class.create();
+CMPBlueprintOrchestrationHelper.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+    BP_STAGE_RESOURCE_OP_GRAPH : 'sn_cmp_bp_stage_res_op_graph',
+
+	/*
+	*Fetch the execution plan data for blueprint operation
+	*/
+	getBlueprintExecutionPlanData : function(blueprintOperation) {
+		var startTime = new Date().getTime();
+		var executionPlanData = [];
+		var duplicateDataCheck =[],indegreeObj={};
+		var executionPlanDataGR = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		executionPlanDataGR.addQuery("bp_stage_operation",blueprintOperation);
+		executionPlanDataGR.query();
+		while(executionPlanDataGR.next()) {
+			var blueprintExecutionPlanDTO = this.prepareExecutionPlan(executionPlanDataGR,indegreeObj);
+			executionPlanData.push(blueprintExecutionPlanDTO);
+		}
+		var endTime = new Date().getTime();
+		//Time logging
+		gs.info("Time taken to fetch the execution plan data :"+(endTime-startTime));
+		return executionPlanData;
+},
+
+	/*
+	* Inserting data for the stage resource execution graph
+	*/
+	makeParentChildMapping : function (executionId,parentOperation,childOperation,status) {
+		var parentChildMapperGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		parentChildMapperGr.blueprint_stage_op = executionId;
+		parentChildMapperGr.parent_operation = parentOperation;
+		parentChildMapperGr.child_operation = childOperation;
+		parentChildMapperGr.status = true;
+		parentChildMapperGr.in_degree = 0;
+		parentChildMapperGr.insert();
+	},
+
+
+	/*Creating the response for the execution plan requried to show the flow of operations*/
+	prepareExecutionPlan : function(executionPlanDataGR,indegreeObj) {
+		var indegreeVal=0 ;
+		var elementId = "";
+		var parentStep = executionPlanDataGR.getUniqueValue();
+			// if we already prepared the parent data
+			var blueprintExecutionPlanDTO = {};
+			blueprintExecutionPlanDTO['active'] = true;
+			elementId = executionPlanDataGR.bp_stage_resource+"";
+			 //Calculating in_degree
+			if(gs.nil(indegreeObj[elementId])) {
+				indegreeVal=0;
+				indegreeObj[elementId] = indegreeVal;
+			} else {
+				indegreeObj[elementId] = indegreeObj[elementId]+1;
+			}
+			blueprintExecutionPlanDTO['in_degree'] = 0;
+			blueprintExecutionPlanDTO['element_id'] = elementId;
+			blueprintExecutionPlanDTO['element_name'] = executionPlanDataGR.bp_stage_resource.alias_name+"";
+			blueprintExecutionPlanDTO['id'] = parentStep;
+			blueprintExecutionPlanDTO['design_id'] = parentStep;
+			blueprintExecutionPlanDTO['name'] = executionPlanDataGR.rb_operation_impl.operation.name+"";
+			blueprintExecutionPlanDTO['operationImplId'] = executionPlanDataGR.rb_operation_impl+"";
+			blueprintExecutionPlanDTO['outLinks'] =  this.findStageResourceOperationOutlinks(executionPlanDataGR.getUniqueValue());
+		    blueprintExecutionPlanDTO['condition'] = executionPlanDataGR.condition_text+"";
+
+			// interface is the reserved keyword in javascript cannot dot walk
+			var resourceOp = executionPlanDataGR.rb_operation_impl+"";
+			var resourceOpGr = new GlideRecord("sn_cmp_rb_op_impl");
+			resourceOpGr.get(resourceOp);
+			var resourceInterfaceGr = new GlideRecord("sn_cmp_rb_resourceinterface");
+			resourceInterfaceGr.get(resourceOpGr.getValue("interface"));
+			blueprintExecutionPlanDTO['interface'] = resourceInterfaceGr.getValue("name");
+		    blueprintExecutionPlanDTO['interfaceId'] = resourceInterfaceGr.getValue("sys_id");
+			blueprintExecutionPlanDTO['resourceBlockId'] = executionPlanDataGR.rb_operation_impl.resource+"";
+
+
+
+
+		return blueprintExecutionPlanDTO;
+	},
+
+	/**Outlinks represent the connections in the execution plan screen
+	*Function to get the child operation
+	*/
+	findStageResourceOperationOutlinks : function(parentOperation) {
+		var outlinks = [], childStep="";
+		var parentStepGR = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		parentStepGR.addQuery("parent_operation",parentOperation);
+		parentStepGR.query();
+		while(parentStepGR.next()) {
+			childStep = parentStepGR.getValue("child_operation");
+			if(!gs.nil(childStep)) {
+				outlinks.push(childStep);
+			}
+		}
+		return outlinks;
+	},
+
+	/**Delete edge between two connections**/
+	deleteExecutionPlanEdge : function(parentOperation, childOperation) {
+		var deleteEdgeGR = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		deleteEdgeGR.addQuery("parent_operation",parentOperation);
+		deleteEdgeGR.addQuery("child_operation",childOperation);
+		deleteEdgeGR.query();
+		var bpOperationId = null;
+		if(deleteEdgeGR.next()) {
+			deleteEdgeGR.setValue("child_operation","");
+			deleteEdgeGR.update();
+			
+			bpOperationId = deleteEdgeGR.blueprint_stage_op;
+			// set plan to be customized so that we will stop auto regarranging serialized plan
+			this.updateStageOperationIsPlanCustomized(bpOperationId, 1);
+		}
+		
+		return true;
+
+	},
+
+	/**Add the edge between two operations in execution plan**/
+	addExecutionPlanEdge : function(parentOperation, childOperation, bpOperationId) {
+		var addFromEdgeGR = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		addFromEdgeGR.addQuery("parent_operation",parentOperation);
+		addFromEdgeGR.query();
+		if(addFromEdgeGR.next()){
+			if(gs.nil(addFromEdgeGR.child_operation)) {
+				addFromEdgeGR.child_operation = childOperation;
+				addFromEdgeGR.update();
+			} else {
+				this.makeParentChildMapping(bpOperationId,parentOperation,childOperation,true);
+			}
+		} else {
+			this.makeParentChildMapping(bpOperationId,parentOperation,childOperation,true);
+		}
+		
+		// set plan to be customized so that we will stop auto regarranging serialized plan
+		this.updateStageOperationIsPlanCustomized(bpOperationId, 1);
+		
+		return true;
+	},
+	
+	/**Update stage operation isPlanCustomized flag**/
+	updateStageOperationIsPlanCustomized : function(bpStageOperationId, isPlanCustomized) {
+		var bpStageOperationGR = new GlideRecord("sn_cmp_bp_stage_op");
+		bpStageOperationGR.addQuery("sys_id",bpStageOperationId);
+		bpStageOperationGR.query();
+		if (bpStageOperationGR.next()) {
+			bpStageOperationGR.is_plan_customized = isPlanCustomized;
+			bpStageOperationGR.update();
+		}
+	},
+	
+    type: 'CMPBlueprintOrchestrationHelper'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-19 06:52:22</sys_created_on>
+        <sys_id>f1052a650b80030003b6c97193673a90</sys_id>
+        <sys_mod_count>150</sys_mod_count>
+        <sys_name>CMPBlueprintOrchestrationHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f1052a650b80030003b6c97193673a90</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-24 20:25:48</sys_updated_on>
+    </sys_script_include>
+</record_update>

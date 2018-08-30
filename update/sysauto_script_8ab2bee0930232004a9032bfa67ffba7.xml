@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sysauto_script">
+    <sysauto_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition/>
+        <conditional>false</conditional>
+        <name>Fill in tag assignments</name>
+        <run_as display_value="System Administrator">6816f79cc0a8016401c5a33be04be441</run_as>
+        <run_as_tz/>
+        <run_dayofmonth>1</run_dayofmonth>
+        <run_dayofweek>1</run_dayofweek>
+        <run_period>1970-01-01 00:00:10</run_period>
+        <run_start>2017-04-04 07:07:37</run_start>
+        <run_time>1970-01-01 08:00:00</run_time>
+        <run_type>periodically</run_type>
+        <script><![CDATA[assignStackGroupUser();
+setEmptyTagValues();
+
+function assignStackGroupUser() {
+	var tagUtil = new CmpTagUtil();
+
+	var histGr = new GlideRecord('sn_cmp_rsrc_tag_history');
+	histGr.addQuery('sys_updated_on', '>', gs.hoursAgo(24));
+	histGr.addQuery('current', true);
+	histGr.addNotNullQuery('cmdb_ci.sys_class_name');
+	var tvCond = histGr.addNotNullQuery('tag_values.stack');
+	tvCond.addCondition('cmdb_ci.sys_class_name', '!=', 'sn_cmp_stack');
+	tvCond.addOrCondition('tag_values.user_group_value_id', '!=', '');
+	tvCond.addOrCondition('tag_values.user.value_id', '!=', '');
+	histGr.addNullQuery('cmdb_ci.assigned_to');
+	histGr.addNullQuery('cmdb_ci.assignment_group');
+	histGr.setLimit(100);
+	histGr.orderBy('sys_updated_on');
+	histGr.query();
+	while(histGr.next()) {
+		var itemGr = new GlideRecord('sn_cmp_stack_item');
+		if (!itemGr.get('ci_instance_id', histGr.cmdb_ci))
+			tagUtil.setOwnersFromTags(histGr);
+	}
+}
+
+function setEmptyTagValues() {
+	var tagUtil = new CmpTagUtil();
+	var ciGr = new GlideRecord('cmdb_ci');
+	ciGr.addEncodedQuery(
+		'sys_updated_on>=javascript:gs.hoursAgo(24)'+
+		'^sys_class_nameINSTANCEOFcmdb_ci_vm_object'+
+		'^ORsys_class_name=cmdb_ci_nic'+
+		'^ORsys_class_name=cmdb_ci_storage_volume'+
+		'^RLQUERYsn_cmp_rsrc_tag_history.cmdb_ci,=00^ENDRLQUERY'
+	);
+	ciGr.setLimit(400);
+	ciGr.query();
+	while(ciGr.next())
+		tagUtil.associateEmptyTagValuesWithCi(ciGr.sys_id);
+}
+]]></script>
+        <sys_class_name>sysauto_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-07 18:26:05</sys_created_on>
+        <sys_id>8ab2bee0930232004a9032bfa67ffba7</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>Fill in tag assignments</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sysauto_script_8ab2bee0930232004a9032bfa67ffba7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-26 22:39:17</sys_updated_on>
+        <upgrade_safe>false</upgrade_safe>
+    </sysauto_script>
+</record_update>

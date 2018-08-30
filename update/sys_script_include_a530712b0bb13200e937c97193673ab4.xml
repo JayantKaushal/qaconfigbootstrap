@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintServiceHelper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintServiceHelper</name>
+        <script><![CDATA[var BlueprintServiceHelper = Class.create();
+BlueprintServiceHelper.prototype = {
+    initialize: function() {
+    },
+	getAllBlueprint: function(bpLayerId, bpName,currentPage,limit,selectedStatusId,bpCategoryId) {
+		var blueprintDTOs = [];
+		var currentRecordIndex = parseInt(currentPage, 10);
+		var limitRecordIndex = parseInt(limit, 10);
+		var user = gs.getUser();
+		var blueprintGR = new GlideRecordSecure("sn_cmp_bp_blueprint");
+		if (!gs.nil(bpLayerId))
+			blueprintGR.addQuery("layer", bpLayerId);
+		if (!gs.nil(bpName))
+			blueprintGR.addQuery("name", "CONTAINS", bpName);
+		if(selectedStatusId && !gs.nil(selectedStatusId)){
+			blueprintGR.addQuery("status", selectedStatusId);
+		}
+		if(bpCategoryId && !gs.nil(bpCategoryId))
+			blueprintGR.addQuery("category", bpCategoryId);
+
+		blueprintGR.chooseWindow(--currentRecordIndex, currentRecordIndex + limitRecordIndex, false);
+		blueprintGR.orderBy("name");
+		blueprintGR.query();
+		while (blueprintGR.next()) {
+			var blueprintDTO = this.convertBlueprintGRToDTO(blueprintGR);
+			blueprintDTOs.push(blueprintDTO);
+		}
+		return blueprintDTOs;
+	},
+
+	getAllGlobalPropertiesByStageOperation: function(stageOperationId) {
+		var globalPropertyDTOs = [];
+		var globalPropertyDTO = {};
+		var globalPropGR = new GlideRecord("sn_cmp_bp_global_prop");
+		globalPropGR.addQuery("bp_stage_operation", stageOperationId);
+		globalPropGR.query();
+		while (globalPropGR.next()) {
+			globalPropertyDTO = this.convertGlobalPropertyGlideRecordToDTO(globalPropGR);
+			globalPropertyDTOs.push(globalPropertyDTO);
+		}
+		return globalPropertyDTOs;
+	},
+
+
+	getFirstCatalogItemForBlueprintOperation : function (blueprintId,bpOperationId) {
+		var catalogItems = [];
+		var firstCatItem = "";
+		catalogItems = this.getAllCatalogItemForBlueprintOperation(blueprintId,bpOperationId);
+		if(catalogItems.length>0) {
+			firstCatItem = catalogItems[0];
+		}
+		return firstCatItem;
+	},
+
+	getAllCatalogItemForBlueprintOperation : function(blueprintId,bpOperationId) {
+		var catItem="";
+		var catalogItems = [];
+		var glideRecordSecure = new GlideRecord("sn_cmp_bp_form_behavior");
+		glideRecordSecure.addQuery("stage_operation", bpOperationId);
+		glideRecordSecure.addQuery("bp_association", blueprintId);
+		glideRecordSecure.query();
+		while (glideRecordSecure.next()) {
+			catItem = glideRecordSecure.getValue("cat_item_association");
+			if (!gs.nil(catItem)) {
+				catalogItems.push(catItem);
+			}
+		}
+		return catalogItems;
+	},
+ getBlueprintStageOperationByName : function(stageModelId, blueprintOperation) {
+
+		var blueprintStageOperationDTO = {};
+		var gr = new GlideRecord("sn_cmp_bp_stage_op");
+		gr.addQuery("blueprint_stage_model", stageModelId);
+		gr.addQuery("name", blueprintOperation);
+		gr.query();
+		if (gr.next()) {
+			blueprintStageOperationDTO = this.convertBlueprintStageOperationGRToDTO(gr);
+		}
+		return blueprintStageOperationDTO;
+	},
+
+	 getStageResourceOperationAttributes : function(stageResOperationId) {
+		var stageResourceOperationAttributeDTOs = [];
+		var tlrAttributes = [];
+		var stageResourceOperationAttrGR = new GlideRecord("sn_cmp_bp_stage_res_op_attr");
+		stageResourceOperationAttrGR.addQuery("stage_resource_operation", stageResOperationId);
+		stageResourceOperationAttrGR.query();
+		while (stageResourceOperationAttrGR.next()) {
+		if (tlrAttributes == "") {
+			tlrAttributes = this.getAllTLRAttributes(stageResourceOperationAttrGR.stage_resource_operation.bp_stage_operation.name);
+		}			stageResourceOperationAttributeDTOs.push(this.convertStageResourceOperationAttributeGlideRecordToDTO(stageResourceOperationAttrGR, tlrAttributes));
+		}
+
+		return stageResourceOperationAttributeDTOs;
+	},
+    //function to get all tlr attributes including ldc which is not added to sn_cmp_tlr_op_attr
+	getAllTLRAttributes : function(operationName) {
+		var allTlrAttributes = this.getTLRAttributes(operationName);
+		allTlrAttributes.push('Logical_Datacenter');
+		return allTlrAttributes;
+	},
+	getTLRAttributes: function(operationName) {
+				var topLevelResourceAttributeGR = new GlideRecord("sn_cmp_tlr_op_attr");
+		topLevelResourceAttributeGR.addQuery("operation", operationName);
+		topLevelResourceAttributeGR.query();
+		var tlrAttributes = "";
+		while (topLevelResourceAttributeGR.next()) {
+			tlrAttributes += (topLevelResourceAttributeGR.attribute);
+			if (topLevelResourceAttributeGR.hasNext())
+			  tlrAttributes += ",";
+		}
+		return tlrAttributes.split(',');
+	},
+	  getStageModel : function(blueprintId, stage) {
+		var stageModelDTO = {};
+		try {
+			var stageModel = new GlideRecord("sn_cmp_bp_stage_model");
+			stageModel.addQuery("blueprint", blueprintId);
+			stageModel.addQuery("stage", this.getStageIdByName("Default"));
+			stageModel.query();
+			if (stageModel.next()) {
+					gs.debug("Retrieved stage model for blueprint " + blueprintId);
+				stageModelDTO = this.createStageModel(stageModel);
+			} else {
+					gs.info("No matching stage resource found for the blueprint " + blueprintId);
+			}
+		} catch (ex) {
+			gs.error("Exception when getting the stage model for blueprint :" + blueprintId);
+			throw ex;
+		}
+
+		return stageModelDTO;
+
+	},
+
+
+	 getStepsForBPOperation : function (bpOperationId)  {
+		var stageResourceOperationDTOs = [];
+		var stageResourceOperationGR = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOperationGR.addQuery("bp_stage_operation", bpOperationId);
+		stageResourceOperationGR.orderBy("operation_order");
+		stageResourceOperationGR.query();
+		while (stageResourceOperationGR.next()) {	stageResourceOperationDTOs.push(this.convertStageResourceOperationGlideRecordToDTO(stageResourceOperationGR));
+		}
+
+		return stageResourceOperationDTOs;
+	},
+
+	createStageModel : function(stageModel) {
+		var stageModelDTO = {};
+		stageModelDTO['id']=stageModel.getValue("sys_id");
+		stageModelDTO['blueprintId']=stageModel.getValue("blueprint");
+		stageModelDTO['stageId']=stageModel.getValue("stage");
+		stageModelDTO['intent']=stageModel.getValue("intent");
+		return stageModelDTO;
+	},
+
+	  getStageIdByName : function(stageName) {
+		var stageId = "";
+		try {
+			var stage = new GlideRecord("sn_cmp_bp_stage");
+			stage.addQuery("name", stageName);
+			stage.query();
+			if (stage.next()) {
+				stageId = stage.getValue("sys_id");
+					gs.debug("Stage ID is " + stageId + " for stage name :" + stageName);
+			} else {
+					gs.debug("Stage ID not found for name " + stageName);
+
+			}
+		} catch (ex) {
+			gs.error("Error in querying stage {}", stageName);
+			throw ex;
+		}
+		return stageId;
+	},
+
+	getOperationSteps : function(bpOperationId) {
+		var stageResourceOperationDTOs = [];
+		var stageResourceOperationGR = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOperationGR.addQuery("bp_stage_operation", bpOperationId);
+		stageResourceOperationGR.orderBy("operation_order");
+		stageResourceOperationGR.query();
+		while (stageResourceOperationGR.next()) {
+			stageResourceOperationDTOs.push(this.convertStageResourceOperationGlideRecordToDTO(stageResourceOperationGR));
+		}
+
+		return stageResourceOperationDTOs;
+	},
+
+	getStageResourceAndDeployment : function(blueprintId) {
+			var stageResAndDepMap = {};
+			var stageModel = this.getStageModel(blueprintId, "Default");
+
+			var allStageResourcesForStageModel = this.getAllStageResourcesForStageModel(stageModel.id);
+		stageResAndDepMap['stageResources'] = allStageResourcesForStageModel;
+			//stageResAndDepMap.set("stageResources", allStageResourcesForStageModel);
+			var resourceDeploymentDTOs = this.getStageResourceDeploymentByStageModel(stageModel.id);
+		stageResAndDepMap['deploymentModel'] = resourceDeploymentDTOs;
+			//stageResAndDepMap.set("deploymentModel", resourceDeploymentDTOs);
+		return stageResAndDepMap;
+	},
+
+	 getAllStageResourcesForStageModel : function(stageModelId) {
+		var stageResourceDTOs = [];
+		var stageResourceGR = new GlideRecord("sn_cmp_bp_stage_resource");
+		stageResourceGR.addQuery("bp_stage_model", stageModelId);
+		stageResourceGR.query();
+		while (stageResourceGR.next()) {
+			stageResourceDTOs.push(this.convertStageResourceGlideRecordToDTO(stageResourceGR));
+		}
+		return stageResourceDTOs;
+	},
+
+	getStageResourceDeploymentByStageModel : function(stageModelId) {
+		var stageResourceDeploymentDTOs = [];
+
+		var stageResourceGR = new GlideRecord("sn_cmp_bp_stage_resource_dep");
+		stageResourceGR.addQuery("bp_stage_model", stageModelId);
+		stageResourceGR.query();
+		while (stageResourceGR.next()) {
+			var stageResourceDepDTO = this.convertStageResourceDeploymentGlideRecordToDTO(stageResourceGR);
+			stageResourceDeploymentDTOs.push(stageResourceDepDTO);
+		}
+		return stageResourceDeploymentDTOs;
+	},
+
+	 convertStageResourceDeploymentGlideRecordToDTO : function(stageResourceGR) {
+			var stageResourceDeploymentDTO = {};
+			stageResourceDeploymentDTO['id']=stageResourceGR.getValue("sys_id");
+			stageResourceDeploymentDTO['hostResource']=stageResourceGR.getValue("host_resource");
+			stageResourceDeploymentDTO['guestAssociationName']=stageResourceGR.getValue("guest_association_name");
+			stageResourceDeploymentDTO['hostAssociationName']=stageResourceGR.getValue("host_association_name");
+			stageResourceDeploymentDTO['guestResource']=stageResourceGR.getValue("guest_resource");
+			stageResourceDeploymentDTO['deploymentType']=stageResourceGR.getDisplayValue("deployment_type");
+			stageResourceDeploymentDTO['endpoint']=stageResourceGR.getValue("endpoint");
+			if(!gs.nil(stageResourceGR.getValue("endpoint"))){
+				var endpointLabel =  this.getEndpointLabel(stageResourceGR.getValue("endpoint"));
+				if(!gs.nil(endpointLabel))
+					stageResourceDeploymentDTO['endpointLabel']=endpointLabel;
+			}
+			return stageResourceDeploymentDTO;
+		},
+
+	  getEndpointLabel: function(tableName)  {
+		var tables = new GlideRecord("sys_db_object");
+		tables.addQuery("name", tableName);
+		tables.query();
+		if (tables.next())
+			return tables.getValue("label");
+		else
+			return "";
+	},
+	
+	 getStageResourceByAliasName : function(stageModelId, aliasName) {
+		var gr = new GlideRecord("sn_cmp_bp_stage_resource");
+		gr.addQuery("bp_stage_model", stageModelId);
+		gr.addQuery("alias_name", aliasName);
+		gr.query();
+		if (gr.next()) 
+		    return this.convertStageResourceGlideRecordToDTO(gr);
+
+		return null;
+	},
+	
+	getStageResourceOperationByAlias : function(bpStageOperationId, aliasName) {
+		var gr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		gr.addQuery("bp_stage_operation", bpStageOperationId);
+		gr.addQuery("alias_name", aliasName);
+		gr.query();
+		if (gr.next()) 
+		    return this.convertStageResourceOperationGlideRecordToDTO(gr);
+		
+		return null;
+	},
+
+	getStageResourceByCatItemName : function(catItemName) {
+		var formBehaviourGRRecord = new GlideRecord('sn_cmp_bp_form_behavior');
+		formBehaviourGRRecord.addQuery('cat_item_association.name', catItemName);
+		formBehaviourGRRecord.query();
+		if (formBehaviourGRRecord.next())
+			return formBehaviourGRRecord.getDisplayValue('stage_operation');
+		return null;
+	},
+
+	convertStageResourceGlideRecordToDTO : function(stageResourceGR) {
+		var stageResourceDTO = {};
+			stageResourceDTO['id']=stageResourceGR.getValue("sys_id");
+			stageResourceDTO['aliasName']=stageResourceGR.getValue("alias_name");
+			stageResourceDTO['resourceId']=stageResourceGR.getValue("resource_block");
+			stageResourceDTO['resBlockName']=stageResourceGR.getDisplayValue("resource_block");
+			stageResourceDTO['stageModelId']=stageResourceGR.getValue("bp_stage_model");
+			stageResourceDTO['type']=stageResourceGR.getDisplayValue("type");
+			stageResourceDTO['typeId']=stageResourceGR.getValue("type");
+			stageResourceDTO['hostCI']=stageResourceGR.getValue("host_ci");
+			stageResourceDTO['constraintCSV']=stageResourceGR.getValue("constraint");
+			return stageResourceDTO;
+	},
+
+	convertStageResourceOperationGlideRecordToDTO : function(stageResourceOperationGR) {
+		var stageResourceOperationDTO = {};
+			stageResourceOperationDTO['id']=stageResourceOperationGR.getValue("sys_id");
+			stageResourceOperationDTO['aliasName'] = stageResourceOperationGR.getValue("alias_name");
+			stageResourceOperationDTO['uniqueId']=stageResourceOperationGR.getValue("unique_id");
+			stageResourceOperationDTO['resourceId']=stageResourceOperationGR.getValue("resource_block");
+			stageResourceOperationDTO['stageResourceId']=stageResourceOperationGR.getValue("bp_stage_resource");
+       	    stageResourceOperationDTO['stageResource']=stageResourceOperationGR.getDisplayValue("bp_stage_resource");
+		    stageResourceOperationDTO['resourceOperationImplId']=stageResourceOperationGR.getValue("rb_operation_impl");
+			stageResourceOperationDTO['resourceOpImpl']=stageResourceOperationGR.getDisplayValue("rb_operation_impl");
+			stageResourceOperationDTO['type']=stageResourceOperationGR.getValue("type");
+			stageResourceOperationDTO['parentId']=stageResourceOperationGR.getValue("parent_id");
+			stageResourceOperationDTO['conditionText']=stageResourceOperationGR.getValue("condition_text");
+			stageResourceOperationDTO['operationOrder']= stageResourceOperationGR.getValue("operation_order");
+			stageResourceOperationDTO['stageOperationId']=stageResourceOperationGR.getValue("bp_stage_operation");
+			stageResourceOperationDTO['operationName']=stageResourceOperationGR.getDisplayValue("bp_stage_operation");
+			return stageResourceOperationDTO;
+	},
+
+	convertStageResourceOperationAttributeGlideRecordToDTO: function(stageResourceOperationAttrGR, tlrAttributes) {
+		var stageResourceOperationAttributeDTO = {};
+		var name = stageResourceOperationAttrGR.getValue("name");
+			stageResourceOperationAttributeDTO['id']= stageResourceOperationAttrGR.getValue("sys_id");
+			stageResourceOperationAttributeDTO['name']=name;
+			stageResourceOperationAttributeDTO['useInOperation']=stageResourceOperationAttrGR.getValue("use_in_operation")==1?true:false;
+			stageResourceOperationAttributeDTO['defaultValue']=stageResourceOperationAttrGR.getValue("default_value");
+			stageResourceOperationAttributeDTO['typeOfMap']=stageResourceOperationAttrGR.getValue("type_of_map");
+		    stageResourceOperationAttributeDTO['rbOpImplParamId']=stageResourceOperationAttrGR.getValue("rb_operation_attribute");
+			stageResourceOperationAttributeDTO['stageResourceOperationId']=stageResourceOperationAttrGR.getValue("stage_resource_operation");
+		
+stageResourceOperationAttributeDTO['isTLRAttribute'] = tlrAttributes.indexOf(name) > -1;
+			return stageResourceOperationAttributeDTO;
+	},
+
+convertBlueprintStageOperationGRToDTO : function(gr) {
+			var blueprintStageOperationDTO = {};
+			blueprintStageOperationDTO['id'] = gr.getValue("sys_id");
+			blueprintStageOperationDTO['operationName'] = gr.getValue("name");
+			blueprintStageOperationDTO['resourceOperationImplId']= gr.getValue("operation_impl");
+			blueprintStageOperationDTO['stageModelId'] = gr.getValue("blueprint_stage_model");
+
+			return blueprintStageOperationDTO;
+		},
+
+	convertGlobalPropertyGlideRecordToDTO : function(globalPropertyGR) {
+			var globalPropertyDTO = {};
+			globalPropertyDTO['id']= globalPropertyGR.getValue("sys_id");
+			globalPropertyDTO['name']= globalPropertyGR.getValue("name");
+			globalPropertyDTO['opUniqueId']=globalPropertyGR.getValue("resource_op_unique_id");
+			globalPropertyDTO['stageResOpAttrId']=globalPropertyGR.getValue("bp_stage_res_op_attr");
+			globalPropertyDTO['bpStageOperationId']=globalPropertyGR.getValue("bp_stage_operation");
+			globalPropertyDTO['mandatory']=globalPropertyGR.getValue("mandatory")==1?true:false;
+			globalPropertyDTO['order'] = globalPropertyGR.getDisplayValue("order");
+			return globalPropertyDTO;
+		},
+
+	convertBlueprintGRToDTO : function(blueprintGR) {
+		var blueprintDTO = {};
+		blueprintDTO['name'] = blueprintGR.getValue("name");
+		blueprintDTO['id'] = blueprintGR.getValue("sys_id");
+		blueprintDTO['description'] = blueprintGR.getValue("description");
+		blueprintDTO['status'] = blueprintGR.getDisplayValue("status");
+		blueprintDTO['layer'] = blueprintGR.getValue("layer");
+		blueprintDTO['tlr'] = blueprintGR.getDisplayValue("tlr");
+		blueprintDTO['category'] =  blueprintGR.getDisplayValue("category");
+		blueprintDTO['categoryId'] = blueprintGR.getValue("category");
+		blueprintDTO['tlrId'] = blueprintGR.getValue("tlr");
+		blueprintDTO['svcLayerId'] = blueprintGR.getValue("svc_layer");
+		blueprintDTO['created'] = blueprintGR.getValue("sys_created_on");
+		blueprintDTO['createdBy'] = blueprintGR.getValue("sys_created_by");
+		return blueprintDTO;
+	},
+	/**
+	* Method will check if there is NO active stack associated with the catalog item delete it
+	* else throw error message
+	*/
+	deleteCatalogItem : function(catalogId) {
+		var catalogItemDeleted = false;
+		var isActiveStack = this.isActiveStack('sc_cat_item', catalogId);
+			if (isActiveStack) {
+				return catalogItemDeleted;
+			}
+			var catalogGr = new GlideRecord('sn_cmp_bp_cat_item');
+			catalogGr.addQuery("sys_id", catalogId);
+			catalogGr.query();
+			if (catalogGr.next()) {
+				catalogItemDeleted = catalogGr.deleteRecord();
+			}
+		return catalogItemDeleted;
+
+	},
+
+	isActiveStack : function (type, sysId) {
+		var hasActiveStack = false;
+		var grStack = new GlideRecord('sn_cmp_stack');
+		grStack.addQuery(type, sysId);
+		grStack.addQuery('stack_status','2');
+		grStack.query();
+		while (grStack.next()) {
+		  hasActiveStack = true;
+		  break;
+		}
+
+		return hasActiveStack;
+	},
+	
+	// For given blueprint search whether there is active order in progress
+	isActiveOrderForBlueprint : function(blueprintSysId) {
+        // Get bp sys Id and search form behaviour
+        var grFb = new GlideRecord('sn_cmp_bp_form_behavior');
+        grFb.addQuery('bp_association', blueprintSysId);
+        grFb.query();
+
+        // there could be multiple form behaviour records for given BP
+        while(grFb.next()) {
+            // get cat item
+            var catItem = grFb.cat_item_association  + '';
+            // Check if there is any active req item associated with above cat item
+            // Check if there is any workflow running based on above req item
+            var grReqItem = new GlideRecord('sc_req_item');
+            grReqItem.addQuery('cat_item', catItem);
+            grReqItem.addQuery('context.state', 'NOT IN', 'finished, cancelled');
+            grReqItem.query();
+            // If record found, means the BP cannot be deleted
+            if(grReqItem.hasNext()) {
+                return true; 
+            }
+        }
+        return false;
+    },
+
+    type: 'BlueprintServiceHelper'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-04 11:01:55</sys_created_on>
+        <sys_id>a530712b0bb13200e937c97193673ab4</sys_id>
+        <sys_mod_count>60</sys_mod_count>
+        <sys_name>BlueprintServiceHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a530712b0bb13200e937c97193673ab4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-02 20:38:50</sys_updated_on>
+    </sys_script_include>
+</record_update>

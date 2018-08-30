@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPConfigManagementProviderUtil</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>CMPConfigManagementProviderUtil</name>
+        <script><![CDATA[var CMPConfigManagementProviderUtil = Class.create();
+CMPConfigManagementProviderUtil.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	fetchConfigCIs : function(){
+		var vTables = {};
+		var tableHierarchyGr = new GlideTableHierarchy('sn_cmp_wl_cfg_mgmt_provider');
+		
+		if( tableHierarchyGr != null && tableHierarchyGr.getTableExtensions() != null && tableHierarchyGr.getTableExtensions().length > 0){
+			vTables.tableList = tableHierarchyGr.getTableExtensions();
+		}else{
+			vTables.tableList = [];
+		}		
+		return JSON.stringify(vTables);
+	},
+    type: 'CMPConfigManagementProviderUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-02-28 06:13:20</sys_created_on>
+        <sys_id>41ca04b15b60130025c9273a41f91aaa</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>CMPConfigManagementProviderUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_41ca04b15b60130025c9273a41f91aaa</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-01 00:31:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

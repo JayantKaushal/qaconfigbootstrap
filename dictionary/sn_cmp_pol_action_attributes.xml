@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Rule Action Attributes" max_length="40" name="sn_cmp_pol_action_attributes" type="collection">
+        <element display="true" hint="Action Name" label="Action Name" mandatory="true" max_length="32" name="action" reference="sn_cmp_pol_action" reference_cascade_rule="delete" type="reference"/>
+        <element hint="List of Action Scripts." label="Action Script Name" max_length="32" name="action_script_name" reference="sn_cmp_pol_action_script" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Does value depend on script?" label="Is Script Based" max_length="40" name="is_script" type="string"/>
+        <element hint="System Generated." label="System Generated" max_length="40" name="is_system_generated" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" hint="Property associated with policy type." label="Property" max_length="100" name="property" type="string"/>
+        <element hint="Script will be executed when policy rule conditions are met." label="Script" max_length="4000" name="script" type="script"/>
+        <element attributes="edge_encryption_enabled=true" hint="Value to be set on selected property." label="Value" max_length="1000" name="value" type="string"/>
+        <index name="index">
+            <element name="action_script_name"/>
+        </index>
+        <index name="index2">
+            <element name="action"/>
+        </index>
+    </element>
+</database>

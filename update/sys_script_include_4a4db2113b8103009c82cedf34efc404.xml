@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPrbOpCreateCatItemForOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPrbOpCreateCatItemForOperationAction</name>
+        <script><![CDATA[var CMPrbOpCreateCatItemForOperationAction = Class.create();
+CMPrbOpCreateCatItemForOperationAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (gs.nil(params.rbName) && gs.nil(params.InterfaceName) && gs.nil(params.opName)) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPrbOpCreateCatItemForOperationAction.doAction: Undefined interface OR operation OR resource block name ",
+					null
+				);
+			}
+			var resource_name = params.rbName;
+			var interface_name = params.InterfaceName;
+			var operation_name = params.opName;
+			var cat_item_create = false;
+
+			/**** Create Catalog Item ***/
+			var cat_item_name = resource_name+"-"+interface_name+"-"+operation_name;  // Change this if you want specific name , else by default catalog item name will be operation name.
+
+			        // Creating catalog item for resource operation
+		var cat_sys_id = '';//catGr.insert();
+		var catGr = new GlideRecord("sn_cmp_rsrc_opr_cat_item");
+		catGr.name = cat_item_name;
+		catGr.workflow = "c61355e3875032003273f4bbe3e3ec2d";
+		catGr.application = "80d50579eb203200979aa5115206fedd";
+		catGr.short_description = "Catalog item to invoke operation";
+
+		var resource_sysId = "";
+		var op_signature_sysId = "";
+		var rb_gr = new GlideRecord("sn_cmp_rb_resourceblock");
+		rb_gr.addQuery("name", resource_name);
+		rb_gr.query();
+		if(rb_gr.next()){
+		  resource_sysId = rb_gr.sys_id;
+		}
+
+		var op_gr = new GlideRecord("sn_cmp_rb_op_signature");
+		op_gr.addQuery("name", operation_name);
+		op_gr.addQuery("interface.name", interface_name);
+		op_gr.query();
+		if(op_gr.next()){
+		  op_signature_sysId = op_gr.sys_id;
+		}
+
+		gs.debug("Found resource -  "+resource_sysId +" ,  Found operation === "+op_signature_sysId);
+
+		var mapping_gr = new GlideRecord("sn_cmp_rb_op_cat_map");
+		mapping_gr.addQuery("resource_block", resource_sysId);
+		mapping_gr.addQuery("operation", op_signature_sysId);
+		mapping_gr.query();
+		if(mapping_gr.next()){
+		  cat_sys_id = mapping_gr.cat_item;
+			cat_item_create = false;
+		}else{
+			cat_sys_id = catGr.insert();
+			cat_item_create = true;
+		  mapping_gr = new GlideRecord("sn_cmp_rb_op_cat_map");
+		  mapping_gr.resource_block = resource_sysId;
+		  mapping_gr.operation = op_signature_sysId;
+		  mapping_gr.cat_item = cat_sys_id;
+		  mapping_gr.update();
+		}
+
+		/* get the existing list of variables
+			var variableMap = new Array();
+			var variables = new GlideRecord("item_option_new");
+			variables.addQuery("cat_item", cat_sys_id);
+			variables.query();
+			while(variables.hasNext()) {
+				variables.next();
+				variableMap[variables.sys_id] = true;
+			}
+		*/
+
+		// creating map for system needed parameters.
+		var systemNeededAttributes = [];
+		systemNeededAttributes.push("resourceId");
+		systemNeededAttributes.push("resourceBlock");
+		systemNeededAttributes.push("resourceInterface");
+		systemNeededAttributes.push("operationName");
+		systemNeededAttributes.push("credential");
+
+                // Creating variables for catalog.
+		var gr = new GlideRecord("sn_cmp_rb_op_impl");
+		gr.addQuery("interface.name", interface_name);
+		gr.addQuery("resource.name", resource_name);
+		gr.addQuery("operation.name", operation_name);
+		//gr.setLimit(1);
+		gr.query();
+		while(gr.next()){
+
+		  var op_impl_param_gr = new GlideRecord("sn_cmp_rb_op_impl_param");
+		  op_impl_param_gr.addQuery("operation", gr.sys_id);
+		  op_impl_param_gr.query();
+
+		 var i = 10;
+		  while(op_impl_param_gr.next()){
+
+			 if(op_impl_param_gr.visibilty){
+
+				 i = i+10;
+				 var order =  op_impl_param_gr.order;
+				 if(order == 0){
+					 order = i;
+				 }
+
+				 var variable = new GlideRecord("item_option_new");
+				 variable.addQuery("cat_item", cat_sys_id);
+				 variable.addQuery("name", op_impl_param_gr.name);
+				 variable.query();
+				 var isInsert = true;
+				 if(variable.hasNext()) {
+					 variable.next();
+					 isInsert = false;
+				 }
+
+				variable.name          = op_impl_param_gr.name;
+				 // Reading mandatory from form parameter.
+				 variable.mandatory = op_impl_param_gr.ismandatory;
+				 variable.type          = 6;
+				 variable.order         = order;
+				 variable.question_text = op_impl_param_gr.name;
+				 variable.cat_item = cat_sys_id;
+
+				 // puttinh help text for variable.
+				 var helpText = op_impl_param_gr.helpText;
+				 if (helpText){
+					variable.show_help = true;
+					variable.help_text = helpText;
+				 }
+
+				 // needs to read default value.
+				 var value = op_impl_param_gr.value;
+
+
+				 if (value){
+					variable.default_value = value;
+				 }
+
+				var regex = op_impl_param_gr.regex;
+				if (regex)
+					variable.regex = regex;
+
+				if(isInsert)
+					variable.insert();
+				 else
+					 variable.update();
+
+				 //variableMap[variables.sys_id] = false;
+			 } else {
+				 // we should not remove system needed variable , even though it comes from operation attribute as createFormParameter false.
+				 if (systemNeededAttributes.indexOf(""+op_impl_param_gr.name) == -1)
+				 	new global.CmpSCUtil().deleteVariableFromCatItem(op_impl_param_gr.name, cat_sys_id);
+		     }
+		  }
+
+		}
+
+		if(cat_item_create) {
+					// Creating variables needed by system
+
+			var system_needed_variable = new GlideRecord("item_option_new");
+			system_needed_variable.name          = "resourceId";
+			system_needed_variable.type          = 6;
+			system_needed_variable.order         = 1;
+			system_needed_variable.question_text = "resourceId";
+			system_needed_variable.cat_item = cat_sys_id;
+			system_needed_variable.insert();
+
+			system_needed_variable = new GlideRecord("item_option_new");
+			system_needed_variable.name          = "resourceBlock";
+			system_needed_variable.type          = 6;
+			system_needed_variable.order         = 2;
+			system_needed_variable.question_text = "resourceBlock";
+			system_needed_variable.cat_item = cat_sys_id;
+			system_needed_variable.insert();
+
+			system_needed_variable = new GlideRecord("item_option_new");
+			system_needed_variable.name          = "resourceInterface";
+			system_needed_variable.type          = 6;
+			system_needed_variable.order         = 3;
+			system_needed_variable.question_text = "resourceInterface";
+			system_needed_variable.cat_item = cat_sys_id;
+			system_needed_variable.insert();
+
+			system_needed_variable = new GlideRecord("item_option_new");
+			system_needed_variable.name          = "operationName";
+			system_needed_variable.type          = 6;
+			system_needed_variable.order         = 4;
+			system_needed_variable.question_text = "operationName";
+			system_needed_variable.cat_item = cat_sys_id;
+			system_needed_variable.insert();
+
+			system_needed_variable = new GlideRecord("item_option_new");
+			system_needed_variable.name          = "credential";
+			system_needed_variable.type          = 6;
+			system_needed_variable.order         = 5;
+			system_needed_variable.question_text = "credential";
+			system_needed_variable.cat_item = cat_sys_id;
+			system_needed_variable.insert();
+
+			// will call to create script for Hiding system needed valiable
+			var type = "onLoad";
+			var name = "Hide system needed variable";
+			var script = " // System generatend script, please do not change"
+            +"\n"+"function onLoad() {"
+        	+"\n"+" g_form.setDisplay('resourceBlock', false);"
+            +"\n"+"	g_form.setDisplay('resourceId', false);"
+        	+"\n"+" g_form.setDisplay('resourceInterface', false);"
+            +"\n"+" g_form.setDisplay('operationName', false);"
+            +"\n"+"	g_form.setDisplay('credential', false);"
+            +"\n"+"}"; //format the script later;
+
+			new global.CmpSCUtil().createCatalogClientSciprt(name,cat_sys_id,type,script);
+		}
+
+		/*
+		for (var sys_id_key in variableMap) {
+			var toBeDeleted = variableMap[sys_id_key];
+			if(toBeDeleted == true) {
+				var deleteIt = new GlideRecord("item_option_new");
+				deleteIt.addQuery("sys_id", toBeDeleted);
+				deleteIt.query();
+				if(deleteIt.hasNext()) {
+					deleteIt.next();
+					//deleteIt.deleteRecord();
+				}
+			}
+		}
+		*/
+
+		//***********************************************************************************
+		// Updating or Creating mapping row for catalog item
+
+		return { sysId: cat_sys_id };
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to generate catalog item"),
+				"CMPrbOpCreateCatItemForOperationAction.doAction(): Failed to generate catalog item",
+				error
+			);
+		}
+    },
+    type: 'CMPrbOpCreateCatItemForOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-06 06:18:43</sys_created_on>
+        <sys_id>4a4db2113b8103009c82cedf34efc404</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>CMPrbOpCreateCatItemForOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_4a4db2113b8103009c82cedf34efc404</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-13 07:49:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

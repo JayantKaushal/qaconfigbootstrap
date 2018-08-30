@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_metadata_link">
+    <sys_metadata_link action="INSERT_OR_UPDATE">
+        <directory>update</directory>
+        <documentkey>7eb56fe40b9c2300d9f9ad4363673a25</documentkey>
+        <payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_application_template">
+    <sn_cmp_application_template action="INSERT_OR_UPDATE">
+        <config_runlist>6ab52fe40b9c2300d9f9ad4363673afa</config_runlist>
+        <config_runlist_provider>sn_cmp_cfg_installable</config_runlist_provider>
+        <name>Webserver</name>
+        <provider_instance display_value="ITom Ansible Tower">aaf6db6c0b5c2300d9f9ad4363673af4</provider_instance>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 10:52:31</sys_created_on>
+        <sys_id>7eb56fe40b9c2300d9f9ad4363673a25</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 10:52:31</sys_updated_on>
+        <template_id>Webserver_431308</template_id>
+    </sn_cmp_application_template>
+</record_update>
+]]></payload>
+        <sys_class_name>sys_metadata_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-30 12:23:47</sys_created_on>
+        <sys_id>f39af7ec0b9c2300d9f9ad4363673ab7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Webserver</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_metadata_link_f39af7ec0b9c2300d9f9ad4363673ab7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-30 12:23:47</sys_updated_on>
+        <tablename>sn_cmp_application_template</tablename>
+    </sys_metadata_link>
+</record_update>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl/>
+        <http_method>GET</http_method>
+        <name>Get request item status</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+	var queryParams = request.queryParams;
+	var req_item = queryParams['req_item'] ? queryParams['req_item'][0] : '';
+	var req_item_gr = new GlideRecord("sc_req_item");
+	req_item_gr.addQuery("number", req_item);
+	req_item_gr.query();
+	var rec = {};
+	if (req_item_gr.next()) {
+
+		rec.catItem = req_item_gr.getValue('cat_item');
+		rec.stage = req_item_gr.getValue('stage');
+		rec.sys_id = req_item_gr.getValue('sys_id');
+		rec.assignedTo = req_item_gr.getValue('assigned_to');
+		rec.assignmentGroup = req_item_gr.getValue('assignmentGroup');
+		rec.number = req_item_gr.getValue('number');
+		rec.openedAt = req_item_gr.getValue('opened_at');
+		rec.openedBy = req_item_gr.getValue('opened_by');
+		rec.state = req_item_gr.getDisplayValue('state');
+	    returnStatus = 200;
+	} else {
+	    rec.message = "Record not found for the given request item id";
+	    returnStatus = 404;
+	}
+    templateBody = global.JSON.stringify(rec);
+	response.setStatus(returnStatus);
+	response.setContentType('application/json');
+	var writer = response.getStreamWriter();
+	writer.writeString(templateBody);    
+
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/now/cmp_catalog_api/status</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/status</relative_path>
+        <request_example/>
+        <requires_acl_authorization>false</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description>Returns the status of the specified request item.</short_description>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-22 22:11:40</sys_created_on>
+        <sys_id>7c89c96f0b2132003ad5c73ef6673a1a</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>GetStatus</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ws_operation_7c89c96f0b2132003ad5c73ef6673a1a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-22 22:11:40</sys_updated_on>
+        <web_service_definition display_value="CMP Catalog API">dbf42f670b5132003ad5c73ef6673a70</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

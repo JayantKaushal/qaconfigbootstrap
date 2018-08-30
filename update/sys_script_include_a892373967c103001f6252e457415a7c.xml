@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDeletePolicyRuleAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDeletePolicyRuleAction</name>
+        <script><![CDATA[var CMPDeletePolicyRuleAction = Class.create();
+CMPDeletePolicyRuleAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try{
+			if (!params.rule_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter/s:rule_id"),
+				"CMPDeletePolicyRuleAction.doAction: Undefined element/s rule_id",
+				null
+				);
+			}
+			var result = {};
+			result.success = true;
+			var ruleGr = new GlideRecord("sn_cmp_pol_rule");
+			ruleGr.addQuery("sys_id", params.rule_id);
+			ruleGr.query();
+			if(ruleGr.next()){
+					result.policy_id = ruleGr.policy + "";
+					ruleGr.deleteRecord();
+				}else
+					result.success = false;
+				
+				return result;
+				
+			}catch(error){
+				var e = error;
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to delete rule"),
+				"CMPDeletePolicyRuleAction.doAction(): Failed to delete rule",
+				error);
+			}
+		}
+	});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-07 23:29:37</sys_created_on>
+        <sys_id>a892373967c103001f6252e457415a7c</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPDeletePolicyRuleAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a892373967c103001f6252e457415a7c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-07 23:55:57</sys_updated_on>
+    </sys_script_include>
+</record_update>

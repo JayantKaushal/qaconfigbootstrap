@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRemoveOperationStepAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRemoveOperationStepAction</name>
+        <script><![CDATA[var CMPRemoveOperationStepAction = Class.create();
+CMPRemoveOperationStepAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.stageOperationId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPRemoveOperationStepAction.doAction: Undefined element name stageOperationId",
+				null
+				);
+			}
+
+			var removedObj = new CMPBPExecutionPlanGenerator().deleteStageResourceOperation(params.stageOperationId, params.bpStageOperationId);
+			return true;
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to remove the operation step"),
+			"CMPRemoveOperationStepAction.doAction(): Failed to remove operation step",
+			error
+			);
+		}
+    },
+    type: 'CMPRemoveOperationStepAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 12:08:07</sys_created_on>
+        <sys_id>e67f10270b3032003bace58525673a1a</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>CMPRemoveOperationStepAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e67f10270b3032003bace58525673a1a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-30 15:25:21</sys_updated_on>
+    </sys_script_include>
+</record_update>

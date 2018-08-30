@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyConditionAttributeAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllPolicyConditionAttributeAction</name>
+        <script><![CDATA[var CMPGetAllPolicyConditionAttributeAction = Class.create();
+CMPGetAllPolicyConditionAttributeAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.criteria_id && !params.policy_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAllPolicyConditionAttributeAction.doAction: Undefined element Id",
+				null
+				);
+			}
+			var critMap = {};
+			
+			var grCondType = new GlideRecord('sn_cmp_pol_condition_type');
+			grCondType.query();
+			while(grCondType.next()) {
+			   critMap[grCondType.name + ''] = grCondType.label + '';
+			}
+				
+			var responseObj = {};
+			
+			switch(params.criteria_id){
+				case "user":
+					responseObj = this.FormUserObject();
+					break;
+					
+				case "formdata":
+					responseObj = this.FormRequestFormDataObject(params.policy_id);
+					break;
+										
+				case "budgetconsumption":
+					responseObj = this.FormBudgetConsumptionObject();
+					break;
+					
+				case "enddate": // No attribute associated with end date
+					break;
+
+				default:
+					break;
+			}
+
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy criteria."),
+				"CMPGetAllPolicyConditionAttributeAction.doAction(): Failed to get all condition attributes",
+				error
+			);
+		}
+    },
+	
+	FormUserObject : function () {
+		var obj = {};
+		var object = this.FormConditionBuilderObject("role", "Role", "reference",'sys_user_role');
+		obj["role"] = object["role"];
+		object = this.FormConditionBuilderObject("group", "Group", "reference",'sys_user_group');
+		obj["group"] = object["group"];
+		object = this.FormConditionBuilderObject("company", "Company", "reference",'core_company');
+		obj["company"] = object["company"];		
+		object = this.FormConditionBuilderObject("cost_center", "Cost Center", "reference",'cmn_cost_center');
+		obj["cost_center"] = object["cost_center"];	
+		object = this.FormConditionBuilderObject("department", "Department", "reference",'cmn_department');
+		obj["department"] = object["department"];
+		return obj;
+	},
+	
+	FormRequestFormDataObject : function (policyId) {
+		// Retrieve policy from given rule
+		var triggerId = '';
+		var instanceId = '';
+		var attribute = {};
+		var policyGr = new GlideRecord('sn_cmp_pol_policy');
+		if(policyGr.get(policyId)) {
+			triggerId = policyGr.target_entity_id + '';
+			// Get associated object id. 
+			instanceId = policyGr.target_entity_instance_id + '';
+		}
+		if(!gs.nil(instanceId)) {
+			var util = new PolicyOperationsUtil();
+			var output = util.fetchOperationParameters(policyId);
+			var optionsObj = JSON.parse(output);
+			if (typeof optionsObj != "undefined") {
+				for (var i = 0; i < optionsObj.length; i++) {
+					var obj = this.FormConditionBuilderObject(optionsObj[i].name, optionsObj[i].name, "string"); // TODO: Pass label and dynamic type
+					for(var key in obj) {
+						attribute[key] = obj[key];
+					}
+				}
+			} 
+			if (Object.keys(attribute).length == 0 && gs.nil(policyGr.operation_name)){
+				attribute  = this.formTLRResponse();
+			}
+		} else { // target_entity_instance_id is not specified retrieve values from resource block
+			attribute  = this.formTLRResponse();
+		}
+		return attribute;
+	},
+	
+	formTLRResponse : function () {
+		var attribute = {};
+		var arr = [];
+		var utilPolicy = new sn_cmp.CloudPolicyUtil();
+		arr = utilPolicy.getTLROperationParameters();
+		for (var j = 0; j < arr.length; j++) {
+			var obj1 = this.FormConditionBuilderObject(arr[j], arr[j], "string"); // TODO: Pass label and dynamic type
+			for(var k in obj1) {
+				attribute[k] = obj1[k];
+			}
+		}
+		return attribute;
+	},
+	
+	FormBudgetConsumptionObject : function () {
+		var obj = {};
+		var object = this.FormConditionBuilderObject("user", "User Consumption", "float","sys_user");
+		obj["user"] = object["user"];
+		object = this.FormConditionBuilderObject("group", "Group Consumption", "float","sys_user_group");
+		obj["group"] = object["group"];
+		return obj;
+	},
+	
+	FormConditionBuilderObject : function(name, label, type, reference) {
+		var outerObj = {};
+		var innerObj = {};
+		innerObj.type = type;
+		innerObj.base_type = type;
+		if (type == "reference")
+			innerObj.base_type = "GUID";
+	
+		innerObj.column_type = "element";
+		//innerObj.default = "test";
+		innerObj.filterable = true;
+		innerObj.hint = "";
+		innerObj.label = label;
+		innerObj.mandatory = false;
+		innerObj.max_length = 32;
+		innerObj.max_unit = "days";
+		innerObj.name = name;
+		innerObj.read_only  = false;
+		innerObj.operators = [];
+		innerObj.operators = this.BuildOperatorArray(type);
+		
+		if(type == "reference") {
+			innerObj.reference = reference;
+			innerObj.reference_attributes = {display_field: "name", ref_ac_columns: Array(0), ref_ac_columns_search: "", ref_ac_display_value: true, ref_auto_completer: ""}; // Call method here
+			innerObj.reference_display_field =  "name";
+			innerObj.operators = [];
+			innerObj.operators = this.BuildOperatorArrayReference(type);
+		} else if(type == "float") {
+			innerObj.operators = [];
+			innerObj.operators = this.BuildOperatorArrayFloat();
+		}
+		outerObj[name] = innerObj;
+		return outerObj;
+	},
+	
+	BuildOperatorArray : function (type) {
+		var arr = [];
+		arr[0] = {label: "is", operator: "=", editor: "field", advancedEditor: "string"};
+		arr[1] = {label: "is not", operator: "!=", editor: "field", advancedEditor: "string"};
+	//	arr[2] = {label: "is anything", operator: "ANYTHING", editor: "none", advancedEditor: "none"};
+		arr[2] = {label: "starts with", operator: "STARTSWITH", editor: "string", advancedEditor: "string"};
+		arr[3] = {label: "ends with", operator: "ENDSWITH", editor: "string", advancedEditor: "string"};
+		arr[4] = {label: "contains", operator: "LIKE", editor: "string", advancedEditor: "string"};
+		arr[5] = {label: "does not contain", operator: "NOT LIKE", editor: "string", advancedEditor: "string"};
+	//	arr[7] = {label: "is empty", operator: "ISEMPTY", editor: "none", advancedEditor: "none"};
+	//	arr[8] = {label: "is not empty", operator: "ISNOTEMPTY", editor: "none", advancedEditor: "none"};
+	//	arr[9] = {label: "is empty string", operator: "EMPTYSTRING", editor: "none", advancedEditor: "none"};
+	//	arr[10] = {label: "is same as", operator: "SAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+	//	arr[11] = {label: "is different from", operator: "NSAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		//if(type == "string") {
+	//		arr[12]  = {label: "is one of", operator: "IN", editor: "field_multiple", advancedEditor: "textarea"};
+	//		arr[13] = {betweenType: "string", label: "between", operator: "BETWEEN", editor: "between_field", advancedEditor: "between_field"};
+	//		arr[14] = {label: "greater than or is", operator: ">=", editor: "field", advancedEditor: "string"};
+	//		arr[15] = {label: "less than or is", operator: "<=", editor: "field", advancedEditor: "string"};
+		//}
+		if(type == "reference") {
+			arr[12] = {label: "is (dynamic)", operator: "DYNAMIC", editor: "field", advancedEditor: "choice_dynamic"};	
+		}
+		return arr;
+	},
+	
+	BuildOperatorArrayReference : function (type) {
+		var arr = [];
+		arr[0] = {label: "is", operator: "=", editor: "field", advancedEditor: "reference"};
+		arr[1]  = {label: "is not", operator: "!=", editor: "field", advancedEditor: "reference"};
+		arr[2] = {label: "is empty", operator: "ISEMPTY", editor: "none", advancedEditor: "none"};
+		arr[3] = {label: "is not empty", operator: "ISNOTEMPTY", editor: "none", advancedEditor: "none"};																	
+		//	arr[4] = {label: "starts with", operator: "STARTSWITH", editor: "string", advancedEditor: "string"};
+		//	arr[5] = {label: "ends with", operator: "ENDSWITH", editor: "string", advancedEditor: "string"};
+		//	arr[6] = {label: "contains", operator: "LIKE", editor: "string", advancedEditor: "string"};
+		//	arr[7] = {label: "does not contain", operator: "NOT LIKE", editor: "string", advancedEditor: "string"};
+		//  arr[8] = {label: "is anything", operator: "ANYTHING", editor: "none", advancedEditor: "none"};
+		//	arr[9] = {label: "is same as", operator: "SAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		//	arr[10] = {label: "is different from", operator: "NSAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+		//  arr[11] = {label: "is empty string", operator: "EMPTYSTRING", editor: "none", advancedEditor: "none"};																
+		//  arr[12] = {label: "is (dynamic)", operator: "DYNAMIC", editor: "field", advancedEditor: "choice_dynamic"};	
+		return arr;
+	},
+	
+	BuildOperatorArrayFloat : function () {
+		var arr = [];
+		arr[0] = {label: "is", operator: "=", editor: "field", advancedEditor: "decimal"};
+		arr[1] = {label: "is not", operator: "!=", editor: "field", advancedEditor: "decimal"};
+	//	arr[2] = {label: "is anything", operator: "ANYTHING", editor: "none", advancedEditor: "none"};
+	//	arr[3] = {label: "is empty", operator: "ISEMPTY", editor: "none", advancedEditor: "none"};
+	//	arr[4] = {label: "is not empty", operator: "ISNOTEMPTY", editor: "none", advancedEditor: "none"};
+	//	arr[5] = {label: "is empty string", operator: "EMPTYSTRING", editor: "none", advancedEditor: "none"};
+	//	arr[6] = {label: "is same as", operator: "SAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+	//	arr[7] = {label: "is different from", operator: "NSAMEAS", editor: "field_name", advancedEditor: "choice_field_names"};
+	//	arr[8]  = {label: "between", operator: "BETWEEN", editor: "between_field", advancedEditor: "between_field", betweenType: "decimal"};
+		arr[2] = {label: "greater than field", operator: "GT_FIELD", editor: "field_name", advancedEditor: "choice_field_names"};
+		arr[3] = {label: "less than field", operator: "LT_FIELD", editor: "field_name", advancedEditor: "choice_field_names"};
+		arr[4] = {label: "greater than or is", operator: ">=", editor: "field", advancedEditor: "decimal"};
+		arr[5] = {label: "less than or is", operator: "<=", editor: "field", advancedEditor: "decimal"};
+	//	arr[13] = {label: "greater than or is field", operator: "GT_OR_EQUALS_FIELD", editor: "field_name", advancedEditor: "choice_field_names"};
+	//	arr[14] = {label: "less than or is field", operator: "LT_OR_EQUALS_FIELD", editor: "field_name", advancedEditor: "choice_field_names"};		
+		return arr;
+	},
+	
+    type: 'CMPGetAllPolicyConditionAttributeAction'
+																		
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-30 20:33:56</sys_created_on>
+        <sys_id>f08ef15f8734030053c9f4bbe3e3ecd7</sys_id>
+        <sys_mod_count>65</sys_mod_count>
+        <sys_name>CMPGetAllPolicyConditionAttributeAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f08ef15f8734030053c9f4bbe3e3ecd7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-13 20:01:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRemoveConstraintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRemoveConstraintAction</name>
+        <script><![CDATA[var CMPRemoveConstraintAction = Class.create();
+CMPRemoveConstraintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.layer_id || !params.node_id || !params.constraint_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPRemoveConstraintAction.doAction: constraint Id, layer id or node id",
+					null
+				);
+			}
+			//this will take the checkpoints if passed.
+			var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			
+			versionObj.removeConstraint(params.node_id, params.constraint_id);
+			// removing constraint from list.
+			var stageResource = new sn_cmp_api.BlueprintServiceScript().removeConstraintInStageResource(params.blueprint_id,params.node_name,params.rb_name);
+			var newVersion = versionObj.getNewVersion();
+			return { checkpointId : newVersion.getCheckpointId()};
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add the constraint"),
+				"CMPRemoveConstraintAction.doAction(): Failed to add the constraint",
+				error
+			);
+		}
+	},
+
+    type: 'CMPRemoveConstraintAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-30 05:05:43</sys_created_on>
+        <sys_id>519f649f9f932200a0d5b10f842e7040</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CMPRemoveConstraintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_519f649f9f932200a0d5b10f842e7040</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-18 10:44:02</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetRuleActionTypeFieldsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetRuleActionTypeFieldsAction</name>
+        <script><![CDATA[var CMPGetRuleActionTypeFieldsAction = Class.create();
+CMPGetRuleActionTypeFieldsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	ON_BLUEPRINT_PROVISION: "2",
+	ON_RESOURCE_OPERATION: "3",
+	ON_BLUEPRINT_PROVISION_APPROVAL: "4",
+	ON_STACK_OPERATION_APPROVAL: "5",
+	ON_CATALOG_ITEM_LAUNCH: "6",
+	ON_CLOUD_EVENT: "7",
+	ON_CATALOG_ITEM_REQUEST_START: "8",
+	ON_CATALOG_ITEM_REQUEST_END: "9",
+	ON_STACK_RESOURCE_OPERATION_APPROVAL: "10",
+	ON_LEASE_END: "12",
+	ON_TASK_REMEDIATION: "13",
+	
+	PROPERTY_OVERRIDE: "1",
+	SERVICE_NOW_APPROVAL: "2",
+	EXECUTE_SCRIPT: "3",
+	EXECUTE_WORKFLOW: "4",
+	CALL_CLOUD_API: "5",
+	ABORT_PROCESS: "6",
+	CUSTOM_APPROVAL: "7",
+	IPAM: "11",
+	RUN_OPERATION: "12",
+	SEND_NOTIFICATION: "13",
+	
+	ruleGr : null,
+	actionGr: null,
+     doAction: function(params) {
+		try {
+			if (!params.rule_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetRuleActionTypeFieldsAction.doAction: Undefined rule id",
+				null
+				);
+			}
+			
+			if (!params.action_type && !params.action_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetRuleActionTypeFieldsAction.doAction: Undefined action type or action id",
+				null
+				);
+			}
+			
+			this.ruleGr = new GlideRecord('sn_cmp_pol_rule');
+			if (!this.ruleGr.get(params.rule_id) || !this.ruleGr.isValidRecord()) 
+				throw "Invalid rule id: the record does not exist for sys_id "+params.rule_id;
+			
+			if (!this.ruleGr.policy) 
+				throw gs.getMessage("Policy is mandatory for a rule to have action");
+			
+			var actionType = params.action_type;
+			if (params.action_id && params.action_id != "-1") {
+				this.actionGr = new GlideRecord('sn_cmp_pol_action');
+				if (!this.actionGr.get(params.action_id) || !this.actionGr.isValidRecord()) 
+					throw "Invalid action id: the record does not exist for sys_id "+params.action_id;
+				
+				actionType = this.actionGr.action_type+'';
+			}
+
+			var fieldInfo = {};
+			
+			fieldInfo.policy_rule = this._getFieldObject('policy_rule', true, true, params.rule_id, this.ruleGr.getDisplayValue());
+			fieldInfo.showIf = '__NEVER';
+			fieldInfo.policy = this._getFieldObject('policy', true, true, this.ruleGr.policy.sys_id+'', this.ruleGr.policy.getRefRecord().getDisplayValue());
+			fieldInfo.policy.type = 'reference';
+			fieldInfo.policy.columnLabel = gs.getMessage('Policy');
+			fieldInfo.action_type = this._getFieldObject('action_type', true, true, actionType, this._getActionTypeString(actionType));
+			var actionTypesObj = new CMPGetRuleActionTypesAction().doAction({'rule_id' : params.rule_id});
+			fieldInfo.action_type.choices = actionTypesObj.list;
+			fieldInfo.name = this._getFieldObject('name', true, false);
+			
+// 			fieldInfo.action_order = this._getFieldObject('action_order', true, false);
+			
+			switch(actionType) {
+				case this.PROPERTY_OVERRIDE:
+					this._updateFieldsForPropertyOveride(this.ruleGr, fieldInfo);
+					break;
+				case this.SERVICE_NOW_APPROVAL:
+					fieldInfo.is_group_approval = this._getFieldObject('is_group_approval', false, false, '1');
+					fieldInfo.is_group_approval.showNotIf = 'is_group_approval'; //never show this
+					
+					var targetEntityId = this.ruleGr.policy.target_entity_id+'';
+					if( targetEntityId == this.ON_STACK_RESOURCE_OPERATION_APPROVAL || targetEntityId == this.ON_STACK_OPERATION_APPROVAL) {
+						fieldInfo.group_id = this._getFieldObject('group_id', true, false);	
+					} else {
+						fieldInfo.is_manager_approval = this._getFieldObject('is_manager_approval', false, false);
+						fieldInfo.user_id = this._getFieldObject('user_id', false, false);
+						fieldInfo.user_id.selected = this._getListItems('user_id', 'sys_user');
+						fieldInfo.group_id = this._getFieldObject('group_id', false, false);
+					}
+					break;
+				case this.EXECUTE_SCRIPT:
+					fieldInfo.action_script_cat = this._getFieldObject('action_script_cat', false, false);
+					fieldInfo.script = this._getFieldObject('script', false, true);
+					fieldInfo.action_script_name = this._getFieldObject('action_script_name', false, false);	
+					break;
+				case this.EXECUTE_WORKFLOW:
+				case this.CUSTOM_APPROVAL:
+					fieldInfo.workflow = this._getFieldObject('workflow', true, false);
+					break;
+				case this.CALL_CLOUD_API:
+					
+					fieldInfo.provider = this._getFieldObject('provider', true, false);
+					fieldInfo.provider.type= "reference";
+					fieldInfo.provider.displayValue = this._getProviderDisplayValue(fieldInfo.provider.value);
+					fieldInfo.version = this._getFieldObject('version', true, false);
+					fieldInfo.credentials = this._getFieldObject('credentials', true, false);
+					fieldInfo.credential_reference = this._getFieldObject('credential_reference', true, false);
+					fieldInfo.is_credential_expression = this._getFieldObject('is_credential_expression', false,false);
+					fieldInfo.interface_id = this._getFieldObject('interface_id', true, false);
+					fieldInfo.method = this._getFieldObject('method', true, false);
+					fieldInfo.endpoint_url = this._getFieldObject('endpoint_url', false, false);
+					
+					if(this.actionGr && this.actionGr.getValue("method"))
+						fieldInfo.show_related_list = true;
+					break;
+				case this.ABORT_PROCESS:
+					fieldInfo.comments = this._getFieldObject('comments', false, false);
+					fieldInfo.comments.columnLabel = gs.getMessage("Message");
+					break;
+				case this.IPAM:
+					fieldInfo.ipam_method_name = this._getFieldObject('ipam_method_name', true, false);
+					fieldInfo.ipam_provider_type = this._getFieldObject('ipam_provider_type', true, false);
+					fieldInfo.ipam_provider_type.displayValue = this._getProviderDisplayValue(fieldInfo.ipam_provider_type.value);
+					
+					var nameChoices = this._getChoicesFromActionTable('ipam_method_name');
+					var moment = (this.ruleGr.policy.moment+'').toLowerCase();
+					if (moment == 'pre') {
+						this._updatePropertyFields(this.ruleGr, fieldInfo);
+						fieldInfo.ipam_method_name.choices = nameChoices.filter(function(choice) { 
+							return (choice.value != "2" && choice.value != "3");
+						});
+					} else {
+						fieldInfo.ipam_method_name.choices = nameChoices.filter(function(choice) { 
+							return choice.value != "1";
+						});
+					}
+					
+					if(this.actionGr)
+						fieldInfo.show_related_list = true;
+					break;
+				case this.RUN_OPERATION:
+					fieldInfo.bp_operation = this._getFieldObject('bp_operation', true, false);
+					fieldInfo.bp_operation.choices = this._getChoicesFromActionTable('bp_operation');
+					break;
+				case this.SEND_NOTIFICATION:
+					fieldInfo.notification = this._getFieldObject('notification', true, false);
+					break;
+				default:
+			}
+			
+			return fieldInfo;		
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get action type field information."),
+				"CMPGetRuleActionTypeFieldsAction.doAction(): Failed to get action type field information",
+				error
+			);
+		}
+    },
+	
+	_updateFieldsForPropertyOveride: function(ruleGr, fieldInfo) {
+		this._updatePropertyFields(ruleGr, fieldInfo);
+	
+		fieldInfo.is_script = this._getFieldObject('is_script', false, false);
+		fieldInfo.value = this._getFieldObject('value', false, false);
+		fieldInfo.value.showNotIf = 'is_script';
+		fieldInfo.script = this._getFieldObject('script', false, true);
+		fieldInfo.script.showIf = 'is_script';
+		fieldInfo.action_script_cat = this._getFieldObject('action_script_cat', false, false);
+		fieldInfo.action_script_cat.showIf = 'is_script';
+		fieldInfo.action_script_name = this._getFieldObject('action_script_name', false, false);
+		fieldInfo.action_script_name.showIf = 'is_script';	
+	},
+	
+	_updatePropertyFields: function(ruleGr, fieldInfo) {
+		var displayTextbox = false;
+		var targetEntityInstanceId = ruleGr.policy.target_entity_instance_id +'';
+		var targetEntityId = ruleGr.policy.target_entity_id +'';
+		
+		var operationId = ruleGr.policy.operation_id+'';
+		if (targetEntityId == this.ON_CATALOG_ITEM_LAUNCH && !targetEntityInstanceId) 
+			displayTextbox = true;
+		else if (targetEntityId != this.ON_CATALOG_ITEM_LAUNCH && !operationId)
+			displayTextbox = true;
+		
+		if (displayTextbox)
+			fieldInfo.property = this._getFieldObject('property', true, false);
+		else {
+			fieldInfo.property_name = this._getFieldObject('property_name', true, false);
+			var choices = [];
+			var choicesTmp = new global.JSON().decode(new PolicyOperationsUtil().fetchOperationParameters(ruleGr.sys_id+''));
+			choicesTmp = choicesTmp || [];
+			choicesTmp.forEach(function(choice) {
+				var newChoice = {
+					label: choice.name,
+					value: choice.name
+				};
+				choices.push(newChoice);
+			});
+			fieldInfo.property_name.choices = choices;
+		}
+	},	
+	
+	_getActionTypeString: function(actionTypeId) {
+		var gr = new GlideRecord('sys_choice');
+		gr.addQuery('name', 'sn_cmp_pol_action');
+		gr.addQuery('element', 'action_type');
+		gr.addQuery('value', actionTypeId);
+		gr.query();
+		if(gr.next()) {
+			return gr.getValue('label');
+		}
+
+		return "";
+	},
+	
+	_getListItems: function(field, fromTable) {
+		var items = [];
+		if (!this.actionGr)
+			return items;
+		
+		var userGr = new GlideRecord(fromTable);
+		userGr.addQuery('sys_id', 'IN', this.actionGr.getValue(field));
+		userGr.query();
+		while(userGr.next()) {
+			items.push({
+				value: userGr.getUniqueValue(),
+				displayValue: userGr.getDisplayValue()
+			});
+		}
+		
+		return items;
+	},
+	
+	_getChoicesFromActionTable: function(elementName) {
+		var choices = [];
+		if (!elementName) 
+			return choices;
+		
+		var gr = new GlideRecord('sys_choice');
+		gr.addQuery('name', 'sn_cmp_pol_action');
+		gr.addQuery('element', elementName);
+		gr.query();
+		while(gr.next()) {
+			var label = gr.getValue('label');
+			var value = gr.getValue('value');
+			choices.push({label: label, value: value});
+		}
+		
+		return choices;
+	},
+	
+	_getFieldObject: function(fieldName, mandatory, readOnly, value, displayValue) {
+		var obj = {};
+		if (mandatory) {
+			obj.mandatory = true;
+		}
+		
+		if (readOnly || this.ruleGr.policy.status+'' == "1") {
+			obj.readOnly = true;
+		}
+		
+		var val = value ? value : this.actionGr ? this.actionGr.getValue(fieldName) : null;
+		if(val) {
+			obj.value = val;
+			obj.displayValue = displayValue || (this.actionGr ? this.actionGr.getDisplayValue(fieldName): value);
+			obj.label = obj.displayValue;
+		} 	
+		
+		var fieldInfo = this._getFieldInfo(fieldName);
+		obj.type = fieldInfo.type;
+		obj.columnLabel = fieldInfo.label;
+		return obj;
+	},
+	
+	_getProviderDisplayValue: function(sysId){
+		var gr = new GlideRecord("sn_capi_product");
+		gr.get(sysId);
+		return gr.getDisplayValue() || gr.getValue('name');
+	},
+	
+	_getFieldInfo: function(fieldName) {
+		var gr = new GlideRecord('sys_dictionary');
+		gr.addQuery('name', 'sn_cmp_pol_action');
+		gr.addQuery('element', fieldName);
+		gr.query();
+		if (gr.next()) {
+			return {
+				type: gr.getValue('internal_type'),
+				label:  gr.getValue('column_label')
+			};
+		}
+		
+		return {};
+	},
+
+    type: 'CMPGetRuleActionTypeFieldsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-29 23:03:51</sys_created_on>
+        <sys_id>1b371d8787300300bf4a471c97cb0bee</sys_id>
+        <sys_mod_count>57</sys_mod_count>
+        <sys_name>CMPGetRuleActionTypeFieldsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1b371d8787300300bf4a471c97cb0bee</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-01 18:13:52</sys_updated_on>
+    </sys_script_include>
+</record_update>

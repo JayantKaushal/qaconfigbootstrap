@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOpImplInputParamsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOpImplInputParamsAction</name>
+        <script><![CDATA[var CMPCreateOpImplInputParamsAction = Class.create();
+CMPCreateOpImplInputParamsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.opId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOpImplInputParamsAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			var status;
+			var ErrMessage = '';
+			var postArray = [];
+			//var resourceBlocksServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+			
+			//Find duplication Operation steps input param
+			var getInputParams = JSON.parse(params.postData);
+			var getInputParamsLength = getInputParams.length;
+			if(getInputParamsLength) {
+				for(var i = 0; i < getInputParamsLength; i++) {
+					var duplicateName = false;
+					var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+					if(params.opId && params.opId != "")
+						gr.addQuery("operation", params.opId);
+					if(getInputParams[i].name && getInputParams[i].name != "")
+						gr.addQuery("name", getInputParams[i].name);
+					gr.query();
+					var getSysId;
+					var getApplicableList = getInputParams[i].applicable_to;
+					var applicableList = '';
+					var applicableListLen = (getApplicableList.length) ? getApplicableList.length : 0;
+					if(applicableListLen) {
+						for(var cnt=0; cnt< applicableListLen; cnt++) {
+							applicableList += getApplicableList[cnt].value ;
+							if(cnt < (applicableListLen - 1))
+							 applicableList +=',';
+						}
+						
+					}
+					
+					//'defaultvalue' refering to -> mapping label
+					//'value' refering to-> default label
+					if (gr.next()) {
+						getSysId = gr.getValue('sys_id');
+						duplicateName = true;
+						gr.setValue("datasourcevalue", getInputParams[i].datasourcevalue);
+						gr.setValue("defaultvalue", getInputParams[i].defaultvalue);
+						gr.setValue("datasource", getInputParams[i].datasource);
+						gr.setValue("visibilty", getInputParams[i].visibilty);
+						gr.setValue("ismandatory", getInputParams[i].ismandatory);
+						gr.setValue("value", (getInputParams[i].value)? getInputParams[i].value : '');
+						if(applicableList !='') {
+							gr.setValue("applicable_to", applicableList);
+						}
+						gr.update();
+					} else {
+						var grInsert = new GlideRecord('sn_cmp_rb_op_impl_param');
+						grInsert.setValue("operation", params.opId);
+						grInsert.setValue("name", getInputParams[i].name);
+						grInsert.setValue("datasourcevalue", getInputParams[i].datasourcevalue);
+						grInsert.setValue("defaultvalue", (getInputParams[i].defaultvalue != '') ? getInputParams[i].defaultvalue : '${parameter.'+getInputParams[i].name+ '}');
+						grInsert.setValue("datasource", getInputParams[i].datasource);
+						grInsert.setValue("value", (getInputParams[i].value)? getInputParams[i].value : '' );
+						grInsert.setValue("ismandatory", getInputParams[i].ismandatory);
+						grInsert.setValue("visibilty", getInputParams[i].visibilty);
+						if(applicableList !='') {
+							grInsert.setValue("applicable_to", applicableList);
+						}
+						grInsert.insert();
+					}
+				}
+				
+				if (params.catItemSysId && params.operationInfo) {
+					//update the catalog item
+					new CMPrbOpCreateCatItemForOperationAction().doAction(JSON.parse(params.operationInfo));
+				}
+			}
+			return {status : true};
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add operations input param."),
+				"CMPCreateOpImplInputParamsAction.doAction(): Failed to add operations input param",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOpImplInputParamsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-26 08:19:51</sys_created_on>
+        <sys_id>13e4eae73b053200a856cedf34efc469</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>CMPCreateOpImplInputParamsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_13e4eae73b053200a856cedf34efc469</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-09 00:12:19</sys_updated_on>
+    </sys_script_include>
+</record_update>

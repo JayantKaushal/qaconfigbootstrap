@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.ReadContentFromURL</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ReadContentFromURL</name>
+        <script><![CDATA[var ReadContentFromURL = Class.create();
+ReadContentFromURL.prototype = {
+	initialize: function() {
+	},
+	
+	readContent: function(url) {
+		var request = new sn_ws.RESTMessageV2();
+		request.setHttpTimeout(this.getHttpTimeOutConfiguration());
+		var endpoint = encodeURI(url);
+		request.setEndpoint(endpoint);
+		request.setHttpMethod("GET");
+		var content;
+		try {
+			var response = request.execute();
+			
+			content =  this.handleResponse(response);
+		} catch (error) {
+			content = this.handleError(error);
+		}
+		return content;
+	},
+	
+	handleResponse: function(response) {
+		var contentType = response.getHeader("Content-Type");
+		var contentSize = response.getHeader("Content-Length");
+		gs.info('status code of read content from URL '+ response.getStatusCode() + " response content type is "+ contentType + " and content size is "+ contentSize);
+		var content = {};
+		var isSupportedContentType = this.checkResponseContentType(contentType);
+		if (response.getStatusCode() == 0 || response.getStatusCode() == 1) {
+			content.status = "failure";
+			
+			if (this.contains(response.getErrorMessage(), "SocketTimeoutException") || this.contains(response.getErrorMessage(), "Socket timeout")) {
+				content.errorCode = 408;
+				content.errorMsg = gs.getMessage("Request Timedout");
+			} else if (response.getErrorCode() == 1) {
+				content.errorCode = response.getStatusCode();
+				content.errorMsg = gs.getMessage("URL not valid");
+			} else {
+				content.errorCode = 408;
+				content.errorMsg = gs.getMessage("Request Timedout");
+			}
+		} else if (response.getStatusCode() == 404) {
+			content.status = "failure";
+			content.errorCode = response.getStatusCode();
+			content.errorMsg = gs.getMessage("URL not found");
+		} else if (response.getStatusCode() != 200) {
+			gs.warn("Error reading the content from url . Error Code: " + response.getStatusCode());
+			content.status = "failure";
+			content.errorCode = response.getStatusCode();
+			var errorMsg = response.getErrorMessage().split(":")[2];
+			//handle other http error codes in a generic way
+			content.errorMsg = errorMsg.trim();
+		} else {
+			if (!isSupportedContentType) {
+				content.status = "failure";
+				content.errorCode = 415;
+				content.errorMsg = gs.getMessage("Unsupported Content Type");
+			} else if (contentSize == 0) {
+				gs.info("Unkown content length");
+				content.status = "failure";
+				content.errorCode = 400;
+				content.errorMsg = gs.getMessage("Content size unknown");
+			} else if (contentSize > this.getSupportedContentSize()) {
+				gs.info("content size is greater than " + this.getSupportedContentSize() + " bytes ");
+				content.status = "failure";
+				content.errorCode = 400;
+				content.errorMsg = gs.getMessage("Content size not supported");
+			} else {
+				content.status = "success";
+				content.body = response.getBody();
+				gs.info('Successfully read the content from the URL');
+			} 
+		}
+		return content;
+	},
+	
+	checkResponseContentType: function(contentType) {
+		var supportedContentType = false;
+		if (contentType) {
+			supportedContentType = this.contains(contentType, "text/plain");
+			// if the content-type of the url retrieved is not a text/plain check if it contains one of the
+			// configured supported template format in sn_cmp_cloud_template_format table
+			if (!supportedContentType) {
+				var cloudTemplateFormat = new GlideRecord('sn_cmp_cloud_template_format');
+				cloudTemplateFormat.query();
+				while (cloudTemplateFormat.next()) {
+					var formatName = cloudTemplateFormat.getValue('name');
+					supportedContentType = this.contains(contentType, formatName.toLowerCase());
+					if (supportedContentType) {
+						break;
+					}
+				}
+			}
+		} 
+		
+		return supportedContentType;
+	},
+	
+	handleError: function(error) {
+		var content = {};
+		content.status = "failure";
+		content.errorCode = 400;
+		content.errorMsg = error.message;
+		return content;
+	},
+	
+	contains: function (str, strToCheck) {
+		return (str.indexOf(strToCheck) != -1);
+	},
+	
+	getSupportedContentSize: function() {
+		//for max content size supported is 3 MB
+		var defaultTemplateContentSize = 3 * 1024 * 1024 ; //in bytes
+		var supportedTemplateContentSize = gs.getProperty('sn_cmp.template_content_size_supported_inbytes');
+		if (supportedTemplateContentSize && !isNaN(supportedTemplateContentSize)) {
+			gs.info("Template content size will be set to "+ supportedTemplateContentSize + " bytes ");
+		} else {
+			supportedTemplateContentSize = defaultTemplateContentSize;
+			gs.info("Default Template content size will be set to "+ supportedTemplateContentSize + " bytes ");
+		}
+		return supportedTemplateContentSize;
+	},
+	
+	getHttpTimeOutConfiguration: function () {
+		//set the default http timeout to be 5 min
+		var defaultHttpTimeout = 5 * 60 * 1000;
+		var httpTimeout = gs.getProperty('sn_cmp.template_url_import_http_timeout');
+		if (httpTimeout && !isNaN(httpTimeout)) {
+			gs.info("Http timeout will be set to "+ httpTimeout + " millisecond ");
+		} else {
+			httpTimeout = defaultHttpTimeout;
+			gs.info("Default http timeout will be set to "+ httpTimeout + " millisecond ");
+		}
+
+		return httpTimeout;
+	},
+	
+	type: 'ReadContentFromURL'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-16 05:21:23</sys_created_on>
+        <sys_id>db4aa20e735313009b3bbf097bf6a72c</sys_id>
+        <sys_mod_count>73</sys_mod_count>
+        <sys_name>ReadContentFromURL</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_db4aa20e735313009b3bbf097bf6a72c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-04 05:24:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

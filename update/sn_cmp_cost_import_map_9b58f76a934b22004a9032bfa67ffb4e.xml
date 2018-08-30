@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cost_import_map">
+    <sn_cmp_cost_import_map action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition table="sn_cmp_imp_aws_cost">product_name=AWS CloudTrail^EQ<item endquery="false" field="product_name" goto="false" newquery="false" operator="=" or="false" value="AWS CloudTrail"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </condition>
+        <order>445</order>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <source_table>sn_cmp_imp_aws_cost</source_table>
+        <sys_class_name>sn_cmp_cost_import_map</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-16 01:29:50</sys_created_on>
+        <sys_id>9b58f76a934b22004a9032bfa67ffb4e</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cost_import_map_9b58f76a934b22004a9032bfa67ffb4e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-16 01:29:50</sys_updated_on>
+        <target_field>name</target_field>
+        <target_table>sn_capi_resource_type</target_table>
+        <target_value>AWS::CloudTrail</target_value>
+    </sn_cmp_cost_import_map>
+</record_update>

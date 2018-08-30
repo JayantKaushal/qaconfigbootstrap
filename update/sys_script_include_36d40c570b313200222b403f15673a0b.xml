@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetResourcesInfo</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetResourcesInfo</name>
+        <script><![CDATA[var CMPGetResourcesInfo = Class.create();
+CMPGetResourcesInfo.prototype = {
+    initialize: function() {
+    },
+	
+	getResourceTotal: function(orderId,ldcId){
+		
+		var hostedCIs = this.getHostedCIs(ldcId);	
+		var containedResources =this.getContainedResources(ldcId);
+		
+		var cloudAccountServiceScript=new sn_cmp_api.CloudAccountServiceScript();
+		var discoveryInfo = cloudAccountServiceScript.getDiscoveryInfo(orderId,ldcId,hostedCIs,containedResources);
+		return this.getTableViews(discoveryInfo);
+	},
+	
+	getLDCType : function(ldcId){
+		var ldcType='';
+		var ldcRecord = new GlideRecord('cmdb_ci_logical_datacenter');
+		ldcRecord.addQuery('sys_id',ldcId);
+		ldcRecord.query();
+		if(ldcRecord.next()){
+			ldcType=ldcRecord.getRecordClassName();
+		}
+		
+		return ldcType;
+	},
+	
+	getHostedCIs : function(ldcId){
+		var tableType=this.getLDCType(ldcId);
+		var baseList= ['cmdb_ci_os_template',
+						   'cmdb_ci_compute_template',
+						   'cmdb_ci_vm_instance',
+						   'cmdb_ci_storage_volume',
+						   'cmdb_ci_network',
+						   'cmdb_ci_compute_security_group',
+						   'cmdb_ci_nic'];
+		var ldcSpecificList=[];
+		
+	if(tableType=='cmdb_ci_aws_datacenter'){
+		ldcSpecificList = ['cmdb_ci_cloud_load_balancer','cmdb_ci_cloud_key_pair'];
+		
+		if (this._isStoreAppInstalled('sn_cmp_aws_ri'))
+			ldcSpecificList.push('cmdb_ci_aws_reserved_instance');
+	}else if (tableType=='cmdb_ci_azure_datacenter'){
+		ldcSpecificList=['cmdb_ci_cloud_public_ipaddress','cmdb_ci_cloud_load_balancer','cmdb_ci_cloud_storage_account'];
+		
+		if (this._isStoreAppInstalled('sn_cmp_azure_ri'))
+			ldcSpecificList.push('cmdb_ci_azure_reserved_instance');
+		}else if(tableType=='cmdb_ci_vcenter_datacenter'){
+                        baseList=[];
+                        ldcSpecificList=['cmdb_ci_vmware_template',
+						 'cmdb_ci_storage_volume',
+						 'cmdb_ci_nic','cmdb_ci_network',
+						 'cmdb_ci_vcenter_cluster','cmdb_ci_vcenter_datastore',
+						 'cmdb_ci_vcenter_folder','cmdb_ci_vmware_instance',
+						 'cmdb_ci_esx_server','cmdb_ci_compute_template',
+						 'cmdb_ci_esx_resource_pool'];
+	}
+	
+	if(GlidePluginManager.isActive('com.snc.pattern.designer') && tableType=='cmdb_ci_aws_datacenter'){ 
+			patternDiscoveryList=['cmdb_ci_aws_cloudformation_stack',
+								  'cmdb_ci_cloud_directory',
+								  'cmdb_ci_cloud_appserver',
+								  'cmdb_ci_cloud_database',
+								  'cmdb_ci_cloud_webserver',
+								  'cmdb_ci_cloud_messaging_service'];
+			baseList.concat(patternDiscoveryList);
+		}
+		
+		var finalList=baseList.concat(ldcSpecificList);
+		finalList.sort();
+		
+		return finalList;
+	},
+	
+	getContainedResources:function(ldcId){
+		var ldcContainlist=[];
+		var table=this.getLDCType(ldcId);
+		if(table=='cmdb_ci_aws_datacenter'){
+		ldcContainlist=['cmdb_ci_availability_zone'];
+		}else if (table=='cmdb_ci_azure_datacenter'){
+		ldcContainlist=['cmdb_ci_availability_zone','cmdb_ci_resource_group'];
+		}else if (table=='cmdb_ci_openstack_datacenter'){
+		ldcContainlist=['cmdb_ci_availability_zone'];
+		}
+
+		return ldcContainlist;
+	},
+
+	/*
+	* Including view name of table which are rendered in the cloud account ui.
+	* A view could be added to 'uiViews' object which are specific to a datacenter.
+	*
+	* Input parameters
+	* @param discoveryInfo - contains list of resources specific to a datacenter 
+	* @returns discoveryInfo plus includes the ui views of a table(if any)
+	*/
+	getTableViews: function(discoveryInfo){
+		discoveryInfo  = JSON.parse(discoveryInfo);
+		var datacenter = this.getLDCType(discoveryInfo.ldcId);
+
+		var uiViews = {
+			"cmdb_ci_vcenter_datacenter":{
+				"cmdb_ci_vmware_instance":"cmp_vmware_instance"
+			}
+		};
+		
+		var dcViews = uiViews[datacenter];
+		if(dcViews){
+			var resInfo = discoveryInfo.resInfo;
+			for(var i = 0; i < resInfo.length; i++){
+                            if (dcViews.hasOwnProperty(resInfo[i].className))
+                               discoveryInfo.resInfo[i].uiView = dcViews[resInfo[i].className];
+			}
+		}
+
+	  return JSON.stringify(discoveryInfo);
+	},
+	
+	_isStoreAppInstalled: function(appName) {
+		var appGr = new GlideRecord('sys_store_app');
+		appGr.addQuery('scope', appName);
+		appGr.query();
+
+		return appGr.next();
+	},
+	
+    type: 'CMPGetResourcesInfo'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-03 08:34:14</sys_created_on>
+        <sys_id>36d40c570b313200222b403f15673a0b</sys_id>
+        <sys_mod_count>65</sys_mod_count>
+        <sys_name>CMPGetResourcesInfo</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_36d40c570b313200222b403f15673a0b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 02:02:41</sys_updated_on>
+    </sys_script_include>
+</record_update>

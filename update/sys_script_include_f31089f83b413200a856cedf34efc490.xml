@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetResourceTemplateTypeAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetResourceTemplateTypeAction</name>
+        <script><![CDATA[var CMPGetResourceTemplateTypeAction = Class.create();
+CMPGetResourceTemplateTypeAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	doAction: function() {
+		try {
+			var gr = new GlideRecord('sn_cmp_cloud_template_type');
+			gr.query();
+			var responseObj = [];
+			while(gr.next()) {
+				var riObj = {};
+				riObj.id = gr.getValue('name');
+				riObj.name = gr.getValue('name');
+				responseObj.push(riObj);
+			}
+			return responseObj;
+			
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get the stage model for the resource interface"),
+				"CMPGetResourceInterfaceAction.doAction: Failed to get the stage model",
+				error
+			);
+		}
+	},
+	type: 'CMPGetResourceTemplateTypeAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 11:41:53</sys_created_on>
+        <sys_id>f31089f83b413200a856cedf34efc490</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPGetResourceTemplateTypeAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f31089f83b413200a856cedf34efc490</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-17 11:41:53</sys_updated_on>
+    </sys_script_include>
+</record_update>

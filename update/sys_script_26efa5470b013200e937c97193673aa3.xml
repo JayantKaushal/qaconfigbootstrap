@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>false</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_rb_op_impl_step</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Generate unique name operation impl step</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	var resourceBlockServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+	//resourceBlockServiceScript.generateUniqueNameForOperationStep(current.sys_id);
+	var newName ="", errorMessage="";
+	//if owner type is CAPI
+	if(current.getValue("owner_type") == "1") {
+		if(current.getDisplayValue("capi_interface") == '' || current.getDisplayValue("capi_method") == '') {
+			newName = current.name;
+			errorMessage="CAPI Interface and CAPI Method are missing "+current.name;
+			gs.addErrorMessage(errorMessage);
+		} else {
+		newName =current.getDisplayValue("capi_interface")+"."+current.getDisplayValue("capi_method");
+		}
+	}
+	// if owner type is resource
+	else if(current.getValue("owner_type") == "2") {
+		if(current.getDisplayValue("interface") == '' || current.getDisplayValue("interface_operation") == '') {
+			errorMessage="Interface and interface operation are mandatory fields for Resource";
+			addErrorMessage(errorMessage,current);
+		} else {
+		newName =current.getDisplayValue("interface")+"."+current.getDisplayValue("interface_operation");
+		}
+
+	} //if owner type is Condition or Instance script or Workflow
+	else if(current.getValue("owner_type") == "5" || current.getValue("owner_type") == "6") {
+
+		if(current.getDisplayValue("name") == '') {
+			errorMessage="Name is a mandatory field ";
+			addErrorMessage(errorMessage,current);
+		} else {
+		 newName =current.getDisplayValue("name");
+		}
+
+	}
+	var generatedName = generateName(newName,current);
+	current.setValue('name',generatedName);
+
+})(current, previous);
+
+function addErrorMessage(errorMessage,current) {
+	//Adding the error message to be shown in UI
+	gs.addErrorMessage(errorMessage);
+	//Aborting the insert operation on table
+	current.setAbortAction(true);
+}
+function generateName(name, current) {
+	var newName=name, count=0;
+	var glideRecord = new GlideRecord("sn_cmp_rb_op_impl_step");
+	glideRecord.addQuery("operationimpl",current.operationimpl);
+	glideRecord.query();
+	var stepNameArray =[];
+	var fetchedName="";
+	// Making a set of all names
+	while(glideRecord.next()) {
+		fetchedName = glideRecord.getValue('name').toUpperCase();
+		stepNameArray.push(fetchedName);
+	}
+	//Generating new name
+	while(true) {
+		if (stepNameArray.indexOf(newName.toUpperCase()) == -1) {
+				stepNameArray.push(newName);
+				break;
+			} else {
+				count+=1;
+			}
+			newName=name+"."+count;
+	}
+	return newName;
+}]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-24 15:02:05</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>26efa5470b013200e937c97193673aa3</sys_id>
+        <sys_mod_count>36</sys_mod_count>
+        <sys_name>Generate unique name operation impl step</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_26efa5470b013200e937c97193673aa3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-31 09:46:52</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=26efa5470b013200e937c97193673aa3"/>
+</record_update>

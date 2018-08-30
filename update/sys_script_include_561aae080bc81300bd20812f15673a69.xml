@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateSetDependencyUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateSetDependencyUtil</name>
+        <script><![CDATA[var CMPUpdateSetDependencyUtil = Class.create();
+CMPUpdateSetDependencyUtil.prototype = {
+	initialize: function() {
+	},
+
+	//Get all Cloud Script templates
+
+	getAllCloudScriptTemplates : function() {
+		var cloudScriptTemplates=[];
+
+		var cloudScriptTemplateGR = new GlideRecord('sn_cfg_cloud_script_template');
+		cloudScriptTemplateGR.query();
+		while (cloudScriptTemplateGR.next()) {
+			var cloudScriptTemplateObj = {};
+
+			cloudScriptTemplateObj['name'] = cloudScriptTemplateGR.getValue('name');
+			cloudScriptTemplateObj['id'] = cloudScriptTemplateGR.getValue('sys_id');
+			cloudScriptTemplateObj['created_by'] = cloudScriptTemplateGR.getValue('sys_created_by');
+			cloudScriptTemplateObj['created_on'] = cloudScriptTemplateGR.getValue('sys_created_on');
+			cloudScriptTemplateObj['sys_updated_by'] = cloudScriptTemplateGR.getValue('sys_updated_by');
+			cloudScriptTemplateObj['sys_updated_on'] = cloudScriptTemplateGR.getValue('sys_updated_on');
+			//Checked property is used for default selection while export
+			cloudScriptTemplateObj['checked'] = false;
+			cloudScriptTemplates.push(cloudScriptTemplateObj);
+		}
+
+		return cloudScriptTemplates;
+	},
+
+	//Get all Cloud Scripts
+
+	getAllCloudScripts : function () {
+		var cloudScripts=[];
+
+		var cloudScriptGR = new GlideRecord('sn_cfg_cloud_script');
+		cloudScriptGR.query();
+		while (cloudScriptGR.next()) {
+			var matchedIndex = cloudScripts.map(function(e) { return e.name; }).indexOf(cloudScriptGR.getValue('name'));
+			if(matchedIndex == -1){
+				var cloudScriptObj = {};
+
+				cloudScriptObj['name'] = cloudScriptGR.getValue('name');
+				cloudScriptObj['id'] = cloudScriptGR.getValue('sys_id');
+				cloudScriptObj['created_by'] = cloudScriptGR.getValue('sys_created_by');
+				cloudScriptObj['created_on'] = cloudScriptGR.getValue('sys_created_on');
+				cloudScriptObj['sys_updated_by'] = cloudScriptGR.getValue('sys_updated_by');
+				cloudScriptObj['sys_updated_on'] = cloudScriptGR.getValue('sys_updated_on');
+				//Checked property is used for default selection while export
+				cloudScriptObj['checked'] = false;
+				cloudScripts.push(cloudScriptObj);
+			}
+		}
+
+		return cloudScripts;
+	},
+
+	//Get All Dependent Resource Blocks
+
+	getAllDependentResourceBlocks : function (blueprintId){
+		var resourceBlockList = [];
+
+		var stageResourceGR = new GlideRecord("sn_cmp_bp_stage_resource");
+		var stageModelGR = stageResourceGR.addJoinQuery("sn_cmp_bp_stage_model", "bp_stage_model", "sys_id");
+		var blueprintGR = stageResourceGR.addJoinQuery("sn_cmp_bp_blueprint");
+
+		stageModelGR.addCondition("blueprint", blueprintId);
+		stageResourceGR.query();
+
+		while (stageResourceGR.next()) {
+			var resourceBlockId = stageResourceGR.getValue("resource_block");
+
+			if (resourceBlockId) {
+				var resourceGR = this.getResourceBlockObject(resourceBlockId);
+				if(!resourceGR.is_tlr){
+					var index = resourceBlockList.map(function(e) { return e.id; }).indexOf(resourceBlockId);
+					if(index == -1)
+					   resourceBlockList.push({"id":resourceBlockId, "name": resourceGR.getValue("name")});
+				}
+
+				var hostResourceGR = new GlideRecord('sn_cmp_rb_resourcehost');
+				hostResourceGR.addQuery('guestresource',resourceBlockId);
+				hostResourceGR.query();
+				while(hostResourceGR.next()){
+					var matchedIndex = resourceBlockList.map(function(e) { return e.id; }).indexOf(hostResourceGR.getValue('hostresource'));
+					if(matchedIndex == -1)
+						resourceBlockList.push({"id":hostResourceGR.getValue('hostresource'), "name": hostResourceGR.getDisplayValue('hostresource')});
+					
+
+				}
+
+				var guestResourceGR = new GlideRecord('sn_cmp_rb_binding');
+				guestResourceGR.addQuery('guest_resource',resourceBlockId);
+				guestResourceGR.query();
+				while(guestResourceGR.next()){
+					var index = resourceBlockList.map(function(e) { return e.id; }).indexOf(guestResourceGR.getValue('binding_resource'));
+					if(index == -1)
+						resourceBlockList.push({"id":guestResourceGR.getValue('binding_resource'), "name": guestResourceGR.getDisplayValue('binding_resource')});
+					
+
+				}
+			}
+		}
+
+		return resourceBlockList;
+	},
+
+	getResourceBlockObject : function (resource){
+		var glideRecord = new GlideRecord("sn_cmp_rb_resourceblock");
+		if (glideRecord.get(resource)) {
+			return glideRecord;
+		} else {
+			glideRecord.addQuery("name", resource);
+			glideRecord.query();
+			if (glideRecord.next()) {
+				return glideRecord;
+			}
+		}
+	},
+
+	//Gives only those cloud scripts whose name is explicitly defined in the blueprint resource operation
+
+	getDependentCloudScripts: function (blueprintId){
+		var cloudScripts=[];
+		var stageOperationGR = new GlideRecord("sn_cmp_bp_stage_op");
+		var stageModelGR = stageOperationGR.addJoinQuery("sn_cmp_bp_stage_model", "blueprint_stage_model", "sys_id");
+		var blueprintGR = stageOperationGR.addJoinQuery("sn_cmp_bp_blueprint");
+
+		stageModelGR.addCondition("blueprint", blueprintId);
+		stageOperationGR.query();
+		while(stageOperationGR.next()) {
+			var glideRecord = new GlideRecord("sn_cmp_bp_stage_res_op_attr");
+
+			var glideRecordStageResOp = glideRecord.addJoinQuery("sn_cmp_bp_stage_resource_op", "stage_resource_operation", "sys_id");
+			glideRecordStageResOp.addCondition("bp_stage_operation", stageOperationGR.getValue("sys_id"));
+
+			glideRecord.addEncodedQuery("default_valueSTARTSWITH${CloudScript.scripts");
+			glideRecord.query();
+
+			while (glideRecord.next()) {
+				var cloudScriptExpression = glideRecord.getValue("default_value").split("${CloudScript.scripts.")[1];
+				var cloudScriptName = cloudScriptExpression.split('}')[0];
+
+				var cloudScriptGR = new GlideRecord('sn_cfg_cloud_script');
+				cloudScriptGR.addQuery("name",cloudScriptName);
+				cloudScriptGR.query();
+
+				if (cloudScriptGR.next()) {
+					var matchedIndex = cloudScripts.map(function(e) { return e.name; }).indexOf(cloudScriptGR.getValue('name'));
+					if(matchedIndex == -1){
+						var cloudScriptObj = {};
+
+						cloudScriptObj['name'] = cloudScriptGR.getValue('name');
+						cloudScriptObj['id'] = cloudScriptGR.getValue('sys_id');
+						cloudScriptObj['created_by'] = cloudScriptGR.getValue('sys_created_by');
+						cloudScriptObj['created_on'] = cloudScriptGR.getValue('sys_created_on');
+						cloudScripts.push(cloudScriptObj);
+					}
+				}
+			}
+		}
+		
+		return cloudScripts;
+	},
+
+	//Get All Dependent Pools
+
+	getAllDependentPools : function (blueprintId,poolList) {
+		var stageOperationGR = new GlideRecord("sn_cmp_bp_stage_op");
+		var stageModelGR = stageOperationGR.addJoinQuery("sn_cmp_bp_stage_model", "blueprint_stage_model", "sys_id");
+		var blueprintGR = stageOperationGR.addJoinQuery("sn_cmp_bp_blueprint");
+
+		stageModelGR.addCondition("blueprint", blueprintId);
+		stageOperationGR.query();
+		while(stageOperationGR.next()) {
+			var catalogPropertyGR = new GlideRecord("sn_cmp_bp_catalog_prop");
+			var formBehaviorGR = catalogPropertyGR.addJoinQuery("sn_cmp_bp_form_behavior", "bp_cat_form_behavior", "sys_id");
+			var stageOpGR = catalogPropertyGR.addJoinQuery("sn_cmp_bp_stage_op");
+
+			formBehaviorGR.addCondition("stage_operation", stageOperationGR.sys_id);
+			catalogPropertyGR.query();
+
+			while(catalogPropertyGR.next()) {
+				if(catalogPropertyGR.datasource && catalogPropertyGR.datasource == 1) {
+					var dataSourceValue = catalogPropertyGR.policy;
+					if (dataSourceValue) {
+						var poolInfo = this.extractPoolInfo(dataSourceValue);
+						var poolGR = this.getPoolObject(poolInfo['poolName']);
+						if(poolGR && poolGR.name)  {
+							var matchedIndex = poolList.map(function(e) { return e.id; }).indexOf(poolGR.getValue('sys_id'));
+							if(matchedIndex == -1 && (poolGR.getValue('is_system_defined') == 0)){
+								var poolJSON = {
+									'id':poolGR.getValue('sys_id'),
+									'name':poolGR.getValue('name'),
+									'created_by':poolGR.getValue('sys_created_by'),
+									'created_on':poolGR.getDisplayValue('sys_created_on'),
+									'sys_updated_by':poolGR.getValue('sys_updated_by'),
+									'sys_updated_on':poolGR.getDisplayValue('sys_updated_on'),
+									'type':poolGR.getDisplayValue('type'),
+									'systemDefined':poolGR.getDisplayValue('is_system_defined'),
+									'checked':false
+								};
+								poolList.push(poolJSON);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return poolList;
+	},
+
+	getAllResourceDependentPools : function (resourceBlockId){
+		var poolsList=[];
+		var resourceBlockGR = this.getResourceBlockObject(resourceBlockId);
+		var operationImplParamGR = new GlideRecord("sn_cmp_rb_op_impl_param");
+		var operationImplGR = operationImplParamGR.addJoinQuery('sn_cmp_rb_op_impl', 'operation', 'sys_id');
+		operationImplGR.addCondition('resource.name',resourceBlockGR.name);
+
+		operationImplParamGR.query();
+		while(operationImplParamGR.next()){
+			var poolJSON = this.getResourcePoolsByOpImplParam(operationImplParamGR);
+			if(poolJSON){
+				var matchedIndex = poolsList.map(function(e) { return e.name; }).indexOf(poolJSON.name+'');
+				if(matchedIndex == -1)
+					poolsList.push(poolJSON);
+			}
+
+		}
+		return poolsList;
+	},
+
+	getResourcePoolsByOpImplParam: function(operationImplParamGR){
+		var datasource = operationImplParamGR.datasource;
+			if(datasource == 2) {
+				var dataSourceValue = operationImplParamGR.datasourcevalue;
+				if (dataSourceValue) {
+					var poolInfo = this.extractPoolInfo(dataSourceValue);
+					var poolGR = this.getPoolObject(poolInfo['poolName']);
+					if (poolGR && poolGR.name+'') {
+							var poolJSON = {
+								'id':poolGR.sys_id+'',
+								'name':poolGR.name+'',
+								'created_by':poolGR.getValue('sys_created_by'),
+								'created_on':poolGR.getDisplayValue('sys_created_on'),
+								'sys_updated_by':poolGR.getValue('sys_updated_by'),
+								'sys_updated_on':poolGR.getDisplayValue('sys_updated_on'),
+								'type':poolGR.getDisplayValue('type'),
+								'systemDefined':poolGR.getDisplayValue('is_system_defined'),
+								'checked':false
+							};
+							return poolJSON;
+						}
+					}
+				}
+	},
+
+	extractPoolInfo : function (dataSourceValue) {
+		var poolInfo = {};
+		var dsSplit = dataSourceValue.split("ServiceNow::Pools::");
+		if (dsSplit.length >= 2){
+			var poolAndFilter = dsSplit[1].split('.');
+
+			if(poolAndFilter.length >= 2){
+				poolInfo['poolName'] = poolAndFilter[0];
+				poolInfo['filterName'] = poolAndFilter[1];
+			}
+		}
+		return poolInfo;
+	},
+
+	getPoolObject : function (poolName){
+		var glideRecord = new GlideRecord("sn_cmp_resource_pool");
+		glideRecord.addQuery("name", poolName);
+		glideRecord.query();
+		if (glideRecord.next()) {
+			return glideRecord;
+		}
+	},
+
+	getAllCatalogPropertiesByFormBehavior : function (formBehaviorId) {
+		var catalogPropertiesList = [];
+		var gr = new GlideRecord('sn_cmp_bp_catalog_prop');
+		gr.addQuery('bp_cat_form_behavior', formBehaviorId);
+		gr.query();
+
+		while (gr.next()) {
+			var grObject = this.getKeyValues(gr);
+			catalogPropertiesList.push(grObject);
+		}
+		return catalogPropertiesList;
+	},
+
+	getAllScopes : function () {
+		var scopeList = [];
+		var scopeGR = new GlideRecord('sys_scope');
+		scopeGR.query();
+		while(scopeGR.next()) {
+			scopeList.push({"id" : scopeGR.getValue('sys_id'), "name" : scopeGR.getValue('name'), 'created_by': scopeGR.getValue('sys_created_by'), 'created_on': scopeGR.getDisplayValue('sys_created_on'), 'sys_updated_by': scopeGR.getValue('sys_updated_by'), 'sys_updated_on': scopeGR.getDisplayValue('sys_updated_on')});
+		}
+		return scopeList;
+	},
+
+	getAllScriptIncludes : function (sysId, scopeList) {
+		var scriptIncludesList = [] ;
+		var selectedScopeList = scopeList;
+        var scriptIncludeGR = new GlideRecord('sys_script_include');
+        scriptIncludeGR.query();
+        while (scriptIncludeGR.next()) {
+			var scriptInclude = {
+				"id" : scriptIncludeGR.getValue('sys_id'),
+				"name" : scriptIncludeGR.getValue('name'),
+				"created_by": scriptIncludeGR.getValue('sys_created_by'),
+				"created_on": scriptIncludeGR.getDisplayValue('sys_created_on'),
+				"sys_updated_by": scriptIncludeGR.getValue('sys_updated_by'),
+				"sys_updated_on": scriptIncludeGR.getDisplayValue('sys_updated_on'),
+				"description": scriptIncludeGR.getValue('description'),
+				"sys_scope": scriptIncludeGR.getDisplayValue('sys_scope'),
+				"checked": false
+			};
+            scriptIncludesList.push(scriptInclude);
+        }
+		return scriptIncludesList;
+	},
+
+	getAllResourceBlockCloudAPIs : function (resourceBlockId) {
+		var cloudAPIList = [];
+		var recordGR = new GlideRecord('sn_cmp_rb_resourceblock');
+		if(recordGR.get(resourceBlockId)) {
+			var resourceOperationImplGR = new GlideRecord("sn_cmp_rb_op_impl");
+			resourceOperationImplGR.addQuery("resource.name", recordGR.name);
+			resourceOperationImplGR.query();
+			while (resourceOperationImplGR.next()){
+				this.getAllOperationImplSteps(resourceOperationImplGR.sys_id,cloudAPIList);
+			}
+			return cloudAPIList;
+		}
+	},
+
+	getAllOperationImplSteps : function (resourceOperationImplSysId,cloudAPIList) {
+		var operationImplStepGR = new GlideRecord("sn_cmp_rb_op_impl_step");
+		operationImplStepGR.addQuery('operationimpl', resourceOperationImplSysId);
+		operationImplStepGR.query();
+		while (operationImplStepGR.next()){
+			var ownerType = operationImplStepGR.owner_type;
+			if(ownerType == 1){
+				var capiProvider = operationImplStepGR.provider;
+				var capiInterface = operationImplStepGR.capi_interface;
+				var capiProductGR = new GlideRecord("sn_capi_product");
+				capiProductGR.addQuery('capi_name', capiProvider);
+				capiProductGR.query();
+				while (capiProductGR.next()) {
+					var capiGR = new GlideRecord("sn_capi_cloud_api");
+					capiGR.addQuery('cloud_api_interface', capiInterface);
+					capiGR.addQuery('provider', capiProductGR.sys_id);
+					capiGR.query();
+					while (capiGR.next()) {
+						var matchedIndex = cloudAPIList.map(function(e) { return e.name; }).indexOf(capiGR.getValue('cloud_api_name'));
+						if(matchedIndex == -1){
+							cloudAPIList.push({'id': capiGR.getValue('sys_id') , 'name':capiGR.getValue('cloud_api_name'), 'created_by': capiGR.getValue('sys_created_by'), 'created_on': capiGR.getDisplayValue('sys_created_on'), 'sys_updated_by': capiGR.getValue('sys_updated_by'), 'sys_updated_on': capiGR.getDisplayValue('sys_updated_on')});
+						}
+					}
+				}
+			}
+		}
+	},
+
+	getMidScripts: function(){
+		var publishedEntities=[];
+		var scriptIncludeGR = new GlideRecord('ecc_agent_script_include');
+		scriptIncludeGR.query();
+		while (scriptIncludeGR.next()) {
+			var scriptIncludeObj = {};
+
+			scriptIncludeObj['name'] = scriptIncludeGR.getValue('name');
+			scriptIncludeObj['id'] = scriptIncludeGR.getValue('sys_id');
+			scriptIncludeObj['table'] = scriptIncludeGR.getValue('sys_class_name');
+			scriptIncludeObj['sys_created_by'] = scriptIncludeGR.getValue('sys_created_by');
+			scriptIncludeObj['sys_created_on'] = scriptIncludeGR.getValue('sys_created_on');
+			scriptIncludeObj['sys_updated_by'] = scriptIncludeGR.getValue('sys_updated_by');
+			scriptIncludeObj['sys_updated_on'] = scriptIncludeGR.getValue('sys_updated_on');
+			scriptIncludeObj['checked'] = false;
+			publishedEntities.push(scriptIncludeObj);
+		}
+
+
+		var scriptFileGR = new GlideRecord('ecc_agent_script_file');
+		scriptFileGR.query();
+		while (scriptFileGR.next()) {
+			var scriptFileObj = {};
+
+			scriptFileObj['name'] = scriptFileGR.getValue('name');
+			scriptFileObj['id'] = scriptFileGR.getValue('sys_id');
+			scriptFileObj['table'] = scriptFileGR.getValue('sys_class_name');
+			scriptFileObj['sys_created_by'] = scriptFileGR.getValue('sys_created_by');
+			scriptFileObj['sys_created_on'] = scriptFileGR.getValue('sys_created_on');
+			scriptFileObj['sys_updated_by'] = scriptFileGR.getValue('sys_updated_by');
+			scriptFileObj['sys_updated_on'] = scriptFileGR.getValue('sys_updated_on');
+			scriptFileObj['checked'] = false;
+			publishedEntities.push(scriptFileObj);
+		}
+
+		gs.info(JSON.stringify(publishedEntities));
+		return publishedEntities;
+	},
+
+	type: 'CMPUpdateSetDependencyUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-29 10:48:27</sys_created_on>
+        <sys_id>561aae080bc81300bd20812f15673a69</sys_id>
+        <sys_mod_count>102</sys_mod_count>
+        <sys_name>CMPUpdateSetDependencyUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_561aae080bc81300bd20812f15673a69</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 10:58:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Workload Config Provider Type" max_length="40" name="sn_cmp_workload_provider_type" type="collection">
+        <element label="Config CI" max_length="80" name="config_ci" type="choice">
+            <choice/>
+        </element>
+        <element hint="Credential Resolver for the Provider" label="Credential Resolver" max_length="32" name="credential_resolver" reference="ecc_agent_script_include" type="reference"/>
+        <element attributes="includeNone=true,allow_public=true,base_start=true,tableChoicesScript=CMPCredentialChoices,show_table_names_on_label=true" hint="Credential Type associated with provider" label="Credential Type" mandatory="true" max_length="80" name="credential_type" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" hint="Name of the Provider type" label="Name" max_length="100" name="name" type="string"/>
+        <element label="Product Type" mandatory="true" max_length="32" name="product_type" reference="sn_capi_product" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="comma separated values for provider's version" label="Version" max_length="100" name="provider_version" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="comma separated values for config types" label="Server Type" max_length="100" name="server_type" type="string"/>
+        <index name="index">
+            <element name="product_type"/>
+        </index>
+        <index name="index2">
+            <element name="credential_resolver"/>
+        </index>
+    </element>
+</database>

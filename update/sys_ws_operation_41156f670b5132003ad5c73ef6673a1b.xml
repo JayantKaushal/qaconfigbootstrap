@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_operation">
+    <sys_ws_operation action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <consumes>application/json,application/xml,text/xml</consumes>
+        <consumes_customized>false</consumes_customized>
+        <default_operation_uri/>
+        <enforce_acl>3edc5933eb65320047f6a5115206fe99</enforce_acl>
+        <http_method>GET</http_method>
+        <name>List Cloud Services</name>
+        <operation_script><![CDATA[(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+
+	var params = request.queryParams;
+	var templateName = '' + params.templateName;
+	var templateBody = '{}';
+	var returnStatus = 400; // Invalid request
+
+	var ret = [];
+	var glideFormCatItem = new GlideRecordSecure('sn_cmp_bp_cat_item');
+	glideFormCatItem.query();
+	var name="";
+	while (glideFormCatItem.next()) {
+		var rec = {};
+		rec.name = glideFormCatItem.getValue('name');
+		rec.blueprint = glideFormCatItem.getValue('blue_print');
+		rec.active = glideFormCatItem.getValue('active') == 0 ? false : true;
+		rec.category = glideFormCatItem.getValue('category');
+		rec.shortDescription = glideFormCatItem.getValue('short_description');
+		rec.id = glideFormCatItem.getValue('sys_id');
+		ret.push(rec);
+	}
+	templateBody = global.JSON.stringify(ret);
+	returnStatus = 200;
+
+	response.setStatus(returnStatus);
+	response.setContentType('application/json');
+	var writer = response.getStreamWriter();
+	writer.writeString(templateBody);    
+
+})(request, response);]]></operation_script>
+        <operation_uri>/api/now/cmp_catalog_api/services</operation_uri>
+        <produces>application/json,application/xml,text/xml</produces>
+        <produces_customized>false</produces_customized>
+        <relative_path>/services</relative_path>
+        <request_example/>
+        <requires_acl_authorization>true</requires_acl_authorization>
+        <requires_authentication>true</requires_authentication>
+        <requires_snc_internal_role>false</requires_snc_internal_role>
+        <short_description/>
+        <sys_class_name>sys_ws_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-10 23:01:21</sys_created_on>
+        <sys_id>41156f670b5132003ad5c73ef6673a1b</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>List Cloud Services</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ws_operation_41156f670b5132003ad5c73ef6673a1b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-23 19:44:57</sys_updated_on>
+        <web_service_definition display_value="CMP Catalog API">dbf42f670b5132003ad5c73ef6673a70</web_service_definition>
+        <web_service_version/>
+    </sys_ws_operation>
+</record_update>

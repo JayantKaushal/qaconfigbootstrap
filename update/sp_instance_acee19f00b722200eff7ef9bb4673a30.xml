@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance">
+    <sp_instance action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css>input {&#13;
+color: black;&#13;
+}</css>
+        <glyph>search</glyph>
+        <id>cloud_typeahead_search_header</id>
+        <order>1</order>
+        <roles/>
+        <short_description/>
+        <size>lg</size>
+        <sp_column/>
+        <sp_widget display_value="Cloud Typeahead Search">f2db9d700b722200eff7ef9bb4673ab9</sp_widget>
+        <sys_class_name>sp_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-28 17:35:34</sys_created_on>
+        <sys_id>acee19f00b722200eff7ef9bb4673a30</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Cloud Search</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_acee19f00b722200eff7ef9bb4673a30</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-28 17:35:34</sys_updated_on>
+        <title>Cloud Search</title>
+        <url/>
+        <widget_parameters/>
+    </sp_instance>
+    <sys_translated_text action="delete_multiple" query="documentkey=acee19f00b722200eff7ef9bb4673a30"/>
+</record_update>

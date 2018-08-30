@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_resource_type_operation">
+    <sn_cmp_resource_type_operation action="INSERT_OR_UPDATE">
+        <discovery_operation display_value="ListSecurityGroups">6d997b5e0be622009e620bcb15673a6e</discovery_operation>
+        <discovery_step display_value="Network Interface.ListSecurityGroups">bcc9379e0be622009e620bcb15673a5f</discovery_step>
+        <resource_type display_value="AWS::EC2::SecurityGroup">b529d2e6930b22004a9032bfa67ffb26</resource_type>
+        <sys_class_name>sn_cmp_resource_type_operation</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-12 23:28:41</sys_created_on>
+        <sys_id>2c1235d39fb4320048111f80a57fcfe2</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>b529d2e6930b22004a9032bfa67ffb26</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_resource_type_operation_2c1235d39fb4320048111f80a57fcfe2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-20 02:52:20</sys_updated_on>
+    </sn_cmp_resource_type_operation>
+</record_update>

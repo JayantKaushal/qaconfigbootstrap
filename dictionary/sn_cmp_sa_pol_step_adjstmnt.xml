@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Scaling Policy Template" max_length="40" name="sn_cmp_sa_pol_step_adjstmnt" type="collection">
+        <element label="Lower Bound Matrix Interval" max_length="40" name="MetricIntervalLowerBound" type="double"/>
+        <element label="Upper Bound Matrix Interval" max_length="40" name="MetricIntervalUpperBound" type="double"/>
+        <element label="Scaling Policy" max_length="32" name="policy" reference="sn_cmp_sa_policy_template" type="reference"/>
+        <element label="Scalingadjustment" max_length="40" name="ScalingAdjustment" type="integer"/>
+        <index name="index">
+            <element name="policy"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPTemplateUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPTemplateUtil</name>
+        <script><![CDATA[var CMPTemplateUtil = Class.create();
+CMPTemplateUtil.prototype = {
+	GLOBAL_ATTRIBUTE: 'Global Attribute',
+	OPERATION_PARAMETER: 'Operation Parameter',
+	
+    initialize: function() {
+    },
+	
+	extractParameters: function(template) {	
+		return {};
+	},
+	
+	getType: function(type) {		
+		return '';
+	},
+	
+	//child class should implement this method
+	//return object: var ret = {}; which contains n number of input parameters
+	//input parameter1: var param1 = {};
+	//ret.param1 = param1;
+	//structure for input parameters:
+	//param1.type
+	//param1.source (datasource)
+	//param1.defaultValue
+	//param1.value (datasource value)
+	//param1.regex
+	//param1.error_text
+	//param1.mandatory
+	//param1.visibility
+	//param1.order
+	getInputs: function(templateObj, template) {
+		return {};
+	},
+	
+	//child class can implement this method	
+	getStepInputMappings: function(name, template, type, operation, templateObj) {
+		var params = {};
+		params.providerAPIParameters = {};
+		params.orchestrationTemplate = '${Resource.scripts.' + name + ' ' + type + '}';
+		params.templateParameters = {};
+		params.CustomTags = '${parameter.CustomTags}';
+		
+		var gr = new GlideRecord('sn_cmp_tlr_op_attr');
+		gr.addQuery('template_type.name', type);
+		gr.addQuery('operation', operation);
+		gr.query();
+		
+		while (gr.next())
+			params.providerAPIParameters['' + gr.attribute] = this.GLOBAL_ATTRIBUTE;
+		
+		// Send the ServiceNow stack name down in case it is usable to the provider
+		// specific stack in addition to other TLR params
+		params.providerAPIParameters['StackName'] = this.GLOBAL_ATTRIBUTE;
+		
+		var templateParams = this.getInputs(templateObj, template);
+		for (var param in templateParams) {
+			if (templateParams[param].mandatory)
+				params.templateParameters[param] = this.OPERATION_PARAMETER;
+		}
+		
+		return params;
+	},
+	
+	//child class should implement this method
+	//it gets the output attribute for resource block provision operation
+	//return string: JSON.stringify(retObj);
+	//retObj.output1 = expression1
+	//retObj.output2 = expression2
+	getOutputAttribute: function(name, template, templateObj) {
+		return '';
+	},
+	
+	//child class should implement this method
+	validateTemplate: function(templateObj, template) {
+		//implement your validation
+		var errorMessage = "";
+		
+		//return object should have "isValid" and "errorMessage"
+		var result = {};
+		result.isValid = true;
+		result.errorMessage = errorMessage;
+		return result;
+	},
+	
+	deprovisionParameters: function(resourceBlockName) {		
+		return this.getStackIdParameter(resourceBlockName);
+	},
+	
+	getDeprovisionStepParams: function(name, template, type, operation) {
+		return this.getStackIdStepParams(name, template, type, operation);
+	},
+	
+	stopParameters: function(resourceBlockName) {		
+		return this.getStackIdParameter(resourceBlockName);
+	},
+	
+	getStopStepParams: function(name, template, type, operation) {
+		return this.getStackIdStepParams(name, template, type, operation);
+	},
+	
+	startParameters: function(resourceBlockName) {		
+		return this.getStackIdParameter(resourceBlockName);
+	},
+	
+	getStartStepParams: function(name, template, type, operation) {
+		return this.getStackIdStepParams(name, template, type, operation);
+	},		
+	
+	getStackIdParameter: function(resourceBlockName) {
+		var processedParams = {};
+		
+		var paramDetails = {};
+		paramDetails.type = 'String';
+		paramDetails.source = 'Text';
+		paramDetails.value = '${Stack.items[' + resourceBlockName + '].attributes[object_id]}';
+		paramDetails.defaultValue = '${Stack.items[' + resourceBlockName + '].attributes[object_id]}';		
+		//paramDetails.defaultValue = '${parameter.StackID}';
+		paramDetails.mandatory = true;
+		paramDetails.order = 1;
+		
+		processedParams.StackID = paramDetails;
+		
+		return processedParams;
+	},
+	
+	getStackIdStepParams: function(name, template, type, operation) {
+		var params = {};
+		params.StackID = '${parameter.StackID}';
+		return params;
+	},	
+	
+
+    type: 'CMPTemplateUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-10 23:39:46</sys_created_on>
+        <sys_id>2771e72a9ff8320048111f80a57fcf52</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>CMPTemplateUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_2771e72a9ff8320048111f80a57fcf52</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 20:43:56</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance_link">
+    <sp_instance_link action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css>.fa-2x {&#13;
+  font-size: 1.5em;&#13;
+}&#13;
+a.circle_icon {&#13;
+  padding: 25px 0px 20px 50px;&#13;
+}&#13;
+a h3 {&#13;
+  font-size: 20px;&#13;
+}&#13;
+</css>
+        <glyph>briefcase</glyph>
+        <id/>
+        <kb_article/>
+        <kb_category/>
+        <kb_topic/>
+        <order>0</order>
+        <roles/>
+        <sc_cat_item/>
+        <sc_category/>
+        <short_description/>
+        <size>sm</size>
+        <sp_column display_value="">504478e40b9332003bace58525673a79</sp_column>
+        <sp_page/>
+        <sp_widget display_value="Cloud Icon Link">c48762440b472200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>sp_instance_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-08 12:32:16</sys_created_on>
+        <sys_id>f34478e40b9332003bace58525673acf</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>Overview</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_link_f34478e40b9332003bace58525673acf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-06-13 09:15:52</sys_updated_on>
+        <title>Overview</title>
+        <type>url</type>
+        <url>cloud_admin_portal?page=overview</url>
+        <widget_parameters><![CDATA[{
+	"link_template": {
+		"value": "Circle Icon",
+		"displayValue": "Circle Icon"
+	}
+}]]></widget_parameters>
+    </sp_instance_link>
+    <sys_translated_text action="delete_multiple" query="documentkey=f34478e40b9332003bace58525673acf"/>
+</record_update>

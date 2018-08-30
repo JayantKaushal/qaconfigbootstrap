@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_auto_flush">
+    <sys_auto_flush action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <age>1296000</age>
+        <cascade_delete>false</cascade_delete>
+        <conditions/>
+        <force_optimize>false</force_optimize>
+        <matchfield>sys_created_on</matchfield>
+        <sys_class_name>sys_auto_flush</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-18 23:42:26</sys_created_on>
+        <sys_id>6d5138f8873703008de7483cf6cb0b86</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_cmp_cloud_event</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_auto_flush_6d5138f8873703008de7483cf6cb0b86</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-18 23:42:26</sys_updated_on>
+        <tablename>sn_cmp_cloud_event</tablename>
+    </sys_auto_flush>
+</record_update>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetDcResourceDetailsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetDcResourceDetailsAction</name>
+        <script><![CDATA[var CMPGetDcResourceDetailsAction = Class.create();
+CMPGetDcResourceDetailsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.ldcId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetDcResourceDetailsAction.doAction: Undefined ldc Id",
+					null
+				);
+			}
+			
+			var rel = new GlideRecord(params.className);
+			if(params.relationWithLDC == 'Hosted on::Hosts') {
+				rel.addEncodedQuery('RLQUERYcmdb_rel_ci.parent,>=1,m2m^child='+params.ldcId+
+				'^type=5f985e0ec0a8010e00a9714f2a172815'+ //sys id of hosted on relation
+				'^parent.operational_statusNOT IN6,2^ENDRLQUERY');
+			} else {
+				rel.addEncodedQuery('RLQUERYcmdb_rel_ci.child,>=1,m2m^parent='+params.ldcId+
+				'^type=55c95bf6c0a8010e0118ec7056ebc54d^ENDRLQUERY'+ //sys id of contains relation
+				'^operational_statusNOT IN6,2');
+			}
+			return rel.getEncodedQuery();
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get datacenter resources"),
+				"CMPGetDcResourceDetailsAction.doAction(): Failed to get datacenter resources",
+				error
+			);
+		}
+    },
+    type: 'CMPGetDcResourceDetailsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-22 13:55:38</sys_created_on>
+        <sys_id>cd45dba43b3003009c82cedf34efc47f</sys_id>
+        <sys_mod_count>35</sys_mod_count>
+        <sys_name>CMPGetDcResourceDetailsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cd45dba43b3003009c82cedf34efc47f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-11 10:20:17</sys_updated_on>
+    </sys_script_include>
+</record_update>

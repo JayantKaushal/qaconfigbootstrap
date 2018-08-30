@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_stack_item</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition table="sn_cmp_stack_item">resource_block_id=969399fc67532200ff506c706785ef65^ORresource_block_id=266048440b632200668daac125673a63^ORresource_block_id=6a4a735e0be622009e620bcb15673a04^ci_instance_idVALCHANGES^ORstackVALCHANGES^EQ<item display_table="sn_cmp_rb_resourceblock" display_value="Network" endquery="false" field="resource_block_id" goto="false" newquery="false" operator="=" or="false" value="969399fc67532200ff506c706785ef65"/>
+            <item display_table="sn_cmp_rb_resourceblock" display_value="Storage Volume" endquery="false" field="resource_block_id" goto="false" newquery="false" operator="=" or="true" value="266048440b632200668daac125673a63"/>
+            <item display_table="sn_cmp_rb_resourceblock" display_value="Virtual Server" endquery="false" field="resource_block_id" goto="false" newquery="false" operator="=" or="true" value="6a4a735e0be622009e620bcb15673a04"/>
+            <item endquery="false" field="ci_instance_id" goto="false" newquery="false" operator="VALCHANGES" or="false" value=""/>
+            <item endquery="false" field="stack" goto="false" newquery="false" operator="VALCHANGES" or="true" value=""/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </filter_condition>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Recalc Consumed Quota, Stack Item update</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	if (!gs.nil(previous) && !gs.nil(previous.stack))
+		CMPQuotaUtil.invalidateConsumption(previous.resource_block_id,
+										   previous.stack.owner_group, previous.stack.owned_by);
+	if (!gs.nil(current) && !gs.nil(current.stack))
+		CMPQuotaUtil.invalidateConsumption(current.resource_block_id,
+										   current.stack.owner_group, current.stack.owned_by);
+	
+})(current, previous);
+
+]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-15 05:06:19</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>7a1fd549936132004a9032bfa67ffbb7</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Recalc Consumed Quota, Stack Item update</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_7a1fd549936132004a9032bfa67ffbb7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-15 05:06:19</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=7a1fd549936132004a9032bfa67ffbb7"/>
+</record_update>

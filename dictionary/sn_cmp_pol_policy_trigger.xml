@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Trigger" max_length="40" name="sn_cmp_pol_policy_trigger" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Attributes" max_length="100" name="attributes" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Label" max_length="100" name="label" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" max_length="100" name="name" type="string"/>
+        <element label="Target Entity" max_length="40" name="trigger_type" type="integer"/>
+    </element>
+</database>

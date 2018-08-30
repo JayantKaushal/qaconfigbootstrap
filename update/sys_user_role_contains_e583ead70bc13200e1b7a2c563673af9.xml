@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role_contains">
+    <sys_user_role_contains action="INSERT_OR_UPDATE">
+        <contains display_value="sn_capi.cloud_developer" name="sn_capi.cloud_developer">782679e9eb05320047f6a5115206fe40</contains>
+        <role display_value="sn_cmp.cloud_service_designer" name="sn_cmp.cloud_service_designer">e660674b0b083200e586a2c563673a04</role>
+        <sys_class_name>sys_user_role_contains</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-25 13:20:11</sys_created_on>
+        <sys_id>e583ead70bc13200e1b7a2c563673af9</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_capi.cloud_developer.sn_cmp.cloud_service_designer</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_user_role_contains_e583ead70bc13200e1b7a2c563673af9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-25 13:20:11</sys_updated_on>
+    </sys_user_role_contains>
+</record_update>

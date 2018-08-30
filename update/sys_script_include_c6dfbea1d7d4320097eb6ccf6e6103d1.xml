@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudEventHandler</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudEventHandler</name>
+        <script><![CDATA[var CloudEventHandler = Class.create();
+CloudEventHandler.prototype = {	
+	GLIDE_CMP_DEBUG: 'glide.cmp.debug',
+	
+    initialize: function() {
+    },
+	
+	processEvent : function(headersStr, bodyStr, queryParamsStr) {
+		//must be implemented by each provider handler
+		var response = {};
+		response.state = 'error';
+		response.error_message = 'processEvent function is not implemented';
+		return response;
+	},
+	
+	_verifyLDC : function(serviceAccountId, ldc) {
+		var serviceAccountGr = this._verifyServiceAccount(serviceAccountId);
+		if (!serviceAccountGr)
+			return false;
+		var dataCenterGr = new GlideRecord('cmdb_ci_logical_datacenter');
+		dataCenterGr.addQuery('region',ldc);
+		dataCenterGr.query();
+		while(dataCenterGr.next()) {
+			var ciRel = new GlideRecord('cmdb_rel_ci');
+			ciRel.addQuery('type.name', 'Hosted on::Hosts'); 
+			ciRel.addQuery('child',serviceAccountGr.getUniqueValue());
+			ciRel.addQuery('parent',dataCenterGr.getUniqueValue());
+			ciRel.query();
+			if (ciRel.next())
+				return true;
+		}
+		return false;
+	},
+	
+	_verifyCredential : function(serviceAccountId) {
+		var serviceAccountGr = this._verifyServiceAccount(serviceAccountId);
+		if (!serviceAccountGr)
+			return "";
+		return serviceAccountGr.discovery_credentials.sys_id+'';
+	},
+	
+	_verifyServiceAccount : function(serviceAccountId) {
+		var serviceAccountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+		if (!serviceAccountGr.get('account_id', serviceAccountId))
+			return null;
+		return serviceAccountGr;
+	},
+	
+	_getValidatorName : function(resourceType) {
+		var resourceTypeGr = new GlideRecord('sn_capi_resource_type');
+		if (!resourceTypeGr.get('name', resourceType))
+			return null;
+		var ciClass = resourceTypeGr.getValue('ci_class');
+		if (!ciClass)
+			return null;
+		var validatorGr = new GlideRecord('cmdb_cmp_cloud_model_validator');
+		validatorGr.addQuery('ci_class',ciClass);
+		validatorGr.addQuery('validator_type','4');//insert/update type
+		validatorGr.query();
+		if (validatorGr.next())
+			return validatorGr.getValue('validator_name');
+	},
+	
+	_getPatternId : function(resourceType) {
+		var resourceTypeGr = this._getResourceTypeGr(resourceType);
+		if (!resourceTypeGr.get('name', resourceType))
+			return null;
+		
+		var patternId = resourceTypeGr.getValue('pattern');
+		return (patternId) ? patternId : null;
+	},
+		
+	_getClassTypeId : function(resourceType) {
+		var resourceTypeGr = this._getResourceTypeGr(resourceType);
+		if (!resourceTypeGr.get('name', resourceType))
+			return null;
+		
+		var ciClass = resourceTypeGr.getValue('ci_class');
+		return (ciClass) ? ciClass : null;
+	},
+	
+	_getCiId : function(classType, inputObjectId) {
+		var cmdbCloudCi = new GlideRecord(classType);
+		var record = cmdbCloudCi.get('object_id', inputObjectId);
+		return (record) ? cmdbCloudCi.getUniqueValue() : null; 
+	},
+			
+	_debug : function(msg) {
+		if (gs.getProperty(this.GLIDE_CMP_DEBUG,false))
+			gs.info('['+this.type+']********'+msg);
+	},
+	
+	_updateResponse : function(response, resourceType, cloudModelPayload) {
+		var resourceTypeGr = this._getResourceTypeGr(resourceType);
+		var ciClass;
+		if (!resourceTypeGr)
+			return;
+		response.resource_type = resourceTypeGr.getUniqueValue();
+		ciClass = resourceTypeGr.getValue('ci_class');		
+		response.resource_block = this._getResourceblock(resourceTypeGr.getUniqueValue());
+		
+		if (ciClass) {
+			cloudModelPayload = new global.JSON().decode(cloudModelPayload);
+			for (var key in cloudModelPayload) {
+				if (key.indexOf(ciClass) == 0) {
+					var ciId = cloudModelPayload[key];
+					if (ciId){
+						response.ci = ciId;
+						var CI = new GlideRecord(ciClass);
+						if (CI.get(ciId))
+							response.resource_id = CI.getValue('object_id');
+					}
+					break;
+				}
+			}			
+		}
+	},
+	
+	_getResourceTypeGr : function(resourceType) {
+		var resourceTypeGr = new GlideRecord('sn_capi_resource_type');
+		if (resourceTypeGr.get('name', resourceType))
+			return resourceTypeGr;
+		return null;
+	},
+	
+	_getResourceblock : function(resourceTypeId) {
+		var rt_rb_mapping = new GlideRecord('sn_cmp_rt_rb_m2m');
+		if (rt_rb_mapping.get('resource_type',resourceTypeId))
+			return rt_rb_mapping.getValue('resource_block');
+		return '';
+	},
+
+    type: 'CloudEventHandler'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-13 23:21:36</sys_created_on>
+        <sys_id>c6dfbea1d7d4320097eb6ccf6e6103d1</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>CloudEventHandler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c6dfbea1d7d4320097eb6ccf6e6103d1</sys_update_name>
+        <sys_updated_by>roy.wallerstein@servicenow.com</sys_updated_by>
+        <sys_updated_on>2017-12-21 16:23:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

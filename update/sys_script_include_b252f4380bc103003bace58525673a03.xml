@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPExportCloudSolutionDeployerAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPExportCloudSolutionDeployerAction</name>
+        <script><![CDATA[var CMPExportCloudSolutionDeployerAction = Class.create();
+CMPExportCloudSolutionDeployerAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			
+				if (!params.packSysId) {
+					throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPExportCloudSolutionDeployerAction.doAction: Undefined pack id",
+					null
+					);
+				}
+				var solutionDeployerUtils = new sn_cmp_api.SolutionDeployerUtils();
+				var exportedPack = solutionDeployerUtils.exportPack(params.packSysId);
+			
+			return true;
+			
+			}catch(error){
+						var e=error;
+						throw sn_smd.SMErrorHelper.createScriptAPIError(
+						gs.getMessage("Failed to export cloud solution deployer file."),
+						"CMPImportBlueprintAction.doAction(): Failed to export cloud solution deployer file.",
+						error
+						);
+					}
+    },
+
+    type: 'CMPExportCloudSolutionDeployerAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-04 06:52:54</sys_created_on>
+        <sys_id>b252f4380bc103003bace58525673a03</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPExportCloudSolutionDeployerAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b252f4380bc103003bace58525673a03</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-04 06:52:54</sys_updated_on>
+    </sys_script_include>
+</record_update>

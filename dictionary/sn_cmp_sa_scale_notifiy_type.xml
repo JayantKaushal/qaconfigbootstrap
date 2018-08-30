@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Auto Scaling Notification Type" max_length="40" name="sn_cmp_sa_scale_notifiy_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="40" name="name" type="string"/>
+        <element label="Scaling notification" max_length="32" name="scaling_notification" reference="sn_cmp_sa_scale_notification" type="reference"/>
+        <index name="index">
+            <element name="scaling_notification"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_order</collection>
+        <condition>current.operation_name == 'Discovery Interface.ListDatacenters'</condition>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Update account LDC discovery status</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	var order_form = new global.JSON().decode(current.order_form_data);
+	var accountId = order_form.CloudServiceAccountId;
+	var cred = order_form.Credential;
+
+	var gr = new GlideRecord('cmdb_ci_cloud_service_account');
+	gr.addQuery('account_id', accountId);
+	gr.addQuery('discovery_credentials.sys_id', cred);
+	gr.query();
+
+	if (gr.next()) {
+		var orderStatus = getChoiceLabel('sn_cmp_order', 'status', '' + current.status);
+		var date = new GlideDateTime().getDisplayValue();
+		var refresh = current.status == '7' ? 
+			gs.getMessage('Reload this form to see an updated datacenter list.') : '';
+		gr.datacenter_discovery_status = gs.getMessage('{0}: {1}....{2}', [date, orderStatus, refresh]);
+		gr.comments=current.status_msg;
+		gr.update();
+	}
+
+})(current, previous);
+
+function getChoiceLabel(table, field, value) {
+	if (gs.nil(value))
+		return '';
+
+	var gr = new GlideRecord('sys_choice');
+	gr.addQuery('name', table);
+	gr.addQuery('element', field);
+	gr.addQuery('language', 'en'); // We are asking for the English label so look up by that
+	gr.addQuery('value', value);
+	gr.query();
+
+	if (gr.next())
+		return '' + gr.label;
+
+	return '';
+
+}]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-03-22 22:53:20</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>0d765d2f9fa5320048111f80a57fcf26</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>Update account LDC discovery status</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_0d765d2f9fa5320048111f80a57fcf26</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 12:55:30</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=0d765d2f9fa5320048111f80a57fcf26"/>
+</record_update>

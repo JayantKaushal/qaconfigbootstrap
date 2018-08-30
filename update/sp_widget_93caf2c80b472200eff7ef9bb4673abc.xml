@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope) {
+	var c = this;
+	
+	$scope.budgetData = c.data.budget;
+	$scope.modelOptions = c.options;
+	
+	$scope.budget = {
+		total: $scope.budgetData[0].User_Total,
+		used: $scope.budgetData[0].User_Consumed,
+		//type: 'Budget',
+		seriesLabelFormat: '<span>$</span>{y}'
+	};
+	
+	$scope.budgetOptions = {
+		chart: {
+			marginTop: -25
+		},
+		yAxis: {
+			labels: {
+				formatter: function(){
+					return "$" + this.value;
+				}            
+			}
+		}
+	};
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.highcharts-yaxis-grid .highcharts-grid-line {
+  display: none;
+}
+
+.panel-body {
+  padding: 2px;
+}
+
+.panel {
+	min-height: 147px;
+  max-height: 246px;
+}
+
+.no-data {
+  text-align: center;
+  position: relative;
+  top: 40px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-budget-chart</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){	
+		var panel_height = ($(document).height()- 564) + 'px';
+		$(el).find('.panel').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Budget Chart</name>
+        <option_schema>[{  &#13;
+      "name":"title",&#13;
+      "default_value":"Budget Consumption Chart",&#13;
+      "label":"Title",&#13;
+      "type":"string"&#13;
+   }, {  &#13;
+      "name":"description",&#13;
+      "default_value":"Charts showing budget consumption",&#13;
+      "label":"Description",&#13;
+      "type":"string"&#13;
+   }]</option_schema>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function () {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+
+	var ba = new sn_cmp.CMPBudgetBasedNotification();
+	data.budget = ba.getUserBudget(gs.getUserID());
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-08 02:36:02</sys_created_on>
+        <sys_id>93caf2c80b472200eff7ef9bb4673abc</sys_id>
+        <sys_mod_count>1099</sys_mod_count>
+        <sys_name>Cloud Budget Chart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_93caf2c80b472200eff7ef9bb4673abc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-02 04:29:50</sys_updated_on>
+        <template><![CDATA[<div class="panel b widget-container">
+  <div class="panel-heading">
+    <h4 class="panel-title">${Budget}</h4>
+  </div>
+  <div class="panel-body">
+    <div ng-if="!c.data.budget" class="no-data">${No Budget Available}</div>
+    <semi-circle-donut-chart ng-show="c.data.budget" container-id="user_budget" ng-model-options="modelOptions"
+                             data="budget" chart-options="budgetOptions" />
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

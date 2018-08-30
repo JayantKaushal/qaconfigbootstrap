@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sc_category">
+    <sc_category action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Database Server</description>
+        <entitlement_script/>
+        <header_icon/>
+        <homepage_image/>
+        <homepage_renderer display_value="">Default</homepage_renderer>
+        <icon/>
+        <image/>
+        <location/>
+        <mobile_hide_description>false</mobile_hide_description>
+        <mobile_picture/>
+        <mobile_subcategory_render_type>list</mobile_subcategory_render_type>
+        <module/>
+        <order>0</order>
+        <parent/>
+        <roles/>
+        <sc_catalog display_value="Cloud Service Catalog">b029d6da0b212200eff7ef9bb4673a42</sc_catalog>
+        <show_in_cms>false</show_in_cms>
+        <sys_class_name>sc_category</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-21 10:48:25</sys_created_on>
+        <sys_id>c06a558e0bc53200eff7ef9bb4673a08</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Database Server</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sc_category_c06a558e0bc53200eff7ef9bb4673a08</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-21 10:48:25</sys_updated_on>
+        <title>Database Server</title>
+    </sc_category>
+    <sys_translated_text action="delete_multiple" query="documentkey=c06a558e0bc53200eff7ef9bb4673a08"/>
+</record_update>

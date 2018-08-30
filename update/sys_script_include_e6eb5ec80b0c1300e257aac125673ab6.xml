@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.PolicyExporter</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>PolicyExporter</name>
+        <script><![CDATA[var PolicyExporter = Class.create();
+
+PolicyExporter.POLICY_TYPE = {
+	ON_BLUEPRINT_PROVISION: 2,
+	ON_RESOURCE_OPERATION: 3,
+	ON_BLUEPRINT_PROVISION_APPROVAL: 4,
+	ON_STACK_OPERATION_APPROVAL: 5,
+	ON_CATALOG_ITEM_LAUNCH: 6,
+	ON_CATALOG_ITEM_REQUEST_START: 8,
+	ON_CATALOG_ITEM_REQUEST_END: 9,
+	ON_STACK_RESOURCE_OPERATION_APPROVAL: 10,
+	ON_LEASE_END: 12,
+	ON_TASK_REMEDIATION: 13
+};
+
+PolicyExporter.prototype = Object.extendsObject(global.CMPExporterUtil, {
+   
+   initialize: function() {   
+   },
+
+   populateEntriesForUpdateSet : function(sysId, tableName, entityUpdateSetList) {
+     var recordGR = new GlideRecord(tableName);
+     if(recordGR.get(sysId))
+         this.addRecordsToUpdateSetList(recordGR, entityUpdateSetList);
+    },
+	
+    getPolicyTriggerEntityIds : function(entityName) {
+	   var policyTriggerEntityMapping = {
+		   'resourceblock':[
+			   PolicyExporter.POLICY_TYPE.ON_RESOURCE_OPERATION,
+			   PolicyExporter.POLICY_TYPE.ON_STACK_RESOURCE_OPERATION_APPROVAL
+		   ],
+		   'blueprint':[
+			   PolicyExporter.POLICY_TYPE.ON_BLUEPRINT_PROVISION,
+			   PolicyExporter.POLICY_TYPE.ON_BLUEPRINT_PROVISION_APPROVAL,
+			   PolicyExporter.POLICY_TYPE.ON_STACK_OPERATION_APPROVAL,
+			   PolicyExporter.POLICY_TYPE.ON_CATALOG_ITEM_LAUNCH,
+			   PolicyExporter.POLICY_TYPE.ON_CATALOG_ITEM_REQUEST_START,
+			   PolicyExporter.POLICY_TYPE.ON_CATALOG_ITEM_REQUEST_END
+		   ]
+	   };
+	   return policyTriggerEntityMapping[entityName];
+    },
+	
+    getAllDependentPolices : function (target_entity_instance_id, scopeList, entityName) {
+      var policyGR = new GlideRecord('sn_cmp_pol_policy');
+	  var targetEntityId = this.getPolicyTriggerEntityIds(entityName);
+	  var queryString = "target_entity_instance_id=" + target_entity_instance_id + "^ORtarget_entity_idIN" + targetEntityId + "^status=1";
+	  policyGR.addEncodedQuery(queryString);
+	  return policyGR.getEncodedQuery();
+   },
+
+   getAllPoliciesAndRelatedEntities : function (selectedPoliciesList, entityUpdateSetList,exporterLog) {
+      for (var i = 0; i < selectedPoliciesList.length; i++) {
+		  var policyGR = new GlideRecord('sn_cmp_pol_policy');
+		  var policyId = selectedPoliciesList[i].sys_id;
+		  if (policyGR.get(policyId)) {
+			  this.populateEntriesForUpdateSet(policyGR.sys_id, policyGR.sys_class_name, entityUpdateSetList);
+			  this.getAllPolicyRules(policyGR.sys_id, entityUpdateSetList);
+			  this.getPolicyGroup(policyGR.group_id, entityUpdateSetList);
+		  }
+      }
+   },
+	
+   getPolicyGroup : function (policyGroupId, entityUpdateSetList) {
+	  var policyGroupGr = new GlideRecord('sn_cmp_pol_policy_group');
+      if (policyGroupGr.get(policyGroupId)) 
+         this.populateEntriesForUpdateSet(policyGroupGr.sys_id, policyGroupGr.sys_class_name, entityUpdateSetList);
+      
+   },
+
+   getAllPolicyRules : function (policyId, entityUpdateSetList) {
+      var policyRuleGr = new GlideRecord('sn_cmp_pol_rule');
+      policyRuleGr.addQuery('policy', policyId);
+      policyRuleGr.query();
+      while(policyRuleGr.next()) {
+         this.populateEntriesForUpdateSet(policyRuleGr.sys_id, policyRuleGr.sys_class_name, entityUpdateSetList);
+         this.getAllPolicyRuleAction(policyRuleGr.sys_id, entityUpdateSetList);
+      }
+   },
+
+   getAllPolicyRuleAction : function (PolicyRuleId, entityUpdateSetList) {
+      var policyRuleActionGr = new GlideRecord('sn_cmp_pol_action');
+      policyRuleActionGr.addQuery('policy_rule', PolicyRuleId);
+      policyRuleActionGr.query();
+      while(policyRuleActionGr.next()) {
+         this.populateEntriesForUpdateSet(policyRuleActionGr.sys_id, policyRuleActionGr.sys_class_name, entityUpdateSetList);
+         var isScriptBased = policyRuleActionGr.getValue("is_script");
+         var actionType = policyRuleActionGr.getValue("action_type");
+         if(isScriptBased == 1 || actionType == 3) {
+            var policyActionScriptId = policyRuleActionGr.getValue('action_script_name');
+            this.getAllPolicyActionScript(policyActionScriptId, entityUpdateSetList);
+         }
+      }
+   },
+
+   getAllPolicyActionScript : function (policyActionScriptId, entityUpdateSetList) {
+      var policyActionScriptGr = new GlideRecord('sn_cmp_pol_action_script');
+      policyActionScriptGr.addQuery('sys_id', policyActionScriptId);
+      policyActionScriptGr.query();
+      while(policyActionScriptGr.next()) {
+         this.populateEntriesForUpdateSet(policyActionScriptGr.sys_id, policyActionScriptGr.sys_class_name, entityUpdateSetList);
+         this.getPolicyActionScriptCategory(policyActionScriptGr.getValue('action_script_cat'), entityUpdateSetList);
+      }
+   },
+
+   getPolicyActionScriptCategory : function (policyActionScriptCategoryId, entityUpdateSetList) {
+      var policyActionScriptCategoryGr = new GlideRecord('sn_cmp_pol_action_script_cat');
+      policyActionScriptCategoryGr.addQuery('sys_id', policyActionScriptCategoryId);
+      policyActionScriptCategoryGr.query();
+      while(policyActionScriptCategoryGr.next()) {
+         this.populateEntriesForUpdateSet(policyActionScriptCategoryGr.sys_id, policyActionScriptCategoryGr.sys_class_name, entityUpdateSetList);
+      }
+   },
+
+   type: 'PolicyExporter'
+});
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-01-29 09:47:01</sys_created_on>
+        <sys_id>e6eb5ec80b0c1300e257aac125673ab6</sys_id>
+        <sys_mod_count>80</sys_mod_count>
+        <sys_name>PolicyExporter</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e6eb5ec80b0c1300e257aac125673ab6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-15 18:32:05</sys_updated_on>
+    </sys_script_include>
+</record_update>

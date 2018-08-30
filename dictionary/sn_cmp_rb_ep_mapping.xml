@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Endpoint Mapping" max_length="40" name="sn_cmp_rb_ep_mapping" type="collection">
+        <element attributes="allow_public=true,base_table=cmdb_ci_endpoint,base_start=true" label="Endpoint" max_length="80" name="endpoint" type="table_name"/>
+        <element choice="1" label="Relation Type" max_length="40" name="relation_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Implements" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Uses" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element label="Resource Block" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="resource_block"/>
+        </index>
+    </element>
+</database>

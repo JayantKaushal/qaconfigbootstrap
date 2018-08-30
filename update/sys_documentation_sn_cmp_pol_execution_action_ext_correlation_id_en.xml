@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="ext_correlation_id" label="External Correlation Id" language="en" table="sn_cmp_pol_execution_action">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>ext_correlation_id</element>
+            <help/>
+            <hint>Correlation Id.</hint>
+            <label>External Correlation Id</label>
+            <language>en</language>
+            <name>sn_cmp_pol_execution_action</name>
+            <plural>External Correlation Ids</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 08:45:38</sys_created_on>
+            <sys_id>14b8c7e80bd42300d9f9ad4363673a8b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>External Correlation Id</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_sn_cmp_pol_execution_action_ext_correlation_id_en</sys_update_name>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 08:45:38</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

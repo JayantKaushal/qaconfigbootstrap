@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_budget</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Check uniqueness</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+	
+var group = current.getValue('group_name');
+var id =current.getUniqueValue();
+var group_limit = current.getValue('group_limit');
+var user_limit = current.getValue('user_limit');
+	//Check whether record already exists ?
+var glideBudget = new 	GlideRecord('sn_cmp_budget');
+	glideBudget.addQuery('group_name',group);
+	glideBudget.query();
+	if(glideBudget.next()){
+		if(glideBudget.getUniqueValue() != id){
+		  current.setAbortAction(true);
+          gs.addErrorMessage(gs.getMessage("This group is already present"));
+		}	
+	 }
+	 if(parseInt(group_limit) < 0 || parseInt(user_limit) < 0 ){    // Check for -ve values
+			 current.setAbortAction(true);
+             gs.addErrorMessage(gs.getMessage("Please do not set negative values")); 
+     }
+	 if(parseInt(group_limit) < parseInt(user_limit)){    // MaxLimit Check
+			 current.setAbortAction(true);
+             gs.addErrorMessage(gs.getMessage("Group Maximum Limit should be greater that or equal to User Limit ")); 
+     }
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-02 11:53:41</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>9dd6334a0b500300d763a2c563673a89</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>Check uniqueness</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_9dd6334a0b500300d763a2c563673a89</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-02 12:35:57</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=9dd6334a0b500300d763a2c563673a89"/>
+</record_update>

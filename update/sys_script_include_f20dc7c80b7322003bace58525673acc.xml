@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateBlueprintAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateBlueprintAction</name>
+        <script><![CDATA[var CMPCreateBlueprintAction = Class.create();
+CMPCreateBlueprintAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.name || !params.category) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPCreateBlueprintAction.doAction: Undefined element type, name, and/or category",
+				null
+				);
+			}
+			/*
+			*   Update blueprint
+			*      If blueprint params has id then we need to update the blueprint
+			*/
+ 			if (params.id) {
+ 				var gr = new GlideRecord("sn_cmp_bp_blueprint");
+ 				if(gr.isValid() && gr.get(params.id)) {
+					var categoryGR = new GlideRecord("sn_capi_service_category");
+					if(categoryGR.isValid() && categoryGR.get('name', params.category)) {
+						gr.setValue('category', categoryGR.getUniqueValue() );
+					}
+					gr.setValue('description', params.description);
+ 					gr.update();
+				}
+ 				return true;
+ 			}
+
+			var blueprintServiceScript = new sn_cmp_api.BlueprintServiceScript();
+			var bpByName = blueprintServiceScript.getBlueprintByName(params.name);
+
+			if(bpByName != "null" && JSON.parse(bpByName).name){
+					throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Blueprint {0} already exists.",params.name),
+					"CMPCreateBlueprintAction.doAction(): Failed to create new blueprint",
+					null
+					);
+			}
+			else{
+				var isBPValid = new BlueprintDataValidator().validateBlueprintName(params.name);
+				if(isBPValid){
+					var newBlueprintObj = blueprintServiceScript.createBlueprint(params.name,params.category,params.description,params.layer,params.status);
+					var newBlueprint = new global.JSON().decode(newBlueprintObj);
+					return newBlueprint;
+				}
+				else{
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Failed to create blueprint with name : {0}. Blueprint name cannot contain any special characters except spaces",params.name),
+					"CMPCreateBlueprintAction.doAction(): Failed to create blueprint with name : '" +params.name+ "'. Blueprint name cannot contain any special characters except spaces",
+					null
+					);
+				}
+			}
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to create blueprint."),
+			"CMPCreateBlueprintAction.doAction(): Failed to create new blueprint",
+			error
+			);
+		}
+    },
+
+    type: 'CMPCreateBlueprintAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-15 10:45:16</sys_created_on>
+        <sys_id>f20dc7c80b7322003bace58525673acc</sys_id>
+        <sys_mod_count>26</sys_mod_count>
+        <sys_name>CMPCreateBlueprintAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f20dc7c80b7322003bace58525673acc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 19:32:56</sys_updated_on>
+    </sys_script_include>
+</record_update>

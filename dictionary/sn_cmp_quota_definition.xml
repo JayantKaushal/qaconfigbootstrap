@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Quota Definition" max_length="40" name="sn_cmp_quota_definition" type="collection">
+        <element hint="This indicates that value is single unit or GB/TB" label="Calculation Unit" max_length="32" name="calculation_unit" reference="sn_cmp_conversion_unit" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" hint="This is unique identifier for Quota.Usually it will be resourcename_count or size (Network_Count,VM_Count)" label="Quota Definition" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="This identifies whether attribute is Count,Size etc." label="Quota Type" mandatory="true" max_length="100" name="quota_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Count" sequence="1" value="Count"/>
+                <element inactive_on_update="false" label="Sum" sequence="2" value="Sum"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" hint="This identifies whether attribute is Instance or column name of the instance table." label="Attribute" mandatory="true" max_length="40" name="resource_attribute" type="string"/>
+        <element hint="Resource name" label="Resource Name" mandatory="true" max_length="32" name="resource_name" reference="sn_cmp_rb_resourceblock" reference_qual="is_tlr=false^EQ" reference_qual_condition="is_tlr=false^EQ" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="Table name of the specific template like OS template,compute template etc. " label="Template" max_length="40" name="template" type="string"/>
+        <element attributes="edge_encryption_enabled=true" hint="This is column name of the template table." label="Template Attribute" max_length="40" name="template_attribute" type="string"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+        <index name="index2">
+            <element name="calculation_unit"/>
+        </index>
+        <index name="index3">
+            <element name="resource_name"/>
+        </index>
+    </element>
+</database>

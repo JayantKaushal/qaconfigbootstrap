@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $http, spUtil, $rootScope, $location) {
+
+	$scope.g_form = null;
+
+	$scope.$on("$sp.resource.operation_cat_item.submit",function(){
+		if($scope.g_form)
+			$scope.g_form.submit();
+	});
+
+
+
+	$scope.$on('spModel.gForm.initialized', function(e, gFormInstance){
+		$scope.g_form = gFormInstance;
+		$scope.g_form.setValue('operationName', $scope.data.operationName, $scope.data.operationName);
+		$scope.g_form.setValue('resourceId', $scope.data.resourceId, $scope.data.resourceId);
+		$scope.g_form.setValue('resourceInterface', $scope.data.resourceInterface, $scope.data.resourceInterface);
+		$scope.g_form.setValue('resourceBlock', $scope.data.resourceBlock, $scope.data.resourceBlock);
+
+		$scope.g_form.$private.events.on('submitted', function(){
+			getOne();
+		});
+
+	});
+
+	// spModel populates mandatory - hasMandatory is called by the submit button
+	$scope.hasMandatory = function(mandatory) {
+		return mandatory && mandatory.length > 0;
+	};
+
+	function getOne() {
+
+		function getVarData(fields) {
+			var reqData = {};
+			for(var obj in fields)
+				reqData[fields[obj].name] = fields[obj].value;
+			return reqData;
+		}
+
+		var baseUrl = "/api/sn_sc/v1/servicecatalog/";
+
+		var request = {'sysparm_quantity': 1, 'variables': getVarData($scope.data.sc_cat_item._fields), 'get_portal_messages': 'true', sysparm_no_validation: 'true'};
+		$http.post(baseUrl + "items/" + $scope.data.sys_id + "/order_now", request).then(function(response){
+			$scope.$emit("$$uiNotification", response.data.result.$$uiNotification);
+			var request_sys_id = response.data.result.sys_id;	
+			if(request_sys_id)
+				$rootScope.$broadcast("$sp.cloud.resource.operation.cat.item.submitted", request_sys_id);
+		},null);
+
+	}
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.pane .panel {
+  max-height: 360px;
+  overflow-y:auto;
+}
+
+.form-tabs {
+  height: 46px;
+  width: 100%;
+  margin-bottom: 15px;
+  margin-top: -35px;
+
+  .btn:not(:last-child)::after,
+  .btn-primary:not(:last-child)::after {
+    display: block;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: 6px;
+    right: -15px;
+    background-color: transparent;
+    content: "";
+    transform: rotate(45deg);
+    border-top: 1px solid rgb(189, 192, 196);
+    border-right: 1px solid rgb(189, 192, 196);
+    z-index: 1;
+  }
+
+  .btn {
+    height: 100%;
+    color: #343D47;
+    border-color: rgb(189, 192, 196);
+  }
+  .btn:hover {
+    background-color: transparent;
+    border-color: rgb(189, 192, 196);
+  }
+
+  .btn:focus {
+    outline: none;
+    box-shadow: none;
+    border-bottom: 3px solid #428bca;
+  }
+
+  .btn-primary {
+    background-color: transparent;
+    font-weight: bold;
+    border-bottom: 3px solid #428bca;
+    pointer-events: none;
+  }
+
+  .btn:first-child:not(:last-child),
+  .btn:not(:last-child){
+    border-right: none;
+  }
+
+  .btn:last-child:not(:first-child),
+  .btn:not(:first-child){
+    border-left: none;
+  }
+}
+
+.modal-footer {
+  display:none !important;
+}
+
+
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-resource-operation-modal</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attr,ctrl) {
+}]]></link>
+        <name>Cloud Resource Operation Modal</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.sys_id = input.sys_id;
+	data.operationName = input.operationName;
+	data.resourceInterface = input.resourceInterface;
+	data.resourceBlock = input.resourceBlock;
+	data.resourceId = input.resourceId;
+	data.sc_cat_item = $sp.getCatalogItem(data.sys_id,true);	
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-28 06:48:56</sys_created_on>
+        <sys_id>f84338dd0b353200eff7ef9bb4673ae4</sys_id>
+        <sys_mod_count>74</sys_mod_count>
+        <sys_name>Cloud Resource Operation Modal</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_f84338dd0b353200eff7ef9bb4673ae4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-17 18:55:29</sys_updated_on>
+        <template><![CDATA[<div style="height:50px;">
+  <h1 class="h4 m-t-none m-b-none">{{::data.sc_cat_item.short_description}}</h1>
+  <div ng-if="::data.sc_cat_item.description" class="text-muted">{{::data.sc_cat_item.description}}</div>
+</div>
+<div id="sc_cat_item">
+  <div class="row" ng-if="::data.sc_cat_item" >
+    <sp-cat-item item="::data.sc_cat_item" />
+    <form>
+      <div>
+        <!-- display view and model -->
+        <sp-model form-model="::data.sc_cat_item" mandatory="mandatory"></sp-model>
+      </div>
+    </form>
+  </div>
+</div>
+
+]]></template>
+    </sp_widget>
+</record_update>

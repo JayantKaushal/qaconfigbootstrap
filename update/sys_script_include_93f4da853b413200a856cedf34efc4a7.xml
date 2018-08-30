@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetGuestInterfaceOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetGuestInterfaceOperationAction</name>
+        <script><![CDATA[var CMPGetGuestInterfaceOperationAction = Class.create();
+CMPGetGuestInterfaceOperationAction.prototype =Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.gi_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetResourceBlockGuestInterfaceAction.doAction: Undefined resource block Id",
+					null
+				);
+			}
+			
+			
+			//Guset Interface operation list
+			var gr = new GlideRecord('sn_cmp_rb_op_impl');
+			if(params.gi_id || params.gi_id != "")
+				gr.addQuery("interface", params.gi_id);
+			if(params.rb_id || params.rb_id != "")
+				gr.addQuery("resource", params.rb_id);
+			gr.orderBy('operation');
+			gr.query();
+			var guestInterfaceOpList = [];
+			while (gr.next()) {
+				var rbObj = {};
+				//rbObj.id = gr.getValue('operation');
+				var getOperationName = gr.getDisplayValue('operation');
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.opName = getOperationName;
+				rbObj.opOutputAttributes = gr.getValue('operation_output_attributes');
+				
+				var grOp = new GlideRecord('sn_cmp_rb_op_signature');
+				if(getOperationName || getOperationName != "") {
+					grOp.addQuery("name", getOperationName);
+					grOp.addQuery("interface", params.gi_id);
+					grOp.query();
+					if(grOp.next()) {
+						var getOperationType = grOp.getDisplayValue('operation_type');
+						rbObj.interfaceName = grOp.getDisplayValue('interface');
+						rbObj.accessType = grOp.getValue('access_type');
+						rbObj.operationType = getOperationType;
+						rbObj.opSignatureId = grOp.getValue('sys_id');
+						rbObj.catItemSysId = CMPUtil.getCatalogItemByResourceBlockIdAndOperationId(params.rb_id, rbObj.opSignatureId);
+
+						//Fetch operationType Id based on operationType
+						rbObj.operationTypeId ='';
+						var grOpType = new GlideRecord('sn_cmp_rb_op_type');
+						if(!gs.nil(getOperationType)) {
+							grOpType.addQuery("name", getOperationType);
+							grOpType.query();
+							if(grOpType.next()) {
+								rbObj.operationTypeId = grOpType.getValue('sys_id');
+							}
+
+						}
+					}
+					guestInterfaceOpList.push(rbObj);
+				}
+			}
+			return guestInterfaceOpList;
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all guest interface operations."),
+				"CMPGetGuestInterfaceOperationAction.doAction(): Failed to get all guest interface operations",
+				error
+			);
+		}
+    },
+    type: 'CMPGetGuestInterfaceOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-18 12:35:12</sys_created_on>
+        <sys_id>93f4da853b413200a856cedf34efc4a7</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>CMPGetGuestInterfaceOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_93f4da853b413200a856cedf34efc4a7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-08 20:48:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

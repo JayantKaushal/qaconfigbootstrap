@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>UserKeys</name>
+        <resource_pool display_value="SSHKeyPool">c7cd305a0b803200e937c97193673a5b</resource_pool>
+        <script><![CDATA[getUserKeys();
+// Do not remove function declaration
+/**
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getUserKeys() {
+	var userKeys = [];
+	var userId = gs.getUserID();
+	var userSSHKeyGr = new GlideRecord('sn_cmp_ssh_credentials');
+	userSSHKeyGr.addQuery('assigned_to', userId);
+	userSSHKeyGr.query();
+	while (userSSHKeyGr.next()){
+		var userSSHKey = {};
+			userSSHKey.value = userSSHKeyGr.getUniqueValue();
+			userSSHKey.label = userSSHKeyGr.getValue('name');
+			userKeys.push(userSSHKey);
+	}
+
+	//force to string
+	return new global.JSON().encode(userKeys);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 13:41:54</sys_created_on>
+        <sys_id>5b45f4e70bf03200668daac125673ade</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>UserSSHKeyFilter</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_5b45f4e70bf03200668daac125673ade</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-13 18:29:06</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

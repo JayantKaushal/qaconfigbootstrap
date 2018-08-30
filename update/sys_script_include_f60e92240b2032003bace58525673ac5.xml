@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetCapacityLimitAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetCapacityLimitAction</name>
+        <script><![CDATA[var CMPGetCapacityLimitAction = Class.create();
+CMPGetCapacityLimitAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.datacenterId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetCapacityLimitAction.doAction: Undefined element datacenterId",
+				null
+				);
+			}
+			
+			var cloudAccountServiceScript =new sn_cmp_api.CloudAccountServiceScript();
+			var capcityLimitList = cloudAccountServiceScript.getCapacityLimit(params.datacenterId);
+			
+			var capcityLimitListObj = new global.JSON().decode(capcityLimitList);
+			return capcityLimitListObj;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get capcity limit list"),
+			"CMPGetCapacityLimitAction.doAction(): Failed to get capcity limit list.",
+			error
+			);
+		}
+    },
+
+    type: 'CMPGetCapacityLimitAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-23 04:02:21</sys_created_on>
+        <sys_id>f60e92240b2032003bace58525673ac5</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>CMPGetCapacityLimitAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f60e92240b2032003bace58525673ac5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-24 12:55:47</sys_updated_on>
+    </sys_script_include>
+</record_update>

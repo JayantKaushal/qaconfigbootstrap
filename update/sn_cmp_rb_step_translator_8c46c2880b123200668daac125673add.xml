@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>1</order>
+        <script display_value="Attach_VDisk_virtual_server">fdb502880b123200668daac125673a75</script>
+        <step display_value="vSphere Block Storage API.AssociateVolume">b5e98d360b632200e937c97193673a4f</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-18 12:10:42</sys_created_on>
+        <sys_id>8c46c2880b123200668daac125673add</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_8c46c2880b123200668daac125673add</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-18 12:11:26</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Order Step Graph" max_length="40" name="sn_cmp_order_step_graph_edge" type="collection">
+        <element label="Child Orchestration Step" max_length="32" name="child_step" reference="sn_cmp_order_step_status" reference_cascade_rule="delete" type="reference"/>
+        <element label="Cloud Orchestration" max_length="32" name="order" reference="sn_cmp_order" type="reference"/>
+        <element label="Parent Orchestration Step" max_length="32" name="parent_step" reference="sn_cmp_order_step_status" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="parent_step"/>
+        </index>
+        <index name="index2">
+            <element name="child_step"/>
+        </index>
+        <index name="index3">
+            <element name="order"/>
+        </index>
+    </element>
+</database>

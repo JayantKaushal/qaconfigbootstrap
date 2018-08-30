@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.IPAMUtil</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>IPAMUtil</name>
+        <script><![CDATA[var IPAMUtil = Class.create();
+IPAMUtil.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	fetchIPAMProviderInfo : function( sysid){
+		if( !sysid)
+			sysid = this.getParameter("sysid");
+
+		// called from sn_cmp_pol_action_script.name onChange event
+		var name = "";
+		try{
+			var glideRecord = new GlideRecord( "sn_cmp_wl_cfg_ipam_provider");
+			if(glideRecord.get(sysid))
+				name = glideRecord.getValue("name");
+		}catch(error){
+			gs.info("fetchIPAMProviderInfo glide record Error :" + error);
+		}
+		return name;
+	},
+	type: 'IPAMUtil'
+});
+
+
+IPAMUtil.fetchIPAddressSet = function(poolId) {
+	var data = [];
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.query();
+	while (gr.next()) {
+		var ipInfo = IPAMUtil.getIPAddressInfo(gr.getValue('cloud_ip_address'));
+		data.push({
+			ipAddress: ipInfo.ipAddress,
+			state: ipInfo.state
+		});
+	}
+
+	return data;
+};
+
+IPAMUtil.markIPAddressAsAvailable = function(poolId, ipAddressId) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('cmdb_ci_cloud_ip_address',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+	gr.setValue('status','3');
+	gr.update();
+	}
+};
+
+IPAMUtil.markIPAddressAsBlocked = function(poolId, ipAddressId) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('cmdb_ci_cloud_ip_address',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+	gr.setValue('status','2');
+	gr.update();
+	}
+};
+
+IPAMUtil.getNextIPAddress = function(poolId) {
+	var ipaddress = null;
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('status','3');
+	gr.addQuery();
+	if (gr.next()) {
+		var ipInfo = IPAMUtil.getIPAddressInfo(gr.getValue('cloud_ip_address'));
+		ipaddress = ipInfo.ipAddress;
+	}
+	return ipaddress;
+};
+
+IPAMUtil.getNextIPAddressList = function(poolId) {
+	var data = [];
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('status','3');
+	gr.query();
+	while (gr.next()) {
+		var ipInfo = IPAMUtil.getIPAddressInfo(gr.getValue('cloud_ip_address'));
+		data.push({
+			ipAddress: ipInfo.ipAddress,
+			state: ipInfo.state
+		});
+	}
+
+	return data;
+};
+
+IPAMUtil.getIPAddressInfo = function(ipAddressId) {
+	var data = [];
+	var gr = new GlideRecord('cmdb_ci_cloud_ip_address');
+	gr.addQuery('sys_id',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+		data.push({
+			ipAddress: ipInfo.getValue('name'),
+			state: ipInfo.getValue('status')
+		});
+	}
+
+	return data;
+};
+
+IPAMUtil.updateIPAddressStatus = function(poolId, ipAddressId, status) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('cmdb_ci_cloud_ip_address',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+	gr.setValue('status',status);
+	gr.update();
+	}
+};
+
+IPAMUtil.markIPAddressAsAssigned = function(poolId, ipAddressId, fqdn) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('cmdb_ci_cloud_ip_address',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+	gr.setValue('status','1');
+	gr.setValue('fqdn',fqdn);
+	gr.update();
+	}
+};
+
+IPAMUtil.markIPAddressAsUnAssigned = function(poolId, ipAddressId) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('sn_cmp_ip_pool',poolId);
+	gr.addQuery('cmdb_ci_cloud_ip_address',ipAddressId);
+	gr.query();
+	if (gr.next()) {
+	gr.setValue('status','3');
+	gr.setValue('fqdn','');
+	gr.update();
+	}
+};
+
+IPAMUtil.getIPPoolIPAddressFromIPPool = function() {
+
+};
+
+IPAMUtil.createIPPoolIPAddress = function(poolId, subnetId, subnetCidr) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.setValue('ip_pool',poolId);
+	gr.setValue('status','3');
+	gr.insert();
+};
+
+IPAMUtil.deleteAllIPPoolIPAddress = function(poolId) {
+	var gr = new GlideRecord('sn_cmp_ip_pool_ip_address');
+	gr.addQuery('ip_pool',poolId);
+	gr.query();
+	while (gr.next()) {
+		gr.deleteRecord();
+	}
+
+};
+
+IPAMUtil.getPoolProviderAndVersionBySubnet = function(subnet) {
+	var data = new Map();
+	var providerName = "";
+	var gr = new GlideRecord('sn_cmp_ip_pool');
+	gr.addQuery('subnet',subnet);
+	gr.query();
+	if (gr.next()) {
+			var providerId = gr.getValue('ipam_provider');
+				var glideRecord = new GlideRecord( "sn_cmp_wl_cfg_ipam_provider");
+	            if(glideRecord.get(sysid))
+	               providerName = glideRecord.getValue("name");
+	        data.set("version", gr.getValue('version'));
+	        data.set("provider", providerName);
+	}
+
+	return data;
+};
+
+
+IPAMUtil.getSubnetCIDR = function() {
+
+};
+
+IPAMUtil.getIPAddressStatus = function() {
+
+};
+]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 02:43:24</sys_created_on>
+        <sys_id>28058ba80b453200a91f6707b6673a8c</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>IPAMUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_28058ba80b453200a91f6707b6673a8c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

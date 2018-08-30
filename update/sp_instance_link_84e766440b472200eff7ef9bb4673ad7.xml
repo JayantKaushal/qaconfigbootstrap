@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance_link">
+    <sp_instance_link action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css/>
+        <glyph>cubes</glyph>
+        <id/>
+        <kb_article/>
+        <kb_category/>
+        <kb_topic/>
+        <order>0</order>
+        <roles/>
+        <sc_cat_item/>
+        <sc_category/>
+        <short_description>Perform lifecycle operations</short_description>
+        <size>md</size>
+        <sp_column display_value="2">fc16aa040b472200eff7ef9bb4673a77</sp_column>
+        <sp_page/>
+        <sp_widget display_value="Cloud Icon Link">c48762440b472200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>sp_instance_link</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-08 01:13:21</sys_created_on>
+        <sys_id>84e766440b472200eff7ef9bb4673ad7</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Manage Stacks</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_link_84e766440b472200eff7ef9bb4673ad7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-06 08:03:10</sys_updated_on>
+        <title>Manage Stacks</title>
+        <type>url</type>
+        <url>?id=cloud_stacks&amp;category=cloud_stacks</url>
+        <widget_parameters><![CDATA[{
+	"link_template": {
+		"value": "Circle Icon",
+		"displayValue": "Circle Icon"
+	}
+}]]></widget_parameters>
+    </sp_instance_link>
+    <sys_translated_text action="delete_multiple" query="documentkey=84e766440b472200eff7ef9bb4673ad7"/>
+</record_update>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetRuleActionTypesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetRuleActionTypesAction</name>
+        <script><![CDATA[var CMPGetRuleActionTypesAction = Class.create();
+CMPGetRuleActionTypesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	ON_BLUEPRINT_PROVISION: "2",
+	ON_RESOURCE_OPERATION: "3",
+	ON_BLUEPRINT_PROVISION_APPROVAL: "4",
+	ON_STACK_OPERATION_APPROVAL: "5",
+	ON_CATALOG_ITEM_LAUNCH: "6",
+	ON_CLOUD_EVENT: "7",
+	ON_CATALOG_ITEM_REQUEST_START: "8",
+	ON_CATALOG_ITEM_REQUEST_END: "9",
+	ON_STACK_RESOURCE_OPERATION_APPROVAL: "10",
+	ON_LEASE_END: "12",
+	ON_TASK_REMEDIATION: "13",
+	
+     doAction: function(params) {
+		try {
+			if (!params.rule_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetRuleActionTypesAction.doAction: Undefined rule ID",
+				null
+				);
+			}
+			
+			var ruleGr = new GlideRecord('sn_cmp_pol_rule');
+			if (!ruleGr.get(params.rule_id) || !ruleGr.isValidRecord()) 
+				throw "Invalid rule id: the record does not exist for sys_id "+params.rule_id;
+			
+			var result = {
+				published_policy: ruleGr.policy.status+'' == '1'
+			};
+			var actionTypes = [];
+			switch(ruleGr.policy.target_entity_id+'') {
+				case this.ON_BLUEPRINT_PROVISION:
+					actionTypes.push({
+						label: 'Execute a Script', 
+						definition: 'Execute a script on the instance',
+						description: 'This action will execute a ServiceNow script on the instance. All the operation parameters are available as inputs to the script.',
+						value: 3,
+						icon: 'icon-script'
+					});
+					actionTypes.push({
+						label: 'Property Override', 
+						definition: 'Override a operation parameter',
+						description: 'This action will set the value of a given parameter of the operation.',
+						value: 1,
+						icon: 'icon-form'
+					});
+					actionTypes.push({
+						label: 'Abort Process', 
+						definition: 'Abort the current execution',
+						description: 'This action will stop the workflow which drives the overall orchestration.',
+						value: 6,
+						icon:'icon-clear'
+					});
+					break;
+				case this.ON_RESOURCE_OPERATION:
+					actionTypes.push({
+						label: 'Property Override', 
+						definition: 'Override a operation parameter',
+						description: 'This action will set the value of a given parameter of the operation.',
+						value: 1,
+						icon: 'icon-form'
+					});
+					actionTypes.push({
+						label: 'Execute a Script', 
+						definition: 'Execute a script on the instance',
+						description: 'This action will execute a ServiceNow script on the instance. All the operation parameters are available as inputs to the script.',
+						value: 3,
+						icon: 'icon-script'
+					});
+					actionTypes.push({
+						label: 'Call Cloud API', 
+						definition: 'Execute a Cloud API call',
+						description: 'This action will execute a Cloud API (CAPI) call. The output of the CAPI call can then be used for overriding parameters.',
+						value: 5,
+						icon : 'icon-run-command'
+					});
+					actionTypes.push({
+						label: 'IP Address Management', 
+						definition: 'Interface with IPAM system',
+						description: 'This action will communicate with external IPAM systems and execute operations on it.',
+						value: 11,
+						icon : 'icon-run-command'
+					});
+					break;
+				case this.ON_BLUEPRINT_PROVISION_APPROVAL:
+				case this.ON_STACK_OPERATION_APPROVAL:
+				case this.ON_STACK_RESOURCE_OPERATION_APPROVAL:
+				case this.ON_TASK_REMEDIATION:
+					actionTypes.push({
+						label: 'Service Now Approval', 
+						definition: 'Initiate a ServiceNow approval process',
+						description: 'This action will initiate a ServiceNow approval process. The approver can be manager or an approval group.',
+						value: 2,
+						icon: 'icon-workflow-approval-action',
+					});
+					actionTypes.push({
+						label: 'Custom Approval', 
+						definition: 'Initiate a ServiceNow approval process',
+						description: 'This action will initiate a custom approval process. Pre-create your own workflow which accepts string input and returns approved/rejected as output. Select the workflow you created in the action.',
+						value: 7,
+						icon: 'icon-workflow-approval-action',
+					});
+					break;
+				
+				case this.ON_CATALOG_ITEM_LAUNCH:
+					actionTypes.push({
+						label: 'Execute a Script', 
+						definition: 'Execute a script on the instance',
+						description: 'This action will execute a ServiceNow script on the instance. All the operation parameters are available as inputs to the script.',
+						value: 3,
+						icon : 'icon-script'
+					});
+					actionTypes.push({
+						label: 'Property Override', 
+						definition: 'Override a operation parameter',
+						description: 'This action will set the value of a given parameter of the operation.',
+						value: 1,
+						icon: 'icon-form'
+						
+					});
+					break;
+				case this.ON_CATALOG_ITEM_REQUEST_START:
+				case this.ON_CATALOG_ITEM_REQUEST_END:
+					actionTypes.push({
+						label: 'Execute a Script', 
+						definition: 'Execute a script on the instance',
+						description: 'This action will execute a ServiceNow script on the instance. All the operation parameters are available as inputs to the script.',
+						value: 3,
+						icon : 'icon-script'
+					});
+					actionTypes.push({
+						label: 'Execute a Workflow', 
+						definition: 'Execute a ServiceNow workflow on the instance',
+						description: 'This action will execute a ServiceNow workflow on the instance. The execution will not wait for the workflow to complete.',
+						value: 4,
+						icon: 'icon-workflow'
+					});
+					break;
+				case this.ON_LEASE_END:
+					actionTypes.push({
+						label: 'Run an Operation', 
+						definition: 'Execute a Resource Block operation',
+						description: 'This action will execute the specified Resource Block operation.',
+						value: 12,
+						icon: 'icon-console'
+					});
+					actionTypes.push({
+						label: 'Send a Notification', 
+						definition: 'Send a notification to the user',
+						description: 'This action will send a notification to the end user.',
+						value: 13,
+						icon:'icon-notification-bell'
+					});
+					break;
+				case this.ON_CLOUD_EVENT:
+					break;
+				default:
+			}
+			
+			result.list = actionTypes;
+			return result;		
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get action type information."),
+				"CMPGetRuleActionTypesAction.doAction(): Failed to get action type information",
+				error
+			);
+		}
+    },
+
+    type: 'CMPGetRuleActionTypesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-28 23:46:42</sys_created_on>
+        <sys_id>e047d07a87b80300bf4a471c97cb0b11</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>CMPGetRuleActionTypesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e047d07a87b80300bf4a471c97cb0b11</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-22 22:35:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

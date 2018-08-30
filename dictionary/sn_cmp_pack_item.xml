@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Pack Item" max_length="40" name="sn_cmp_pack_item" type="collection">
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Entity Type" max_length="40" name="entity_type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Blueprint" sequence="1" value="Blueprint"/>
+                <element inactive_on_update="false" label="Resource Block" sequence="2" value="Resource Block"/>
+                <element inactive_on_update="false" label="Cloud API" sequence="3" value="Cloud API"/>
+                <element inactive_on_update="false" label="Cloud Script" sequence="4" value="Cloud Script"/>
+                <element inactive_on_update="false" label="Cloud Script Template" sequence="5" value="Cloud Script Template"/>
+                <element inactive_on_update="false" label="Cloud Script Mapping" sequence="6" value="Cloud Script Mapping"/>
+                <element inactive_on_update="false" label="Pool" sequence="7" value="Pool"/>
+                <element inactive_on_update="false" label="Policy" sequence="8" value="Policy"/>
+                <element inactive_on_update="false" label="Catalog Items" sequence="9" value="Catalog Items"/>
+                <element inactive_on_update="false" label="MID Script" sequence="10" value="MID Script"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Entity Name" max_length="128" name="name" type="string"/>
+        <element label="Order" max_length="40" name="order" type="integer"/>
+        <element label="Pack" max_length="32" name="pack" reference="sn_cmp_pack" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Pack Item Data" max_length="2048" name="pack_item_data" type="string"/>
+        <index name="index">
+            <element name="pack"/>
+        </index>
+    </element>
+</database>

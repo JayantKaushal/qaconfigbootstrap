@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>cloudCard</name>
+        <script><![CDATA[function ($timeout, cloudEventScope) {
+	/* $scope.data: {
+			sys_id, 
+			title, 
+			headline,
+			summary, 
+			summary2 (2nd summary line, if any),  
+			meta,
+			showTimeAgo: true/false (show meta as 'Created x ago'),
+			meta2  (shown on last line, on the right),
+			showAccentBar: true/false
+		} */
+    return {
+        template: '<div class="h-card h-card_max clearfix" id="{{data.sys_id}}" ng-class="cardClass" ng-click="cardClickFn($event)" role="{{cardRole}}">' +
+	'<div class="sn-card-component sn-card-component_title" ng-if="data.title" ng-bind="data.title"></div>' +
+	'<div class="sn-card-component sn-card-component_headline" ng-if="data.headline" ng-bind="data.headline" ng-click="headlineClickFn($event)"></div>' +
+	'<div class="sn-card-component sn-card-component_summary" ng-if="data.summary" ng-bind="data.summary"></div>' +
+  	'<div class="sn-card-component sn-card-component_summary" ng-if="data.summary2" ng-bind="data.summary2"></div>' +
+		
+	'<div class="sn-card-component sn-card-component_meta sn-card-component_meta_sibling" ng-if="data.meta" ng-class="{\'sn-card-component_meta_sibling2\': data.meta2}">' +
+		'<span class="sn-card-component-createdby" ng-if="!data.showTimeAgo" ng-bind="data.meta"></span>' +
+      	'<span class="sn-card-component-createdby" ng-if="data.showTimeAgo">${Created} <sn-time-ago timestamp="data.meta" /></span>' +
+	'</div>' +
+		
+	'<div class="sn-card-component sn-card-component_meta" ng-if="data.meta2">' +
+		'<span class="sn-card-component-time" ng-bind="data.meta2"></span>' +
+	'</div>' +
+	'<div class="sn-card-component_accent-bar" ng-if="data.showAccentBar"></div>' +
+	'<span ng-if="isSelected()" class="sr-only" aria-label="${Selected}"></span>' +
+'</div>',
+        scope: {
+			data: "=",
+			cardClass: "=?",
+			cardClick: "&?",
+			headlineClick: "&?",
+			cardRole: "=?"
+        },
+
+        link: function($scope, $elem, $attrs) {
+			$scope.cardClass = $scope.cardClass || "";
+			
+			$timeout(function() {
+				// add class to first component
+				$elem.find('.sn-card-component').eq(0).addClass('sn-card-component_first');
+				
+				// add selectable class and tabindex if cardClick function present
+				if (angular.isFunction($scope.cardClick)) {
+					$elem.find('.h-card').addClass('h-card_selectable').attr('tabindex', 0);
+					
+					if(!angular.isDefined($scope.cardRole))
+						$scope.cardRole = 'button';
+				}
+
+				if (angular.isFunction($scope.headlineClick))
+					$elem.find('.sn-card-component_headline')
+						.attr('tabindex', 0).attr('role', 'link');
+			});
+			
+			$scope.cardClickFn = function(evt) {
+				if (angular.isFunction($scope.cardClick)) {
+					evt.stopPropagation();
+					$scope.cardClick({$event:evt, data:$scope.data});
+				}
+				cloudEventScope.broadcast('cloudCardClicked', $scope.data);
+			};
+
+			$scope.headlineClickFn = function(evt) {
+				if(angular.isFunction($scope.headlineClick)) {
+					evt.stopPropagation();
+					$scope.headlineClick({$event:evt, data:$scope.data});
+				}
+				cloudEventScope.broadcast('cloudCardLinkClicked', $scope.data);
+			};
+
+			$scope.isSelected = function() {
+				return $elem.find('.h-card').hasClass('state-selected');
+			};
+        }
+    };
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-19 20:55:50</sys_created_on>
+        <sys_id>eaec9593cb9b13008941d796634c9cd7</sys_id>
+        <sys_mod_count>64</sys_mod_count>
+        <sys_name>cloudCard</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_eaec9593cb9b13008941d796634c9cd7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-15 02:32:21</sys_updated_on>
+        <type>directive</type>
+    </sp_angular_provider>
+</record_update>

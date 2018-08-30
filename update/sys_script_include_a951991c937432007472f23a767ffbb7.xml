@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudImageUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudImageUtil</name>
+        <script><![CDATA[var CloudImageUtil = Class.create();
+CloudImageUtil.prototype = {
+    initialize: function() {
+    },
+	
+	isImageExist : function (objectId) {
+		var gr = new GlideRecord('cmdb_ci_os_template');
+		gr.addQuery('object_id', objectId);
+		gr.query();
+		return gr.next();
+	},
+	
+	promoteVHD :function (blobGr) {
+		
+		var ldc = this.getLDCGr(blobGr.sys_id);
+		if(!ldc) return;
+		var accountId = this.getServiceAccountId(ldc);
+		//insert 
+		var responseObject = this._getResponseObject(blobGr);
+		var responseProcessor = new ResponseProcessor(accountId, ldc.name + '', 'Cloud API');
+		var cloudModelObject = responseProcessor.processResponseArray(responseObject,
+																	  'Microsoft.Compute/images',
+																	  'os_template_create_validator');
+		gs.info(JSON.stringify(cloudModelObject));
+		new sn_cmp_api.CloudModelProcessorScript().createOrUpdateCI(JSON.stringify(cloudModelObject));
+		
+	},
+		
+	_getResponseObject : function (gr) {
+		var responseObject = [{
+			id : gr.object_id + ''
+		}];
+			
+		return responseObject;
+	},
+	getLDCGr : function (blobSysId) {
+		 var rel = new GlideRecord('cmdb_rel_ci');
+		 rel.addQuery('type', '5f985e0ec0a8010e00a9714f2a172815');//'Hosted on::Hosts'
+		 rel.addQuery('parent', blobSysId);
+		 rel.query();
+		 if(rel.next()) { 
+				 return rel.child;
+		 }
+		return null;
+	},
+
+	getServiceAccountId : function (ldc) {
+		var accountId;
+		var rel = new GlideRecord('cmdb_rel_ci');
+		rel.addQuery('type', '5f985e0ec0a8010e00a9714f2a172815');//'Hosted on::Hosts'
+		rel.addQuery('parent', ldc.sys_id);
+		rel.query();
+		if(rel.next()) {  
+			accountId = rel.child.account_id + '';
+		}
+		return accountId;
+	},
+	canShowPromoteVHD : function(gr) {
+		return gr.object_id 
+			&& gr.name.indexOf(".vhd") > -1
+			&& !(this.isImageExist(gr.object_id)) 
+			;
+	},
+	
+    type: 'CloudImageUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-03 13:36:23</sys_created_on>
+        <sys_id>a951991c937432007472f23a767ffbb7</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CloudImageUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a951991c937432007472f23a767ffbb7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-03 13:57:12</sys_updated_on>
+    </sys_script_include>
+</record_update>

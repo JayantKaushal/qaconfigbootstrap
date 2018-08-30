@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Credential Discovery Status" max_length="40" name="sn_cmp_sp_dstatus_mapping" type="collection">
+        <element label="Discovery credentials" max_length="32" name="discovery_credentials" reference="discovery_credentials" reference_cascade_rule="delete" type="reference"/>
+        <element label="Discovery status" max_length="32" name="discovery_status" reference="discovery_status" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="discovery_status"/>
+        </index>
+        <index name="index2">
+            <element name="discovery_credentials"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>true</action_insert>
+        <action_query>false</action_query>
+        <action_update>false</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_rb_op_impl</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Seed basic attribute for operation</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+   // Add basic cloud account and locatio attribute to operation.
+    var logical_datacenter_ci = "cmdb_ci_logical_datacenter";
+	var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+	var rbString = resourceBlockServiceScript.get(current.resource);
+	var resourceBlock = new global.JSON().decode(rbString);
+	var relations = resourceBlockServiceScript.getRelationShipsForCI(resourceBlock.refCI);
+    var relationArray = new global.JSON().decode(relations);
+	var is_ci_hosted_on_ldc  = false;
+	for(var relationCount in relationArray){
+        var relationObj = relationArray[""+relationCount];
+        if(relationObj.relationType == "Hosted on::Hosts" 
+		  && relationObj.childType == logical_datacenter_ci){
+			is_ci_hosted_on_ldc = true;
+		}
+	}
+
+	if(is_ci_hosted_on_ldc){
+		
+		// adding cloud account and location for it
+		var attributeGr = new GlideRecord("sn_cmp_rb_op_param");
+		attributeGr.addQuery("operation",current.operation);
+		attributeGr.addQuery("interface",current.getValue("interface"));
+		attributeGr.addQuery("name","CloudAccount");
+		attributeGr.query();
+		
+		if(!attributeGr.next()){
+			attributeGr = new GlideRecord("sn_cmp_rb_op_param");
+			attributeGr.setValue("operation",current.operation);
+			attributeGr.setValue("interface",current.getValue("interface"));
+			attributeGr.setValue("name","CloudAccount");
+			attributeGr.setValue("order","100");
+			attributeGr.setValue("type","1");
+			attributeGr.insert();
+		}	
+		
+		attributeGr = new GlideRecord("sn_cmp_rb_op_param");
+		attributeGr.addQuery("operation",current.operation);
+		attributeGr.addQuery("interface",current.getValue("interface"));
+		attributeGr.addQuery("name","Location");
+		attributeGr.query();
+		if(!attributeGr.next()){
+			attributeGr = new GlideRecord("sn_cmp_rb_op_param");
+			attributeGr.setValue("operation",current.operation);
+			attributeGr.setValue("interface",current.getValue("interface"));
+			attributeGr.setValue("name","Location");
+			attributeGr.setValue("order","200");
+			attributeGr.setValue("type","1");
+			attributeGr.insert();
+		}
+		
+	}
+	
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-15 23:12:44</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>37661d1d5321320085d1620143dc3485</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>Seed basic attribute for operation</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_37661d1d5321320085d1620143dc3485</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-16 00:24:23</sys_updated_on>
+        <template/>
+        <when>after</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=37661d1d5321320085d1620143dc3485"/>
+</record_update>

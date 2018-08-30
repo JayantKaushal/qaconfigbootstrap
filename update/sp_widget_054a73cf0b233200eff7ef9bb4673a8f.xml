@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function GetHelp($scope, $rootScope, $location) {
+	var c = this;
+	
+	c.showCommunity = function(){
+		window.open('https://community.servicenow.com/community/operations-management','_blank');			
+	};
+
+	$scope.openCommunity = function(){
+		window.open($scope.data.communityUrl,'_blank');
+	};
+
+	$scope.openDocs = function(){
+		window.open($scope.data.docs,'_blank');
+	};
+
+	$scope.openTutorials = function(){
+		window.open($scope.data.tutorialsLink,'_blank');
+	};
+
+}
+]]></client_script>
+        <controller_as>c</controller_as>
+        <css>h1,
+h2,
+h3 {
+  font-family: SourceSansPro, Helvetica, Arial, sans-serif;
+  font-weight: 300;
+}
+
+h3 {
+  margin-top: 0px;
+}
+
+.section {
+  padding: 2% 0%;
+}
+
+.section-odd {
+  background-color: #f5f5f5;
+}
+
+.section-even {
+  background-color: #fff;
+}
+
+.rb {
+  border-right: 1px solid gray;
+}
+
+.lb {
+  border-left: 1px solid gray;
+}
+
+.hs {
+  margin: 5% 0%;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+table {
+  margin: 10px 0px;
+}
+
+.box {
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 20px 20px;
+  height: 195px;
+}
+
+.externals {
+  .icon-background {
+    color: #65666a;
+  }
+  p {
+    padding: 0px 10px;
+  }
+  p .lead {
+    font-size: 21px;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-bottom: 20px;
+  }
+}
+
+.externals a {
+  color: #2e2e2e;
+  text-decoration: none;
+  vertical-align: baseline;
+}
+
+.externals a:hover {
+  color: #0368d4;
+  display: block;
+  text-decoration: none;
+  .icon-background {
+    color: #0368d4;
+  }
+}
+
+ul {
+  list-style-type: none;
+  padding: 0px;
+}
+
+ul li {
+  padding: 0px
+}
+
+.banner img {
+  opacity: 0.9;
+}
+
+.banner-txt {
+  position: absolute;
+  z-index: 1;
+  color: #ffffff;
+  left: 32%;
+}
+
+@media (max-width: 768px) {
+  .box-sm {
+    margin-bottom: 15px;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .cssp-gh-icon-txt {
+    text-align: left !important;
+  }
+}
+
+.ex-link a {
+  color: #0096EC !important;
+}
+
+.ex-link a:hover {
+  text-decoration: underline !important;
+  color: #278efc !important;
+}
+
+.cssp-gh-tile {
+  padding-top: 25px;
+  min-height: 90px;
+  width: 75%;
+}
+
+.cssp-gh-tile-img {
+  font-size: 4em;
+  position: relative;
+}
+
+.a-primary {
+  color: #0096ec;
+  font-size: 16px;
+}
+
+.cssp-gh-icon-txt {
+  text-align: center;
+}
+
+.cssp-gh-icon {
+  font-size: 3em;
+  text-align: center;
+  padding-right: 0px;
+}
+
+.cssp-gh-icon-cont {
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.panel-body {
+  padding: 0px;
+}
+
+.cssp-gh-faq-hdr {
+  font-weight: 600;
+  font-size: 22px;
+  color: #2e2e2e;
+}
+
+.cssp-gh-faq-sub-hdr {
+  font-size: 16px;
+}
+
+.cssp-gh-faq {
+  padding-top: 0px;
+}
+
+.cssp-gh-lbp-btn {
+  padding: 5px 20px;
+  border: 1px solid white;
+  border-radius: 2px;
+  margin-top: 30px;
+  background-color: transparent;
+}
+
+.no-border {
+  border: 0px;
+}
+
+.text-white {
+  color: white;
+}
+
+.cssp-gh-cq-hdr {
+  color: #717171;
+  font-size: 12px;
+}
+
+.cssp-gh-blog {
+  font-size: 20px;
+  font-weight: normal;
+}
+
+.cssp-gh-text {
+  color: #717171;
+  font-size: 14px;
+}
+
+.cssp-gh-cbp {
+  padding-left: 0px;
+  padding-bottom: 15px;
+}
+
+.cssp-gh-snug-img {
+  background-image: url('');
+  background-color: #cccccc;
+  min-height: 100px;
+  padding: 20px;
+}
+
+.ico-color {
+  color: #2e2e2e;
+  vertical-align: text-top;
+}
+
+.green-border {
+  background: #5dba60;
+  border-radius: 5px;
+  font-size: 12px;
+  padding: 2px 6px 3px 6px;
+  margin-right: 4px;
+  color: #fff;
+}
+
+.main-border {
+  float: right;
+  height: 40px;
+  width: 90px;
+  margin-right: 0px;
+  margin-top: 33px;
+}
+
+.main-lg-border {
+  background: #4BD762;
+  height: 40px;
+  width: 95px;
+  border-radius: 50px 0px 0px 50px;
+  color: #fff;
+  text-align: center;
+}
+
+.main-sm-border {
+  float: right;
+  left: 4px;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(15, 148, 15, .75);
+  position: relative;
+}
+
+.cssp-askquestion-img {
+  background: url(images/ask_question_bg.png) no-repeat left;
+  background-position: 100%;
+  background-color: rgba(255, 255, 255, .15);
+  text-align: left;
+  padding: 20px;
+}
+
+.cssp-openincident-img {
+  background: url(images/open_incident_bg.png) no-repeat left;
+  background-position: 100%;
+  background-color: rgba(255, 255, 255, .15);
+  text-align: left;
+  padding: 20px;
+}
+
+.cssp-get-help-btn {
+  border-top-width: 1px;
+  margin-top: 16px;
+}
+.text-lg {
+  font-weight: 300;
+  line-height: 40px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud_get_help</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Get Help</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	var release = gs.getProperty("com.glide.embedded_help.version","Kingston").toLowerCase();
+	data.docs = 'https://docs.servicenow.com/bundle/'+release+'-it-operations-management/page/product/cloud-management-v2/concept/cloud-management-v2-landing-page.html'
+	data.communityUrl = 'https://community.servicenow.com/community?id=community_topic&sys_id=5c495e2ddbd897c068c1fb651f9619cf';
+	data.tutorialsLink = 'http://docs.servicenow.com/?context=CSHelp:Cloud-Tutorials';
+	data.knowledge = 'https://hi.service-now.com/nav_to.do?uri=/$knowledge.do';
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-29 07:37:39</sys_created_on>
+        <sys_id>054a73cf0b233200eff7ef9bb4673a8f</sys_id>
+        <sys_mod_count>63</sys_mod_count>
+        <sys_name>Cloud Get Help</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_054a73cf0b233200eff7ef9bb4673a8f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-07 04:47:30</sys_updated_on>
+        <template><![CDATA[<div class="row m-b">
+  <div class="col-sm-12 col-md-12" id="exploreReport">
+    <div class="main-border">   
+      <div class="main-lg-border"><span class="text-lg text-center">New!</span></div>   
+      <div class="main-sm-border" ></div>   
+    </div>
+    <div class="box box-sm cssp-askquestion-img">
+      <div class="content cssp-gh-tile">
+        <p class="text-md">${Ask an expert to find answers to common questions}</p>
+      </div>
+      <div class="action">
+        <a class="btn btn-primary cssp-get-help-btn" href="javascript:void(0)" ng-click="c.showCommunity()" >
+          Ask a Question
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading" style="text-align: left">
+        <h4 class="panel-title">${Self-Service Support Resources}</h4>
+      </div>
+      <div class="panel-body">
+        <div class="col-md-12 cssp-gh-icon-cont">
+          <div class="col-md-1 cssp-gh-icon">
+            <i class="fa fa-book ico-color"></i>
+          </div>
+          <div class="col-md-11 cssp-gh-icon-txt">
+            <a ng-click="openDocs()" role="button" href="javascript:void(0)" class="a-primary">${Documentation}</a>
+            <p class="cssp-gh-text">${Visit the documentation site for setup and administration information.}</p>
+          </div>
+        </div>
+        <div class="col-md-12 cssp-gh-icon-cont">
+          <div class="col-md-1 cssp-gh-icon">
+            <i class="fa fa-info-circle ico-color"></i>
+          </div>
+          <div class="col-md-11 cssp-gh-icon-txt">
+            <a ng-click="openTutorials()" role="button" href="javascript:void(0)" class="a-primary">${Tutorials}</a>
+            <p class="cssp-gh-text">${View video tutorials on how to start using Cloud Management.}</p>
+          </div>
+        </div>
+        <div class="col-md-12 cssp-gh-icon-cont">
+          <div class="col-md-1 cssp-gh-icon">
+            <i class="fa fa-users ico-color"></i>
+          </div>
+          <div class="col-md-11 cssp-gh-icon-txt">
+            <a ng-click="openCommunity()" role="button" href="javascript:void(0)" class="a-primary">${Community}</a>
+            <p class="cssp-gh-text">${Connect with ServiceNow users & experts from around the world. Ask questions and discuss issues. Join user groups and attend events.}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

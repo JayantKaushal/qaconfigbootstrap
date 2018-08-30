@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureARMTemplateUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureARMTemplateUtil</name>
+        <script><![CDATA[var AzureARMTemplateUtil = Class.create();
+AzureARMTemplateUtil.prototype = Object.extendsObject(CMPTemplateUtil, {
+
+    initialize: function() {
+		CMPTemplateUtil.prototype.initialize.call(this);
+    },
+	
+	getInputs: function(templateObj, template) {
+		var parameters = templateObj.parameters;
+		var processedParams = {};
+
+		var order = 0;
+		if (parameters) {
+			for (var param in parameters) {
+				var paramValue = parameters[param];
+				if(param == 'location') // we cannot consume location as is. Making it template_location
+					param = 'template_location';
+				var parameter = {};
+				processedParams[param] = parameter;
+
+				parameter.type = this.getType(paramValue.type);
+				parameter.source = 'Text';
+
+				if (paramValue.hasOwnProperty('defaultValue')) {
+					var defaultValue = paramValue.defaultValue;
+					if (parameter.type == "Boolean") {
+						if (typeof defaultValue === 'boolean')
+							parameter.defaultValue = defaultValue? "Yes" : "No";
+						else
+							parameter.defaultValue = defaultValue.toLowerCase() == "true"? "Yes" : "No";
+					} else
+						parameter.defaultValue = (typeof defaultValue === 'string') ? defaultValue : global.JSON.stringify(defaultValue);
+
+				}
+
+				if (paramValue.hasOwnProperty('allowedValues')) {
+					parameter.value = global.JSON.stringify(paramValue.allowedValues);
+					parameter.source = 'CSVList';
+				}
+
+				if (paramValue.hasOwnProperty('metadata')) {
+					var metadata = paramValue.metadata;
+					var sncMetadata = (metadata.hasOwnProperty('SNC::Parameter::Metadata')) ? metadata['SNC::Parameter::Metadata'] : '';
+					if (!gs.nil(sncMetadata))
+					 {
+						parameter.regex =  (sncMetadata.hasOwnProperty('allowedPattern')) ? sncMetadata.allowedPattern : '';
+					    parameter.error_text =  (sncMetadata.hasOwnProperty('ConstraintDescription')) ? sncMetadata.ConstraintDescription : '';
+						if (sncMetadata.hasOwnProperty('datasource')) {
+								parameter.value = sncMetadata.datasource.replace(/\s+/g, '');
+								parameter.source = 'Pools';
+							}
+					 }
+				}
+
+				parameter.mandatory = true;
+				parameter.order = order;
+				order++;
+			}
+			var tagParameter = {};
+			processedParams['CustomTags'] = tagParameter;
+			tagParameter.type = 'String';
+			tagParameter.source = 'Text';
+			tagParameter.mandatory = false;
+			tagParameter.order = order;
+		}
+
+		return processedParams;
+	},
+
+	getType: function(type) {
+		type  = type.toLowerCase();
+		switch (type){
+			case "securestring":
+				return "Password";
+			case "int":
+				return "Integer";
+			case "bool":
+				return "Boolean";
+			case "object":
+			case "secureobject":
+				return "Object";
+			case "array":
+				return "Array";
+			default:
+				return "String";
+		}
+	},
+
+	getOutputAttribute : function(name, template, templateObj) {
+		var outputs = templateObj.outputs;
+		var outputAttributes = {};
+		var prefix = '${Host.Stack Orchestration Interface.CreateStack.Output.resp.properties.outputs.';
+        if (outputs) {
+			Object.keys(outputs).forEach(function(val) {
+				outputAttributes[val] = prefix + val + '.value}';
+			});
+			return Object.keys(outputAttributes).length > 0 ? global.JSON.stringify(outputAttributes) : '';
+		}
+		 return '';
+	},
+	
+	validateTemplate: function(templateObj, template) {
+		var result = new BlueprintTemplateValidator()._validateTemplateParams(template);	
+		result.errorMessage = result.message;
+		return result;
+	},
+
+    type: 'AzureARMTemplateUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-12-27 13:37:47</sys_created_on>
+        <sys_id>92f7a9c49f80320048111f80a57fcf98</sys_id>
+        <sys_mod_count>53</sys_mod_count>
+        <sys_name>AzureARMTemplateUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_92f7a9c49f80320048111f80a57fcf98</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-30 21:06:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

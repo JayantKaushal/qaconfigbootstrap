@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getByLDC</name>
+        <resource_pool display_value="VmFolderPool">92e156d00b003200e937c97193673a02</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+ * @param locationId - the sysId of related item
+ * @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+ */
+function getFilteredRecords(json) {
+	var relations = [];
+	var vmFolderList = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		relations = new sn_cmp_api.ExpressionResolverUtilScript().getKeyValueForMetaDataRelation(map.Location, 'Hosts', 'cmdb_ci_vcenter_folder', 'flat', 1,'fullpath', 'sys_id');
+		
+		//Full path syntax - '{location} | OuterFolder | InnerFolder'
+		//Modifying the full path to exclude location
+		vmFolderList = JSON.parse(relations);
+		for (var index = 0; index < vmFolderList.length; index++){
+			var folderPath = vmFolderList[index].label + '';
+			var firstIndex = folderPath.indexOf('|', 0) + 1;
+			vmFolderList[index].label = folderPath.substring(firstIndex,folderPath.length).trim();
+		}
+		//After modification, sort the list alphabetically.
+		vmFolderList.sort(function(a, b) {
+		   return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
+		});
+	} else
+		gs.error("VmFolderPool.getByLDC - input json is blank!");
+
+	return new global.JSON().encode(vmFolderList);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-30 18:57:27</sys_created_on>
+        <sys_id>4e57b9075320320085d1620143dc34b6</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>getByLDC</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_4e57b9075320320085d1620143dc34b6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 11:31:48</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

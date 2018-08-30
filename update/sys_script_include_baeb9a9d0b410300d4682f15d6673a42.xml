@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetPolicyTriggerAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetPolicyTriggerAction</name>
+        <script><![CDATA[var CMPGetPolicyTriggerAction = Class.create();
+CMPGetPolicyTriggerAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		 var policyGr = new GlideRecord('sn_cmp_pol_policy');
+		 policyGr.get(params.policy_id);
+
+		 var triggerId = policyGr.getValue('target_entity_id');
+
+		 var triggerName = policyGr.getDisplayValue('target_entity_id');
+		 var policyName = policyGr.getDisplayValue();
+
+		 var criteriaNamesMap = {};
+		 var polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+		 polConditionType.query();
+
+		 while(polConditionType.next()) {
+			 criteriaNamesMap[polConditionType.name + ''] = polConditionType.name + '';
+		 }
+
+		 var critLabelMap = {};
+		 polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+		 polConditionType.query();
+		 while(polConditionType.next()) {
+			 critLabelMap[polConditionType.name + ''] = polConditionType.label + '';
+		 }
+
+		 var referenceDisplayNamesMap = {};
+		 referenceDisplayNamesMap.criteriaNamesMap = criteriaNamesMap;
+		 referenceDisplayNamesMap.critLabelMap = critLabelMap;
+		 return {
+			 triggerId : triggerId,
+			 triggerName: triggerName,
+			 policyName: policyName,
+			 referenceDisplayNamesMap: referenceDisplayNamesMap,
+			 publishedPolicy: policyGr.status+'' == '1'
+		 };
+			
+	},
+	type: 'CMPGetPolicyTriggerAction'
+																		
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-06 03:52:00</sys_created_on>
+        <sys_id>baeb9a9d0b410300d4682f15d6673a42</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPGetPolicyTriggerAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_baeb9a9d0b410300d4682f15d6673a42</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-18 18:57:46</sys_updated_on>
+    </sys_script_include>
+</record_update>

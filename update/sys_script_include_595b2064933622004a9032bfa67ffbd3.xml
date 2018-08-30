@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AWSBillingCSVProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description>This script processes a line from a CSV formatted AWS hourly billing report with tags.</description>
+        <name>AWSBillingCSVProcessor</name>
+        <script><![CDATA[var AWSBillingCSVProcessor = Class.create();
+/**
+ * Data handler for AWS detailed hourly report with resource and tags.
+ */
+ /* eslint-disable no-undef */
+AWSBillingCSVProcessor.prototype = Object.extendsObject(CmpBillingCSVProcessor, {
+/* eslint-enable no-undef */	
+
+	// Do not waste cycles updating cost or quantity if both are lower than the threshold
+	PROVIDER:'AWS',
+	TAG:'[AWSBillingCSVProcessor] ',
+	TAG_SIGNATURE:'user:',
+	AWS_TAG_SIGNATURE:'aws:',
+	DAILY_CACHE_MAX_PROP:'cmp.billing.row_cache_max',
+	DATE_COLUMN:'usage_start_date',
+	ACCOUNT_COLUMN:'linked_account_id',
+	MASTER_COLUMN:'payer_account_id',
+	accountNum:'',
+	year:'',
+	month:'',
+	dailyCache:{},
+	currentTags:{},
+	cacheSize:0,
+	dailyLineCnt:0,
+	pivots:['resource_id','availability_zone','linked_account_id','operation','product_name',
+			'usage_type','tag_values'],
+	lastPersistedDates:{},
+		
+	/**
+ 	* Sets the payer account, year, and month for this processor.
+ 	*/
+	config:function(accountNum, year, month, clearData) {
+		CmpBillingCSVProcessor.prototype.config.apply(this, [accountNum, year, month, clearData]);
+		this.DAILY_CACHE_MAX = 1*gs.getProperty(this.DAILY_CACHE_MAX_PROP, 5000);		
+	},
+	
+	setData:function(header, value, lineNumber, colNum) {
+
+		// if the current line is not  valid, don't proceed.
+		if(!this.isCurrentLineValid())
+			return;
+		
+		// find the column name by the passed header
+		var colName = this.getColumnNameByHeader(header);
+		
+		//If the column name is "usage start date" , then we'll have to verify
+		//that the curent data is for the month we set.
+		if (colName=='usage_start_date' || colName=='usage_end_date') {
+			// if value is empty, then this is not a valid record.
+			
+			if (gs.nil(value)) {
+				this.setCurrentLineInvalid();
+				return ;
+			}
+			
+			// convert to GlideDateTime so it remains UTC
+			// otherwise it'll be treated as local time
+			value = new GlideDateTime(value);
+			
+			// Bring any current charges for future use (e.g. support charge for next month)
+			// into this month's report.
+			if (value.getMonthUTC()>this.month || value.getYearUTC()>this.year) {
+				value.setYearUTC(this.year);
+				value.setMonthUTC(this.month);
+				value.setDayOfMonthUTC(1);
+			}
+			
+			// if timestamp is invalid, or if the line is from date earlier than the
+			// last persisted day but later than the first of the month, don't include it.
+			var linkedAcctId = this.gr.getValue('linked_account_id');
+			if(!value.isValid() || gs.nil(linkedAcctId)
+				|| (!gs.nil(this.lastPersistedDates[linkedAcctId])
+					&& value.compareTo(this.lastPersistedDates[linkedAcctId]) < 0 )
+					&& value.getDayOfMonthUTC() > 1
+					&& colName == 'usage_start_date') {
+				this.setCurrentLineInvalid();
+				return ;
+			}
+		}
+		
+		var isTag= this._isTag(header);
+        var isAWSTag = this._isAWSTag(header);
+		var valueExists = !gs.nil(value); 
+		
+		if (!isTag && ! isAWSTag && gs.nil(colName)) {		
+			if (lineNumber == 1) { // Log only for the first line else we get too much log			
+				gs.info(this.TAG + "Line " + lineNumber + ": Could not find header: " + header + "; value = " + value + "; column = " + colName);
+			}
+		
+			return;
+		
+		} else if (isTag && valueExists) {
+
+			this._collectTags(header, value);
+			return;
+		
+		} else if (isAWSTag) {			
+			// Just continue for AWS tags and do not populate in the gr. We will just ignore these 'aws:' tags
+			return;
+		}
+		
+		if (header=='RecordType' && value.indexOf("LineItem") < 0) {
+			gs.info(this.TAG + "Line " + lineNumber + ": RecordType is not 'LineItem'");
+			this.setCurrentLineInvalid();
+			return;
+		}
+		
+		if(!gs.nil(colName) && valueExists){
+			this.gr.setValue(colName,value);
+		}
+	},
+
+	/**
+	* Standard tags
+	*/
+	_isTag:function(header) {
+		return header.indexOf(this.TAG_SIGNATURE) != -1;
+	},
+	
+	/**
+	* "aws:" style Cloud Formation tags
+	*/
+	_isAWSTag:function(header) {
+		return header.indexOf(this.AWS_TAG_SIGNATURE) != -1;
+	},
+
+	/**
+ 	* The envent for the line processing started.
+ 	*/
+	beginLine:function(lineCnt) {
+		CmpBillingCSVProcessor.prototype.beginLine.apply(this, [lineCnt]);		
+
+		this.currentTags = {};
+	},
+
+	/**
+ 	* The event for the line processing ended.
+ 	*/
+	endLine:function(lineCnt) {
+		// don't proceed if this line is invalid.
+		if (!this.isCurrentLineValid()) {
+			return;
+		}
+		if ((Math.abs(this.gr.blended_cost) < this.RESOURCE_ID_THRESHOLD 
+			&& Math.abs(this.gr.unblended_cost) < this.RESOURCE_ID_THRESHOLD)
+		    || gs.nil(this.gr.resource_id)) {
+			this.gr.resource_id = 'Misc. '+this.gr.usage_type;
+		}
+
+		// insert the collected data.
+		this.cacheLine(lineCnt);
+	},
+
+	/**
+ 	* The event for the whole processes ends.
+ 	*/
+	endProcess:function() {
+		CmpBillingCSVProcessor.prototype.endProcess.apply(this, []);
+		this.insertAllCachedLines();
+	},	
+	
+	
+	/**
+	* Convert hourly record into a piece of a daily record by normalizing the time.
+	* Then insert the line or update a matching line in the cache. If the download of
+	* the current day is complete, insert the cached lines into the database.
+	*/
+	cacheLine:function(lineCnt) {
+		var normDate = new GlideDateTime();
+		
+		// Skip line if date is bad
+		try {
+			normDate.setValueUTC(this.gr.getValue('usage_start_date').substring(0,10)+' 12:00:00',
+								 "yyyy-MM-dd HH:mm:ss");
+		} catch (e) {
+			gs.warn(this.TAG + "usage_start_date invalid for line "+lineCnt);
+		}
+		this.gr.setValue('usage_start_date', normDate);
+		this.gr.setValue('tag_values', new global.JSON().encode(this.currentTags));
+				
+		if (this.gr.usage_start_date != this.dateInProgress) {
+			this.insertAllCachedLines();
+			this.dateInProgress = this.gr.usage_start_date;
+		}
+		
+		if (this.cacheSize >= this.DAILY_CACHE_MAX) {
+			this.insertAllCachedLines();
+		}
+		
+		var lineKey = this.gr.usage_start_date;
+		for (var i=0; i<this.pivots.length; i++) {
+			lineKey += '|' + this.gr[this.pivots[i]];
+		}
+		var lineGr = this.dailyCache[lineKey];
+		if (gs.nil(lineGr)) {
+			this.dailyCache[lineKey] = this.gr;
+			this.cacheSize++;
+		} else {
+			lineGr.unblended_cost = this.add(lineGr.unblended_cost, this.gr.unblended_cost);
+			lineGr.blended_cost = this.add(lineGr.blended_cost, this.gr.blended_cost);
+			lineGr.usage_quantity = this.add(lineGr.usage_quantity, this.gr.usage_quantity);
+		}
+		// line number for any combined row should be the highest line number included
+		this.dailyCache[lineKey].sys_import_row = lineCnt;
+	},
+
+	/**
+	* Insert all cached daily billing lines into the database and clear the cache
+	*/	
+	insertAllCachedLines:function() {
+		var currentGr = this.gr;
+		for (var key in this.dailyCache) {
+			this.gr = this.dailyCache[key];
+			var thresholdMet = Math.abs(this.gr.blended_cost) >= this.UPDATE_THRESHOLD
+				|| Math.abs(this.gr.unblended_cost) >= this.UPDATE_THRESHOLD;
+			var isUpdate = false;
+
+			// If cost or usage is not negligible, insert the record or increment
+			// and update a matching record in the table.
+			if (thresholdMet) {			
+				var existingGr = new GlideRecord(this.IMPORT_TABLE);
+				existingGr.addQuery('usage_start_date', this.gr.getValue('usage_start_date'));
+				for (var i=0; i<this.pivots.length; i++) {
+					existingGr.addQuery(this.pivots[i], this.gr.getValue(this.pivots[i]));
+				}
+				existingGr.query();
+				if (existingGr.next()) {
+					existingGr.unblended_cost = this.add(existingGr.unblended_cost,
+					this.gr.unblended_cost);
+					existingGr.blended_cost = this.add(existingGr.blended_cost,
+					this.gr.blended_cost);
+					existingGr.usage_quantity = this.add(existingGr.usage_quantity,
+					this.gr.usage_quantity);
+					existingGr.sys_import_row = this.gr.sys_import_row;
+					this.gr = existingGr;
+					isUpdate = true;
+					this.dailyLineCnt--; // nullify lineCount increment if line exists already
+				}
+				this.insertLineWithSkips(this.gr.sys_import_row, ++this.dailyLineCnt, isUpdate);
+			}
+		}
+		this.dailyCache = {};
+		this.cacheSize = 0;
+		this.gr = currentGr;
+	},
+
+	/**
+	* Collects tags from the processing line.
+	*/ 
+	_collectTags:function(header, value) {
+		// need to remove 'user:' prefix Amazon adds to our tag names
+		var i = header.indexOf(':');
+		if (i < 0) {
+			return;
+		}	
+		var tagName = header.slice(i+1);
+				
+		//Check tagName and value are existing.
+		if (gs.nil(tagName) || gs.nil(value))
+			return;
+
+		this.currentTags[tagName] = value;
+	},
+
+	
+	type: 'AWSBillingCSVProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-27 19:10:30</sys_created_on>
+        <sys_id>595b2064933622004a9032bfa67ffbd3</sys_id>
+        <sys_mod_count>68</sys_mod_count>
+        <sys_name>AWSBillingCSVProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_595b2064933622004a9032bfa67ffbd3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-11 04:52:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

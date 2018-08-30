@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_section caption="" section_id="2724d30853b1320085d1620143dc341e" sys_domain="global" table="sn_cmp_bp_rule" version="3" view="">
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>name</element>
+            <position>1</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>eb4b1bde0b69030003b6c97193673a09</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>description</element>
+            <position>11</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>a34b1bde0b69030003b6c97193673a0a</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.begin_split</element>
+            <position>21</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:06:58</sys_created_on>
+            <sys_id>689d83ec0b1c2300d9f9ad4363673a2f</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>source_key</element>
+            <position>31</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>274b1bde0b69030003b6c97193673a0a</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>order</element>
+            <position>41</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>a74b1bde0b69030003b6c97193673a0a</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>event</element>
+            <position>51</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>2b4b1bde0b69030003b6c97193673a0a</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.split</element>
+            <position>61</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:06:58</sys_created_on>
+            <sys_id>609d83ec0b1c2300d9f9ad4363673a30</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>sys_scope</element>
+            <position>71</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:06:58</sys_created_on>
+            <sys_id>e09d83ec0b1c2300d9f9ad4363673a30</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>event.form_behavior</element>
+            <position>81</position>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-10-04 07:32:31</sys_created_on>
+            <sys_id>ab4b1bde0b69030003b6c97193673a0a</sys_id>
+            <sys_mod_count>1</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_element action="INSERT_OR_UPDATE">
+            <element>.end_split</element>
+            <position>91</position>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 09:06:58</sys_created_on>
+            <sys_id>e49d83ec0b1c2300d9f9ad4363673a30</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_ui_formatter/>
+            <sys_ui_section caption="NULL" display_value="" name="sn_cmp_bp_rule" sys_domain="global" view="Default view">2724d30853b1320085d1620143dc341e</sys_ui_section>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 09:06:58</sys_updated_on>
+            <sys_user/>
+            <type/>
+        </sys_ui_element>
+        <sys_ui_section action="INSERT_OR_UPDATE">
+            <caption/>
+            <header>false</header>
+            <name>sn_cmp_bp_rule</name>
+            <roles/>
+            <sys_class_name>sys_ui_section</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-24 21:19:36</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>2724d30853b1320085d1620143dc341e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>sn_cmp_bp_rule</sys_name>
+            <sys_overrides/>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_section_2724d30853b1320085d1620143dc341e</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-24 21:19:36</sys_updated_on>
+            <sys_user/>
+            <title>true</title>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_section>
+    </sys_ui_section>
+</record_update>

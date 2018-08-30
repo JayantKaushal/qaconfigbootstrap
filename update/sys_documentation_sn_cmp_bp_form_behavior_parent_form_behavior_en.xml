@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="parent_form_behavior" label="Parent form behavior" language="en" table="sn_cmp_bp_form_behavior">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>parent_form_behavior</element>
+            <help/>
+            <hint/>
+            <label>Parent form behavior</label>
+            <language>en</language>
+            <name>sn_cmp_bp_form_behavior</name>
+            <plural>Parent form behaviors</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 08:46:42</sys_created_on>
+            <sys_id>3be847600b182300d9f9ad4363673a4c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Parent form behavior</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_sn_cmp_bp_form_behavior_parent_form_behavior_en</sys_update_name>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 08:46:42</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

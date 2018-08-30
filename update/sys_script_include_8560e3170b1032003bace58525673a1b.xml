@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAssociatedDatacentersActions</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAssociatedDatacentersActions</name>
+        <script><![CDATA[var CMPGetAssociatedDatacentersActions = Class.create();
+CMPGetAssociatedDatacentersActions.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.cloudAccountId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPGetAssociatedDatacentersActions.doAction: Undefined element type cloudaccountId",
+				null
+				);
+			}
+			
+			var cloudAccountServiceScript=new sn_cmp_api.CloudAccountServiceScript();
+			var associatedList = cloudAccountServiceScript.getADCsInfoList(params.cloudAccountId);
+			
+			var associatedListObj = new global.JSON().decode(associatedList);
+			return associatedListObj;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get associated data center"),
+			"CMPGetAssociatedDatacentersActions.doAction(): Failed to get associated data center",
+			error
+			);
+		}
+    },
+
+    type: 'CMPGetAssociatedDatacentersActions'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-19 11:01:50</sys_created_on>
+        <sys_id>8560e3170b1032003bace58525673a1b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPGetAssociatedDatacentersActions</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_8560e3170b1032003bace58525673a1b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-19 11:01:50</sys_updated_on>
+    </sys_script_include>
+</record_update>

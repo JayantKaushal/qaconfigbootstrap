@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Action" max_length="40" name="sn_cmp_bp_action" type="collection">
+        <element choice="1" label="Action Type" max_length="40" name="action_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Reload" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Show" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Hide" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="MakeMandatory" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="MakeNonMandatory" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="TriggerChangeEvent" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="SetValue" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="SetValueByScript" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="MakeReadOnly" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="MakeEditable" sequence="10" value="10"/>
+            </choice>
+        </element>
+        <element choice="1" label="DataSource" max_length="40" name="datasource" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Reload Cloud Account" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Reload Cloud Location" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Check Quota" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Reload Resource Profile" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Reload From Pool" sequence="5" value="5"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" mandatory="true" max_length="200" name="name" type="string"/>
+        <element label="Order" max_length="40" name="order" type="integer"/>
+        <element label="Rule" max_length="32" name="rule" reference="sn_cmp_bp_rule" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Active" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="InActive" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element label="Target Variable" max_length="32" name="target_attr" reference="sn_cmp_variable" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Target Field" max_length="200" name="target_attribute" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Target Field" max_length="200" name="target_attribute_select" type="string">
+            <choice/>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="1000" name="value" type="string"/>
+        <index name="index">
+            <element name="target_attr"/>
+        </index>
+        <index name="index2">
+            <element name="rule"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Default Budget" max_length="40" name="sn_cmp_budget_default" type="collection">
+        <element attributes="edge_encryption_enabled=true" choice="1" hint="This identifies whether frequency is Weekly,Monthly,Quarterly or Yearly" label="Budget Period" mandatory="true" max_length="100" name="budget_period" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Weekly" sequence="1" value="Weekly"/>
+                <element inactive_on_update="false" label="Monthly" sequence="2" value="Monthly"/>
+                <element inactive_on_update="false" label="Quarterly" sequence="3" value="Quarterly"/>
+                <element inactive_on_update="false" label="Yearly" sequence="4" value="Yearly"/>
+            </choice>
+        </element>
+        <element attributes="omit_sys_original=true" label="Group Max Limit" mandatory="true" max_length="20" name="group_limit" type="currency"/>
+        <element attributes="omit_sys_original=true" label="Per User Limit" mandatory="true" max_length="20" name="user_limit" type="currency"/>
+    </element>
+</database>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope, $location){
+	
+	$scope.isActiveItem = function(href){
+		return (href.indexOf($location.search().id) > -1 && href.indexOf($location.search().category) > -1);
+	};
+	$scope.hasActiveItem = function(label){
+		return ($location.search().category != undefined && $location.search().category == label);
+	};
+	//Set menu element Id
+	var c = this;
+	c.setLeftMenuId = function(itemHref) {
+		var startIndex = (itemHref.indexOf('=') + 1);
+		var endIndex = itemHref.indexOf('&');
+		if(itemHref.indexOf('&') != '-1') {
+			return 'menu_'+itemHref.substr(startIndex, (endIndex - startIndex));
+		} else {
+			return 'menu_'+itemHref.substr(startIndex);
+		}
+		
+	}
+	
+	c.reloadPageContent = function() {
+		$location.search('isPageContentLoaded', 'true');
+	}
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>/* Large Devices */
+@media (min-width: 992px) {
+  .leftMenuContainer {
+    background-color: #000;
+    color: #fff;
+    position: absolute;
+    top: 62px;
+    bottom: 0;
+    left: 0px;
+    width: 270px;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+}
+
+.leftMenuContainer {
+  background-color: #000;
+  color: #fff;
+}
+
+.portal-title {
+  color: #fff;
+  margin-left: 1rem;
+}
+
+.leftMenu {
+  margin-top: 20px;
+  padding: 0px;
+  list-style-type: none;
+}
+
+.leftSubMenu {
+  list-style-type: none;
+  display: none;
+}
+
+.leftMenu li {
+  padding: 0px;
+  margin: 0px;
+}
+
+.leftMenu li a {
+  width: 100%;
+  display: inline-block;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 33px;
+  border-left: 4px solid;
+  border-color: transparent;
+  list-style-type: none;
+  transition: all 0.1s linear;
+  padding-left: 10px;
+}
+
+.leftSubMenu li a {
+  width: 100%;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 200;
+  line-height: 25px;
+  border-left: 4px solid;
+  border-color: transparent;
+  list-style-type: none;
+  transition: all 0.1s linear;
+  padding-left: 2px;
+}
+
+.collapse-icon {
+  float: right;
+  margin-right: 10px;
+}
+
+.leftMenu .menuItemGlyph {
+  font-size: 18px;
+  margin-right: 10px;
+  height: 18px;
+  width: 18px;
+}
+
+.leftMenu li a:hover {
+  background-color: #81878E;
+  cursor: pointer;
+}
+
+li.active-item &gt; a,
+li.active-item &gt; a:hover{
+  background-color: #485563;
+}
+
+.open {
+  display: block;
+}
+
+.get-Help-border {
+  background-color: #485563;
+  border-radius: 3px;
+  margin: 25px 20px;
+}
+
+.get-Help-image {
+  width: 28px;
+  color: #FFFFFF;
+  font-size: 30px;
+}
+
+.get-Help-question {
+  color: #135668;
+  font-size: 23px;
+}
+
+.get-Help-container {
+  margin-left: 40px;
+}
+
+.get-Help-title {
+  font-size: 16px;
+  font-weight: 400;
+  display: inline;
+}
+
+.get-Help-subtitle {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 300;
+  width: 98px;
+  margin-top: -5px;
+}</css>
+        <data_table>sp_instance_menu</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list>title</field_list>
+        <has_preview>false</has_preview>
+        <id>cap-left-menu</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+
+	$(document).ready(function(){
+
+		$(document).on('click', '.leftMenu > li', function (e) {
+			e.stopPropagation();
+			$(this).find('ul').toggle();
+			if($(this).find('ul').is(":visible")){
+				$(e.target).parent().find(".fa-plus-square-o").addClass("fa-minus-square-o").removeClass("fa-plus-square-o");
+				$(this).attr('aria-expanded', 'true');
+			} else {
+				$(e.target).parent().find(".fa-minus-square-o").addClass("fa-plus-square-o").removeClass("fa-minus-square-o");
+				$(this).attr('aria-expanded', 'false');
+			}
+		});                           
+
+		$(document).on('click', '.leftSubMenu > li', function (e) {
+			e.stopPropagation();
+			if($(e.currentTarget).hasClass('active-item')) {
+				ctrl.reloadPageContent(); 
+			}
+		});
+	});
+	/*** Call this event from ifram content ***/
+	parent.switchToCapOverviewPage = function() {
+		$('#menu_cap_index a').trigger('click');
+	}
+}]]></link>
+        <name>CAP Left Menu</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function(){
+	var menu_id = 'b64dc4520bc73200eff7ef9bb4673a19';
+	var gr = new GlideRecord('sp_instance_menu');
+	gr.get(menu_id);
+	data.menu = {};
+	data.menu.name = gr.getDisplayValue('title');
+	data.menu.items = $sp.getMenuItems(menu_id);
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-01 09:59:55</sys_created_on>
+        <sys_id>827d08520bc73200eff7ef9bb4673a5d</sys_id>
+        <sys_mod_count>665</sys_mod_count>
+        <sys_name>CAP Left Menu</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_827d08520bc73200eff7ef9bb4673a5d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-10 21:39:48</sys_updated_on>
+        <template><![CDATA[<div class="leftMenuContainer">
+  <h4><a class="portal-title" href="?id={{::portal.homepage_dv}}"><span>{{::portal.title}}</span></a></h4>
+  <ul class="leftMenu" role="menu">
+    <li id="menu_{{$index}}" ng-repeat="item in data.menu.items track by $index" ng-class="{'active-item':isActiveItem(item.href)}" role="menuitem" tabindex="-1" aria-expanded='false'>
+      <a ng-href="{{item.href}}" ng-if="item.sys_name != 'Get Help'">
+        <i class="menuItemGlyph fa fa-{{item.glyph}}"></i>
+        {{item.label}}
+        <span class="collapse-icon" ng-if="item.sys_name!='Overview' && item.sys_name!='Get Help' && item.sys_name!='Getting Started' && item.sys_name!='Guided Setup'" style="float:right;">
+          <i class="fa fa-plus-square-o" ng-if="!hasActiveItem(item.label)"></i>
+          <i class="fa fa-minus-square-o" ng-if="hasActiveItem(item.label)"></i>
+        </span>
+      </a>
+      <ul class="leftSubMenu" ng-class="{'open':hasActiveItem(item.label)}" role="menu">
+        <li ng-repeat="sub_item in item.items" ng-class="{'active-item':isActiveItem(sub_item.href)}" role="menuitem" tabindex="-1">
+          <a ng-href="{{sub_item.href}}">
+            <i class="menuItemGlyph fa fa-{{sub_item.glyph}}"></i>
+            {{sub_item.label}}
+          </a>
+        </li>
+      </ul>
+      <div class="get-Help-border" ng-if="item.sys_name == 'Get Help'">
+        <a ng-href="{{item.href}}" style="border-radius: 3px;">
+          <div class="pull-left">
+            <span class="get-Help-image fa-stack fa-lg">
+              <i class="fa fa-circle fa-stack-1x"></i>
+              <i class="fa fa-question fa-stack-1x get-Help-question"></i>
+            </span>
+          </div>
+          <div class="get-Help-container">
+            <p class="get-Help-title">{{item.label}}</p>
+            <p class="get-Help-subtitle">${Find Solutions or Open an incident}</p>
+          </div>
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>]]></template>
+    </sp_widget>
+</record_update>

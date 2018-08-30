@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Deployment Run" max_length="40" name="sn_cmp_deployment_run" type="collection">
+        <element label="Deployment End Time" max_length="40" name="dep_end_time" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Run Status Message" max_length="1024" name="dep_run_status_msg" type="string"/>
+        <element label="Deployment Start Time" max_length="40" name="dep_start_time" type="glide_date_time"/>
+        <element label="Pack" max_length="32" name="pack" reference="sn_cmp_pack" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Status" max_length="40" name="status" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Initialized" sequence="1" value="Initialized"/>
+                <element inactive_on_update="false" label="In Progress" sequence="2" value="In Progress"/>
+                <element inactive_on_update="false" label="Completed" sequence="3" value="Completed"/>
+                <element inactive_on_update="false" label="Failed" sequence="4" value="Failed"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="pack"/>
+        </index>
+    </element>
+</database>

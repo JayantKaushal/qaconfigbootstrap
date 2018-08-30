@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="CMP Preference" max_length="40" name="sn_cmp_preference" type="collection">
+        <element label="Management Key Name" max_length="32" name="management_key" reference="sn_cmp_ssh_credentials" type="reference"/>
+        <index name="index">
+            <element name="management_key"/>
+        </index>
+    </element>
+</database>

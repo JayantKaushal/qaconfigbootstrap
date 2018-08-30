@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>action_type</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_Rule_Action_On_Submit</name>
+        <order/>
+        <script><![CDATA[function onSubmit() {
+	//Type appropriate comment here, and begin script below
+	g_form.clearMessages();
+     
+	if( g_form.getValue("policy_rule.policy.operation_id") != "" && g_form.getValue("property_name") !== undefined){
+		g_form.setValue( "property", g_form.getValue("property_name"));
+	}
+			
+	g_form.setValue( "script", "");
+	if( g_form.getValue("action_type") == "2"){
+		//validate if there is an active rule already.
+		if( g_form.getValue( "user_id").trim() != ""){
+			g_form.setValue( "is_user_approval", true);
+		}
+		if( g_form.getValue("group_id") == "" && g_form.getValue("user_id") == "" && g_form.getValue("is_manager_approval") == "false"){
+			g_form.submitted = false;
+			g_form.addErrorMessage( getMessage("Policy Action Empty Approver"));
+			return false;
+		}
+	}
+
+	if(g_form.getValue( "name").trim() != ""){
+		if(validateName(g_form.getValue( "name"))){
+			g_form.submitted = false;
+			return false;
+		}
+	}
+	
+}
+
+function validateName(name){
+	var regex = /^[a-zA-z]+[a-zA-Z0-9_]*$/;
+	var isValid = regex.test(name);
+	if( !isValid){
+		g_form.submitted = false;
+		g_form.addErrorMessage( 'Invalid Name. Name can only be alphanumeric, start with an alphabet and cannot contain special charcters including spaces: ' + name);
+	}
+	return !isValid;
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-11 05:51:09</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>31cc81b45b103200a821273a41f91a53</sys_id>
+        <sys_mod_count>27</sys_mod_count>
+        <sys_name>Policy_Rule_Action_On_Submit</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_31cc81b45b103200a821273a41f91a53</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-19 21:43:17</sys_updated_on>
+        <table>sn_cmp_pol_action</table>
+        <type>onSubmit</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

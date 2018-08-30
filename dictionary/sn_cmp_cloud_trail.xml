@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Orchestration Trail" max_length="40" name="sn_cmp_cloud_trail" type="collection">
+        <element label="Catalog Item" max_length="32" name="catalog_item_id" reference="sn_cmp_bp_cat_item" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" choice="2" label="Context Key" max_length="100" name="context_key" type="string">
+            <choice/>
+        </element>
+        <element label="User Group" max_length="32" name="group_id" reference="sys_user_group" type="reference"/>
+        <element label="Template" max_length="32" name="invocation_template" reference="sn_cmp_invocation_template" type="reference"/>
+        <element choice="1" label="Level" max_length="40" name="message_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Debug" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Info" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Warn" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Error" sequence="4" value="4"/>
+            </choice>
+        </element>
+        <element label="Milestone" max_length="40" name="milestone" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" default="javascript:global.getNextObjNumberPadded();" display="true" hint="The unique identifying number of this trail record" label="Number" max_length="40" name="number" read_only="true" type="string"/>
+        <element label="Order" max_length="32" name="order_id" reference="sn_cmp_order" type="reference"/>
+        <element label="Request Item" max_length="32" name="req_item" reference="sc_req_item" type="reference"/>
+        <element label="Stack" max_length="32" name="stack_id" reference="sn_cmp_stack" type="reference"/>
+        <element attributes="no_truncate=true,edge_encryption_enabled=true" label="Message" max_length="1000" name="status_message" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Message Details" max_length="1000" name="status_message_details" type="string"/>
+        <element label="Step" max_length="32" name="step" reference="sn_cmp_cloud_trail_step" type="reference"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element label="Target Instance" max_length="32" name="target_instance" reference="cmdb_ci" type="reference"/>
+        <element label="User" max_length="32" name="user_id" reference="sys_user" type="reference"/>
+        <index name="index">
+            <element name="catalog_item_id"/>
+        </index>
+        <index name="index2">
+            <element name="group_id"/>
+        </index>
+        <index name="index3">
+            <element name="user_id"/>
+        </index>
+        <index name="index4">
+            <element name="target_instance"/>
+        </index>
+        <index name="index5">
+            <element name="stack_id"/>
+        </index>
+        <index name="index6">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index7">
+            <element name="step"/>
+        </index>
+        <index name="index8">
+            <element name="invocation_template"/>
+        </index>
+        <index name="index9">
+            <element name="order_id"/>
+        </index>
+        <index name="index10">
+            <element name="req_item"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_policy_action">
+    <sys_ui_policy_action action="INSERT_OR_UPDATE">
+        <cleared>false</cleared>
+        <disabled>ignore</disabled>
+        <field>source_field</field>
+        <mandatory>ignore</mandatory>
+        <sys_class_name>sys_ui_policy_action</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-11-21 11:58:37</sys_created_on>
+        <sys_id>5c38f3d49f93220048111f80a57fcf9a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>source_field</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_policy_action_5c38f3d49f93220048111f80a57fcf9a</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2016-12-06 07:06:45</sys_updated_on>
+        <table>sn_cmp_response_mapping</table>
+        <ui_policy display_value="Show source field">73e7b3d49f93220048111f80a57fcf2f</ui_policy>
+        <visible>true</visible>
+    </sys_ui_policy_action>
+</record_update>

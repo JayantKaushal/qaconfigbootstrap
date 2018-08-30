@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl">
+    <sys_security_acl action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <admin_overrides>true</admin_overrides>
+        <advanced>true</advanced>
+        <condition/>
+        <description/>
+        <express_security>false</express_security>
+        <name>sn_cmp_rb_resourcescript</name>
+        <operation display_value="read">read</operation>
+        <script><![CDATA[var user = gs.getUser();
+if (user.hasRole("sn_cmp.cloud_service_designer") || current.sys_created_by == gs.getUserName()
+        || user.hasRole("sn_cmp.cloud_governor") || user.hasRole("sn_cmp.cloud_admin")
+		|| user.hasRole("sn_cmp.cloud_operator") || current.isNewRecord())
+	answer = true;
+else
+	answer = new CMPCheckPermission().checkPermission(current.getTableName(), current.getValue("sys_id"), gs.getUserID(), "read");
+]]></script>
+        <sys_class_name>sys_security_acl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-18 12:48:43</sys_created_on>
+        <sys_id>ef95a2860ba132004210294863673a95</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>sn_cmp_rb_resourcescript</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_security_acl_ef95a2860ba132004210294863673a95</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-18 12:48:43</sys_updated_on>
+        <type display_value="record">record</type>
+    </sys_security_acl>
+</record_update>

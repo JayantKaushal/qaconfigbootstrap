@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cloud Resource Type Operation" max_length="40" name="sn_cmp_resource_type_operation" type="collection">
+        <element hint="Operation that is executed to get details about resource(s)" label="Discovery operation" max_length="32" name="discovery_operation" reference="sn_cmp_rb_op_signature" type="reference"/>
+        <element hint="Operation that is executed to get details about a resource when it is provisioned as part of a cloud template" label="Discovery step" max_length="32" name="discovery_step" reference="sn_cmp_rb_op_impl_step" type="reference"/>
+        <element display="true" label="Resource type" max_length="32" name="resource_type" reference="sn_capi_resource_type" type="reference"/>
+        <index name="index">
+            <element name="discovery_step"/>
+        </index>
+        <index name="index2">
+            <element name="discovery_operation"/>
+        </index>
+        <index name="index3">
+            <element name="resource_type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_list parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" table="cmdb_ci_cloud_subnet" version="2" view="">
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>name</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>0</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>397610be0b11320032a66707b6673a23</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>cidr</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>1</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>b97610be0b11320032a66707b6673a23</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>gateway</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>2</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>3d7610be0b11320032a66707b6673a23</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>subnet_mask</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>3</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>bd7610be0b11320032a66707b6673a23</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>primary_dns</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>4</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>317610be0b11320032a66707b6673a24</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list_element action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element>secondary_dns</element>
+            <list_id display_value="cmdb_ci_cloud_subnet" element="NULL" name="cmdb_ci_cloud_subnet" parent="cmdb_ci_network" relationship="822fc8fa0b11320032a66707b6673a05" sys_domain="global" view="Default view">b17610be0b11320032a66707b6673a23</list_id>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <position>5</position>
+            <sum>false</sum>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_id>b17610be0b11320032a66707b6673a24</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+        </sys_ui_list_element>
+        <sys_ui_list action="INSERT_OR_UPDATE">
+            <average_value>false</average_value>
+            <element/>
+            <max_value>false</max_value>
+            <min_value>false</min_value>
+            <name>cmdb_ci_cloud_subnet</name>
+            <parent>cmdb_ci_network</parent>
+            <position/>
+            <relationship display_value="Network Subnets">822fc8fa0b11320032a66707b6673a05</relationship>
+            <sum>false</sum>
+            <sys_class_name>sys_ui_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-03-08 00:02:37</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>b17610be0b11320032a66707b6673a23</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>cmdb_ci_cloud_subnet</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_list_cmdb_ci_network_822fc8fa0b11320032a66707b6673a05_null</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-03-08 00:02:37</sys_updated_on>
+            <sys_user/>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_list>
+    </sys_ui_list>
+</record_update>

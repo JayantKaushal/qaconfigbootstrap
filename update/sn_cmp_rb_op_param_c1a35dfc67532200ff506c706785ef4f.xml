@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_param">
+    <sn_cmp_rb_op_param action="INSERT_OR_UPDATE">
+        <interface display_value="Network Interface">1a9359bc67532200ff506c706785eff7</interface>
+        <name>CloudType</name>
+        <operation display_value="CreateSecurityGroup">30a35dfc67532200ff506c706785ef4b</operation>
+        <order/>
+        <sys_class_name>sn_cmp_rb_op_param</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-22 13:16:28</sys_created_on>
+        <sys_id>c1a35dfc67532200ff506c706785ef4f</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CloudType</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_param_c1a35dfc67532200ff506c706785ef4f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-28 07:52:42</sys_updated_on>
+        <type>1</type>
+    </sn_cmp_rb_op_param>
+</record_update>

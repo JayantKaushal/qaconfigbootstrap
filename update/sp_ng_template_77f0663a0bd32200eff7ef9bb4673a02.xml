@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_ng_template">
+    <sp_ng_template action="INSERT_OR_UPDATE">
+        <id>catalogWizard.html</id>
+        <sp_widget display_value="Cloud Catalog Item Wizard">bc5e56f60bd32200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>sp_ng_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 00:03:07</sys_created_on>
+        <sys_id>77f0663a0bd32200eff7ef9bb4673a02</sys_id>
+        <sys_mod_count>89</sys_mod_count>
+        <sys_name>catalogWizard.html</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_ng_template_77f0663a0bd32200eff7ef9bb4673a02</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-05 06:33:04</sys_updated_on>
+        <template><![CDATA[<div>
+  <div class="col-xs-1 pull-right">
+    <button class="btn btn-primary"
+            id="catItemSubmit"
+            name="submit"
+            ng-disabled="hasNext()"
+            ng-if="hasSave==true"
+            ng-click="save()">
+      {{saveText || "Save"}}
+    </button>
+  </div>
+
+  <div class="col-md-12" style="padding-left:0;padding-right:0;">
+    <button class="btn btn-default nav-button"
+            style="margin-right:5px;"
+            ng-click="prevPage()"
+            ng-disabled="!hasPrev()">
+      <i class="fa fa-angle-double-left" aria-hidden="true"></i>
+    </button>
+    <div class="btn-group form-tabs">
+      <button type="button"
+              class="btn btn-default"
+              ng-class="{'btn-primary': page.activePage==true}"
+              ng-click="goToPage($index)"
+              ng-repeat="page in pages">
+        {{page.pageTag}}
+      </button>
+    </div>
+    <button class="btn btn-default nav-button"
+            style="margin-left:4px;"
+            ng-click="nextPage()"
+            ng-disabled="!hasNext()">
+     <i class="fa fa-angle-double-right" aria-hidden="true"></i>
+    </button>
+  </div>
+
+
+  <div ng-transclude></div>
+
+</div>
+]]></template>
+    </sp_ng_template>
+</record_update>

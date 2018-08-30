@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.RefQualsServiceCatalogCMP</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>RefQualsServiceCatalogCMP</name>
+        <script><![CDATA[var RefQualsServiceCatalogCMP = Class.create();
+RefQualsServiceCatalogCMP.prototype = {
+    initialize: function() {
+    },
+    getCloudServiceCategories : function(){
+		var categories = [];
+		var gr = new GlideRecord('sc_category');
+		gr.addQuery('sc_catalog', CloudConstants.CLOUD_SERVICE_CATALOG);
+		gr.query();
+		while(gr.next()){
+			categories.push(gr.getValue('sys_id'));
+		}
+		categories = "sys_idIN"  + categories.toString();
+		return categories;
+	},
+	
+	getCloudOperationCategories : function(){
+		var categories = [];
+		var gr = new GlideRecord('sc_category');
+		gr.addQuery('sc_catalog', CloudConstants.CLOUD_OPERATION_CATALOG);
+		gr.query();
+		while(gr.next()){
+			categories.push(gr.getValue('sys_id'));
+		}
+		categories = "sys_idIN"  + categories.toString();
+		return categories;
+	},
+    type: 'RefQualsServiceCatalogCMP'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-10 03:11:29</sys_created_on>
+        <sys_id>5a5c7e020b3f130034a02f15d6673ab5</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>RefQualsServiceCatalogCMP</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_5a5c7e020b3f130034a02f15d6673ab5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-10 03:31:36</sys_updated_on>
+    </sys_script_include>
+</record_update>

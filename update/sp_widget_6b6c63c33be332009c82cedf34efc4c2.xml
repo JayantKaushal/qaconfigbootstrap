@@ -1,0 +1,948 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope, $location, spUtil) {
+	var c = this;
+
+	$scope.go = function(url) {
+		$location.url(url);
+	}
+
+	spUtil.recordWatch($scope, "sc_req_item","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sc_request","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "cmdb_ci_cmp_cloud_account","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_os_profile","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_compute_profile","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_security_grp_profile","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_application_profile","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_rb_resourceblock","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_capi_provider","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_capi_interface","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_capi_connector","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_capi_cloud_api","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_bp_blueprint","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_bp_cat_item","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_stack","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_cost","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "incident","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_pol_policy","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sn_cmp_permission","",function(name,data) {
+		spUtil.update($scope);
+	});
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>p {
+  margin: 0;
+}
+
+h4 {
+  padding-bottom: 5px;
+}
+
+h4, a, p, span, button {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.add-new {
+  text-align: center;
+  position: relative;
+  top: 35px;
+}
+
+.fa-plus-circle {
+  font-size: 3em;
+}
+
+.row &gt; h4 {
+  margin-left: 8px;
+}
+
+.spendors-ul {
+  font-size: 14px;
+  line-height: 1.3;
+  padding-left: 30px;
+}
+
+.panel-list {
+  padding-top: 2px;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.error-count {  
+  font-size: 5em;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.error-image {
+  margin-top: 8px;
+  margin-right: 10px;
+  float: right;
+}
+
+.button-link {
+  left: 46px;
+  position: absolute;
+  top: 160px;
+}
+
+a {
+  cursor: pointer;
+}
+
+.ca-total-info {
+  font-size: 3em;
+  color: #000000;
+}
+
+.ca-sub-text {
+  color: #717171; 
+  font-weight: normal; 
+  font-size: 12px;
+  font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+}
+
+.panel-section {
+  text-align: center;
+  min-height: 80px;
+  margin-top: 8px;
+}
+
+.ca-box-btn {
+  width: 48%;
+  margin-left: 1%;
+}
+
+.ca-box-green {
+  background-color: #49CE49;
+  color: #fff;
+}
+
+.margin-l {
+  margin-left: 1.2%;
+}
+
+.ca-text {
+  text-align: center;
+  display: block;
+}
+
+.ca-box-orange {
+  background-color: orange;
+  color: #fff;
+}
+
+.ca-text-red {
+  color: red;
+}
+
+.ca-text-orange {
+  color: red;
+}
+
+.ca-text-green {
+  color: #49CE49;
+}
+
+.ca-float-right {
+  float: right;
+}
+
+.ca-float-left {
+  float: left;
+}
+.ca-footer {
+  height: 40px !important;
+  padding: 10px !important;
+  text-align: right;
+  color: #428bca;
+  border-top: 1px solid #E6E8EA;
+}
+
+.footer-text-link {
+  color: #2a6496;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.widgetIcon {
+  margin-right: 5px;
+}
+
+.no-spend {
+  text-align: center;
+  position: relative;
+  top: 60px;
+}
+
+.spend-text {
+  float: right;
+  font-weight: bold;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cap-overview-counts</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+}]]></link>
+        <name>CAP Overview Counts</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+
+	data.admin_role = gs.hasRole('admin') || gs.hasRole('sn_cmp.cmp_root_admin');
+	data.cloud_admin = gs.hasRole('sn_cmp.cloud_admin');
+	data.designer = gs.hasRole('sn_cmp.cloud_service_designer');
+	data.governor = gs.hasRole('sn_cmp.cloud_governor');
+	data.operator = gs.hasRole('sn_cmp.cloud_operator');
+
+
+	//cloud accounts
+	data.total_ca = 0;
+	data.draft_ca = 0;
+	data.published_ca = 0;
+
+	var ga = new GlideAggregate('cmdb_ci_cmp_cloud_account');
+	ga.query();
+	data.total_ca = ga.getRowCount();
+
+	ga.addQuery("status","1");
+	ga.query();
+	data.published_ca = ga.getRowCount();
+	data.draft_ca = data.total_ca - data.published_ca;
+
+	//Quota
+	var tq = new sn_cmp.CMPGetTotalGroupQuota();
+	data.vm_quota = tq.getVmQuota();
+	data.vcpu_quota = tq.getVcpuQuota();
+	data.storage_quota = tq.getStorageQuota();
+
+
+	//Capacity
+	var tc = new sn_cmp.CMPGetTotalDcCapacity();
+	data.compute_capacity = tc.getVcpuCapacity();
+	data.storage_capacity = tc.getStorageCapacity();
+
+	//Top Spenders
+	var ts = new sn_cmp.CMPBudgetBasedNotification();
+	data.top_spender_user = ts.topUserConsumption();
+	data.top_spender_group = ts.topGroupConsumption();
+
+	//Budget Alerts
+	var ba = new sn_cmp.CMPBudgetBasedNotification();
+	data.total_users_crossed = ba.userCrossedThreshold();
+	data.total_groups_crossed = ba.groupCrossedThreshold();
+
+	//Resource Profiles
+	data.os_profile = 0;
+	var op = new GlideAggregate('sn_cmp_os_profile');
+	op.query();
+	data.os_profile = op.getRowCount();
+
+	data.compute_profile = 0;
+	var cp = new GlideAggregate('sn_cmp_compute_profile');
+	cp.query();
+	data.compute_profile = cp.getRowCount();
+
+	data.security_grp_profile = 0;
+	var scp = new GlideAggregate('sn_cmp_security_grp_profile');
+	scp.query();
+	data.security_grp_profile = scp.getRowCount();
+
+	data.application_profile = 0;
+	var ap = new GlideAggregate('sn_cmp_application_profile');
+	ap.query();
+	data.application_profile = ap.getRowCount();
+
+	data.volume_profile = 0;
+	var vp = new GlideAggregate('sn_cmp_volume_profile');
+	vp.query();
+	data.volume_profile = vp.getRowCount();
+
+	//Resource Blocks
+	data.cfb = 0;
+	data.armb = 0;
+	data.snb = 0;
+	data.dc = 0;
+	data.cfg = 0;
+
+	var rb = new GlideAggregate('sn_cmp_rb_resourceblock');
+	rb.addAggregate('count', 'type');
+	rb.addQuery('is_tlr', false);
+	var activeFieldQuery = rb.addNullQuery('active');
+	activeFieldQuery.addOrCondition('active', true);
+	rb.query();
+	while (rb.next()) {
+		if (rb.type == '612f41e49f00320048111f80a57fcf82')
+			data.armb = rb.getAggregate('count','type');
+		else if (rb.type == '932f81e49f00320048111f80a57fcf6e')
+			data.cfb = parseInt(rb.getAggregate('count','type'));
+	}
+
+	var rb1 = new GlideRecord('sn_cmp_rb_resourceblock');
+	rb1.addEncodedQuery('layer=4^is_tlr=false^activeISEMPTY^ORactive=true');
+	rb1.query();
+	data.dc = rb1.getRowCount();
+
+	var rb2 = new GlideRecord('sn_cmp_rb_resourceblock');
+	rb2.addEncodedQuery('is_tlr=false^layer!=4^hostinterfaceISNOTEMPTY^resource_templateISEMPTY^activeISEMPTY^ORactive=true');
+	rb2.query();
+	data.snb = rb2.getRowCount();
+
+	var rb3 = new GlideRecord('sn_cmp_rb_resourceblock');
+	rb3.addEncodedQuery('is_tlr=false^layer!=4^hostinterfaceISEMPTY^resource_templateISEMPTY^activeISEMPTY^ORactive=true');
+	rb3.query();
+	data.cfg = rb3.getRowCount();
+
+	//Cloud API
+	data.total_providers = 0;
+	var providers = new GlideAggregate('sn_capi_provider');
+	var activeFieldQuery = providers.addNullQuery('active');
+	activeFieldQuery.addOrCondition('active', true);
+	providers.query();
+	data.total_providers = providers.getRowCount();
+
+	data.total_apis = 0;
+	var apis = new GlideAggregate('sn_capi_cloud_api');
+	apis.query();
+	data.total_apis = apis.getRowCount();
+
+	data.total_interfaces = 0;
+	var interfaces = new GlideAggregate('sn_capi_interface');
+	interfaces.query();
+	data.total_interfaces = interfaces.getRowCount();
+
+	//Cloud Scripts
+	data.total_scripts = 0;
+	var scripts = new GlideAggregate('sn_cfg_cloud_script');
+	scripts.query();
+	data.total_scripts = scripts.getRowCount();
+
+	data.total_scripts_templates = 0;
+	var scripts_templates = new GlideAggregate('sn_cfg_cloud_script_template');
+	scripts_templates.query();
+	data.total_scripts_templates = scripts_templates.getRowCount();
+
+	//cloud blueprints
+	data.total_cs = 0;
+	data.draft_cs = 0;
+	data.published_cs = 0;
+
+	var bp_gr = new GlideAggregate('sn_cmp_bp_blueprint');
+	bp_gr.query();
+	data.total_cs = bp_gr.getRowCount();
+	while (bp_gr.next()) {
+		if (bp_gr.getValue('status') == 1)
+			data.published_cs ++;
+	}
+	data.draft_cs = data.total_cs - data.published_cs;
+
+	//cloud requests
+	data.total_req = 0;
+	data.complete_req = 0;
+	data.total_errors = 0;
+
+	var sc = new GlideRecord('sc_req_item');
+	sc.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+	sc.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+	sc.query();
+	data.total_req = sc.getRowCount();
+
+	sc.addEncodedQuery("stageLIKEDeployment Successful");
+	sc.query();
+	data.complete_req = sc.getRowCount();
+
+	var sc1 = new GlideRecord('sc_req_item');
+	sc1.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+	sc1.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+	sc1.addEncodedQuery("stageLIKETask Created for User^ORstageLIKEdeployment_failed");
+	sc1.query();	
+	data.total_errors = sc1.getRowCount();
+
+	//cloud stacks
+	data.total_stacks = 0;
+	data.active_stacks = 0;
+	data.discovered_stacks = 0;
+
+	var st_gr = new GlideAggregate('sn_cmp_stack');
+	st_gr.query();
+	data.total_stacks = st_gr.getRowCount();
+	st_gr.addQuery('stack_status', '2');
+	st_gr.query();
+	data.active_stacks = st_gr.getRowCount();
+
+	var st_gr1 = new GlideAggregate('sn_cmp_stack');
+	st_gr1.addQuery('stack_status', '7');
+	st_gr1.query();
+	data.discovered_stacks = st_gr1.getRowCount();
+
+	//Remediation Tasks
+	data.total_tasks = 0;
+	data.open_tasks = 0;
+	data.closed_tasks = 0; 
+
+	var rt_gr = new GlideAggregate('sc_task');
+	rt_gr.addEncodedQuery("request_item.cat_item.sc_catalogsLIKEc1b81478678232005ca552e457415a6e^ORrequest_item.cat_item.sc_catalogsLIKEb029d6da0b212200eff7ef9bb4673a42");
+	rt_gr.query();
+	data.total_tasks = rt_gr.getRowCount();
+
+	rt_gr.addQuery('state', '1');
+	rt_gr.query();
+	data.open_tasks = rt_gr.getRowCount();
+
+	var rt_gr1 = new GlideAggregate('sc_task');
+	rt_gr1.addEncodedQuery("request_item.cat_item.sc_catalogsLIKEb029d6da0b212200eff7ef9bb4673a42^ORrequest_item.cat_item.sc_catalogsLIKEc1b81478678232005ca552e457415a6e^state=3^ORstate=4^ORstate=7");
+	rt_gr1.query();
+	data.closed_tasks = rt_gr1.getRowCount();
+
+	//Current Month Cost Chart
+	var totalCost = 0;
+	data.costArray = [];
+	var cost_gr = new GlideAggregate('sn_cmp_cost');
+	cost_gr.addQuery('usage_date','>=',gs.beginningOfThisMonth());
+	cost_gr.addNotNullQuery('resource.resource_type.product.category');
+	cost_gr.addAggregate('SUM','cost');
+	cost_gr.groupBy('resource.resource_type.product.category');
+	cost_gr.query();
+	while (cost_gr.next()) {
+		var obj4 = {};
+		obj4.name = cost_gr.getDisplayValue('resource.resource_type.product.category');
+		obj4.y = parseFloat(parseFloat(cost_gr.getAggregate('SUM','cost')).toFixed(1));
+		totalCost += obj4.y;
+		data.costArray.push(obj4);		
+	}
+	totalCost = '$'+ totalCost.toFixed(1);
+
+	//Incidents Chart
+	var totalIncidents = 0;
+	data.cloudIncidentArray = [];
+	var inc_gr = new GlideAggregate('incident');
+	inc_gr.addQuery('category','Cloud Management');
+	inc_gr.addNotNullQuery('subcategory');
+	inc_gr.query();
+	totalIncidents = inc_gr.getRowCount();
+
+	inc_gr.addAggregate('count', 'subcategory');
+	inc_gr.query();	
+	while (inc_gr.next()) {
+		var obj3 = {
+			name : inc_gr.getDisplayValue('subcategory'),
+			y: parseInt(inc_gr.getAggregate('count', 'subcategory'))
+		}
+		data.cloudIncidentArray.push(obj3);
+	}	
+
+	//Cost By Provider Chart
+	var totalCostByProviders = 0;
+	data.costByProviderArray = [];
+	var cost_gr1 = new GlideAggregate('sn_cmp_cost');
+	cost_gr1.addQuery('usage_date','>=',gs.beginningOfThisMonth());
+	cost_gr1.addNotNullQuery('resource.resource_type.product.provider');
+	cost_gr1.addAggregate('SUM','cost');
+	cost_gr1.groupBy('resource.resource_type.product.provider');
+	cost_gr1.query();
+	while (cost_gr1.next()) {		
+		var obj2 = {};
+		obj2.name = cost_gr1.getDisplayValue('resource.resource_type.product.provider');
+		obj2.y = parseFloat(parseFloat(cost_gr1.getAggregate('SUM','cost')).toFixed(1));
+		totalCostByProviders += obj2.y;
+		data.costByProviderArray.push(obj2);
+	}
+	totalCostByProviders = '$'+ totalCostByProviders.toFixed(1);
+
+	//Policies Chart
+	var totalPolicies = 0;
+	data.cloudPolicyArray = [];
+	var pol_gr = new GlideAggregate('sn_cmp_pol_policy');
+	pol_gr.addNotNullQuery('target_entity_id');
+	pol_gr.query();
+	totalPolicies = pol_gr.getRowCount();
+
+	pol_gr.addAggregate('count', 'target_entity_id');
+	pol_gr.query();	
+	while (pol_gr.next()) {
+		var obj1 = {
+			name : pol_gr.getDisplayValue('target_entity_id'),
+			y: parseInt(pol_gr.getAggregate('count', 'target_entity_id'))
+		}
+		data.cloudPolicyArray.push(obj1);
+	}	
+
+	//Permissions Chart
+	var totalPermissions = 0;
+	data.cloudPermissionArray = [];
+	var pr_gr = new GlideAggregate('sn_cmp_permission');
+	pr_gr.addNotNullQuery('target_type_choice');
+	pr_gr.query();
+	totalPermissions = pr_gr.getRowCount();
+	pr_gr.addAggregate('count', 'target_type_choice');
+	pr_gr.query();	
+	while (pr_gr.next()) {
+		var target_gr = new GlideRecord(pr_gr.getValue('target_type_choice'));
+		var obj = {
+			name : target_gr.getLabel(),
+			y: parseInt(pr_gr.getAggregate('count', 'target_type_choice'))
+		}
+		data.cloudPermissionArray.push(obj);
+	}
+
+	data.widget = "";
+	data.widgetCloudPermission = $sp.getWidget('cap_donut_chart', {name:gs.getMessage('Cloud Permissions'), containerId:'cloudPermission', total: totalPermissions, data: data.cloudPermissionArray,link:'?id=permissions&spa=1&category=Govern'});
+	data.widgetCloudPolicy = $sp.getWidget('cap_donut_chart', {name:gs.getMessage('Cloud Policies'), containerId:'cloudPolicy', total: totalPolicies, data: data.cloudPolicyArray,link:'?id=policies&category=Govern&table=sn_cmp_pol_policy'});
+	data.widgetCloudIncident = $sp.getWidget('cap_donut_chart', {name:gs.getMessage('Active Cloud Incidents'), containerId:'cloudIncident', total: totalIncidents, data: data.cloudIncidentArray,link:'?id=cap_activities&category=Operate&sub_category=incident&spa=1'});
+	data.storageVolumeQuota = $sp.getWidget('cloud-admin-half-chart', {name:gs.getMessage('Storage Volume Quota'), containerId:'storageVolumeQuota', total: data.storage_quota.Total_Storage_Quota, used: data.storage_quota.Consumption,link:'?id=quota&category=Govern&table=sn_cmp_quota_association',unit:'GB'});
+	data.computeQuota = $sp.getWidget('cloud-admin-half-chart', {name:gs.getMessage('Compute Quota'), containerId:'computeQuota', total: data.vcpu_quota.Total_vCPU_Quota, used:data.vcpu_quota.Consumption,link:'?id=quota&category=Govern&table=sn_cmp_quota_association',unit: 'vCPUs'});
+	data.widgetCloudCostByProvider = $sp.getWidget('cap_donut_chart', {name:gs.getMessage('Cloud Cost By Provider'), containerId:'cloudCostByProvider', total: totalCostByProviders, data: data.costByProviderArray,link:'?id=billing&category=Analyze&tab=billing_dashboard'});
+	data.widgetCloudCost = $sp.getWidget('cap_donut_chart', {name:gs.getMessage('Cloud Current Month Cost'), containerId:'cloudCost', total: totalCost, data: data.costArray,link:'?id=billing&category=Analyze&tab=billing_dashboard'});
+	data.computeCapacity = $sp.getWidget('cloud-admin-half-chart', {name:gs.getMessage('Compute Capacity'), containerId:'compute', total: data.compute_capacity.Total_vCPU_Capacity, used: data.compute_capacity.Consumption,unit:'vCPUs'});
+	data.storageVolumeCapacity = $sp.getWidget('cloud-admin-half-chart',{name:gs.getMessage('Storage Volume Capacity'), containerId:'storage', total: data.storage_capacity.Total_Storage_Capacity, used: data.storage_capacity.Consumption,unit: data.storage_capacity.Unit});
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-29 06:37:13</sys_created_on>
+        <sys_id>6b6c63c33be332009c82cedf34efc4c2</sys_id>
+        <sys_mod_count>1096</sys_mod_count>
+        <sys_name>CAP Overview Counts</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_6b6c63c33be332009c82cedf34efc4c2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-18 09:48:44</sys_updated_on>
+        <template><![CDATA[<div class="row" ng-if="data.cloud_admin">
+  <h4><b>${Manage}: </b>${On-board and manage your cloud infrastructure.}</h4>
+  <!--Cloud Account -->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-cloud widgetIcon"></i>${Cloud Accounts}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_ca == 0" class="add-new">
+          <a href="?id=cloud_accounts&isNew=1"><i class="fa fa-plus-circle" aria-hidden="true"></i><br/>${Start by creating a new cloud account}</a>
+        </div>
+        <div ng-if="c.data.total_ca > 0">
+          <div class="panel-section">
+            <span class="ca-total-info">{{data.total_ca}}</span>
+            <span class="ca-sub-text">${Total}</span>
+          </div>
+          <div>
+            <button class="btn ca-box-btn ca-box-green" ng-click="go('?id=cloud_accounts&category=Manage&status=Published')">
+              <span>{{c.data.published_ca}} ${Published}</span>
+            </button>
+            <button class="btn ca-box-btn ca-box-orange margin-l" ng-click="go('?id=cloud_accounts&category=Manage&status=Draft')">
+              <span>{{c.data.draft_ca}} ${Draft}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_ca > 0">  
+        <a class="pull-right" href="?id=cloud_accounts&category=Manage">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!-- Resource Profiles -->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Resource Profiles}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.volume_profile == 0 && c.data.os_profile == 0 && c.data.compute_profile == 0 && c.data.security_grp_profile == 0 && c.data.application_profile == 0" class="add-new">
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_compute_profile"><i class="fa fa-plus-circle" aria-hidden="true"></i><br/>${Create resource profiles and map it to <br/>templates discovered from cloud accounts}</a>
+        </div>
+        <div class="col-md-12 panel-list ng-scope" ng-if="c.data.volume_profile > 0 || c.data.os_profile > 0 || c.data.compute_profile > 0 || c.data.security_grp_profile > 0 || c.data.application_profile > 0"> 
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_compute_profile" ng-if="c.data.compute_profile > 0"><p>{{c.data.compute_profile}} ${Compute Profiles}</p></a>
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_os_profile" ng-if="c.data.os_profile > 0"><p>{{c.data.os_profile}} ${OS Profiles}</p></a>
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_security_grp_profile" ng-if="c.data.security_grp_profile > 0"><p>{{c.data.security_grp_profile}} ${Security Group Profiles}</p></a>
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_application_profile" ng-if="c.data.application_profile > 0"><p>{{c.data.application_profile}} ${Application Profiles}</p></a>
+          <a href="?id=profiles&category=Manage&profile=sn_cmp_volume_profile" ng-if="c.data.volume_profile > 0"><p>{{c.data.volume_profile}} ${Storage Volume Profiles}</p></a>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.volume_profile > 0 || c.data.os_profile > 0 || c.data.compute_profile > 0 || c.data.security_grp_profile > 0 || c.data.application_profile > 0">
+        <a class="pull-right" href="?id=profiles&category=Manage&profile=sn_cmp_compute_profile">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!-- Compute graph-->
+  <div class="col-md-3">
+    <sp-widget widget="data.computeCapacity"></sp-widget>
+  </div>
+  <!--Storage graph-->
+  <div class="col-md-3">
+    <sp-widget widget="data.storageVolumeCapacity"></sp-widget>
+  </div>
+</div>
+
+<div class="row" ng-if="data.designer">
+  <h4><b>${Design}: </b>${Setup your enterprise cloud service catalog.}</h4>
+  <!-- Cloud Blueprints -->
+  <div class="col-md-3">     
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading ">
+        <h4 class="panel-title"><i class="fa fa-sitemap widgetIcon"></i>${Cloud Blueprints}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_cs == 0" class="add-new">
+          <a href="?id=blueprints&isNew=1"><i class="fa fa-plus-circle" aria-hidden="true"></i><br/>${Create a new blueprint}</a>
+        </div>
+        <div ng-if="c.data.total_cs > 0">
+          <div class="panel-section">
+            <span class="ca-total-info">{{c.data.total_cs}}</span>
+            <span class="ca-sub-text">${Total}</span>
+          </div> 
+          <div>
+            <button class="btn ca-box-btn ca-box-green" ng-click="go('?id=blueprints&category=Design&status=Published')">
+              <span>{{c.data.published_cs}} ${Published}</span>
+            </button>
+            <button class="btn ca-box-btn ca-box-orange margin-l" ng-click="go('?id=blueprints&category=Design&status=Draft')">
+              <span>{{c.data.draft_cs}} ${Draft}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_cs > 0">
+        <a class="pull-right" href="?id=blueprints&category=Design">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!--Resource Blocks-->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud Resource Blocks}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.cfb == 0 && c.data.armb == 0 && c.data.snb == 0 && c.data.dc == 0 && c.data.cfg == 0" class="no-spend">
+          ${No Resource Blocks}
+        </div>
+        <div class="col-md-12 panel-list ng-scope" ng-if="c.data.cfb > 0 || c.data.armb > 0 || c.data.snb > 0 || c.data.dc > 0 || c.data.cfg > 0"> 
+          <a href="?id=resource_blocks&category=Design&layerName= ServiceNow Blueprint" ng-if="c.data.snb > 0"><p>{{c.data.snb}} ${Cloud Agnostic Blocks}</p></a>
+          <a href="?id=resource_blocks&category=Design&layerName=CloudFormation Template" ng-if="c.data.cfb > 0"><p>{{c.data.cfb}} ${CloudFormation Blocks}</p></a>
+          <a href="?id=resource_blocks&category=Design&layerName=ARM Template" ng-if="c.data.armb > 0"><p>{{c.data.armb}} ${ARM Template Blocks}</p></a>  
+          <a href="?id=resource_blocks&category=Design&layerName=ConfigProvider" ng-if="c.data.cfg > 0"><p>{{c.data.cfg}} ${Config Provider Blocks}</p></a>
+          <a href="?id=resource_blocks&category=Design&layerName=Datacenter" ng-if="c.data.dc > 0"><p>{{c.data.dc}} ${Datacenter Blocks}</p></a>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <a ng-if="c.data.cfb == 0 && c.data.armb == 0 && c.data.snb == 0 && c.data.dc == 0" class="pull-right" href="?id=resource_blocks&isNew=1&category=Design">${Add New}</a> 
+        <a ng-if="c.data.cfb > 0 || c.data.armb > 0 || c.data.snb > 0 || c.data.dc > 0" class="pull-right" href="?id=resource_blocks&category=Design">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!--Cloud Api -->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud API}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_providers == 0 && c.data.total_apis == 0 && c.data.total_interfaces == 0" class="no-spend">
+          ${No Resource Profiles}
+        </div>
+        <div class="col-md-12 panel-list ng-scope" ng-if="c.data.total_providers > 0 || c.data.total_apis > 0 || c.data.total_interfaces > 0"> 
+          <a href="?id=cloud_api&category=Design&status=Providers" ng-if="c.data.total_providers > 0"><p>{{c.data.total_providers}} ${Providers}</p></a>
+          <a href="?id=cloud_api&category=Design&status=Interface" ng-if="c.data.total_interfaces > 0"><p>{{c.data.total_interfaces}} ${Interfaces}</p></a>
+          <a href="?id=cloud_api&category=Design&status=API" ng-if="c.data.total_apis > 0"><p>{{c.data.total_apis}} ${APIs}</p></a>  
+        </div>
+      </div>
+      <div class="panel-footer">
+        <a class="pull-right" href="?id=cloud_api&category=Design" ng-if="c.data.total_providers == 0 && c.data.total_apis == 0 && c.data.total_interfaces == 0">${Add New}</a> 
+        <a class="pull-right" href="?id=cloud_api&category=Design" ng-if="c.data.total_providers > 0 || c.data.total_apis > 0 || c.data.total_interfaces > 0">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud Scripts -->
+  <div class="col-md-3">     
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading ">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud Scripts}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_scripts == 0 && c.data.total_scripts_templates == 0" class="no-spend">
+          ${No Cloud Scripts}
+        </div>
+        <div class="col-md-12 panel-list ng-scope" ng-if="c.data.total_scripts > 0 || c.data.total_scripts_templates > 0"> 
+          <a href="?id=cloud_scripts&category=Design&table=sn_cfg_cloud_script" ng-if="c.data.total_scripts > 0"><p>{{c.data.total_scripts}} ${Cloud Scripts}</p></a>
+          <a href="?id=cloud_scripts&category=Design&table=sn_cfg_cloud_script_template" ng-if="c.data.total_scripts_templates > 0"><p>{{c.data.total_scripts_templates}} ${Cloud Script Templates}</p></a> 
+        </div>
+      </div>
+      <div class="panel-footer">
+        <a class="pull-right" href="?id=cloud_scripts&category=Design" ng-if="c.data.total_scripts == 0 && c.data.total_scripts_templates == 0">${Add New}</a> 
+        <a class="pull-right" href="?id=cloud_scripts&category=Design" ng-if="c.data.total_scripts > 0 || c.data.total_scripts_templates > 0">${Manage}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row" ng-if="data.governor">
+  <h4><b>${Govern}: </b>${Apply your enterprise policies to govern cloud usage.}</h4>
+  <!-- Cloud Policies -->
+  <div class="col-md-3">
+    <sp-widget widget="data.widgetCloudPolicy"></sp-widget>
+  </div>
+  <!--Cloud Permissions -->
+  <div class="col-md-3">
+    <sp-widget widget="data.widgetCloudPermission"></sp-widget>
+  </div>
+  <!-- Compute Quota-->
+  <div class="col-md-3">
+    <sp-widget widget="data.computeQuota"></sp-widget>
+  </div>
+  <!-- Storage Volume Quota-->
+  <div class="col-md-3">
+    <sp-widget widget="data.storageVolumeQuota"></sp-widget>
+  </div>
+</div>
+
+<div class="row" ng-if="data.operator">
+  <h4><b>${Operate}: </b>${Understand cloud resource usage in your organization.}</h4>
+  <!--Cloud Requests -->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud Requests}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_req  == 0" class="no-spend">
+          ${No Requests}      
+        </div>
+        <div ng-if="c.data.total_req > 0">
+          <div class="panel-section">
+            <span class="ca-total-info">{{c.data.total_req}}</span>
+            <span class="ca-sub-text">${Total}</span>
+          </div>
+          <div>
+            <button class="btn ca-box-btn ca-box-green" ng-click="go('?id=cap_activities&category=Operate')">
+              <span>{{c.data.complete_req}} ${Completed}</span>
+            </button>
+            <button class="btn ca-box-btn ca-box-orange margin-l" ng-click="go('?id=cap_activities&category=Operate')">
+              <span>{{c.data.total_errors}} ${Errors}</span>
+            </button>
+          </div>  
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_req > 0">
+        <a class="pull-right" href="?id=cap_activities&category=Operate">${View All}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!-- Cloud Stacks -->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud Stacks}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_stacks == 0" class="no-spend">
+          ${No Stacks}      
+        </div>
+        <div ng-if="c.data.total_stacks > 0">
+          <div class="panel-section">
+            <span class="ca-total-info">{{c.data.total_stacks}}</span>
+            <span class="ca-sub-text">${Total}</span>
+          </div>
+          <div>
+            <button class="btn ca-box-btn ca-box-green" ng-click="go('?id=cloud_operations_dashboard&category=Operate')">
+              <span>{{c.data.active_stacks}} ${Active}</span>
+            </button>
+            <button class="btn ca-box-btn ca-box-orange margin-l" ng-click="go('?id=cloud_operations_dashboard&category=Operate')">
+              <span>{{c.data.discovered_stacks}} ${Unmanaged}</span>
+            </button>
+          </div>  
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_stacks > 0">
+        <a class="pull-right" href="?id=cloud_operations_dashboard&category=Operate">${View All}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+
+  <!--Cloud Catalog Tasks-->
+  <div class="col-md-3">
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading">
+        <h4 class="panel-title"><i class="fa fa-list-ul widgetIcon"></i>${Cloud Remediation Tasks}</h4>
+      </div>
+      <div class="panel-body">
+        <div ng-if="c.data.total_tasks == 0" class="no-spend">
+          ${No Remediation Tasks}      
+        </div>
+        <div ng-if="c.data.total_tasks > 0">
+          <div class="panel-section">
+            <span class="ca-total-info">{{c.data.total_tasks}}</span>
+            <span class="ca-sub-text">${Total}</span>
+          </div>
+          <div>
+            <button class="btn ca-box-btn ca-box-green" ng-click="go('?id=remediation_tasks&category=Operate&state=open')">
+              <span>{{c.data.open_tasks}} ${Open}</span>
+            </button>
+            <button class="btn ca-box-btn ca-box-orange margin-l" ng-click="go('?id=remediation_tasks&category=Operate&state=closed')">
+              <span>{{c.data.closed_tasks}} ${Closed}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_tasks > 0">
+        <a class="pull-right" href="?id=remediation_tasks&category=Operate">${View all}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+
+
+  <!--Cloud Incidents -->
+  <div class="col-md-3">
+    <sp-widget widget="data.widgetCloudIncident"></sp-widget>
+  </div>
+</div>
+
+<div class="row" ng-if="data.governor">
+  <h4><b>${Analyze}: </b>${Analyze your cloud cost and billing.}</h4>
+  <!--Cloud Cost -->
+  <div class="col-md-3">
+    <sp-widget widget="data.widgetCloudCost"></sp-widget>
+  </div>
+  <!--Cloud Cost By Provider-->
+  <div class="col-md-3">
+    <sp-widget widget="data.widgetCloudCostByProvider"></sp-widget>
+  </div>
+  <!-- Cloud Budget Alerts -->
+  <div class="col-md-3">     
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading ">
+        <h4 class="panel-title"><i class="fa fa-sitemap widgetIcon"></i>${Cloud Budget Alerts}</h4>
+      </div>
+      <div class="panel-body">
+        <div class="col-md-12">
+          <div ng-if="c.data.total_groups_crossed.length == 0 && c.data.total_users_crossed.length == 0" class="no-spend ca-text-green">${No Limits Crossed}</div>
+          <div class="panel-list" >
+            <div ng-if="c.data.total_users_crossed.length > 0" >
+              <i class="fa fa-arrow-circle-right widgetIcon"></i>${Users}<span class="margin-l"><b>{{c.data.total_users_crossed.length}}</b></span>
+              <ul class="spendors-ul">
+                <li>{{c.data.total_users_crossed[0].User_Name}}:<br/><span class="spend-text ca-text-red">{{c.data.total_users_crossed[0].Consumed}}&nbsp;({{c.data.total_users_crossed[0].Consumption}})</span></li>
+              </ul>
+            </div>
+            <div ng-if="c.data.total_groups_crossed.length > 0">
+              <i class="fa fa-arrow-circle-right widgetIcon"></i>${Groups}<span class="margin-l"><b>{{c.data.total_groups_crossed.length}}</b></span>
+              <ul class="spendors-ul">
+                <li>{{c.data.total_groups_crossed[0].Group_Name}}:<br/><span class="spend-text ca-text-red">{{c.data.total_groups_crossed[0].Consumed}}&nbsp;({{c.data.total_groups_crossed[0].Consumption}})</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.total_groups_crossed.length > 0 || c.data.total_users_crossed.length > 0">
+        <a class="pull-right" href="?id=budget_consumption&category=Analyze&table=sn_cmp_user_budget_consumption">${View All}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+  <!-- Cloud Top Spendors -->
+  <div class="col-md-3">     
+    <div class="panel panel-default b widget-container">  
+      <div class="panel-heading ">
+        <h4 class="panel-title"><i class="fa fa-sitemap widgetIcon"></i>${Cloud Top Spenders}</h4>
+      </div>
+      <div class="panel-body">
+        <div class="col-md-12">
+          <div ng-if="(c.data.top_spender_group.length == 0 && c.data.top_spender_user.length == 0) || (c.data.top_spender_user[0].Consumed == '$0' && c.data.top_spender_group[0].Consumed == '$0')" class="no-spend">${No Spends}</div>
+          <div class="panel-list"> 
+            <div ng-if="c.data.top_spender_user.length > 0 && c.data.top_spender_user[0].Consumed != '$0'">
+              <i class="fa fa-arrow-circle-right widgetIcon"></i><span>${Users}</span>
+              <ul class="spendors-ul">
+                <li>{{c.data.top_spender_user[0].User_Name}}:<br/><span class="spend-text">{{c.data.top_spender_user[0].Consumed}}&nbsp;({{c.data.top_spender_user[0].Consumption}})</span></li>
+              </ul>
+            </div>
+            <div ng-if="c.data.top_spender_group.length > 0 && c.data.top_spender_group[0].Consumed != '$0'">
+              <i class="fa fa-arrow-circle-right widgetIcon"></i><span>${Groups}</span>
+              <ul class="spendors-ul">
+                <li>{{c.data.top_spender_group[0].Group_Name}}:<br/><span class="spend-text">{{c.data.top_spender_group[0].Consumed}}&nbsp;({{c.data.top_spender_group[0].Consumption}})</span></li>
+              </ul>
+            </div>    
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer" ng-if="c.data.top_spender_group.length > 0 || c.data.top_spender_user.length > 0">
+        <a class="pull-right" href="?id=billing&category=Analyze&tab=billing_dashboard">${View All}</a>   
+        &nbsp;
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

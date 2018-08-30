@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cost Import Map" max_length="40" name="sn_cmp_cost_import_map" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element dependent="source_table" label="Filter condition" max_length="4000" name="condition" type="conditions"/>
+        <element default="100" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element hint="The cloud management provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element attributes="base_table=sys_import_set_row,base_start=true" label="Source table" mandatory="true" max_length="80" name="source_table" type="table_name"/>
+        <element dependent="target_table" label="Target field" mandatory="true" max_length="80" name="target_field" type="field_name"/>
+        <element attributes="allow_public=true,base_start=true" label="Target table" mandatory="true" max_length="80" name="target_table" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Target value" max_length="127" name="target_value" type="string"/>
+        <index name="index">
+            <element name="provider"/>
+        </index>
+        <index name="index2">
+            <element name="source_table"/>
+            <element name="target_table"/>
+            <element name="target_field"/>
+            <element name="target_value"/>
+        </index>
+    </element>
+</database>

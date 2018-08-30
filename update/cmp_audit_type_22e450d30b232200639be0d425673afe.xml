@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="cmp_audit_type">
+    <cmp_audit_type action="INSERT_OR_UPDATE">
+        <audit_text>User ${userName} has inactivated ${entityName}</audit_text>
+        <audit_type>POLICY_INACTIVATED</audit_type>
+        <external_module_name/>
+        <module_name>Policy</module_name>
+        <severity>INFO</severity>
+        <sys_class_name>cmp_audit_type</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-12 13:23:24</sys_created_on>
+        <sys_id>22e450d30b232200639be0d425673afe</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>cmp_audit_type_22e450d30b232200639be0d425673afe</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-12 13:23:24</sys_updated_on>
+    </cmp_audit_type>
+</record_update>

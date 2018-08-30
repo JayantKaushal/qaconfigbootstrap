@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Tag Value" max_length="40" name="sn_cmp_tag_value" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Display value" max_length="255" name="display_value" type="string"/>
+        <element attributes="readonly_clickthrough=true" label="Tag" mandatory="true" max_length="32" name="tag" reference="sn_cmp_tag_name" reference_cascade_rule="delete" type="reference"/>
+        <element dependent="value_table" label="Value" max_length="32" name="value_id" type="document_id"/>
+        <element attributes="base_start=true" label="Value table" max_length="80" name="value_table" type="table_name"/>
+        <index name="index">
+            <element name="tag"/>
+        </index>
+        <index name="index2">
+            <element name="value_id"/>
+        </index>
+    </element>
+</database>

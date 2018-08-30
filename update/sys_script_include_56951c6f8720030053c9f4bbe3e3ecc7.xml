@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllPolicyGroupAction</api_name>
+        <client_callable>false</client_callable>
+        <description>Lists all policy groups</description>
+        <name>CMPGetAllPolicyGroupAction</name>
+        <script><![CDATA[var CMPGetAllPolicyGroupAction = Class.create();
+CMPGetAllPolicyGroupAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			//Get policy group list
+			var policyGr = new GlideRecord('sn_cmp_pol_policy_group');
+			policyGr.addActiveQuery();
+			policyGr.query();
+			var object = {};
+			var list = [];
+			while(policyGr.next()) {
+				object = {};
+				object.id = policyGr.sys_id + '';
+				object.name = policyGr.name + '';
+				list.push(object);
+			}
+			var responseObj = {
+				policyGroupList : list,
+			};
+			return responseObj;		
+			
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all policy groups."),
+				"CMPGetAllPolicyGroupAction.doAction(): Failed to get all policy groups",
+				error
+			);
+		}
+    },
+    type: 'CMPGetAllPolicyGroupAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-18 21:19:37</sys_created_on>
+        <sys_id>56951c6f8720030053c9f4bbe3e3ecc7</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>CMPGetAllPolicyGroupAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_56951c6f8720030053c9f4bbe3e3ecc7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-18 21:46:25</sys_updated_on>
+    </sys_script_include>
+</record_update>

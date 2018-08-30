@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPImportResourceBlockAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPImportResourceBlockAction</name>
+        <script><![CDATA[var CMPImportResourceBlockAction = Class.create();
+CMPImportResourceBlockAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	checkNames: function(name) {
+		var rb_namevalid = true;
+		var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+		gr.addQuery("name", name);
+		gr.query();
+		if(gr.hasNext()) {
+			gs.info('Cloud Template validation error: \n ResourceBlock by the name ' +name+' already exists. Please choose a new one.' );
+			throw Error('Cloud Template validation error: \n ResourceBlock by the name ' +name+' already exists. Please choose a new one.');
+		}
+		if(rb_namevalid) {
+			gr = new GlideRecord('sn_cmp_bp_blueprint');
+			gr.addQuery("name", name);
+			gr.query();
+			if(gr.hasNext()) {
+				gs.info('Cloud Template validation error: \n Blueprint by the name ' +name+' already exists. Please choose a new one.' );
+				throw Error('Cloud Template validation error: \n Blueprint by the name ' +name+' already exists. Please choose a new one.');
+			}
+		}
+	},
+	doAction: function(params) {
+		var templateTypeId = params.templateType;
+		var formatError = false;
+		try {
+			if (!params.content) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPImportResourceBlockAction.doAction: Undefined import content ",
+					null
+				);
+			}
+			/***
+				Template Types
+				id -> 1 : Azure ARM Template
+				id -> 2 : AWS Cloud Formation Template
+				id -> 3 : Resource Block
+			***/
+			//Params
+			var importContent = params.content;
+			var resourceBlockName = params.resourceBlockName;
+
+			var templateTypeName = params.templateTypeName;
+			var responseStr, resourceBlockInfo, rbInfo, responseStatusObj, rbResponseStr, responseObj;
+			var isCreateBpCatItem = (params.isCreateBpCatItem == 'true') ? true : false;
+
+			/**** Get Template type ***/
+			var grTemplateType = new GlideRecord('sn_cmp_cloud_template_type');
+			var constantCloudTemplateType = ['ARM Template', 'CloudFormation Template', 'ServiceNow Blueprint'];
+			grTemplateType.query();
+			var tempalateTypeList = [];
+			while(grTemplateType.next()) {
+				tempalateTypeList.push({name:grTemplateType.getValue('name'), id:grTemplateType.getValue('sys_id')});
+			}
+
+			for(var i=0; i < tempalateTypeList.length; i++) {
+				if(templateTypeId == 1 && tempalateTypeList[i].name == constantCloudTemplateType[templateTypeId - 1]) {
+					templateTypeName = tempalateTypeList[i].name;
+					break;
+				} else if(templateTypeId == 2 && tempalateTypeList[i].name == constantCloudTemplateType[templateTypeId - 1]) {
+					templateTypeName = tempalateTypeList[i].name;
+
+				} else if(templateTypeId == 3 && tempalateTypeList[i].name == constantCloudTemplateType[templateTypeId - 1]) {
+					templateTypeName = tempalateTypeList[i].name;
+				}
+			}
+
+			/** Backend API call **/
+			if(templateTypeId == 3){
+				// this.checkNames(rbName); we do not need this call for a normal resource block.
+				var rbServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+				responseStr = rbServiceScript.importResourceBlock(importContent);
+				responseStatusObj = new global.JSON().decode(responseStr);
+				if(responseStatusObj.status == 'Success' && responseStatusObj.objectJSON) {
+					var rbName = responseStatusObj.objectJSON;
+					//getResourceblock Info by resource block name
+					rbResponseStr = rbServiceScript.getResourceBlockByName(rbName);
+					rbInfo = new global.JSON().decode(rbResponseStr);
+					if(rbInfo) {
+						resourceBlockInfo = {};
+						resourceBlockInfo.status = 'Success';
+						resourceBlockInfo.data = rbInfo;
+					} else {
+						resourceBlockInfo = rbInfo;
+					}
+				} else {
+					resourceBlockInfo = responseStatusObj;
+				}
+
+			} else {
+
+				var blueprintTemplateUtil = new BlueprintTemplateUtil();
+				if(templateTypeId == 1) {
+					var result = new BlueprintTemplateValidator().validateTemplate(true, importContent, '', '');
+					var answer = global.JSON.parse(result);
+					if (!answer.isValid) {
+						formatError = true;
+						gs.addErrorMessage(answer.message);
+						throw new Error(answer.message);
+					}
+				} else if(templateTypeId == 2) {
+					var cfTemplate = global.JSON.parse('' + importContent);
+					if (!cfTemplate.hasOwnProperty('Resources')) {
+						formatError = true;
+						throw new Error('Missing Resources section');
+					}
+				}
+				this.checkNames(resourceBlockName);
+				responseObj = blueprintTemplateUtil.createResourceBlock(resourceBlockName, importContent, templateTypeName);
+				if(responseObj && responseObj.sys_name && responseObj.sys_name !='') {
+					var rbServiceScriptObj = new sn_cmp_api.ResourceBlockServiceScript();
+					rbResponseStr = rbServiceScriptObj.getResourceBlockByName(responseObj.sys_name);
+					rbInfo = new global.JSON().decode(rbResponseStr);
+					if(rbInfo) {
+						resourceBlockInfo = {};
+						resourceBlockInfo.status = 'Success';
+						resourceBlockInfo.data = rbInfo;
+
+						/**** create blueprint and catalog Items ***/
+						if(isCreateBpCatItem) {
+							resourceBlockInfo.isCreateBpCatItem = true;
+							var getTemplateTypeSysId = tempalateTypeList[templateTypeId - 1].id;
+							var grCloudTemplate = new GlideRecord('sn_cmp_cloud_template');
+							grCloudTemplate.initialize();
+							grCloudTemplate.setValue('name', resourceBlockName);
+							grCloudTemplate.setValue('type', getTemplateTypeSysId);
+							grCloudTemplate.setValue('body', importContent);
+							var getInsertedObj = grCloudTemplate.insert();
+							if(getInsertedObj) {
+								resourceBlockInfo.isTemplateCreated = true;
+								var grGetTemplate = new GlideRecord('sn_cmp_cloud_template');
+								grGetTemplate.addQuery("sys_id", getInsertedObj);
+								grGetTemplate.query();
+								if(grGetTemplate.next()) {
+									var catItem = new BlueprintTemplateUtil().createBlueprintAndCatItem(grGetTemplate);
+									resourceBlockInfo.isCatItemCreated = true;
+								} else {
+									resourceBlockInfo.isCatItemCreated = false;
+								}
+							} else {
+								resourceBlockInfo.isTemplateCreated = false;
+								resourceBlockInfo.isCatItemCreated = false;
+							}
+						} else {
+							resourceBlockInfo.isCreateBpCatItem = false;
+						}
+					} else {
+						resourceBlockInfo = rbInfo;
+					}
+				} else {
+					resourceBlockInfo = responseObj;
+				}
+
+
+
+			}
+			return resourceBlockInfo;
+
+		}
+		catch (error) {
+			if(formatError = true) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Failed to import resource block due to format error  111 {0}",error),
+					"CMPImportResourceBlockAction.doAction: Failed to import resource block ",
+					error
+				);
+			}else {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to import resource block "),
+				"CMPImportResourceBlockAction.doAction: Failed to import resource block ",
+				error
+			);
+
+			}
+		}
+	},
+
+    type: 'CMPImportResourceBlockAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-03 14:53:09</sys_created_on>
+        <sys_id>469e29153bd93200b47bcedf34efc4f4</sys_id>
+        <sys_mod_count>36</sys_mod_count>
+        <sys_name>CMPImportResourceBlockAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_469e29153bd93200b47bcedf34efc4f4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 19:12:17</sys_updated_on>
+    </sys_script_include>
+</record_update>

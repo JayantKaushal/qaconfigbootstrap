@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintTemplateUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintTemplateUtil</name>
+        <script><![CDATA[var BlueprintTemplateUtil = Class.create();
+BlueprintTemplateUtil.prototype = {
+
+	PUBLISHED: 'Published',
+	VIRTUAL_WORKLOAD: 'Virtual Workload',
+	STACK_ORCHESTRATION_INTERFACE: 'Stack Orchestration Interface',
+	SERVICENOW_BLUEPRINT: 'ServiceNow Blueprint',
+
+	defaultIntent:
+		"ServiceNowCloudTemplate:\n"
+		+ "  name: {0}\n"
+		+ "  layer: Application\n"
+		+ "  status: Draft\n"
+		+ "  category: Compute\n"
+		+ "  deploymentModel:\n"
+		+ "    resources:\n"
+		+ "    - resource: {5}\n"
+		+ "      resourceblock: ServiceNow::{4}\n"
+		+ "      host: {6}\n"
+		+ "    - resource: {8}\n"
+		+ "      resourceblock: ServiceNow::{7}",
+
+    initialize: function() {
+    },
+
+	createResourceBlockFromTemplate: function(templateGr) {
+		var gr = this.createResourceBlock(templateGr.name, templateGr.body, templateGr.type.name, templateGr.format.name);
+		// Publish the template once RB created so that it cannot be modified.
+		if(gr) {
+			templateGr.published = true;
+			templateGr.update();
+		}
+		return gr;
+	},
+
+	// Create a BP from a template
+	createBlueprintFromTemplate: function(templateGr) {
+		var yamlIntent = '' + templateGr.body;
+
+		// For ServiceNow Blueprint, the body contains the YAML. Otherwise, create a resource block
+		// and use the default intent to create a blueprint
+		if (templateGr.type.name != this.SERVICENOW_BLUEPRINT) {
+			var name = '' + templateGr.name;
+
+			if (!this.resourceBlockExists(name))
+			this.createResourceBlockFromTemplate(templateGr);
+
+			var host = '' + templateGr.type.resource_block.name;
+			yamlIntent = gs.getMessage(this.defaultIntent, [name, name, name, name, name, name,
+																host, host, host]);
+		}
+
+		var params = {};
+		params.content = yamlIntent;
+		var cmpAction = new CMPImportBlueprintAction();
+		var resObj = cmpAction.doAction(params);
+		var output = {};
+		var bpGr = null;
+		if(resObj.status == "Success"){	
+			//var bpMap = new global.JSON().decode(resObj.objectJSON);
+		    var bpName= resObj.name;
+		     //link template to newly created blueprint
+			if (!gs.nil(bpName)) {
+				bpGr = new GlideRecord('sn_cmp_bp_blueprint');
+				bpGr.addQuery('name', bpName);
+				bpGr.query();
+				if (bpGr.next()) {
+					var gr = new GlideRecord('sn_cmp_template_to_bp');
+					gr.initialize();
+					gr.template = templateGr.sys_id;
+					gr.blueprint = bpGr.sys_id;
+					gr.insert();
+				}
+			}
+		} else
+			throw resObj.errorMessage;
+
+		return bpGr;
+	},
+
+	createBlueprintAndCatItem: function(templateGr) {
+		var catItem = null;
+		var provisionForm='';
+		var bpGr = this.createBlueprintFromTemplate(templateGr);
+		if (!gs.nil(bpGr)) {
+			var formBehaviorCreator = new BlueprintFormBehaviorCreator();
+
+			//using previously generated Form behavior
+			
+			var formBehavior = new GlideRecord("sn_cmp_bp_form_behavior");
+			formBehavior.addQuery("bp_association",bpGr.sys_id);
+			formBehavior.query();
+			if(formBehavior.getRowCount() == 0){
+				provisionForm = formBehaviorCreator.createFormBehavior(bpGr).sys_id;
+			}else{
+			while(formBehavior.next()) {
+				if(formBehavior.getDisplayValue('stage_operation') == 'Provision') {
+					provisionForm = formBehavior.sys_id;
+					break;
+				}
+			}
+			}
+
+			var scItemCreator = new BlueprintSCItemCreator();
+			var entitiesGenerator = new EntitiesGenerator();
+			// creating catalog item for all the form behavior generated with parentFormBehaviour as formBehavior.sys_id
+			if(provisionForm != '') {
+				var formBehaviorGR = new GlideRecordSecure('sn_cmp_bp_form_behavior');
+				formBehaviorGR.addQuery('parent_form_behavior',provisionForm);
+				formBehaviorGR.query();
+				while(formBehaviorGR.next()) {
+					gs.info("Generating entities for form behavior .....");
+					var dto = entitiesGenerator.generateEntities(formBehaviorGR);
+					gs.info("Generated entities for form behavior ... "+dto);
+					if(gs.nil(formBehaviorGR.cat_item_association))
+					   catSysId = scItemCreator.createCatItem(formBehaviorGR);
+					else
+						catSysId = formBehaviorGR.cat_item_association;
+					if(formBehaviorGR.getDisplayValue('stage_operation') == 'Provision'){
+						catItem=catSysId;
+					}
+				}
+			}
+			//Once catalog item is created marking blueprint as published state
+			bpGr.status = 1;
+			bpGr.update();
+			// Publish the template once RB created so that it cannot be modified.
+			templateGr.published = true;
+			templateGr.update();
+		}
+		var fbGr = new GlideRecord('sn_cmp_bp_form_behavior');
+		fbGr.addQuery('sys_id', provisionForm);
+		fbGr.query();
+		if(fbGr.hasNext()) {
+			fbGr.next();
+			catItem = fbGr.cat_item_association;
+		}
+		
+		var catItemGr = null;
+		if(catItem != null) {
+			catItemGr = new GlideRecord('sn_cmp_bp_cat_item');
+			catItemGr.get(catItem);
+		}
+		return catItemGr;
+	},
+
+	createResourceBlock: function(name, template, type, format) {
+		if (!format)
+			format = "JSON"; //backward compatible
+		var templateObj = this.parseFormat(template, format);
+		var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+		gr.name = name;
+		gr.status = this._getStatus(this.PUBLISHED);
+		gr.layer = this._getLayer(this.VIRTUAL_WORKLOAD);
+		gr.description =  this._getRBDescription(template, type, templateObj);
+		gr.instanceview = true;
+		gr.is_tlr = false;
+
+		hostGr = this.getHostInterface();
+		if (!gs.nil(hostGr))
+			gr.hostinterface = hostGr.getUniqueValue();
+
+		typeGr = this.getTemplateType(type);
+		if (!gs.nil(typeGr)) {
+			gr.type = typeGr.getUniqueValue();
+			gr.refcitype = '' + typeGr.stack_ci_type;
+		}
+
+		var resourceInterface = this.createResourceInterface(name);
+		gr.guestinterface = resourceInterface;
+
+		var resourceBlockId = gr.insert();
+
+		this.createGuestInterface(resourceBlockId, resourceInterface);
+		this._associateHostResource(resourceBlockId,type);
+		this.associateTemplate(name, template, type, gr);
+		this.createOperations(name, resourceBlockId, template, type, resourceInterface, format, templateObj);
+		
+		// update rule info for Metadata
+		if (type == 'CloudFormation Template') {
+			this.updateRuleInfoForCFTTemplateMetadata(template,gr,templateObj);
+		}
+		else if (type == 'ARM Template') {
+			this.updateRuleInfoForARMTemplateMetadata(template,gr, templateObj);
+		}
+		
+
+		return gr;
+	},
+
+	getHostInterface: function() {
+		var gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+		var hostInterfaceName = gs.getProperty('cmp.template.host_interface',
+											   this.STACK_ORCHESTRATION_INTERFACE);
+
+		if (gr.get('name', hostInterfaceName))
+			return gr;
+
+		return null;
+	},
+
+	getTemplateType: function(type) {
+		var gr = new GlideRecord('sn_cmp_cloud_template_type');
+		if (gr.get('name', type))
+			return gr;
+
+		return null;
+	},
+
+	createResourceInterface: function(resourceBlockName) {
+		var gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+		gr.addQuery('name', resourceBlockName + ' Interface');
+		gr.query();
+		if(!gr.next()){
+			gr.name = resourceBlockName + ' Interface';
+			return gr.insert();
+		}
+	},
+
+	createGuestInterface: function(resourceBlock, resourceInterface) {
+		var guestInterfaceSysId='';
+		var gr = new GlideRecord('sn_cmp_rb_guest_interface');
+		gr.addQuery("guestinterface",resourceInterface);
+		gr.addQuery("resource",resourceBlock);
+		gr.query();
+		if(!gr.next()) {
+		gr.guestinterface = resourceInterface;
+		gr.resource = resourceBlock;
+		 guestInterfaceSysId= gr.insert();
+		}
+		return guestInterfaceSysId;
+	},
+	associateTemplate: function(name, template, type, resourceBlock) {
+		var util = new sn_cmp.AzureARMTemplateUtil();
+		var params = util.extractParameters(template);
+		var foundLocation = false;
+		for (var key in params) {
+		  if (params.hasOwnProperty(key)) {
+			var val = params[key];
+			if(key == 'template_location') {
+				foundLocation = true;
+				break;
+			}
+		  }
+		}
+		if(foundLocation) {
+			var templateModified = template.replace("[parameters('location')]", "[parameters('template_location')]");
+			var counter = 0;
+			while (templateModified.indexOf("[parameters('location')]") > -1 && counter  < 100) {// dont want to be in a infinite loop
+				templateModified = templateModified.replace("[parameters('location')]", "[parameters('template_location')]");
+				counter++;
+			}
+
+			var templateObject = JSON.parse(templateModified);
+			var paramsMod = templateObject.parameters;
+			paramsMod['template_location'] = paramsMod['location'];
+			delete paramsMod[ 'location' ];// remove the 'location'
+			var templateModifiedString = new global.JSON().encode(templateObject);			
+			template = templateModifiedString;
+		}
+
+		var gr = new GlideRecord('sn_cmp_rb_resourcescript');
+		gr.name = name + ' ' + type;
+		gr.resource = resourceBlock.getUniqueValue();
+		gr.script = template;
+		gr.type = this._getTemplateTypeValue(type);
+		gr.insert();
+	},
+
+	createOperations: function(resourceBlockName, resourceBlock, template, type, resourceInterface, format, templateObj) {
+		var templateOpGr = new GlideRecord('sn_cmp_template_type_operation');
+		templateOpGr.addQuery('template_type.name', type);
+		templateOpGr.addQuery('format.name', format);
+		templateOpGr.query();
+
+		while (templateOpGr.next()) {
+			// Create new operation signature
+			var opSignatureGr = new GlideRecord('sn_cmp_rb_op_signature');
+			opSignatureGr['interface'] = resourceInterface;
+			opSignatureGr.access_type = templateOpGr.access_type;
+			opSignatureGr.name = templateOpGr.template_type_operation.name;
+			opSignatureGr.addQuery('interface',resourceInterface);
+			opSignatureGr.addQuery('name',templateOpGr.template_type_operation.name);
+			opSignatureGr.query();
+			var opSignatureId;
+			if(!opSignatureGr.next())
+			   opSignatureId = opSignatureGr.insert();
+			else
+			   opSignatureId = opSignatureGr.getValue('sys_id');
+
+			// Create operation implementation
+			var opImplGr = new GlideRecord('sn_cmp_rb_op_impl');
+			opImplGr['interface'] = resourceInterface;
+			opImplGr.operation = opSignatureId;
+			opImplGr.resource = resourceBlock;
+			opImplGr.addQuery('interface',resourceInterface);
+			opImplGr.addQuery('operation',opSignatureId);
+			opImplGr.addQuery('resource',resourceBlock);
+			opImplGr.query();
+			var opImplId;
+			if(!opImplGr.next())
+			  opImplId = opImplGr.insert();
+			else
+			  opImplId = opImplGr.getValue('sys_id');
+
+			this.createOperationParameters(resourceBlockName, template, type, resourceInterface,
+										   templateOpGr, opSignatureId, opImplId, opSignatureGr.name, format, templateObj);
+			opImplGr.operation_output_attributes = this._getOutputAttribute(resourceBlockName, template,templateOpGr, format, templateObj);
+			opImplGr.update();
+			// Create operation implementation step
+			var opImplStepGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+			var name = templateOpGr.interface_operation['interface'].name + '.' +
+				templateOpGr.interface_operation.name;
+			opImplStepGr.name = name;
+			opImplStepGr.operationimpl = opImplId;
+			opImplStepGr.owner_type = '2'; // Resource
+			opImplStepGr.order = '1';
+			opImplStepGr.enabled = true;
+			opImplStepGr.interface_operation = templateOpGr.interface_operation;
+			opImplStepGr['interface'] = templateOpGr.interface_operation['interface'];
+			var opImplStepId = opImplStepGr.insert();
+
+			this.createStepParameters(resourceBlockName, template, type,
+									  '' + templateOpGr.template_type_operation.name,
+									  templateOpGr, opImplStepId, format, templateObj);
+		}
+	},
+
+	createOperationParameters: function(name, template, type, resourceInterface, templateOperationGr,
+										 operationId, operationImplId, operationName, format, templateObj) {
+		var scopedEvaluator = new GlideScopedEvaluator();
+		scopedEvaluator.putVariable('template', template);
+		scopedEvaluator.putVariable('templateObj', templateObj);
+		scopedEvaluator.putVariable('type', type);
+		scopedEvaluator.putVariable('name', name);
+		var params = scopedEvaluator.evaluateScript(templateOperationGr, 'operation_param_script');
+
+		for (var param in params) {
+			this.createOperationParameter(operationId, param, params[param], resourceInterface);
+			this.createOpImplParameter(operationImplId, param, params[param], name, operationName);
+		}
+	},
+
+	createOperationParameter: function(operation, param, paramProps, resourceInterface) {
+		var gr = new GlideRecord('sn_cmp_rb_op_param');
+		gr.addQuery('operation',operation);
+		gr.addQuery('name',param);
+		gr.query();
+		if(!gr.next()){
+			gr.name = param;
+			gr['interface'] = resourceInterface;
+			gr.type = this._getTypeValue(paramProps.type);
+			gr.order = paramProps.order;
+			gr.operation = operation;
+			gr.insert();
+		}
+	},
+
+	createOpImplParameter: function(operation, param, paramProps, resourceName, operationName) {
+		 var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+        if(operation)
+            gr.addQuery("operation", operation);
+        if(param)
+            gr.addQuery("name", param);
+        gr.query();
+		
+		var update = gr.next();
+
+		gr.name = param;
+		gr.operation = operation;
+		gr.datasource = this._getDatasourceType(paramProps.source);
+		if (paramProps.source === 'CSVList')
+			gr.datasourcevalue = this.getDatasourceValue(paramProps.value);
+		else
+			gr.datasourcevalue = paramProps.value;
+		gr.defaultvalue = "${parameter." + param + "}";
+		gr.value = paramProps.hasOwnProperty('defaultValue') ? paramProps.defaultValue : '';
+		gr.visibilty = paramProps.mandatory;
+		gr.ismandatory = paramProps.mandatory;
+		if((operationName == 'Deprovision' || 
+			operationName == 'Start' || 
+			operationName == 'Stop') && param == 'StackID') {
+            gr.defaultvalue = '${Stack.items['+resourceName+'].attributes[object_id]}';
+			gr.ismandatory = false;// we do not need to show the stackID attribute to end user
+			gr.visibilty = false;// we do not need to show the stackID attribute to end user
+		}
+		gr.regex = paramProps.hasOwnProperty('regex') ? paramProps.regex : '';
+		gr.error_text = paramProps.hasOwnProperty('error_text') ? paramProps.error_text : '';
+
+		gr.order = paramProps.order;
+
+		if (update)
+			gr.update();
+		else
+			gr.insert();
+	},
+
+	getDatasourceValue : function (val) {
+		if (gs.nil(val) || val.charAt(0) != '[') return "";
+		var arr = JSON.parse(val);
+		var result = "";
+		if (Array.isArray(arr)) {
+			result =  arr.reduce(function(datasouceValue, val) {
+				if (!datasouceValue)
+					datasouceValue = val;
+				else
+					datasouceValue += "," + val;
+
+				return datasouceValue;
+			}, "");
+		}
+		return result;
+	},
+
+	createStepParameters: function(name, template, type, operation, templateOperationGr, step, format, templateObj) {
+		var scopedEvaluator = new GlideScopedEvaluator();
+		scopedEvaluator.putVariable('template', template);
+		scopedEvaluator.putVariable('templateObj', templateObj);
+		scopedEvaluator.putVariable('type', type);
+		scopedEvaluator.putVariable('name', name);
+		scopedEvaluator.putVariable('operation', operation);
+
+		var params = scopedEvaluator.evaluateScript(templateOperationGr, 'operation_step_param_script');
+
+		for (var param in params) {
+			var gr = new GlideRecord('sn_cmp_rb_keyvalue');
+			gr.step = step;
+			gr.key = param;
+			if (this._isObject(params[param])) {
+				gr.object_mapping = true;
+				var keyValueId = gr.insert();
+
+				for (var objParam in params[param]) {
+					var objParamGr = new GlideRecord('sn_cmp_rb_keyvalue_mapping');
+					objParamGr.parameter = objParam;
+					objParamGr.parameter_source = this._getParameterSourceValue(params[param][objParam]);
+					objParamGr.keyvalue = keyValueId;
+					objParamGr.insert();
+				}
+			} else {
+				gr.object_mapping = false;
+				gr.value = params[param];
+				gr.insert();
+			}
+		}
+	},
+
+	resourceBlockExists: function(name) {
+		var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+		return gr.get('name', name);
+	},
+
+	blueprintExists: function(name) {
+		var gr = new GlideRecord('sn_cmp_bp_blueprint');
+		return gr.get('name', name);
+	},
+
+	_isObject: function(value) {
+		return typeof value === 'object';
+	},
+
+	_getStatus: function(status) {
+		return this._getChoiceValue('sn_cmp_rb_resourceblock', 'status', status);
+	},
+
+	_getLayer: function(layer) {
+		return this._getChoiceValue('sn_cmp_rb_resourceblock', 'layer', layer);
+	},
+
+	_getTypeValue: function(type) {
+		return this._getChoiceValue('sn_cmp_rb_op_param', 'type', type);
+	},
+
+	_getTemplateTypeValue: function(templateType) {
+		return this._getChoiceValue('sn_cmp_rb_resourcescript', 'type', templateType);
+	},
+
+	_getDatasourceType: function(datasource) {
+		return this._getChoiceValue('sn_cmp_rb_op_impl_param', 'datasource', datasource);
+	},
+
+	_getParameterSourceValue: function(paramsource) {
+		return this._getChoiceValue('sn_cmp_rb_keyvalue_mapping', 'parameter_source', paramsource);
+	},
+
+	_getChoiceValue: function(table, field, lookupVal) {
+		if (gs.nil(lookupVal))
+			return '';
+
+		var gr = new GlideRecord('sys_choice');
+		gr.addQuery('name', table);
+		gr.addQuery('element', field);
+		gr.addQuery('language', 'en'); // We are asking for the English label so look up by that
+		gr.addQuery('label', lookupVal);
+		gr.query();
+
+		if (gr.next())
+			return '' + gr.value;
+
+		return '';
+
+	},
+
+	_getRBDescription : function(template, type, templateObj) {
+		var description = '';
+		var templateTypeGr = new GlideRecord('sn_cmp_cloud_template_type');
+		templateTypeGr.addQuery('name',type);
+		templateTypeGr.query();
+		if (templateTypeGr.next() && !gs.nil(templateTypeGr.getValue('script'))) {
+			var scopedEvaluator = new GlideScopedEvaluator();
+			scopedEvaluator.putVariable('template', template);
+			scopedEvaluator.putVariable('templateObj', templateObj);
+			description = scopedEvaluator.evaluateScript(templateTypeGr, 'script');
+		}
+		return description;
+	},
+
+	_associateHostResource : function(resourceBlockId, type) {
+		var gr = new GlideRecord('sn_cmp_cloud_template_type');
+		gr.addQuery('name', type);
+		gr.query();
+		if (gr.next()) {
+			var mappingGr = new GlideRecord('sn_cmp_rb_resourcehost');
+			mappingGr.initialize();
+			mappingGr.guestresource  = resourceBlockId;
+			mappingGr.hostresource =  gr.resource_block;
+			mappingGr.insert();
+		}
+	},
+
+	_getOutputAttribute : function (resourceBlockName, template,templateOpGr, format, templateObj){
+		var scopedEvaluator = new GlideScopedEvaluator();
+		scopedEvaluator.putVariable('template', template);
+		scopedEvaluator.putVariable('name', resourceBlockName);
+		scopedEvaluator.putVariable('templateObj', templateObj);
+
+		return scopedEvaluator.evaluateScript(templateOpGr, 'operation_output_attribute_script');
+	},
+	
+	updateRuleInfoForCFTTemplateMetadata : function (template,resourceGr,templateObj) {
+		var metaData = templateObj.Metadata;
+		if (metaData) {
+				 var snMetaData = (metaData.hasOwnProperty('SNC::Parameter::Metadata')) ? metaData['SNC::Parameter::Metadata'] : '';
+					if (!gs.nil(snMetaData)) {
+						for (var param in snMetaData) {
+						var matchedParam = (snMetaData.hasOwnProperty(param)) ? snMetaData[param] : '';
+						if (!gs.nil(matchedParam)) {
+							if ( matchedParam.hasOwnProperty('datasource') ) {
+								var dataSource = matchedParam.datasource.replace(/\s+/g, '');
+								var paramVal = param;
+								var dataSourceFilter = matchedParam.datasourceFilter;
+								
+								if(!gs.nil(dataSource))
+								this.processPoolFiltersAndUpdateRuleInfo(dataSource,paramVal,dataSourceFilter,resourceGr);
+						   }    
+							
+						}
+					  }
+					}
+				}
+		
+	},
+	
+	updateRuleInfoForARMTemplateMetadata : function (template,resourceGr, templateObj) {
+		var parameters = templateObj.parameters;
+		if (parameters) {			
+			for (var param in parameters) {
+				var paramValue = parameters[param];
+				
+				if (paramValue.hasOwnProperty('metadata')) {
+					var metadata = paramValue.metadata;
+					var sncMetadata = (metadata.hasOwnProperty('SNC::Parameter::Metadata')) ? metadata['SNC::Parameter::Metadata'] : '';
+					if (!gs.nil(sncMetadata))
+					 {
+						 if (sncMetadata.hasOwnProperty('datasource')) {
+							var	 dataSource = sncMetadata.datasource.replace(/\s+/g, '');
+							//var dataSource = matchedParam.datasource;
+							var paramVal = param;
+							var dataSourceFilter = sncMetadata.datasourceFilter;
+							this.processPoolFiltersAndUpdateRuleInfo(dataSource,paramVal,dataSourceFilter,resourceGr);
+							}
+						 
+					 }
+				}
+			}
+		}
+	},
+	
+	processPoolFiltersAndUpdateRuleInfo : function (dataSource,paramVal,dataSourceFilter,resourceGr) {
+		
+		var poolAndFilter = dataSource.split("::")[2];
+		var poolName = poolAndFilter.split(".")[0];
+		var filterName = poolAndFilter.split(".")[1];
+		var filterAttributes = new sn_cmp_api.PoolServiceScript().getFilterAttributes(poolName,filterName);
+
+		var parents = [];
+		var list = new global.JSON().decode(filterAttributes);
+		for (var index in list){
+		     var value = list[index].value.replace("${","").replace("}","");
+									
+			 if(!gs.nil(dataSourceFilter) && dataSourceFilter.hasOwnProperty(''+value)) {
+				parents.push(dataSourceFilter[''+value]);
+				} else {
+				    parents.push(value);
+				}
+			}
+								
+		var json = ',\n';
+								
+		for (var index_value in parents) {
+		var parent = parents[index_value];
+		var child = paramVal;
+		var mappingJSON = "";
+		var mapping= "";
+		if (!gs.nil(dataSourceFilter)) {
+			mapping = JSON.stringify(dataSourceFilter);
+			mappingJSON =  ',\n \t\t\t "Mapping" : '+mapping+'\n';
+		} else {
+			mappingJSON = '\n';
+		}
+									
+		json = json +'\n\n'+'"Reload '+child+'On Change of '+parent+'" : {\n' +
+			   '\t"FormPropertyName": "'+parent+'",\n'+
+			   '\t"Reload": {\n' +
+			   '\t\t "ActionType": "Reload",\n' +
+			   '\t\t "Attributes": [{\n' +
+			   '\t\t\t "Name": "'+child+'",\n' +
+			   '\t\t\t "ApplicableHost": "Any",\n' + 
+			   '\t\t\t "AdditionalRules": ""' +
+			   ''+mappingJSON +
+			   '\t\t }]'+'\n'+
+			   '\t},'+'\n'+
+			   '\t"Trigger Change Event": {\n' +
+			   '\t\t "ActionType": "TriggerChangeEvent",\n' +
+			   '\t\t "Attributes": [{\n' +
+			   '\t\t\t "Name": "'+child+'",\n' +
+			   '\t\t\t "ApplicableHost": "Any",\n' + 
+			   '\t\t\t "AdditionalRules": ""' +
+			   ''+mappingJSON +
+			   '\t\t }]'+'\n'+
+			   '\t}'+'\n'+
+			   '},';
+		
+		}
+							
+		json = json.substr(0,json.lastIndexOf(","));
+		json =  json +"\n }";
+                               
+		var resource_gr = new GlideRecord("sn_cmp_rb_resourceblock");
+			resource_gr.get(resourceGr.getUniqueValue());
+								
+		var rule_info_gr = new GlideRecord("sn_cmp_bp_rule_info");
+			rule_info_gr.addQuery("guest",resource_gr.sys_id);
+			rule_info_gr.addQuery("operation","Provision");
+			rule_info_gr.addQuery("host_resource","Any");
+			rule_info_gr.query();
+
+				if (rule_info_gr.next()) {
+					var rule_json = rule_info_gr.rule_json;
+						rule_json = rule_json.substr(0,rule_json.lastIndexOf("}")-1);
+						rule_json  = rule_json + json;
+						rule_info_gr.rule_json = rule_json;
+						rule_info_gr.update();
+																				 
+			    }
+	},
+	
+	parseFormat : function(template, format) {
+		var answer = null;
+		var formatGr = new GlideRecord('sn_cmp_cloud_template_format');
+		formatGr.addQuery('name', format);
+		formatGr.query();
+		if (formatGr.next() && formatGr.getValue('parser_script')) {
+			var scopedEvaluator = new GlideScopedEvaluator();
+			scopedEvaluator.putVariable('template', template);
+			answer = scopedEvaluator.evaluateScript(formatGr, 'parser_script');		
+		}
+		return answer;
+	},
+	
+	getFormatForType : function(type) {
+		var format_ids = [];
+		var typeOpGr = new GlideAggregate('sn_cmp_template_type_operation');
+		var qc = typeOpGr.addQuery('template_type', type);
+		qc.addOrCondition('template_type.name', type);
+		typeOpGr.groupBy('format');
+		typeOpGr.query();
+		while(typeOpGr.next())
+			format_ids.push(typeOpGr.getValue('format'));
+		var outputStr = "sys_idIN"  + format_ids.toString();
+		return outputStr;
+	},
+	
+	getFormatForTemplate : function(template, type) {
+		var result = {};
+		result.format = null;
+		result.formatName = null;
+		result.templateObj = null;
+		var formatGr = new GlideRecord('sn_cmp_cloud_template_format');
+		formatGr.addEncodedQuery(this.getFormatForType(type));
+		formatGr.orderBy('order');
+		formatGr.query();
+		while(formatGr.next()) {
+			var templateObj = this.parseFormat(template, formatGr.name+'');
+			if (templateObj != null) {
+				result.format = formatGr.sys_id+'';
+				result.formatName = formatGr.name+'';
+				result.templateObj = templateObj;
+				break;
+			}
+		}
+		return result;
+	},
+	
+	validate : function(template, type) {
+		var output = {};
+		output.isValid = false;
+		output.errorMessage = "";
+		output.format = null;
+		var result = this.getFormatForTemplate(template, type);
+		var templateObj = result.templateObj;
+		var format = result.format;
+		output.format = format;
+		if (templateObj == null)
+			output.errorMessage = gs.getMessage("The template you provided is not recognized.");
+		else {
+			var templateOpGr = this.getTemplateTypeOpGr(type, result.formatName, "Provision");
+			if (!templateOpGr)
+				output.errorMessage = gs.getMessage("Cannot get validation script for {0} format.", result.formatName);
+			else if(!templateOpGr.validation_script){
+				//if no validation script is specified return valid by default
+				output.isValid = true;
+			} else {
+				var scopedEvaluator = new GlideScopedEvaluator();
+				scopedEvaluator.putVariable('template', template);
+				scopedEvaluator.putVariable('templateObj', templateObj);
+
+				output = scopedEvaluator.evaluateScript(templateOpGr, 'validation_script');
+				output.format = format;
+			}
+		}
+		return output;
+	},
+	
+	getTemplateTypeOpGr : function(type, format, op) {
+		var templateOpGr = new GlideRecord('sn_cmp_template_type_operation');
+		templateOpGr.addQuery('template_type.name', type);
+		templateOpGr.addQuery('format.name', format);
+		templateOpGr.addQuery('template_type_operation.name', op);
+		templateOpGr.query();
+		if (templateOpGr.next())
+			return templateOpGr;
+		return null;
+	},
+
+    type: 'BlueprintTemplateUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-08 01:57:34</sys_created_on>
+        <sys_id>2c11ba4ceb832200979aa5115206fe8d</sys_id>
+        <sys_mod_count>136</sys_mod_count>
+        <sys_name>BlueprintTemplateUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_2c11ba4ceb832200979aa5115206fe8d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-01 18:41:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

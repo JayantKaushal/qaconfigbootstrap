@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sys_import_set_row" label="AWS Cost Imports" max_length="40" name="sn_cmp_imp_aws_cost" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Availability Zone" max_length="50" name="availability_zone" type="string"/>
+        <element attributes="scale=8" label="Blended Cost ($)" max_length="30" name="blended_cost" type="decimal"/>
+        <element attributes="scale=8" label="Blended Rate" max_length="30" name="blended_rate" type="decimal"/>
+        <element attributes="edge_encryption_enabled=true" label="Invoice Id" max_length="40" name="invoice_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Item Description" max_length="100" name="item_description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Linked Account Id" max_length="40" name="linked_account_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Operation" max_length="100" name="operation" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Payer Account Id" max_length="40" name="payer_account_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Pricing Plan Id" max_length="40" name="pricing_plan_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Product Name" max_length="100" name="product_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Rate Id" max_length="40" name="rate_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Record Id" max_length="40" name="record_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Record Type" max_length="100" name="record_type" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Reserved Instance" max_length="40" name="reserved_instance" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Id" max_length="100" name="resource_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Subscription Id" max_length="40" name="subscription_id" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Tag Values" max_length="4096" name="tag_values" type="string"/>
+        <element attributes="scale=8" label="Unblended Cost ($)" max_length="30" name="unblended_cost" type="decimal"/>
+        <element attributes="scale=8" label="Unblended Rate" max_length="30" name="unblended_rate" type="decimal"/>
+        <element label="Usage End Date" max_length="40" name="usage_end_date" type="glide_date_time"/>
+        <element attributes="scale=8" label="Usage Quantity" max_length="30" name="usage_quantity" type="decimal"/>
+        <element label="Usage Start Date" max_length="40" name="usage_start_date" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Usage Type" max_length="100" name="usage_type" type="string"/>
+        <index name="index">
+            <element name="payer_account_id"/>
+        </index>
+        <index name="index2">
+            <element name="usage_type"/>
+        </index>
+        <index name="index3">
+            <element name="linked_account_id"/>
+        </index>
+        <index name="index4">
+            <element name="resource_id"/>
+        </index>
+        <index name="index5">
+            <element name="usage_start_date"/>
+        </index>
+        <index name="index6">
+            <element name="operation"/>
+        </index>
+        <index name="index7">
+            <element name="product_name"/>
+        </index>
+    </element>
+</database>

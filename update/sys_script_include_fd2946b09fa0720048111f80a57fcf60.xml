@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureARMResponseProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AzureARMResponseProcessor</name>
+        <script><![CDATA[var AzureARMResponseProcessor = Class.create();
+AzureARMResponseProcessor.prototype = Object.extendsObject(CloudTemplateResponseProcessor, {
+    initialize: function() {
+		CloudTemplateResponseProcessor.prototype.initialize.call(this);
+		this.datasource = 'Azure API';
+    },
+	
+	getResourceTypesToProcess: function(response) {
+		var resources = response.operations.value;
+		var resourceTypesToProcess = {};
+
+		gs.info('resources.length: ' + resources.length);
+		
+		for (var i = 0; i < resources.length; i++) {
+			var resource = resources[i];
+			
+			if (!resource.hasOwnProperty('properties'))
+				continue;
+			
+			if (resource.properties.hasOwnProperty('targetResource') &&
+			    resource.properties.provisioningOperation == 'Create') {
+				if (resource.properties.provisioningState == 'Succeeded') {
+					var type = resource.properties.targetResource.resourceType.toLowerCase();
+					// Only process top level - there is no GET for subtypes
+					// which are really just some component of the top level type
+					// Count the number of slashes - we can process something like
+					// Microsoft.Compute/virtualMachines but not
+					// Microsoft.Compute/virtualMachines/extensions
+					var slashes = type.match(/\//g) || [];
+					if (slashes.length > 1)
+						continue;
+
+					if (!resourceTypesToProcess.hasOwnProperty(type))
+						resourceTypesToProcess[type] = [];
+
+					var resourceInfo = {};
+					resourceInfo.id = resource.properties.targetResource.id;
+					resourceInfo.type = resource.properties.targetResource.resourceType;
+					resourceTypesToProcess[type].push(resourceInfo);
+				}
+			}
+		}
+		
+		return resourceTypesToProcess;
+	},
+	
+	/**
+	 * Get GlideRecord to mapped discovery step for resource type, if there is one, otherwise
+	 * return one to the generic get resource
+	 */
+	getOperationGR: function(type) {
+		var discoOpGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+		
+		var gr = new GlideRecord('sn_cmp_resource_type_operation');
+		if (!gr.get('resource_type.name', type) || 
+				gs.nil(gr.discovery_step) || 
+				!gr.discovery_step.enabled) {
+			type = gs.getProperty('cmp.cloud_resource', 'Cloud Resource');
+			
+			gr.get('resource_type.name', type);
+		}
+			
+		if (!discoOpGr.get('' + gr.discovery_step.sys_id)) {
+			gs.error(gs.getMessage('Could not find discovery step for type {0}', [type]));
+			return null;
+		}		
+				
+		return discoOpGr;
+	},
+	
+	getStepParameters: function(contextInfo, resourcesInfo) {
+		var ids = [];
+		for (var i = 0; i < resourcesInfo.length; i++)
+			ids.push(resourcesInfo[i].id);
+		
+		var params = {};
+		params.SubscriptionID = contextInfo.serviceAccount;
+		params.ObjectID = ids.join();
+		return params;
+	},
+	
+	getResourceBlockObject: function(response, serviceAccount, ldc, stackId) {
+		var processor = new sn_cmp.ResponseProcessor(serviceAccount, 
+													 ldc,
+													 'Azure API');	
+		
+		processor.addRelatedData(response.operations, 'StoreARMTemplateOperations');
+		processor.addRelatedData(response, 'CheckDeploymentSuccess');
+		
+		return processor.processResponseObject(response, 
+											   'Microsoft.Resources/deployments',
+											   'azure_deployment_create_validator');
+	},		
+	
+	updateStackOutput: function(responseObj, stackId) {
+		var stack = new GlideRecord('sn_cmp_stack');
+		if (stack.get(stackId)) {
+			var outputs = responseObj.properties.outputs;
+			for (var key in outputs)
+				outputs[key] = outputs[key].value;
+			outputs = this.serializeMessage(outputs);
+			if (outputs) {
+				stack.short_description = outputs;
+				stack.update();
+			}		
+		}
+	},
+	
+    type: 'AzureARMResponseProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-23 20:28:46</sys_created_on>
+        <sys_id>fd2946b09fa0720048111f80a57fcf60</sys_id>
+        <sys_mod_count>43</sys_mod_count>
+        <sys_name>AzureARMResponseProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fd2946b09fa0720048111f80a57fcf60</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-20 18:26:50</sys_updated_on>
+    </sys_script_include>
+</record_update>

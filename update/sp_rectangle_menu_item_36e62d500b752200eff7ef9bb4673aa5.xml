@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_rectangle_menu_item">
+    <sp_rectangle_menu_item action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <color>default</color>
+        <condition>gs.isLoggedIn()</condition>
+        <display_1/>
+        <display_2/>
+        <display_date/>
+        <filter/>
+        <glyph/>
+        <hint/>
+        <kb_article/>
+        <kb_category/>
+        <kb_topic/>
+        <label>Pending Requests</label>
+        <order>300</order>
+        <record_script><![CDATA[// maximum number of entries in this Menu
+var max = 30;
+
+var t = data;  // shortcut
+t.items = [];
+
+var u = gs.getUserID();
+
+// use record watchers to tell header when to update dropdown counts
+t.record_watchers = [];
+t.record_watchers.push({'table':'sc_request','filter':'' });
+
+//b029d6da0b212200eff7ef9bb4673a42 sys_id of Cloud Catalog category
+var req_ids = [];
+var cloud_items = new GlideRecord('sc_req_item');
+cloud_items.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+cloud_items.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+cloud_items.addQuery('request.stage','!=','closed_complete');
+cloud_items.addQuery('request.stage','!=','closed_cancelled');
+cloud_items.addQuery('request.stage','!=','closed_incomplete');
+var c1 = cloud_items.addQuery("request.opened_by", u);
+c1.addOrCondition("request.requested_for",u);
+cloud_items.orderByDesc('sys_created_on');
+cloud_items.setLimit(max);
+cloud_items.query();
+
+while(cloud_items.next())
+{
+  var a = {};
+  $sp.getRecordValues(a, cloud_items, 'sys_updated_on');
+  a.number = cloud_items.getDisplayValue('request');
+  a.short_description = cloud_items.cat_item.getDisplayValue() || cloud_items.getDisplayValue("short_description");
+  a.sys_id = cloud_items.getUniqueValue();
+  a.__table = "sc_request";
+  a.type = 'request';
+  a.href = '?id=cloud_requests&category=cloud_activities';
+  //a.sortOrder = z.sys_updated_on.getGlideObject().getNumericValue();
+  t.items.push(a);
+}
+
+t.items.sort(function(a, b) {
+  return b.sortOrder - a.sortOrder;
+});
+t.items = t.items.slice(0, max); // only want first 30
+t.count = t.items.length;
+
+var link = {title: gs.getMessage('View all requests'), type: 'link', href: '?id=cloud_activities&category=cloud_activities', items: []};
+t.items.unshift(link); // put 'View all requests' first]]></record_script>
+        <sc_cat_item/>
+        <sc_category/>
+        <short_description/>
+        <sp_page/>
+        <sp_rectangle_menu display_value="Cloud Header Menu Items">dddd43ddc3212200f7d1ca3adfba8f17</sp_rectangle_menu>
+        <sp_rectangle_menu_item/>
+        <sys_class_name>sp_rectangle_menu_item</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-09-07 11:49:33</sys_created_on>
+        <sys_id>36e62d500b752200eff7ef9bb4673aa5</sys_id>
+        <sys_mod_count>43</sys_mod_count>
+        <sys_name>Pending Requests</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_rectangle_menu_item_36e62d500b752200eff7ef9bb4673aa5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-03 07:42:18</sys_updated_on>
+        <table/>
+        <type>scripted</type>
+        <url/>
+        <url_target/>
+    </sp_rectangle_menu_item>
+    <sys_translated_text action="delete_multiple" query="documentkey=36e62d500b752200eff7ef9bb4673aa5"/>
+</record_update>

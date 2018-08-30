@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_vSphere_Virtual_Response_Processor</name>
+        <resource display_value="vSphere Datacenter">5cc941360b632200e937c97193673a1a</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext) {&#13;
+	var cloudModelString = [];&#13;
+	var apiObj = global.JSON.parse(step);&#13;
+	var nicInfohandler = [];&#13;
+	var vmResponse = global.JSON.parse(response);&#13;
+	var reqContext = global.JSON.parse(requestorContext);&#13;
+	var status_map = { "RUNNING":"on", "SUSPENDED":"paused", "STOP":"off", "TERMINATED":"terminated", "ERROR":"error", "UNRECOGNIZED":"off", "PENDING":"" };&#13;
+	if(Array.isArray(vmResponse))&#13;
+		vmResponse = vmResponse[0];&#13;
+	var vmInfo ={&#13;
+		"cmdb_ci_vmware_instance": {&#13;
+			"validator": "virtual_machine_create_update_validator",&#13;
+			"validator_overrides": { },&#13;
+			"identification": {&#13;
+				"cmdb_ci_cloud_service_account": {&#13;
+					"criterion": {&#13;
+						"object_id" : cloudServiceAccountId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_vcenter_datacenter": {&#13;
+					"criterion": {&#13;
+						"object_id": apiObj.ldcObjectId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_vmware_instance": {&#13;
+					"criterion": {&#13;
+						"object_id": vmResponse.objectId&#13;
+					}&#13;
+				}&#13;
+			},&#13;
+			"attributes": {&#13;
+				"name": vmResponse.nodeName,&#13;
+				"object_id": vmResponse.objectId,&#13;
+				"vm_inst_id": vmResponse.nodeId,&#13;
+				"vcenter_uuid": cloudServiceAccountId,&#13;
+				"state": status_map[vmResponse.state],&#13;
+				"cpus": vmResponse.processors,&#13;
+				"memory": vmResponse.ram,&#13;
+				"disks": getDiskCount(vmResponse),&#13;
+				"disks_size": "",&#13;
+				"nics": "",&#13;
+				"terminated_on": "",&#13;
+				"termination_protection": "",&#13;
+				"ip_address":vmResponse.publicIps[0],&#13;
+				"assigned_to":reqContext.userId,&#13;
+				"assignment_group":reqContext.groupId&#13;
+			},&#13;
+			"references": {&#13;
+				"cmdb_ci_vmware_template": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id" : cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_vcenter_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id" : apiObj.ldcObjectId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_vmware_template": {&#13;
+							"criterion": {&#13;
+								"object_id": vmResponse.imageId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id": vmResponse.imageId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_compute_template": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id" : cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_vcenter_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id" : apiObj.ldcObjectId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_compute_template": {&#13;
+							"criterion": {&#13;
+								"object_id": vmResponse.hardwareId&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id": vmResponse.hardwareId,&#13;
+						"name" : vmResponse.hardwareId&#13;
+					}&#13;
+				},&#13;
+				"cmdb_ci_vcenter_folder": {&#13;
+					"identification": {&#13;
+						"cmdb_ci_cloud_service_account": {&#13;
+							"criterion": {&#13;
+								"object_id": cloudServiceAccountId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_vcenter_datacenter": {&#13;
+							"criterion": {&#13;
+								"object_id": apiObj.ldcObjectId&#13;
+							}&#13;
+						},&#13;
+						"cmdb_ci_vcenter_folder": {&#13;
+							"criterion": {&#13;
+								"object_id": vmResponse.nodeGroup&#13;
+							}&#13;
+						}&#13;
+					},&#13;
+					"attributes": {&#13;
+						"object_id": vmResponse.nodeGroup&#13;
+					}&#13;
+				}&#13;
+			},&#13;
+			"bindings": nicInfohandler&#13;
+		}&#13;
+	};&#13;
+&#13;
+	if(vmResponse.networkInterfaces &amp;&amp; vmResponse.networkInterfaces.length &gt; 0){&#13;
+		for (var i=0; i&lt; vmResponse.networkInterfaces.length; i++){&#13;
+			var nicIdTrim = vmResponse.networkInterfaces[i].networkInterfaceId.split("/");&#13;
+			var nicId;&#13;
+			if (nicIdTrim.length == 2)&#13;
+				nicId = nicIdTrim[1];&#13;
+			else&#13;
+				nicId = nicIdTrim[0];&#13;
+			var endPointId = "nic-" + nicId + "_endpoint";&#13;
+			var nicTemp = {&#13;
+				"attach_to":{&#13;
+					"used_by":{&#13;
+						"endpoint_ci":"cmdb_ci_endpoint_vnic",&#13;
+						"endpoint_identification":{&#13;
+							"object_id": endPointId&#13;
+						}&#13;
+					}&#13;
+				}&#13;
+			};&#13;
+			nicInfohandler.push(nicTemp);&#13;
+		}&#13;
+	}&#13;
+&#13;
+	if (!gs.nil(vmResponse.tagValues)) {&#13;
+		vmInfo["cmdb_ci_vmware_instance"].tagValues = global.JSON.stringify(vmResponse.tagValues);&#13;
+	}&#13;
+	// Defensive Code to handle Empty Volumes Info&#13;
+	function getDiskCount(vmResponse){&#13;
+		var diskCount = 1;&#13;
+		if(vmResponse.volumes.length == 0 || vmResponse.volumes == null)&#13;
+			return diskCount;&#13;
+	}&#13;
+	cloudModelString.push(vmInfo);&#13;
+	return global.JSON.stringify(cloudModelString);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext) {
+	var cloudModelString = [];
+	var apiObj = global.JSON.parse(step);
+	var vmBindings = [];
+	var vmResponse = global.JSON.parse(response);
+	var reqContext = global.JSON.parse(requestorContext);
+	var status_map = { "RUNNING":"on", "SUSPENDED":"paused", "STOP":"off", "TERMINATED":"terminated", "ERROR":"error", "UNRECOGNIZED":"off", "PENDING":"" };
+	if(Array.isArray(vmResponse))
+		vmResponse = vmResponse[0];
+	var vmInfo ={
+		"cmdb_ci_vmware_instance": {
+			"validator": "virtual_machine_create_update_validator",
+			"validator_overrides": { },
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id" : cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_vcenter_datacenter": {
+					"criterion": {
+						"object_id": apiObj.ldcObjectId
+					}
+				},
+				"cmdb_ci_vmware_instance": {
+					"criterion": {
+						"object_id": vmResponse.objectId
+					}
+				}
+			},
+			"attributes": {
+				"name": vmResponse.nodeName,
+				"object_id": vmResponse.objectId,
+				"vm_inst_id": vmResponse.nodeId,
+				"vcenter_uuid": cloudServiceAccountId,
+				"state": status_map[vmResponse.state],
+				"cpus": vmResponse.processors,
+				"memory": vmResponse.ram,
+				"disks": vmResponse.volumes.length,
+				"disks_size": "",
+				"nics": vmResponse.networkInterfaces.length,
+				"terminated_on": "",
+				"termination_protection": "",
+				"ip_address":vmResponse.publicIps[0],
+				"assigned_to":reqContext.userId,
+				"assignment_group":reqContext.groupId
+			},
+			"references": {
+				"cmdb_ci_vmware_template": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id" : cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_vcenter_datacenter": {
+							"criterion": {
+								"object_id" : apiObj.ldcObjectId
+							}
+						},
+						"cmdb_ci_vmware_template": {
+							"criterion": {
+								"object_id": vmResponse.imageId
+							}
+						}
+					},
+					"attributes": {
+						"object_id": vmResponse.imageId
+					}
+				},
+				"cmdb_ci_compute_template": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id" : cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_vcenter_datacenter": {
+							"criterion": {
+								"object_id" : apiObj.ldcObjectId
+							}
+						},
+						"cmdb_ci_compute_template": {
+							"criterion": {
+								"object_id": vmResponse.hardwareId
+							}
+						}
+					},
+					"attributes": {
+						"object_id": vmResponse.hardwareId,
+						"name" : vmResponse.hardwareId
+					}
+				}
+			},
+			"bindings": vmBindings
+		}
+	};
+
+	if(vmResponse.networkInterfaces && vmResponse.networkInterfaces.length > 0){
+		for (var i=0; i< vmResponse.networkInterfaces.length; i++){
+			var nicIdTrim = vmResponse.networkInterfaces[i].networkInterfaceId.split("/");
+			var nicId;
+			if (nicIdTrim.length == 2)
+				nicId = nicIdTrim[1];
+			else
+				nicId = nicIdTrim[0];
+			var endPointId = "nic-" + nicId + "_endpoint";
+			var nicTemp = {
+				"attach_to":{
+					"used_by":{
+						"endpoint_ci":"cmdb_ci_endpoint_vnic",
+						"endpoint_identification":{
+							"object_id": endPointId
+						}
+					}
+				}
+			};
+			vmBindings.push(nicTemp);
+		}
+	}
+
+	if (!gs.nil(vmResponse.nodeGroup)){
+		vmInfo["cmdb_ci_vmware_instance"].references["cmdb_ci_vcenter_folder"] = {
+			"identification": {
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_vcenter_datacenter": {
+					"criterion": {
+						"object_id": apiObj.ldcObjectId
+					}
+				},
+				"cmdb_ci_vcenter_folder": {
+					"criterion": {
+						"object_id": vmResponse.nodeGroup
+					}
+				}
+			},
+			"attributes": {
+				"object_id": vmResponse.nodeGroup
+			}
+		};
+	}
+
+	//Volumes Defensive Code to handle Empty Volumes Info
+	if(vmResponse.volumes.length>0){
+		var volume = vmResponse.volumes[0];
+		var volumeId = vmResponse.volumes[0].VolumeId;
+		var volumeBinding = {
+			"attach_to": {
+				"used_by": {
+					"endpoint_ci": "cmdb_ci_endpoint_block",
+					"endpoint_identification": {
+						"object_id": volumeId
+					}
+				}
+			}
+		};
+		vmBindings.push(volumeBinding);
+		var endpoints = [];
+		var enpoint = {
+			"attach_to":{
+				"implemented_by":{
+					"endpoint_ci":"cmdb_ci_endpoint_block",
+					"endpoint_identification":{
+						"object_id": volumeId
+					},
+					"attributes":{
+						"attachment_info": "leased",
+						"mount_point": '',
+						"attach_time": '',
+						"host": vmResponse.nodeId,
+						"name": volumeId
+					}
+				}
+			}
+		};
+		endpoints.push(enpoint);
+		var volumeData = {
+			"cmdb_ci_storage_volume": {
+				"validator": "default_storage_volume_validator",
+				"validator_overrides": { },
+				"identification": {
+					"cmdb_ci_cloud_service_account": {
+						"criterion": {
+							"object_id": cloudServiceAccountId
+						}
+					},
+					"cmdb_ci_vcenter_datacenter": {
+						"criterion": {
+							"object_id": apiObj.ldcObjectId
+						}
+					},
+					"cmdb_ci_storage_volume": {
+						"criterion": {
+							"object_id": volumeId
+						}
+					}
+				},
+				"attributes": {
+					"object_id": volumeId,
+					"volume_id": volumeId,
+					"name": volumeId,
+					"total_size_gb":volume.SizeInKB/2048,
+					"size_bytes":volume.SizeInKB*1024,
+					"storage_type":"Block",
+					"state":"in_use",
+					"volume_type":volume.accountType ? volume.accountType : "",
+					"assigned_to":reqContext.userId,
+					"assignment_group":reqContext.groupId
+				},
+				"bindings": endpoints
+			}
+		};
+
+		// Include tagValues if there are any
+		if (!gs.nil(volume.tags))
+			volumeData.cmdb_ci_storage_volume.tagValues = global.JSON.stringify(volume.tags);
+
+		cloudModelString.push(volumeData);
+	}
+
+	if (!gs.nil(vmResponse.tags))
+		vmInfo["cmdb_ci_vmware_instance"].tagValues = global.JSON.stringify(vmResponse.tags);
+
+	cloudModelString.push(vmInfo);
+	return global.JSON.stringify(cloudModelString);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-17 15:56:57</sys_created_on>
+        <sys_id>c8219a7e67103200790a6c706785ef05</sys_id>
+        <sys_mod_count>32</sys_mod_count>
+        <sys_name>Create_vSphere_Virtual_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_c8219a7e67103200790a6c706785ef05</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-28 05:55:42</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

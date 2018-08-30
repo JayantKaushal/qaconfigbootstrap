@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="cost" label="Cost" language="en" table="sn_cmp_cost_monthly">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>cost</element>
+            <help/>
+            <hint/>
+            <label>Cost</label>
+            <language>en</language>
+            <name>sn_cmp_cost_monthly</name>
+            <plural>Costs</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 08:47:22</sys_created_on>
+            <sys_id>ad1943640b182300d9f9ad4363673aca</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Cost</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_sn_cmp_cost_monthly_cost_en</sys_update_name>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 08:47:22</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

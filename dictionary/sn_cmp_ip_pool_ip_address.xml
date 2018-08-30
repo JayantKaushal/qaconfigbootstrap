@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Pool IP Address" max_length="40" name="sn_cmp_ip_pool_ip_address" type="collection">
+        <element label="Cloud IP Address" max_length="32" name="cloud_ip_address" reference="cmdb_ci_cloud_ip_address" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="FQDN" max_length="100" name="fqdn" type="string"/>
+        <element label="IP Pool" max_length="32" name="ip_pool" reference="sn_cmp_ip_pool" type="reference"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Used" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Blocked" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Available" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="cloud_ip_address"/>
+        </index>
+        <index name="index2">
+            <element name="ip_pool"/>
+        </index>
+    </element>
+</database>

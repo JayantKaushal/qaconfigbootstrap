@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_ng_pro_sp_widget">
+    <m2m_sp_ng_pro_sp_widget action="INSERT_OR_UPDATE">
+        <sp_angular_provider display_value="cloudDropdownTree">b38c16fc0b422200eff7ef9bb4673a50</sp_angular_provider>
+        <sp_widget display_value="Cloud Header">28303ae00b532200eff7ef9bb4673afd</sp_widget>
+        <sys_class_name>m2m_sp_ng_pro_sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 19:58:39</sys_created_on>
+        <sys_id>fe39617a0b932200eff7ef9bb4673aeb</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>cloudDropdownTree.Cloud Header</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>m2m_sp_ng_pro_sp_widget_fe39617a0b932200eff7ef9bb4673aeb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-28 19:58:39</sys_updated_on>
+    </m2m_sp_ng_pro_sp_widget>
+</record_update>

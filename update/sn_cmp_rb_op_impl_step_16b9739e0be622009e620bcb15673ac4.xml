@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface display_value="">ef3324730b1122004b1b812f15673aeb</capi_interface>
+        <capi_method/>
+        <capi_version/>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <flow_type/>
+        <force_async>false</force_async>
+        <interface/>
+        <interface_operation/>
+        <name>AWS EC2 Compute Cloud API.DestroyNodeArray</name>
+        <operationimpl display_value="ConnectAndDestroyVirtualMachineArray">4789b75e0be622009e620bcb15673aad</operationimpl>
+        <order/>
+        <owner_type>1</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider/>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-21 10:25:54</sys_created_on>
+        <sys_id>16b9739e0be622009e620bcb15673ac4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>AWS EC2 Compute Cloud API.DestroyNodeArray</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_16b9739e0be622009e620bcb15673ac4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-21 10:25:54</sys_updated_on>
+        <target_entity_flow/>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

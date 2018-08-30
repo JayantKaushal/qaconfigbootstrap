@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDisassociateDatacenterAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDisassociateDatacenterAction</name>
+        <script><![CDATA[var CMPDisassociateDatacenterAction = Class.create();
+CMPDisassociateDatacenterAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {			
+			var cloudAccountServiceScript=new sn_cmp_api.CloudAccountServiceScript();
+			var data = cloudAccountServiceScript.disassociateDatacenter(params.datacenterId);
+			return { 'data' : data };	
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get serviceaccount"),
+			"CMPDisassociateDatacenterAction.doAction(): Failed to disassociate datacenter",
+			error
+			);
+		}
+    },
+
+    type: 'CMPDisassociateDatacenterAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-31 08:20:49</sys_created_on>
+        <sys_id>73de64530b6472003bace58525673a19</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPDisassociateDatacenterAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_73de64530b6472003bace58525673a19</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-02 00:27:03</sys_updated_on>
+    </sys_script_include>
+</record_update>

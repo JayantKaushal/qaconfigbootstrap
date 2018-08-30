@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="model_number" label="Model number" language="en" table="cmdb_ci_cmp_vm_instance_price">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>model_number</element>
+            <help/>
+            <hint/>
+            <label>Model number</label>
+            <language>en</language>
+            <name>cmdb_ci_cmp_vm_instance_price</name>
+            <plural>Model numbers</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>system</sys_created_by>
+            <sys_created_on>2018-08-30 08:45:49</sys_created_on>
+            <sys_id>3eb8472c0bd42300d9f9ad4363673a89</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Model number</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_cmdb_ci_cmp_vm_instance_price_model_number_en</sys_update_name>
+            <sys_updated_by>system</sys_updated_by>
+            <sys_updated_on>2018-08-30 08:45:49</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

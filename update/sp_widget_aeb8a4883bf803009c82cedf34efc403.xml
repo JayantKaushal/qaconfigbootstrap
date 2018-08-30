@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $location, cloudEventScope, spUtil) {
+
+	var c = this;
+	c.data.selectedContent = 'isShowStackManage';
+	$scope.spUtil = spUtil;
+
+	function isContentLoaded(contentId) {
+		if (contentId === 'isShowStackManage' && $scope.data.isManageStackWidgetsLoaded)
+			return true;
+
+		if (contentId === 'isShowDependency' && $scope.data.isShowDependencyWidgetsLoaded)
+			return true;
+
+		if (contentId === 'isShowTrackOperation' && $scope.data.isTrackOperationsWidgetsLoaded)
+			return true;
+	}
+
+	function loadContent(contentId) {
+		//If the content is already loaded, just set the tab-id as needed
+		if (isContentLoaded(contentId)) {
+			c.data.selectedContent = contentId;
+			return;
+		}
+		
+		//Otherwise, make a server call to fetch the content and loaded upon successful fetch
+		c.data.contentToLoad = contentId;
+		c.server.update().then(function() {
+			c.data.contentToLoad = '';
+			c.data.selectedContent = contentId;	
+		});
+	}
+
+	cloudEventScope.registerListener('$sp.stack.detail.content', function(e, contentId, data) {
+		loadContent(contentId);
+	}, $scope);
+
+	cloudEventScope.registerListener("$sp.resource.operation_cat_item.submit", function(event, contentId, data) {
+		loadContent('isShowTrackOperation');
+	}, $scope);
+
+	cloudEventScope.registerListener("$sp.stack.operation_cat_item.submit", function(event, data) {
+		loadContent('isShowTrackOperation');
+	}, $scope);
+	
+	var cloudStackUpdateListener = cloudEventScope.registerListener("cloudStackUpdated", function(event, sysId) {
+		if (sysId == c.data.selected_card) {
+			c.data.isPropertyWidgetLoaded = false;
+			spUtil.update($scope);
+		}
+	}, $scope);
+	
+	var cardChangeListener = cloudEventScope.registerListener('cloudResourceCardEvent', function(e,info) {
+		$location.search(info.url).search('spa', '1').replace();
+		c.data.isPropertyWidgetLoaded = false;
+		spUtil.update($scope);
+	},  $scope);
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.padding-none {&#13;
+  padding: 0; &#13;
+}&#13;
+&#13;
+.sd-content {&#13;
+  height: calc(100vh - calc($cloud-stacks-details-header-height + $panel-margin));&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-details</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+
+}
+]]></link>
+        <name>Cloud Stack Details</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	data.stack_id = $sp.getParameter('sys_id');
+	data.selected_card = $sp.getParameter('selected_card');
+
+	var contentId;
+	if (input && input.contentToLoad)
+		contentId = input.contentToLoad;
+
+	//select manage stack by default
+	if (!contentId)
+		contentId = 'isShowStackManage';
+	
+	if (contentId == 'isShowStackManage' && (!input || !input.isManageStackWidgetsLoaded)) {
+		data.stackResourceCards = $sp.getWidget('cloud-resource-cards');
+ 		getPropertyWidget();
+		data.stackActivitiesTab = $sp.getWidget('cloud-stack-activities-tabs');
+		data.isManageStackWidgetsLoaded = true;
+	} else if (contentId == 'isShowStackManage' && (!input || !input.isPropertyWidgetLoaded)) {
+		// Load only properties widget. 
+		getPropertyWidget();
+		input.isPropertyWidgetLoaded = true;
+	} else if (contentId == 'isShowDependency' && (!input || !input.isShowDependencyWidgetsLoaded)) {
+		data.stackDependencyMap = $sp.getWidget('cloud-dependency-view-popup');
+		data.isShowDependencyWidgetsLoaded = true;
+	} else if (contentId == 'isShowTrackOperation' && (!input || !input.isTrackOperationsWidgetsLoaded)) {
+		data.stackResourceCards = $sp.getWidget('cloud-resource-cards');
+		data.trackOperation = $sp.getWidget('cloud-stack-request', data);
+		data.isTrackOperationsWidgetsLoaded = true;
+	}
+	
+	function getPropertyWidget() {
+		data.widgetOptions = getPropertyWidgetData();
+		data.stackProperties = $sp.getWidget('cmp_properties', data.widgetOptions);
+	}
+	
+	
+	function getPropertyWidgetData(){
+		var widgetOptions = { propertyData: [] };
+		
+		var helper = new sn_cmp.CMPPortalHelper();
+		
+		if ( data.stack_id == data.selected_card ) {
+			var queryObj = {table: "sn_cmp_stack", sys_id : data.stack_id, view: "User_Portal"};
+			var result = helper.getProperties(queryObj);
+			widgetOptions.propertyData.push({title: gs.getMessage("Properties"), properties:result});
+			
+		} else {
+			
+			var stackItemProp = helper.getStackItemProperties(data.selected_card);
+			var msg;
+			if (stackItemProp.status == 3) {
+				msg = gs.getMessage("Error has occured during resource creation");
+				widgetOptions.propertyData.push({title: gs.getMessage("Properties"), properties:[]});
+				widgetOptions['message'] = msg;
+				return widgetOptions;
+			}
+			
+			if(stackItemProp.status != 3 && !stackItemProp.ci_instance_id) {
+				msg = gs.getMessage("The resource is processing..Please Wait.");
+				widgetOptions.propertyData.push({title: gs.getMessage("Properties"), properties:[]});
+				widgetOptions['message'] = msg;
+				return widgetOptions;
+			}
+			
+			var stackItemTags = helper.getTagsForResources(data.stack_id);
+			widgetOptions.propertyData.push({title: gs.getMessage("Properties"), properties:[stackItemProp.attributes]});
+			widgetOptions.propertyData.push({title: gs.getMessage("Tags"), properties:[stackItemTags]});	
+		}
+		
+		return widgetOptions;
+	}
+	
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-20 11:58:52</sys_created_on>
+        <sys_id>aeb8a4883bf803009c82cedf34efc403</sys_id>
+        <sys_mod_count>190</sys_mod_count>
+        <sys_name>Cloud Stack Details</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_aeb8a4883bf803009c82cedf34efc403</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 23:36:08</sys_updated_on>
+        <template><![CDATA[<div class="sd-content" ng-if="c.data.selectedContent == 'isShowStackManage'">
+    <div class="col-md-2">
+      <sp-widget widget="data.stackResourceCards"></sp-widget>
+    </div>
+    <div class="col-md-3 height100 childDivHeight">
+      <sp-widget widget="data.stackProperties"></sp-widget>
+    </div>
+    <div class="col-md-7">
+      <sp-widget widget="data.stackActivitiesTab"></sp-widget>
+    </div>
+</div>
+<div class="sd-content" ng-if="c.data.selectedContent == 'isShowDependency'">
+    <sp-widget widget="data.stackDependencyMap"></sp-widget>
+</div>
+<div class="sd-content" ng-if="c.data.selectedContent == 'isShowTrackOperation'">
+    <div class="col-md-2">
+      <sp-widget widget="data.stackResourceCards"></sp-widget>
+    </div>
+    <div class="col-md-10">
+      <sp-widget widget="data.trackOperation"></sp-widget>
+    </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

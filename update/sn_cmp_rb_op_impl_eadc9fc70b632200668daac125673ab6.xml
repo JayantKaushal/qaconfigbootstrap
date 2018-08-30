@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl">
+    <sn_cmp_rb_op_impl action="INSERT_OR_UPDATE">
+        <interface display_value="InternetGateway Interface">f18d3e420ba32200668daac125673af1</interface>
+        <operation display_value="Internet Gateway Detach Network">eadc9fc70b632200668daac125673ab4</operation>
+        <operation_output_attributes/>
+        <resource display_value="Internet Gateway">7d8d3e420ba32200668daac125673af2</resource>
+        <sys_class_name>sn_cmp_rb_op_impl</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-12 09:17:59</sys_created_on>
+        <sys_id>eadc9fc70b632200668daac125673ab6</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>eadc9fc70b632200668daac125673ab4</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_eadc9fc70b632200668daac125673ab6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-12 09:17:59</sys_updated_on>
+    </sn_cmp_rb_op_impl>
+</record_update>

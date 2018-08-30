@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudChangeUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudChangeUtil</name>
+        <script><![CDATA[var CloudChangeUtil = Class.create();
+CloudChangeUtil.prototype = {
+    initialize: function() {
+    },
+	
+	createChange : function(reqId, changeType, assignmentGroup, operationName, resourceName, configurationItem){
+		var gr = new GlideRecord('sc_req_item');
+		if(!gr.get(reqId)) {
+			return '';
+		}
+		if(gs.nil(resourceName)){
+			resourceName = current.configuration_item.name+'';
+		}
+		var change_shortDescription = 'Change Created for ' + operationName + ' Operation on "' + resourceName + '"';
+		var change_requestedBy = gr.request.opened_by + "";
+		var change_ci = configurationItem;
+
+		var changeRequest = global.ChangeRequest.newChange(changeType);
+		changeRequest.setValue("requested_by",change_requestedBy);
+		changeRequest.setValue("opened_by",change_requestedBy);
+		changeRequest.setValue("category", "Cloud Management");
+		changeRequest.setValue("cmdb_ci", change_ci);
+		changeRequest.setValue("start_date", new GlideDateTime());
+		var endDate = new GlideDateTime();
+		endDate.addDaysUTC(2);
+		changeRequest.setValue("end_date", endDate);
+		changeRequest.setValue("short_description", change_shortDescription);
+		changeRequest.setValue("priority","4"); // hardcoded for now, should come from policy
+		changeRequest.setValue("risk","3"); // hardcoded for now, should come from policy
+		changeRequest.setValue("assignment_group", assignmentGroup);
+		changeRequest.requestApproval();
+		changeRequest.update();
+		var changeGr = changeRequest.getGlideRecord();
+		return changeGr.sys_id; // TODO: null check
+	},
+
+    type: 'CloudChangeUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-22 22:27:55</sys_created_on>
+        <sys_id>7414c1aa870532006a13f4bbe3e3eccd</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>CloudChangeUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_7414c1aa870532006a13f4bbe3e3eccd</sys_update_name>
+        <sys_updated_by>abel.tuter</sys_updated_by>
+        <sys_updated_on>2018-03-21 22:44:40</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="OperationImplementationParameter" max_length="40" name="sn_cmp_rb_op_impl_param" type="collection">
+        <element attributes="no_sort=true,slushbucket_ref_no_expand=true" label="Applicable To" max_length="4000" name="applicable_to" reference="sn_cmp_rb_resourceblock" type="glide_list"/>
+        <element choice="1" label="DataSource" max_length="40" name="datasource" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Text" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Pools" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="CSVList" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Array" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="FormData" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="ResourceScript" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="TLR" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="Reference" sequence="10" value="10"/>
+                <element inactive_on_update="false" label="Reference" sequence="10" value="10"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Datasource Value" max_length="1000" name="datasourcevalue" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Mapping" max_length="1000" name="defaultvalue" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Error Text" max_length="4000" name="error_text" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Help Text" max_length="4000" name="help_text" type="string"/>
+        <element label="Host" max_length="32" name="host" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Mandatory" max_length="40" name="ismandatory" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element label="Operation" max_length="32" name="operation" reference="sn_cmp_rb_op_impl" reference_cascade_rule="delete" type="reference"/>
+        <element default="1" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element label="Read Only" max_length="40" name="read_only" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Regex" max_length="4000" name="regex" type="string"/>
+        <element label="Step" max_length="32" name="step" reference="sn_cmp_rb_op_impl_step" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="UI Data Type" max_length="40" name="ui_data_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Grid" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Date" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="DateTime" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Hidden" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="MultiSelect" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Password" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="Select" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="TextArea" sequence="8" value="8"/>
+                <element inactive_on_update="false" label="TextBox" sequence="9" value="9"/>
+                <element inactive_on_update="false" label="LookupSelect" sequence="10" value="10"/>
+                <element inactive_on_update="false" label="Reference" sequence="11" value="11"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Default Value" max_length="200" name="value" type="string"/>
+        <element label="Create Form Parameter" max_length="40" name="visibilty" type="boolean"/>
+        <index name="index">
+            <element name="host"/>
+        </index>
+        <index name="index2">
+            <element name="step"/>
+        </index>
+        <index name="index3">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

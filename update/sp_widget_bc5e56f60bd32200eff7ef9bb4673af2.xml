@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $http, spUtil, $rootScope, $location,$timeout) {
+	$scope.timeout = $timeout;
+	$scope.submitted = false;
+	$scope.g_form = null;
+
+	getQuotaInfo = function(quota_info){
+		$rootScope.$broadcast('quota.info.changed', quota_info);
+	}
+	
+	getCostInfo = function(cost_info){
+		$rootScope.$broadcast('cost.info.changed', cost_info);
+	}	
+
+	var bc = [{label: "Cloud Catalog", url: '?id=cloud_catalog&category=cloud_catalog'}];
+	if($scope.data.category)
+		bc[bc.length] = {label: $scope.data.category.name, url: '?id=cloud_catalog&category=cloud_category&sys_id='+$scope.data.category.sys_id};
+	else
+		bc[bc.length] = {label: '${All Items}', url: '?id=cloud_catalog&category=cloud_category'};
+	
+	this.pageChange = function(state) {
+		var id = $scope.data.variable_sets[state.currentPage].id;
+		var currentVarSet = $scope.data.sc_cat_item._fields[id];
+		// Moving to using the field as suggested by ServiceCatalog team. To be revisited in Madrid and use an alternative api.
+		//Going with defensive approch, as property is different in first time and after load, setting both of them
+		currentVarSet._visible = true;
+		currentVarSet.visible = true;
+
+		var prevId = $scope.data.variable_sets[state.previousPage].id;
+		var prevVarSet = $scope.data.sc_cat_item._fields[prevId];
+		// Moving to using the field as suggested by ServiceCatalog team. To be revisited in Madrid and use an alternative api.
+		prevVarSet._visible = false;
+		prevVarSet.visible = false;
+	};
+
+	this.save = function() {
+		if($scope.g_form)
+			$scope.g_form.submit();
+	};
+
+	this.cancel = function() {
+	};
+
+	if ($scope.data.sc_cat_item) {
+		//setting variable to null for first time loading
+		transactionStatus = null;
+		//initially to hide all the variables in a cloud catalog item
+		var ui_groups_map = {};
+
+		var count = 0;
+		angular.forEach($scope.data.variable_sets , function(v_set){
+			var field = $scope.data.sc_cat_item._fields[v_set.id];
+			if(count>0) {
+				// Going with defensive approch, as property is different in first time and after load, setting both of them
+				field.visible = false;
+				field._visible = false;
+			}
+			count++;
+		});
+
+		bc[bc.length] = {label: $scope.data.sc_cat_item.name, url: '#'};
+		$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+		spUtil.setSearchPage('sc');
+	}
+
+	$scope.$on('spModel.gForm.initialized', function(e, gFormInstance){
+
+		$scope.g_form = gFormInstance;
+
+		// This runs after all onSubmit scripts have executed
+		$scope.g_form.$private.events.on('submitted', function(){
+			getOne();
+		});
+
+		//This runs when the gform submit is initiated
+		$scope.g_form.$private.events.on('onSubmit', function(){
+			$scope.submitted = true;
+			$scope.$broadcast('spModel.gForm.onSubmit',$scope.submitted);
+		});
+
+	});
+
+	// create request
+	function getOne() {
+
+		function getVarData(fields) {
+			var reqData = {};
+			for(var obj in fields)
+				reqData[fields[obj].name] = fields[obj].value;
+			return reqData;
+		}
+
+		var baseUrl = "/api/sn_sc/v1/servicecatalog/";
+
+		var request = {'sysparm_quantity': 1, 'variables': getVarData($scope.data.sc_cat_item._fields), 'get_portal_messages': 'true', sysparm_no_validation: 'true'};
+		$http.post(baseUrl + "items/" + $scope.data.sys_id + "/order_now", request).then(function(response){
+			$scope.$emit("$$uiNotification", response.data.result.$$uiNotification);
+			var request_id = response.data.result.number;
+			if(request_id)
+				$location.url("?id=cloud_activities&category=cloud_activities");
+		},null);
+	}
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.main-panel {
+  position:fixed;
+  width: 74%;
+}
+
+.pane {
+  min-height:310px;
+}
+
+.pane .panel {
+  min-height: 360px;
+  max-height: 360px;
+  overflow-y:auto;
+}
+
+.nav-button {
+  height: 46px;
+  width: 5%;
+  margin-bottom: 15px;
+  margin-top: -35px;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.form-tabs {
+  height: 46px;
+  width: 88%;
+  margin-bottom: 15px;
+  margin-top: -35px;
+  margin-left: 1px;
+
+  .btn:not(:last-child)::after,
+  .btn-primary:not(:last-child)::after {
+    display: block;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+    top: 6px;
+    right: -15px;
+    background-color: transparent;
+    content: "";
+    transform: rotate(45deg);
+    border-top: 1px solid rgb(189, 192, 196);
+    border-right: 1px solid rgb(189, 192, 196);
+    z-index: 1;
+  }
+
+  .btn {
+    height: 100%;
+    color: #343D47;
+    border-color: rgb(189, 192, 196);
+  }
+  .btn:hover {
+    background-color: transparent;
+    border-color: rgb(189, 192, 196);
+  }
+
+  .btn:focus {
+    outline: none;
+    box-shadow: none;
+    border-bottom: 3px solid #428bca;
+  }
+
+  .btn-primary {
+    background-color: transparent;
+    font-weight: bold;
+    border-bottom: 3px solid #428bca;
+    pointer-events: none;
+  }
+
+  .btn:first-child:not(:last-child),
+  .btn:not(:last-child){
+    border-right: none;
+  }
+
+  .btn:last-child:not(:first-child),
+  .btn:not(:first-child){
+    border-left: none;
+  }
+}
+
+.pull-right {
+  height: 46px;
+  bottom: 75px;
+
+  .btn {
+    height: 100%;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background-color: #428bca;
+    border-color: #428bca;
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background-color: #2a6496;
+  }
+}
+
+fieldset legend {
+	display: none;
+}
+
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-catalog-item-wizard</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attr,ctrl) {
+
+	scope.timeout(function(){
+		var no_of_tabs = parseInt(ctrl.data.variable_set_names.length);
+		var tab_width = (100/no_of_tabs) + '%';
+		$('.form-tabs button').css('width',tab_width);
+		resize_window();
+	});
+
+	scope.$on('spModel.gForm.onSubmit', function(e, submittedFlag){
+		if(submittedFlag)
+			$('#catItemSubmit').attr('disabled','disabled');
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window() {
+		var panel_height = ($(document).height()- 381) + 'px';
+		$(el).find('.pane .panel').css('max-height',panel_height);
+		$(el).find('.pane .panel').css('min-height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Catalog Item Wizard</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.variable_sets = [];
+	data.variable_set_names = [];
+	data.submitMsg = gs.getMessage("Submit");
+	data.submittedMsg = gs.getMessage("Submitted");
+	if (input)
+		data.sys_id = input.sys_id;
+	else
+		data.sys_id = $sp.getParameter("sys_id") || $sp.getParameter('sl_sys_id');
+
+	data.sc_catalog_page = "cloud_catalog";
+		// using is_ordering parmeter to the appi as true.
+        data.sc_cat_item = $sp.getCatalogItem(data.sys_id,true);
+	if(!data.sc_cat_item.can_view){
+		data.sc_cat_item = undefined;
+		return;
+	}
+
+	if(data.sc_cat_item.category) {
+		var categoryGR = new GlideRecord('sc_category');
+		categoryGR.get(data.sc_cat_item.category);
+		data.category = {
+			name: categoryGR.getDisplayValue('title'),
+			sys_id: categoryGR.getUniqueValue()
+		};
+	}
+
+	data.sc_cat_item._sections.forEach(function(section){
+		var obj = {};
+		obj.id = section.id;
+		obj.name = section.caption;
+		data.variable_set_names.push(obj.name);
+		obj.columns = section.columns;
+		data.variable_sets.push(obj);
+	});
+
+	$sp.logStat('Catalog View', data.sc_cat_item.sys_class_name, data.sys_id, data.sc_cat_item.name);
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 23:50:37</sys_created_on>
+        <sys_id>bc5e56f60bd32200eff7ef9bb4673af2</sys_id>
+        <sys_mod_count>862</sys_mod_count>
+        <sys_name>Cloud Catalog Item Wizard</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_bc5e56f60bd32200eff7ef9bb4673af2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-17 18:20:01</sys_updated_on>
+        <template><![CDATA[<div class="panel b main-panel">
+  <div class="panel-body">
+    <div class="catalog-item-header" style="height:60px;">
+      <h1 class="h2 m-t-none m-b-none">{{::data.sc_cat_item.name}}</h1>
+      <div class="text-muted" style="width: 90%;">{{::data.sc_cat_item.short_description}}</div>
+    </div>
+    <catalog-wizard has-save="true"
+                    has-breadcrumbs="true"
+                    save-text="{{data.submitMsg}}"
+                    on-page-change="c.pageChange(state);"
+                    on-cancel="c.cancel();"
+                    on-save="c.save();">
+
+      <catalog-wizard-page ng-repeat="v_set in data.variable_set_names" page-tag="{{v_set}}"/>
+      <div class="pane">
+        <div id="sc_cat_item" >
+          <div class="row" ng-if="::data.sc_cat_item" >
+            <div class="panel panel-default" style="width: 100%;">
+              <div >
+                <sp-cat-item item="::data.sc_cat_item" />
+                <form>
+                  <div ng-class="{'wrapper-md': data.sc_cat_item._view.length}">
+                    <!-- display view and model -->
+                    <sp-model form-model="::data.sc_cat_item" mandatory="mandatory"></sp-model>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div ng-if="::!data.sc_cat_item" >
+          <div class="panel panel-default" ng-if="::data.sys_id">
+            <div class="panel-heading"><h4 class="panel-title">${Item not found: {{::data.sys_id}}}</h4></div>
+            <div class="panel-body wrapper">
+              <p>${This item is not found or currently not available}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </catalog-wizard>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

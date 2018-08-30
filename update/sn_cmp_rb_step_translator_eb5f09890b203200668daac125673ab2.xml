@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>2</order>
+        <script display_value="Create_node_creds_and_associate_to_mgmt_creds_response_processor">8ac8b8c10b203200668daac125673aa8</script>
+        <step display_value="Compute Interface.CreateNode">40b9ff5e0be622009e620bcb15673af1</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-24 10:54:48</sys_created_on>
+        <sys_id>eb5f09890b203200668daac125673ab2</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_eb5f09890b203200668daac125673ab2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-19 19:20:16</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

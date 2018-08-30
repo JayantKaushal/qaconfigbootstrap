@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateResourceOpInterfaceAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateResourceOpInterfaceAction</name>
+        <script><![CDATA[var CMPUpdateResourceOpInterfaceAction = Class.create();
+CMPUpdateResourceOpInterfaceAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+
+			var executionPlanGenerator = new CMPBPExecutionPlanGenerator();
+			var updateOperation = executionPlanGenerator.changeInterfaceOfStageResource(params.blueprintId, params.blueprintOperationId, params.stageResorceOperationId, params.operationImplId, params.stageResorceId, params.interfaceId, params.conditionText);
+
+			return updateOperation;
+
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update resource operation interface."),
+				"CMPUpdateResourceOpInterfaceAction.doAction(): Failed to update interface.",
+				error
+			);
+		}
+
+    },
+
+    type: 'CMPUpdateResourceOpInterfaceAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-25 08:41:09</sys_created_on>
+        <sys_id>a6d391e30b9103003bace58525673ab0</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>CMPUpdateResourceOpInterfaceAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_a6d391e30b9103003bace58525673ab0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-26 11:04:07</sys_updated_on>
+    </sys_script_include>
+</record_update>

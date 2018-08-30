@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_policy">
+    <sys_ui_policy action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <conditions table="sn_cmp_response_mapping">attribute_value_type=scripted^EQ<item endquery="false" field="attribute_value_type" goto="false" newquery="false" operator="=" or="false" value="scripted"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </conditions>
+        <description/>
+        <global>true</global>
+        <inherit>false</inherit>
+        <isolate_script>false</isolate_script>
+        <model_id/>
+        <model_table/>
+        <on_load>true</on_load>
+        <order>600</order>
+        <reverse_if_false>true</reverse_if_false>
+        <run_scripts>true</run_scripts>
+        <script_false><![CDATA[function onCondition() {
+
+}]]></script_false>
+        <script_true><![CDATA[function onCondition() {
+	// If showing script, if it's empty, populate a skeleton
+	if (g_form.getValue('script') == '') {
+		var skeletonScript = '// Do not remove function declaration'
+		                  + '\n/** Input parameters'
+					      + '\n* @param rawObject - the full unprocessed data item (Javascript object)'
+						  + '\n* @param sourceFieldValue - the value of the source field defined on the mapping'
+						  + '\n* '
+						  + '\n* @returns value to assign to mapped table field'
+						  + '\n*/'
+						  + '\ngetValue(global.JSON.parse(rawObject), global.JSON.parse(sourceFieldValue));'
+		                  + '\nfunction getValue(rawObject, sourceFieldValue) {'
+		                  + '\n\tvar value;'
+		                  + '\n\n\t// TODO: write script to set desired value'
+		                  + '\n\n\treturn value;'
+						  + '\n}';
+		g_form.setValue('script', skeletonScript);  
+	}
+}]]></script_true>
+        <set_values/>
+        <short_description>Show script field</short_description>
+        <sys_class_name>sys_ui_policy</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-11-21 12:03:15</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>5e397fd49f93220048111f80a57fcf26</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>Show script field</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_policy_5e397fd49f93220048111f80a57fcf26</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-01-30 22:19:18</sys_updated_on>
+        <table>sn_cmp_response_mapping</table>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_ui_policy>
+</record_update>

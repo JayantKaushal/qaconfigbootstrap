@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource operation catalog mapping" max_length="40" name="sn_cmp_rb_op_cat_map" type="collection">
+        <element label="Catalog item" max_length="32" name="cat_item" reference="sc_cat_item" type="reference"/>
+        <element label="Operation" mandatory="true" max_length="32" name="operation" reference="sn_cmp_rb_op_signature" type="reference"/>
+        <element display="true" label="Resource block" mandatory="true" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <index name="index">
+            <element name="cat_item"/>
+        </index>
+        <index name="index2">
+            <element name="resource_block"/>
+        </index>
+        <index name="index3">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

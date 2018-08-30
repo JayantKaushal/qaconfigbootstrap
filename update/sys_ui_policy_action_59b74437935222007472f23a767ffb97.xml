@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_policy_action">
+    <sys_ui_policy_action action="INSERT_OR_UPDATE">
+        <cleared>false</cleared>
+        <disabled>ignore</disabled>
+        <field>script</field>
+        <mandatory>ignore</mandatory>
+        <sys_class_name>sys_ui_policy_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-12 22:23:59</sys_created_on>
+        <sys_id>59b74437935222007472f23a767ffb97</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>script</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_policy_action_59b74437935222007472f23a767ffb97</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-10-12 22:24:56</sys_updated_on>
+        <table>sn_cmp_rp_filter</table>
+        <ui_policy display_value="Show script field if filter type is script">1377c037935222007472f23a767ffb8a</ui_policy>
+        <visible>true</visible>
+    </sys_ui_policy_action>
+</record_update>

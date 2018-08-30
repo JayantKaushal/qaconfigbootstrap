@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>List_Networks_Response_Processor</name>
+        <resource display_value="vSphere Datacenter">5cc941360b632200e937c97193673a1a</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId,step, requestorContext) {&#13;
+var cloudModelString = [];&#13;
+var reqContext = global.JSON.parse(requestorContext);&#13;
+var stepObject = new global.JSON().decode(step);&#13;
+var ldcObjectId= stepObject.ldcObjectId;&#13;
+	&#13;
+var identification = [&#13;
+    {&#13;
+        "cmdb_ci_vcenter_datacenter":&#13;
+        {&#13;
+            "identification":&#13;
+             {&#13;
+                "cmdb_ci_cloud_service_account": {&#13;
+                    "criterion": {&#13;
+                        "object_id": cloudServiceAccountId&#13;
+                    }&#13;
+                },&#13;
+                "cmdb_ci_vcenter_datacenter": {&#13;
+                    "criterion": {&#13;
+                        "object_id":ldcObjectId&#13;
+                    }&#13;
+                }&#13;
+            }&#13;
+        }&#13;
+    }&#13;
+ ];&#13;
+&#13;
+var cloudModelScript = new sn_cmp_api.CloudModelProcessorScript();&#13;
+var ciPayload = cloudModelScript.retrieveCIs(global.JSON.stringify(identification), "shallow");&#13;
+var ci = global.JSON.parse(ciPayload);&#13;
+var ldcSysId = ci.cmdb_ci_vcenter_datacenter.sys_id;&#13;
+	&#13;
+var gRelType = new GlideRecord('cmdb_rel_type');&#13;
+gRelType.query('name','Hosted on::Hosts');&#13;
+if(gRelType.next())&#13;
+typeId  = gRelType.getUniqueValue();&#13;
+&#13;
+var grRel = new GlideRecord('cmdb_ci_port_group');&#13;
+var join = grRel.addJoinQuery('cmdb_rel_ci', 'parent', 'sys_id');&#13;
+join.addCondition('type',typeId);&#13;
+join.addCondition('child',ldcSysId);&#13;
+grRel.query();&#13;
+	&#13;
+while(grRel.next()) {&#13;
+	var pgType = grRel.getValue('sys_class_name');&#13;
+	//Allow only portGroups of class - VMware Distributed Virtual Port Group&#13;
+	if(pgType.equals('cmdb_ci_vcenter_dv_port_group')){&#13;
+		var pgName = grRel.getValue('name');&#13;
+		//Ignore uplinks &amp; switches&#13;
+		if(pgName &amp;&amp; (pgName.toLowerCase().contains('uplinks') || pgName.toLowerCase().contains('switch'))) &#13;
+			continue; &#13;
+&#13;
+		var portGrpObjId=grRel.getValue('object_id');&#13;
+&#13;
+		var networkIdentification =[{&#13;
+		   "cmdb_ci_network":{&#13;
+			  "validator":"network_create_validator",&#13;
+			  "identification":{&#13;
+				 "cmdb_ci_cloud_service_account":{&#13;
+					"criterion":{&#13;
+					   "object_id":cloudServiceAccountId&#13;
+					}&#13;
+				 },&#13;
+				 "cmdb_ci_vcenter_datacenter":{&#13;
+					"criterion":{&#13;
+					   "object_id":ldcObjectId&#13;
+					}&#13;
+				 },&#13;
+				  "cmdb_ci_network":{&#13;
+					  "criterion":{&#13;
+					   "object_id":portGrpObjId&#13;
+					}&#13;
+				  }&#13;
+			  },&#13;
+			  "attributes":{&#13;
+				 "name":pgName,&#13;
+				 "state":"available"&#13;
+			  }&#13;
+		   }&#13;
+		}];&#13;
+		cloudModelScript.createOrUpdateCI(cloudServiceAccountId,stepObject.ldcObjectId,networkIdentification);&#13;
+	}&#13;
+}&#13;
+ &#13;
+gs.info('Existing LDC relationship of Port Group: ' + current.getValue('object_id') + ' is : ' + ldc);&#13;
+return global.JSON.stringify(cloudModelString);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId,step, requestorContext) {
+var cloudModelString = [];
+var reqContext = global.JSON.parse(requestorContext);
+var stepObject = new global.JSON().decode(step);
+var ldcObjectId= stepObject.ldcObjectId;
+	
+var identification = [
+    {
+        "cmdb_ci_vcenter_datacenter":
+        {
+            "identification":
+             {
+                "cmdb_ci_cloud_service_account": {
+                    "criterion": {
+                        "object_id": cloudServiceAccountId
+                    }
+                },
+                "cmdb_ci_vcenter_datacenter": {
+                    "criterion": {
+                        "object_id":ldcObjectId
+                    }
+                }
+            }
+        }
+    }
+ ];
+
+var cloudModelScript = new sn_cmp_api.CloudModelProcessorScript();
+var ciPayload = cloudModelScript.retrieveCIs(global.JSON.stringify(identification), "shallow");
+var ci = global.JSON.parse(ciPayload);
+var ldcSysId = ci.cmdb_ci_vcenter_datacenter.sys_id;
+	
+var gRelType = new GlideRecord('cmdb_rel_type');
+gRelType.query('name','Hosted on::Hosts');
+if(gRelType.next())
+typeId  = gRelType.getUniqueValue();
+
+var grRel = new GlideRecord('cmdb_ci_port_group');
+var join = grRel.addJoinQuery('cmdb_rel_ci', 'parent', 'sys_id');
+join.addCondition('type',typeId);
+join.addCondition('child',ldcSysId);
+grRel.query();
+	
+while(grRel.next()) {
+	var pgType = grRel.getValue('sys_class_name');
+	//Allow only portGroups of class - VMware Distributed Virtual Port Group
+	if(pgType.equals('cmdb_ci_vcenter_dv_port_group')){
+		var pgName = grRel.getValue('name');
+		//Ignore uplinks & switches
+		if(pgName && (pgName.toLowerCase().contains('uplinks') || pgName.toLowerCase().contains('switch'))) 
+			continue; 
+
+		var portGrpObjId=grRel.getValue('object_id');
+
+		var networkIdentification =[{
+		   "cmdb_ci_network":{
+			  "validator":"network_create_validator",
+			  "identification":{
+				 "cmdb_ci_cloud_service_account":{
+					"criterion":{
+					   "object_id":cloudServiceAccountId
+					}
+				 },
+				 "cmdb_ci_vcenter_datacenter":{
+					"criterion":{
+					   "object_id":ldcObjectId
+					}
+				 },
+				  "cmdb_ci_network":{
+					  "criterion":{
+					   "object_id":portGrpObjId
+					}
+				  }
+			  },
+			  "attributes":{
+				 "name":pgName,
+				 "state":"available"
+			  }
+		   }
+		}];
+		cloudModelScript.createOrUpdateCI(cloudServiceAccountId,stepObject.ldcObjectId,networkIdentification);
+	}
+}
+ 
+gs.info('Existing LDC relationship of Port Group: ' + current.getValue('object_id') + ' is : ' + ldc);
+return global.JSON.stringify(cloudModelString);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-05-09 16:14:23</sys_created_on>
+        <sys_id>593747b20ba23200222b403f15673acf</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>List_Networks_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_593747b20ba23200222b403f15673acf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-09 04:36:25</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

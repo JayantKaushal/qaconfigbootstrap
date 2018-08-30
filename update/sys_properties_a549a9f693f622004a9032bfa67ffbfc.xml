@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>The target size (in bytes) for billing data chunks sent by a MID server to the instance.</description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>sn_cmp.billing.page_size</name>
+        <read_roles/>
+        <suffix>billing.page_size</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-03 23:27:27</sys_created_on>
+        <sys_id>a549a9f693f622004a9032bfa67ffbfc</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>sn_cmp.billing.page_size</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_properties_a549a9f693f622004a9032bfa67ffbfc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-26 19:43:43</sys_updated_on>
+        <type>integer</type>
+        <value>3000000</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=a549a9f693f622004a9032bfa67ffbfc"/>
+</record_update>

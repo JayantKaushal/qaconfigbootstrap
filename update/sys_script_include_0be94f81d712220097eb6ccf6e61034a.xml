@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintSCAjax</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>BlueprintSCAjax</name>
+        <script><![CDATA[var BlueprintSCAjax = Class.create();
+BlueprintSCAjax.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	validateVariableValue : function() {
+		var variableSysId = this.getParameter("variableSysId");
+		var retval = new BlueprintSCValidator().validateVariableValue(this.getParameter("parameterValue"), variableSysId);
+		return new global.JSON().encode(retval);
+	},
+	
+	_getVariableSysId : function(control_id) {
+		var sys_id = '' + control_id;
+		if ( control_id.startsWith('IO:') ){
+			// for request item page
+			sys_id = control_id.substring('IO:'.length);
+		} else if ( control_id.startsWith('ni.VE')) {
+			// for catalog item order page
+			var item_option_id = control_id.substring('ni.VE'.length);
+			var item_option = new GlideRecord('sc_item_option');
+			item_option.get(item_option_id);
+			sys_id = '' + item_option.item_option_new.sys_id;
+		}
+		
+		return sys_id;
+	},
+	
+    type: 'BlueprintSCAjax'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-04 23:33:40</sys_created_on>
+        <sys_id>0be94f81d712220097eb6ccf6e61034a</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>BlueprintSCAjax</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0be94f81d712220097eb6ccf6e61034a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-30 02:15:28</sys_updated_on>
+    </sys_script_include>
+</record_update>

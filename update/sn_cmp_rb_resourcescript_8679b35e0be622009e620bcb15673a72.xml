@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>List_KeyPairs_Response_Processor</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) {&#13;
+			var cloudModelString = [];&#13;
+			var keyPairsArray = global.JSON.parse(response);&#13;
+			var serviceAccountName = getServiceAccount(cloudServiceAccountId);&#13;
+			for (var i = 0; i &lt; keyPairsArray.length; i++) {&#13;
+			var modifiedKeyPairName = serviceAccountName+':'+ldc+':'+keyPairsArray[i].keyName;&#13;
+			var keyPair = {&#13;
+			"cmdb_ci_cloud_key_pair": {&#13;
+			"validator": "",&#13;
+			"validator_overrides": { },&#13;
+			"identification": {&#13;
+			"cmdb_ci_cloud_service_account": {&#13;
+			"criterion": {&#13;
+			"account_id": cloudServiceAccountId&#13;
+			}&#13;
+			},&#13;
+			"cmdb_ci_aws_datacenter": {&#13;
+			"criterion": {&#13;
+			"region": ldc&#13;
+			}&#13;
+			},&#13;
+			"cmdb_ci_cloud_key_pair": {&#13;
+			"criterion": {&#13;
+			"object_id": keyPairsArray[i].keyName&#13;
+			}&#13;
+			}&#13;
+			},&#13;
+			"attributes": {&#13;
+			"name": modifiedKeyPairName,&#13;
+			"object_id": keyPairsArray[i].keyName,&#13;
+			"finger_print":keyPairsArray[i].keyFingerprint&#13;
+			}&#13;
+			}&#13;
+			};&#13;
+			cloudModelString.push(keyPair);&#13;
+			}&#13;
+			return global.JSON.stringify(cloudModelString);&#13;
+			}&#13;
+			&#13;
+			function getServiceAccount(cloudServiceAccountId) {&#13;
+			&#13;
+			try {&#13;
+			var serviceAccountGR = new GlideRecord('cmdb_ci_cloud_service_account');&#13;
+			serviceAccountGR.addQuery('account_id',cloudServiceAccountId);&#13;
+			serviceAccountGR.query();&#13;
+			if(serviceAccountGR.next())&#13;
+			return serviceAccountGR.getValue('name');&#13;
+			} catch(e) {&#13;
+			return 0;&#13;
+			}&#13;
+			}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var cloudModelString = [];
+	var keyPairsArray = global.JSON.parse(response);
+	var serviceAccountName = getServiceAccount(cloudServiceAccountId);
+	for (var i = 0; i < keyPairsArray.length; i++) {
+	    var modifiedKeyPairName = serviceAccountName+':'+ldc+':'+keyPairsArray[i].keyName;
+ 		var keyPair = {
+ 			"cmdb_ci_cloud_key_pair": {
+				"validator": "",
+ 				"validator_overrides": { },
+				"identification": {
+ 					"cmdb_ci_cloud_service_account": {
+ 						"criterion": {
+ 							"account_id": cloudServiceAccountId
+ 						}
+ 					},
+ 					"cmdb_ci_aws_datacenter": {
+ 						"criterion": {
+ 							"region": ldc
+						}
+ 					},
+ 					"cmdb_ci_cloud_key_pair": {
+ 						"criterion": {
+ 							"object_id": keyPairsArray[i].keyName
+ 						}
+ 					}
+ 				},
+ 				"attributes": {
+ 					"name": modifiedKeyPairName,
+					"object_id": keyPairsArray[i].keyName,
+					"finger_print":keyPairsArray[i].keyFingerprint
+ 				}
+ 			}
+ 		};
+ 		cloudModelString.push(keyPair);
+ 	}
+	return global.JSON.stringify(cloudModelString);
+}
+
+function getServiceAccount(cloudServiceAccountId) {
+
+	try {
+		var serviceAccountGR = new GlideRecord('cmdb_ci_cloud_service_account');
+		serviceAccountGR.addQuery('account_id', cloudServiceAccountId);
+		serviceAccountGR.query();
+		if(serviceAccountGR.next())
+			return serviceAccountGR.getValue('name');
+	} catch(e) {
+		return 0;
+	}
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-21 10:24:48</sys_created_on>
+        <sys_id>8679b35e0be622009e620bcb15673a72</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>List_KeyPairs_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_8679b35e0be622009e620bcb15673a72</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-10-10 07:36:00</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

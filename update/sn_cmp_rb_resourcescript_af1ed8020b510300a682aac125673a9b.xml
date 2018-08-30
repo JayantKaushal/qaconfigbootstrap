@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Discover_Ansible_Organization</name>
+        <resource display_value="Ansible Tower">d31e50020b510300a682aac125673aae</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var AnsibleModelString = [];
+	var discoveryResponse =global.JSON.parse(response);
+	
+	var respIndex =0;
+	var tableName = "";
+	
+	//organization
+	var organizationResponse = discoveryResponse.organizations;
+	for(respIndex= 0, organizations_size = organizationResponse.length; respIndex <organizations_size ; respIndex++){
+		
+		tableName = "sn_cfg_ansible_organization";
+		var hostingTable = {};
+		hostingTable.name = "sn_cfg_ansible_tower";
+		hostingTable.identifier = "url";
+		hostingTable.identifierValue = discoveryResponse.towerUrl;
+		
+		var organizationTable = new BuildTableData(tableName,organizationResponse[respIndex].id, discoveryResponse.towerUrl, hostingTable);
+		//add attributes for the table
+		organizationTable[tableName].attributes.id = organizationResponse[respIndex].id;
+		organizationTable[tableName].attributes.type = organizationResponse[respIndex].type;
+		organizationTable[tableName].attributes.name  = organizationResponse[respIndex].name;
+		organizationTable[tableName].attributes.short_description  =organizationResponse[respIndex].description;
+		organizationTable[tableName].attributes.projects_count  = organizationResponse[respIndex].projects_count;
+		organizationTable[tableName].attributes.job_templates_count  = organizationResponse[respIndex].job_templates_count;
+		organizationTable[tableName].attributes.inventories_count  = organizationResponse[respIndex].inventories_count;
+		
+		AnsibleModelString.push(organizationTable);
+	}
+	
+	
+	
+			
+	return global.JSON.stringify(AnsibleModelString);
+}
+
+
+function BuildTableData(tableName, id, towerUrl, hostingTable){
+	this[tableName] = {};
+	this[tableName].validator = "AnsibleTowerResponseValidator"  ;
+	this[tableName].validator_overrides = {};
+    this[tableName].identification = {};
+	this[tableName].identification [tableName] = {};
+    this[tableName].identification[tableName].criterion= {};
+	this[tableName].identification[tableName].criterion.object_id = id.toString();
+	
+	//attach hosting table identification
+	this[tableName].identification[hostingTable.name] = buildTableIdentification(hostingTable);
+	
+	this[tableName].attributes = {};
+	this[tableName].attributes.towerurl = towerUrl;
+}
+
+function buildTableIdentification(hostingTable){
+	var identification = {};
+	identification[hostingTable.name] = {};
+	identification[hostingTable.name].criterion = {};
+	identification[hostingTable.name].criterion[hostingTable.identifier] = hostingTable.identifierValue;
+	return identification[hostingTable.name];
+}
+]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 12:51:45</sys_created_on>
+        <sys_id>af1ed8020b510300a682aac125673a9b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Discover_Ansible_Organization</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_af1ed8020b510300a682aac125673a9b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-20 12:51:45</sys_updated_on>
+        <type>17</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

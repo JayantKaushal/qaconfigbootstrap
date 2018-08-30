@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AddCloudTrail</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AddCloudTrail</name>
+        <script><![CDATA[var AddCloudTrail = Class.create();
+AddCloudTrail.prototype = {
+    initialize: function() {
+    },
+    createTrailRecord : function( catalogItemId,
+								  requestItemId,
+								  orderId,
+								  contextKey,
+								  stackId,
+								  invocationTemplateId,
+								  targetInstanceId,
+								  messageType,
+								  milestone,
+								  messageDetails,
+								  messageSummary,
+								  step,
+								  userId,
+								  groupId){
+		var trailId = "";
+		var trailRecord = new GlideRecord("sn_cmp_cloud_trail");
+		if( trailRecord.isValid()){
+			trailRecord.initialize();
+			trailRecord.setValue("catalog_item_id",catalogItemId);
+			trailRecord.setValue("req_item", requestItemId);
+			trailRecord.setValue("order_id", orderId);
+			trailRecord.setValue("context_key", contextKey);
+			trailRecord.setValue("stack_id", stackId);
+			trailRecord.setValue("invocation_template", invocationTemplateId);
+			trailRecord.setValue("target_instance", targetInstanceId);
+			trailRecord.setValue("message_type", messageType);
+			trailRecord.setValue("milestone", milestone);
+			trailRecord.setValue("status_message_details", messageDetails);
+			trailRecord.setValue("status_message", messageSummary);			
+			trailRecord.setValue("step", this.getTrailStep(step));
+			trailRecord.setValue("user_id", userId);
+			trailRecord.setValue("group_id", groupId);
+			trailId = trailRecord.insert();
+		}
+		return trailId;
+	},
+	getTrailStep : function( stepName){
+		var stepGr = new GlideRecord('sn_cmp_cloud_trail_step');
+		if (stepGr.get("name", stepName))
+			return stepGr.getUniqueValue();
+		
+		// Try lookup as sys_id if name did not work
+		if (stepGr.get(stepName))
+			return stepGr.getUniqueValue();
+
+	}, 
+    type: 'AddCloudTrail'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-04 03:53:01</sys_created_on>
+        <sys_id>dc2390a567113200a8217558b1415a8f</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>AddCloudTrail</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_dc2390a567113200a8217558b1415a8f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-06 23:35:19</sys_updated_on>
+    </sys_script_include>
+</record_update>

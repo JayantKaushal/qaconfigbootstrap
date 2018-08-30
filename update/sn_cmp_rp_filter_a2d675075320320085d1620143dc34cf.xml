@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getByNetwork</name>
+        <resource_pool display_value="SecurityGroupPool">be4396d00b003200e937c97193673abd</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/**
+ * For azure, retrieve all security groups which are hosted on ldc and
+ * for other datacenters retrieve sg which are contained by network.
+ * Input parameters
+ * @param json  - should contain  the sysId of related item
+ * @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+ */
+function getFilteredRecords(json) {
+	var relations = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		var ldcId = map.Location;
+		var serviceAccountId = new sn_cmp_api.CloudAccountServiceScript().getServiceAccountSysId(ldcId);
+		var datacenter = '';
+		var sa = new GlideRecord('cmdb_ci_cloud_service_account');
+		if(sa.get(serviceAccountId))
+			datacenter = sa.getValue('datacenter_type');
+
+		var expResolverUtil = new sn_cmp_api.ExpressionResolverUtilScript();
+		if(datacenter && datacenter == 'cmdb_ci_azure_datacenter')
+			relations = expResolverUtil.getMetadataRelations(ldcId, 'Hosts', 'cmdb_ci_compute_security_group', 'flat', 1);
+		else
+			relations = expResolverUtil.getMetadataRelations(map.Network, 'Contains', 'cmdb_ci_compute_security_group', 'flat', 1);
+	} else
+		gs.error("input json is blank - "+json);
+
+	return relations;
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-30 18:55:18</sys_created_on>
+        <sys_id>a2d675075320320085d1620143dc34cf</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>getByNetwork</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_a2d675075320320085d1620143dc34cf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-12 16:11:27</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

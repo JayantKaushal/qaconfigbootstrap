@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCheckPermission</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCheckPermission</name>
+        <script><![CDATA[var CMPCheckPermission = Class.create();
+CMPCheckPermission.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	
+    initialize: function() {
+    },
+	 
+	mapPermission: function(pName){
+		var  map = {"read":"1","create":"2","write":"2","delete":"3","execute":"4"};
+		return map[pName];
+	},   
+	   
+	checkPermission: function(targetType,targetInstance,user,permission)
+	{
+		var returnVal=false;
+		if(gs.getUser().hasRole("sn_cmp.cmp_root_admin"))
+		{returnVal=true;return returnVal;}
+		else {
+			var gsPermission = new GlideRecord("sn_cmp_permission");
+			var condition = gsPermission.addJoinQuery("sys_user_grmember","group","group");
+			condition.addCondition("user", user);	
+			gsPermission.addQuery("target_type_choice",targetType);
+			var pcTI =gsPermission.addQuery("target_instance",targetInstance);
+			pcTI.addOrCondition("target_instance","");
+			var pcQ =gsPermission.addQuery("permission",this.mapPermission(permission));
+			pcQ.addOrCondition("permission", "5");
+			// implicit read if permission granted is write/delete/execute
+			if(permission == 'read')
+			{
+				pcQ.addOrCondition("permission", "2");
+				pcQ.addOrCondition("permission", "3");
+				pcQ.addOrCondition("permission", "4");
+			}
+			gsPermission.query();
+			if(gsPermission.hasNext())
+			{	
+			while (gsPermission.next())
+			{returnVal = true;break;}
+			}
+		return returnVal;
+	}
+	},
+       doAction: function(params){
+		if(gs.getUserName().equals("admin"))
+			return true;
+		else
+		return this.checkPermission(params.targetType,params.targetInstance,gs.getUserID(),params.permission);
+	},
+    type: 'CMPCheckPermission'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-08 10:38:44</sys_created_on>
+        <sys_id>426b9e750bb032004210294863673a78</sys_id>
+        <sys_mod_count>60</sys_mod_count>
+        <sys_name>CMPCheckPermission</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_426b9e750bb032004210294863673a78</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-19 22:01:58</sys_updated_on>
+    </sys_script_include>
+</record_update>

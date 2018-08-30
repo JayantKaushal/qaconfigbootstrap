@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Action Types" max_length="40" name="sn_cmp_pol_action_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Action Invocation Script" max_length="4000" name="action_invocation_script" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Action Script" max_length="4000" name="action_script" type="string"/>
+        <element label="Target Entity" max_length="40" name="action_type" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Label" max_length="100" name="label" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Mandatory Fields" max_length="1000" name="mandatory_fields" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="100" name="name" type="string"/>
+    </element>
+</database>

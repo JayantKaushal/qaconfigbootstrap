@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPFlowDesignAPI</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPFlowDesignAPI</name>
+        <script><![CDATA[var CMPFlowDesignAPI = Class.create();
+
+CMPFlowDesignAPI.prototype = {
+	initialize: function () {
+	},
+
+	/**
+	* The method here queries the var_dictionary table based on the model_id, which is the
+	* sys id of the work flow and model_table, which is the workflow table to get the inputs
+	* of the required workflow
+ 	*/
+	getWorkFlowInputs: function (workflowID) {
+		var wfInputs = new GlideRecord("var_dictionary");
+		wfInputs.addQuery('model_id', workflowID);
+		wfInputs.addQuery('model_table', 'wf_workflow');
+		wfInputs.query();
+
+		return wfInputs;
+	},
+
+	/**
+	* Created a map of input variables to be created in sn_cmp_rb_keyvalue table
+	* If there are default values that should be populated to 'value' field
+	* otherwise the value should be '${paramter.<name of the input>}'
+
+	[
+	   {
+		  "inputName":"u_userid",
+		  "step":{
+			 "name":"u_userid",
+			 "defaultValue":"Tenant domain name or GUID",
+			 "value":"${parameter.u_userid}"
+		  }
+	   }
+	]
+
+	*/
+	createStepInputMap: function (wfInputsRecord) {
+		var stepInputMap = [];
+		var key = {};
+		while ( wfInputsRecord.next()) {
+			var stepMap = {};
+			var inputName = wfInputsRecord.getValue('element');
+			stepMap.inputName = inputName;
+
+			var defaultValue =  (gs.nil(wfInputsRecord.getValue('default_value'))) ? '' : wfInputsRecord.getValue('default_value') ;
+			var inputs = {};
+			inputs.name = inputName;
+			inputs.defaultValue= defaultValue;
+			inputs.value = this.getDefaultMappings(inputName);
+			stepMap.step = inputs;
+			stepInputMap.push(stepMap);
+		}
+
+		return stepInputMap;
+	},
+
+	/**
+	Create the impl parameters map for the sn_cmp_rb_op_impl_param table using the step inputs
+	if there are more than one inputs with the same name the second input will be appended
+	with a auto-increment number for example, if cloudAccount is an existing input parameter
+	the next input parameter is named as cloudAccount_1
+	These inputs are case insensitive
+
+
+	[
+	   {
+		  "u_userid":{
+			  "name":"u_userid",
+			  "defaultvalue":"${parameter.u_userid}",
+			  "value":"Tenant domain name or GUID"
+		  }
+	   }
+	]
+
+	*/
+	createOperationImplParamsMap: function (stepInputMap, operationImplId) {
+		var opImplParamsMap = [];
+
+		for (var inputs in stepInputMap) {
+			var stepObj = stepInputMap[inputs];
+			var opImpl = {};
+			var stepInput = stepObj.step;
+
+			var opImplName = this.getOpImplName(stepInput.name, operationImplId) ;
+
+			var implInputs = {};
+			implInputs.name = opImplName;
+			implInputs.defaultvalue = this.getDefaultMappings(opImplName);
+			implInputs.value = this.getDefaultMappings(opImplName);
+			opImpl[stepObj.inputName]= implInputs;
+			opImplParamsMap.push(opImpl);
+
+			stepInput.value = this.getDefaultMappings(opImplName);
+		}
+
+		return opImplParamsMap;
+	},
+
+	addInputParams: function (workflowId, operationImplId, opStepId) {
+		var wfInputs = this.getWorkFlowInputs(workflowId);
+		var stepInputMap = this.createStepInputMap(wfInputs);
+		var opImplParamsMap = this.createOperationImplParamsMap(stepInputMap, operationImplId);
+		for (var index in stepInputMap) {
+			var inputName = stepInputMap[index].inputName;
+			this.addStepInputRecord(stepInputMap[index].step, opStepId);
+			var opParamObj = this.getOpImplParam(opImplParamsMap, inputName);
+			this.addOpImplRecord(opParamObj[inputName], opStepId, operationImplId);
+		}
+	},
+
+	getOpImplParam: function getByValue(arr, inputName) {
+	    for (var i=0, len=arr.length; i<len; i++)
+		    if (arr[i].hasOwnProperty(inputName))
+			    return arr[i];
+	},
+
+	addStepInputRecord: function (stepInputMap, stepId) {
+		var stepInputRecord = new GlideRecord('sn_cmp_rb_keyvalue');
+		stepInputRecord.setValue('key', stepInputMap['name']);
+		stepInputRecord.setValue('step', stepId);
+		stepInputRecord.setValue('value', stepInputMap['value']);
+
+		return stepInputRecord.insert();
+	},
+
+	addOpImplRecord: function (opImplParamsMap, stepSysId, operationImplId) {
+		var opImplRecord = new GlideRecord('sn_cmp_rb_op_impl_param');
+		opImplRecord.setValue('name', opImplParamsMap.name);
+		opImplRecord.setValue('datasource', 1); //Adding 'Text' as the default datasource.
+		opImplRecord.setValue('defaultvalue', opImplParamsMap.defaultvalue);
+		opImplRecord.setValue('value', opImplParamsMap.value);
+		opImplRecord.setValue('operation', operationImplId);
+		opImplRecord.setValue('step', stepSysId);
+
+		return opImplRecord.insert();
+	},
+
+	getOpImplName: function (opImplName, operationImplId) {
+		//regex to catch input parameters ending with '_[0-9]'
+		var inc = 0;
+		var filter = 'nameMATCH_RGX.*_[1-9]$';
+		var opImplParams = new GlideRecord('sn_cmp_rb_op_impl_param');
+		opImplParams.addEncodedQuery('operation=' + operationImplId + '^nameLIKE' + opImplName);
+		opImplParams.query();
+		var count = opImplParams.getRowCount();
+		if (count > 0) {
+			while (opImplParams.next()) {
+				if (GlideFilter.checkRecord(opImplParams, filter)) {
+					var labels = opImplParams.getValue('name').split("_");
+					if (!gs.nil(labels)) {
+						var incnumber = labels[labels.length-1];
+						if (inc < incnumber)
+							inc = incnumber;
+					}
+				}
+			}
+			inc++ ;
+			opImplName = opImplName + '_' + inc;
+		}
+
+		return opImplName;
+	},
+
+	getDefaultMappings: function (parameterName) {
+		return (!gs.nil(parameterName)) ? '${parameter.'+ parameterName + '}' : '';
+	},
+
+	/*
+	* For the given Workflow name, this method would return the sys_id of the Workflow.
+	*/
+	getWorkflowId: function (workflowName) {
+		return new global.Workflow().getWorkflowFromName(workflowName);
+	},
+
+	/*
+	* For the given Workflow name, this method would return an array of Input Parameters of the corresponding Workflow.
+	*/
+	getWorkflowInputList: function (workflowName) {
+		var wfInputList = [];
+		var wfInputsRecord = this.getWorkFlowInputs(this.getWorkflowId(workflowName));
+		while (wfInputsRecord.next()) {
+			wfInputList.push(wfInputsRecord.getValue('element'));
+		}
+		return wfInputList;
+	},
+
+	/*
+	* This method would try to find the missing Inputs of a Workflow from the request.
+	* INPUT:
+	* The method argument must be a List containing Input Parameters like below:
+	*   [
+	*      {
+	*          "workflowName" : "TestSubflow",
+	*          "apiAliasName" : "Virtual Server.Workflow.Virtual Server.Workflow.TestSubflow",
+	*          "stepInputParameterMap" :
+	*          {
+	*                "InputParam-01" : "Value-01",
+	*                "InputParam-02" : "Value-02",
+	*                ...
+	*          }
+	*      },
+	*      ...
+	*   ]
+	*
+	* OUTPUT:
+	* Return a List containing Missing Parameters details like below:
+	*   [
+	*      {
+	*          "WorkflowName" : "TestSubflow",
+	*          "API" : "Virtual Server.Workflow.Virtual Server.Workflow.TestSubflow",
+	*          "MissingWorkflowParameters" :
+	*          [
+	*                "Param-01",
+	*                "Param-02",
+	*                ...
+	*          ]
+	*      },
+	*      ...
+	*   ]
+	*/
+	findMissingParametersOfWorkflowFromRequest: function (inputParameterDetails) {
+	    var inputParameterDetailList = global.JSON.parse(inputParameterDetails);
+	    var json = new global.JSON();
+	    var missingParameterDetails = [];
+	    inputParameterDetailList.forEach( function(input) {
+	        gs.info("Processing Parameter: Workflow Name={0}, API Name={1}", input.workflowName, input.apiAliasName);
+	        var stepInputNames = json.getKeys(input.stepInputParameterMap);
+	        gs.info("Given input parameters for the workflow [" + input.workflowName + "]: " + stepInputNames);
+	        var workflowInputNames = this.getWorkflowInputList(input.workflowName);
+	        if (workflowInputNames) {
+	            gs.info("Required parameters for the workflow [" + input.workflowName + "]: " + workflowInputNames);
+	            var missingElements = this.findMissingElements(workflowInputNames, stepInputNames);
+	            if (missingElements) {
+	                var wfAndMissingParameter = {
+	                    "WorkflowName" : input.workflowName,
+						"API" : input.apiAliasName,
+						"MissingWorkflowParameters" : missingElements
+	                };
+	                missingParameterDetails.push(wfAndMissingParameter);
+	                gs.info("Missing parameters list for the workflow [" + input.workflowName + "]: " + missingElements);
+	            } else
+	                gs.info("All required parameters for the workflow [{0}] are present.", input.workflowName);
+	        } else
+	            gs.info("Skip finding missing parameters because Workflow [{0}] does not have any Input Parameter.", input.workflowName);
+	    }.bind(this));
+	    return missingParameterDetails;
+	},
+
+	/*
+	* This method checks if all elements of First List are present in Second List.
+	* It returns a List of elements those are not present in Second List.
+	*/
+	findMissingElements: function (requiredElements, givenElements) {
+	    var missingElements = [];
+	    requiredElements.forEach(function(element) {
+	        if (givenElements.indexOf(element) == -1)
+	            missingElements.push(element);
+	    });
+	    return missingElements;
+	},
+
+	type: 'CMPFlowDesignAPI'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-01 03:44:00</sys_created_on>
+        <sys_id>f37de89bc3a313009974d02422d3ae61</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CMPFlowDesignAPI</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f37de89bc3a313009974d02422d3ae61</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-27 13:06:06</sys_updated_on>
+    </sys_script_include>
+</record_update>

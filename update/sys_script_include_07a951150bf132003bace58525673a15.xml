@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetBlueprintFormListAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetBlueprintFormListAction</name>
+        <script><![CDATA[var CMPGetBlueprintFormListAction = Class.create();
+CMPGetBlueprintFormListAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+				if (!params.blueprint_id || !params.stage_operation_id) {
+					throw sn_smd.SMErrorHelper.createScriptAPIError(
+						gs.getMessage("Illegal parameter"),
+						"CMPGetBlueprintFormListAction.doAction: Undefined operation Id",
+						null
+					);
+				}
+			
+				var gr = new GlideRecord('sn_cmp_bp_form_behavior');
+				gr.addQuery("bp_association", params.blueprint_id);
+				gr.addQuery("stage_operation", params.stage_operation_id);
+				gr.orderBy('name');
+				gr.query();
+				var blueprintFormsList = [];
+			
+				while (gr.next()) {
+					var formListObj = {};
+					formListObj.id = gr.getValue('sys_id');
+					formListObj.name = gr.getValue('alias_name');
+					
+					var parentFormId = gr.getValue('parent_form_behavior');
+					if (!parentFormId || parentFormId == null || parentFormId == 'undefined') {
+						formListObj.parentFormBehaviourId = '';
+					} else {
+						formListObj.parentFormBehaviourId = parentFormId;
+					}
+					formListObj.parentFormBehaviour = gr.getDisplayValue('parent_form_behavior');
+					
+					formListObj.catalogItem = gr.getDisplayValue('cat_item_association');
+					var catItemId = gr.getValue('cat_item_association');
+					if (!catItemId || catItemId == null || catItemId == 'undefined') {
+						formListObj.catalogItemId = '';
+					} else {
+						formListObj.catalogItemId = parentFormId;
+					}
+
+					blueprintFormsList.push(formListObj);
+				}
+				return blueprintFormsList;
+			
+			} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get blueprint form list"),
+				"CMPGetBlueprintFormListAction.doAction(): Failed to get blueprint form list",
+				error
+			);
+		}
+    },
+
+    type: 'CMPGetBlueprintFormListAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-28 09:37:00</sys_created_on>
+        <sys_id>07a951150bf132003bace58525673a15</sys_id>
+        <sys_mod_count>11</sys_mod_count>
+        <sys_name>CMPGetBlueprintFormListAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_07a951150bf132003bace58525673a15</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-21 06:36:47</sys_updated_on>
+    </sys_script_include>
+</record_update>

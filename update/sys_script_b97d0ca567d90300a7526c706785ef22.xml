@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>false</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>true</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_rb_op_impl_param</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Update Operation ImplementationParameter</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+
+	var paramCount = "";
+	var opImplSysID = current.operation;
+	var opImplParamName = current.name;
+	var currentOpImplParamSysID = current.sys_id;
+	
+	var gr = new GlideRecord('sn_cmp_rb_op_impl_param'); 
+	gr.addQuery('name', opImplParamName);
+	gr.addQuery('operation', opImplSysID);
+	gr.query();
+	paramCount = gr.getRowCount();
+	if(paramCount > 0){
+		if(gr.next()){
+			//Avoiding updation of existing Op Impl Param when there exists already another with SAME NAME for a OPERATION IMPLEMENTATION
+			if(currentOpImplParamSysID != gr.getValue('sys_id')){
+				current.setAbortAction(true);
+				var operationImplGR = new GlideRecord('sn_cmp_rb_op_impl'); 
+				operationImplGR.addQuery('sys_id', opImplSysID);
+				operationImplGR.query();
+				if(operationImplGR.next()){
+					var operationGR = new GlideRecord('sn_cmp_rb_op_signature'); 
+					operationGR.addQuery('sys_id', operationImplGR.getValue('operation'));
+					operationGR.query();
+					if(operationGR.next()) {
+						var errorMessage = gs.getMessage("A parameter with the name {0}  already exists for {1} operation.", [opImplParamName, operationGR.getValue('name')]);
+						gs.addErrorMessage(errorMessage);
+					}
+				}
+			}
+		}
+	}
+
+})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-18 22:22:52</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b97d0ca567d90300a7526c706785ef22</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Update Operation ImplementationParameter</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_b97d0ca567d90300a7526c706785ef22</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 13:53:30</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=b97d0ca567d90300a7526c706785ef22"/>
+</record_update>

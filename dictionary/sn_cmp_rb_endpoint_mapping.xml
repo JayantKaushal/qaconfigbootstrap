@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Endpoint Operation Mapping" max_length="40" name="sn_cmp_rb_endpoint_mapping" type="collection">
+        <element label="Binding Resource" max_length="32" name="binding_resource" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci_endpoint,base_start=true" label="Endpoint" max_length="80" name="endpoint" type="table_name"/>
+        <element label="Operation Implementation" max_length="32" name="op_impl" reference="sn_cmp_rb_op_impl" type="reference"/>
+        <element choice="1" label="Type" max_length="40" name="op_impl_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Attach" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Detach" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element label="Source Resource" max_length="32" name="source_resource" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="op_impl"/>
+        </index>
+        <index name="index2">
+            <element name="source_resource"/>
+        </index>
+        <index name="index3">
+            <element name="binding_resource"/>
+        </index>
+    </element>
+</database>

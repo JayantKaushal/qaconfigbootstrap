@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cloud_trail_step">
+    <sn_cmp_cloud_trail_step action="INSERT_OR_UPDATE">
+        <component>8</component>
+        <name>Send Cloud API Response</name>
+        <sequence>316</sequence>
+        <stage>4</stage>
+        <sys_class_name>sn_cmp_cloud_trail_step</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-25 22:53:10</sys_created_on>
+        <sys_id>32a6ec6b938932004a9032bfa67ffbfb</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>CAPI Probe - Send Cloud API Response</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cloud_trail_step_32a6ec6b938932004a9032bfa67ffbfb</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-21 20:15:14</sys_updated_on>
+    </sn_cmp_cloud_trail_step>
+</record_update>

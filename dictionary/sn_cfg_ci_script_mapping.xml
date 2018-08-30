@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cloud Script Mapping" max_length="40" name="sn_cfg_ci_script_mapping" type="collection">
+        <element label="CI Script" max_length="32" name="ci_script" reference="sn_cfg_cloud_script" type="reference"/>
+        <element label="Default" max_length="40" name="default_script" type="boolean"/>
+        <element label="Image" max_length="32" name="os_template" reference="cmdb_ci_os_template" type="reference"/>
+        <index name="index">
+            <element name="os_template"/>
+        </index>
+        <index name="index2">
+            <element name="ci_script"/>
+        </index>
+    </element>
+</database>

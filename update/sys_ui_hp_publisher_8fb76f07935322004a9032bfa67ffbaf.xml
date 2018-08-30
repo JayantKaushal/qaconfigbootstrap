@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_hp_publisher">
+    <sys_ui_hp_publisher action="INSERT_OR_UPDATE">
+        <allow_database_view_filter>false</allow_database_view_filter>
+        <allow_extended_table>false</allow_extended_table>
+        <boolean_field/>
+        <boolean_table/>
+        <date_filter>115_Last 30 days@javascript:gs.daysAgoStart(30)@javascript:gs.daysAgoEnd(0),110_Last 7 days@javascript:gs.daysAgoStart(7)@javascript:gs.daysAgoEnd(0),035_Last month@javascript:gs.beginningOfLastMonth()@javascript:gs.endOfLastMonth(),070_Last quarter@javascript:gs.quartersAgoStart(1)@javascript:gs.quartersAgoEnd(1),100_Last year@javascript:gs.beginningOfLastYear()@javascript:gs.endOfLastYear(),030_This month@javascript:gs.beginningOfThisMonth()@javascript:gs.endOfThisMonth(),065_This quarter@javascript:gs.beginningOfThisQuarter()@javascript:gs.endOfThisQuarter(),090_This year@javascript:gs.beginningOfThisYear()@javascript:gs.endOfThisYear()</date_filter>
+        <default_boolean_field/>
+        <default_choice/>
+        <default_date_filter>030_This month@javascript:gs.beginningOfThisMonth()@javascript:gs.endOfThisMonth()</default_date_filter>
+        <default_reference_field_value/>
+        <description/>
+        <exclusion_choice_list/>
+        <look_up_name>Cloud Cost Resource - Single</look_up_name>
+        <name>Resource</name>
+        <reference_conditions table="sn_cmp_cost_rsrc">resource_id!=(empty)^resource_idISNOTEMPTY^resourceISNOTEMPTY^EQ<item endquery="false" field="resource_id" goto="false" newquery="false" operator="!=" or="false" value="(empty)"/>
+            <item endquery="false" field="resource_id" goto="false" newquery="false" operator="ISNOTEMPTY" or="false" value=""/>
+            <item endquery="false" field="resource" goto="false" newquery="false" operator="ISNOTEMPTY" or="false" value=""/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </reference_conditions>
+        <reference_table>sn_cmp_cost_rsrc</reference_table>
+        <source_field/>
+        <source_table/>
+        <sys_class_name>sys_ui_hp_publisher</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 23:49:50</sys_created_on>
+        <sys_id>8fb76f07935322004a9032bfa67ffbaf</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Resource</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_hp_publisher_8fb76f07935322004a9032bfa67ffbaf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-10 00:56:56</sys_updated_on>
+        <type>2</type>
+        <ui_control_type>2</ui_control_type>
+    </sys_ui_hp_publisher>
+</record_update>

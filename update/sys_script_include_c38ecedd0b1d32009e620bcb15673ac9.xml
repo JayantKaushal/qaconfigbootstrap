@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRemoveEndpointAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRemoveEndpointAction</name>
+        <script><![CDATA[var CMPRemoveEndpointAction = Class.create();
+CMPRemoveEndpointAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.blueprintId || !params.source || !params.target || !params.endpoint) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPRemoveEndpointAction.doAction: Undefined element type, name, and/or layer id",
+					null
+				);
+			}
+			
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var response = blueprintServiceScript.removeBindingOperations(params.blueprintId,params.source,params.target,params.endpoint);
+			return JSON.parse(response);
+		}catch(error){
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to remove the endpoint"),
+				"CMPRemoveEndpointAction.doAction(): Failed to remove endpoint",
+				error
+			);
+			
+		}
+	},
+
+    type: 'CMPRemoveEndpointAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-03 16:56:32</sys_created_on>
+        <sys_id>c38ecedd0b1d32009e620bcb15673ac9</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPRemoveEndpointAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c38ecedd0b1d32009e620bcb15673ac9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-03 21:28:12</sys_updated_on>
+    </sys_script_include>
+</record_update>

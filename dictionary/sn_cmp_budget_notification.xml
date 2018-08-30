@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Budget Notification" max_length="40" name="sn_cmp_budget_notification" type="collection">
+        <element label="Budget Configuration" mandatory="true" max_length="32" name="budget_configuration" reference="sn_cmp_budget" reference_cascade_rule="delete" type="reference"/>
+        <element default="80" label="Notification Threshold(%)" mandatory="true" max_length="100" name="threshold" type="integer"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" default="ALERT" display="true" hint="This indicates the severity of the notification" label="Notification Type" mandatory="true" max_length="100" name="type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="SEVERE" sequence="1" value="SEVERE"/>
+                <element inactive_on_update="false" label="WARNING" sequence="2" value="WARNING"/>
+                <element inactive_on_update="false" label="ALERT" sequence="3" value="ALERT"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="budget_configuration"/>
+        </index>
+    </element>
+</database>

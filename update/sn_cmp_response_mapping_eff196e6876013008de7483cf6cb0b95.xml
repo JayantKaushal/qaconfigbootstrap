@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_response_mapping">
+    <sn_cmp_response_mapping action="INSERT_OR_UPDATE">
+        <additional_identifier>false</additional_identifier>
+        <array_field/>
+        <attribute_value_type>scripted</attribute_value_type>
+        <binding_endpoint/>
+        <binding_type/>
+        <ci_class>cmdb_ci_os_template</ci_class>
+        <ci_class_field>name</ci_class_field>
+        <datasource display_value="Azure VM instance payload">2dd77c18d745320097eb6ccf6e610306</datasource>
+        <datasource_for_mappings/>
+        <fixed_value/>
+        <identifier_ci_class/>
+        <identifier_ci_class_field/>
+        <relationship_ci_class/>
+        <script><![CDATA[// Do not remove function declaration
+/** Input parameters
+* @param rawObject - the full unprocessed data item (Javascript object)
+* @param sourceFieldValue - the value of the source field defined on the mapping
+* 
+* @returns value to assign to mapped table field
+*/
+getValue(global.JSON.parse(rawObject), global.JSON.parse(sourceFieldValue));
+function getValue(rawObject, sourceFieldValue) {
+	var value = null;
+
+	if (sourceFieldValue) {
+		if (sourceFieldValue.toLowerCase().indexOf("microsoft.compute/images") > 0) {
+			var parts = sourceFieldValue.split('/');
+			if (parts.length > 0)
+				value = parts[parts.length-1];
+		}		
+	} else if (rawObject.imageReference){
+		var imageRef = rawObject.imageReference;
+		if (imageRef.publisher && imageRef.offer && imageRef.sku && imageRef.version)
+			value = '/' + imageRef.publisher + '/' + imageRef.offer + '/' + imageRef.sku + '/' + imageRef.version;
+	}
+
+	return value;
+}]]></script>
+        <source_field>imageReference.id</source_field>
+        <sys_class_name>sn_cmp_response_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-02 23:59:03</sys_created_on>
+        <sys_id>eff196e6876013008de7483cf6cb0b95</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_response_mapping_eff196e6876013008de7483cf6cb0b95</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-17 00:09:10</sys_updated_on>
+        <translation_key/>
+        <used_for_identification>false</used_for_identification>
+    </sn_cmp_response_mapping>
+</record_update>

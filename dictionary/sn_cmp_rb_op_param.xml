@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="OperationParameter" max_length="40" name="sn_cmp_rb_op_param" type="collection">
+        <element label="Interface" max_length="32" name="interface" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element label="Operation" max_length="32" name="operation" reference="sn_cmp_rb_op_signature" reference_cascade_rule="delete" type="reference"/>
+        <element default="1000" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element choice="1" default="1" label="Type" max_length="40" name="type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="String" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Password" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Object" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Array" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="Boolean" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="Integer" sequence="6" value="6"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="interface"/>
+        </index>
+        <index name="index2">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

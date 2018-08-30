@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getObjectsByNetwork</name>
+        <resource_pool display_value="SubnetPool">7c6052d00b003200e937c97193673a92</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var relations = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		var sys_id = map.Network;   
+	    var gr = new GlideRecord('cmdb_ci_network');
+	    gr.addQuery('sys_id',sys_id);
+	    gr.query();
+        if(!gr.next()) {
+        var grNet = new GlideRecord('cmdb_ci_network');
+        var orCondition = grNet.addQuery('object_id',sys_id);
+		    orCondition.addOrCondition('name',sys_id);	
+            grNet.query();
+            if(grNet.next())
+            sys_id = grNet.getValue('sys_id');
+      }	
+		// check network DC
+		var networkDC = getDC(sys_id);
+		
+		if (networkDC == 'cmdb_ci_azure_datacenter') {
+			relations = new sn_cmp_api.ExpressionResolverUtilScript().getValueTypesForMetaDataRelation(sys_id, 'Contains', 'cmdb_ci_cloud_subnet', 'flat', 1,'name');
+			
+		}
+		else {
+			relations = new sn_cmp_api.ExpressionResolverUtilScript().getValueTypesForMetaDataRelation(sys_id, 'Contains', 'cmdb_ci_cloud_subnet', 'flat', 1,'object_id');
+		}
+		
+		
+	} else{
+		gs.error("input json is blank - "+json);
+	}
+	
+	return relations;
+
+}
+function getDC(network_SysId) {
+	
+	var grLdc = new GlideRecord('cmdb_ci_logical_datacenter');
+	var grRelCI = grLdc.addJoinQuery('cmdb_rel_ci','sys_id','child');
+		grRelCI.addCondition('parent',network_SysId); 
+		grRelCI.addCondition('type',getRelTypeSysID());//sysid for Hosted::Hosted on
+        grLdc.query();
+		if(grLdc.next()) {
+        return grLdc.getValue('sys_class_name');
+	  }
+}
+
+function getRelTypeSysID(relation) {
+     var grRelType = new GlideRecord('cmdb_rel_type');
+         grRelType.addQuery('name','Hosted on::Hosts');
+         grRelType.query();
+         if (grRelType.next())
+         return grRelType.getValue('sys_id');
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-10-10 13:33:13</sys_created_on>
+        <sys_id>2c2767500bb103005556294863673ad2</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>getObjectsByNetwork</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_2c2767500bb103005556294863673ad2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-05 08:00:35</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

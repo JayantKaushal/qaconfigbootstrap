@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Conversion Unit" max_length="40" name="sn_cmp_conversion_unit" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Conversion Factor" mandatory="true" max_length="512" name="conversion_factor" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="100" name="name" type="string"/>
+    </element>
+</database>

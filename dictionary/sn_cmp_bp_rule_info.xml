@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Rule Info" max_length="40" name="sn_cmp_bp_rule_info" type="collection">
+        <element label="Guest Resource" max_length="32" name="guest" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Host Resource" max_length="200" name="host_resource" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Operation" max_length="200" name="operation" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Rule JSON" max_length="4000" name="rule_json" type="string"/>
+        <element label="Template Type" max_length="32" name="template_type" reference="sn_cmp_cloud_template_type" type="reference"/>
+        <index name="index">
+            <element name="guest"/>
+        </index>
+        <index name="index2">
+            <element name="template_type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CreateCatItemForOperation</api_name>
+        <client_callable>false</client_callable>
+        <description>This will create catalog item for resource operation</description>
+        <name>CreateCatItemForOperation</name>
+        <script><![CDATA[var CreateCatItemForOperation = Class.create();
+CreateCatItemForOperation.prototype = {
+    initialize: function() {
+    },
+	
+	createCatalogItem : function(resource_name,interface_name,operation_name){
+				var cat_item_name = resource_name+"-"+interface_name+"-"+operation_name;  // Change this if you want specific name , else by default catalog item name will be operation name.
+
+        // Creating catalog item for resource operation	
+		var catGr = new GlideRecord("sn_cmp_rsrc_opr_cat_item");
+		catGr.name = cat_item_name;
+		catGr.workflow = '' + this.chooseWorkflowForActionByTable('cloud_operation', 'sc_req_item'); // 'Cloud Resource Operation Request' out of box
+		catGr.application = "80d50579eb203200979aa5115206fedd";
+		catGr.short_description = "Catalog item to invoke operation";
+		var cat_sys_id = catGr.insert();
+
+		// Creating variables for catalog.
+
+		var gr = new GlideRecord("sn_cmp_rb_op_impl");
+		gr.addQuery("interface.name", interface_name);
+		gr.addQuery("resource.name", resource_name);
+		gr.addQuery("operation.name", operation_name);
+		//gr.setLimit(1);
+		gr.query();
+		while(gr.next()){
+		  
+		  var op_impl_param_gr = new GlideRecord("sn_cmp_rb_op_impl_param");
+		  op_impl_param_gr.addQuery("operation", gr.sys_id);
+		  op_impl_param_gr.query();
+		 var i = 10;
+		  while(op_impl_param_gr.next()){
+
+			 if(op_impl_param_gr.visibilty){
+
+				 i = i+10;
+				 var order =  op_impl_param_gr.order;
+				 if(order == 0){
+					 order = i;
+				 }
+				 
+				 var variable = new GlideRecord("item_option_new");
+				 variable.name          = op_impl_param_gr.name;
+
+				 // Reading mandatory from form parameter.
+				 variable.mandatory = op_impl_param_gr.ismandatory;
+				 variable.type          = 6;
+				 variable.order         = order;
+				 variable.question_text = op_impl_param_gr.name;
+				 variable.cat_item = cat_sys_id;
+
+				 // puttinh help text for variable.
+				 var helpText = op_impl_param_gr.helpText;
+				 if (helpText){
+					variable.show_help = true;
+					variable.help_text = helpText;
+				 } 
+
+				 // needs to read default value.
+				 var value = op_impl_param_gr.value;
+
+
+				 if (value){
+					variable.default_value = value;
+				 } 
+
+				var regex = op_impl_param_gr.regex;
+				if (regex)
+					variable.regex = regex;
+
+				variable.insert();
+			 }else{
+				gs.debug("As visibility is false for attribute - "+op_impl_param_gr.name +" not adding it as variables");
+			 }             
+		  }
+
+		}
+
+		
+		// Creating variables needed by system
+
+		var system_needed_variable = new GlideRecord("item_option_new");
+			 system_needed_variable.name          = "resourceId";
+			 system_needed_variable.type          = 6;
+			 system_needed_variable.order         = 1;
+			 system_needed_variable.question_text = "resourceId";
+			 system_needed_variable.cat_item = cat_sys_id;
+			 system_needed_variable.insert();
+
+		system_needed_variable = new GlideRecord("item_option_new");
+			 system_needed_variable.name          = "resourceBlock";
+			 system_needed_variable.type          = 6;
+			 system_needed_variable.order         = 2;
+			 system_needed_variable.question_text = "resourceBlock";
+			 system_needed_variable.cat_item = cat_sys_id;
+			 system_needed_variable.insert();
+
+		system_needed_variable = new GlideRecord("item_option_new");
+			 system_needed_variable.name          = "resourceInterface";
+			 system_needed_variable.type          = 6;
+			 system_needed_variable.order         = 3;
+			 system_needed_variable.question_text = "resourceInterface";
+			 system_needed_variable.cat_item = cat_sys_id;
+			 system_needed_variable.insert();
+
+		system_needed_variable = new GlideRecord("item_option_new");
+			 system_needed_variable.name          = "operationName";
+			 system_needed_variable.type          = 6;
+			 system_needed_variable.order         = 4;
+			 system_needed_variable.question_text = "operationName";
+			 system_needed_variable.cat_item = cat_sys_id;
+			 system_needed_variable.insert();
+
+		system_needed_variable = new GlideRecord("item_option_new");
+			 system_needed_variable.name          = "credential";
+			 system_needed_variable.type          = 6;
+			 system_needed_variable.order         = 5;
+			 system_needed_variable.question_text = "credential";
+			 system_needed_variable.cat_item = cat_sys_id;
+			 system_needed_variable.insert();
+
+
+		//***********************************************************************************
+		// Updating or Creating mapping row for catalog item
+
+		var resource_sysId = "";
+		var op_signature_sysId = "";
+		var rb_gr = new GlideRecord("sn_cmp_rb_resourceblock");
+		rb_gr.addQuery("name", resource_name);
+		rb_gr.query();
+		if(rb_gr.next()){
+		  resource_sysId = rb_gr.sys_id;
+		}
+
+		var op_gr = new GlideRecord("sn_cmp_rb_op_signature");
+		op_gr.addQuery("name", operation_name);
+		op_gr.addQuery("interface.name", interface_name);
+		op_gr.query();
+		if(op_gr.next()){
+		  op_signature_sysId = op_gr.sys_id;
+		}
+
+		gs.debug("Found resource -  "+resource_sysId +" ,  Found operation === "+op_signature_sysId);
+
+
+		var mapping_gr = new GlideRecord("sn_cmp_rb_op_cat_map");
+		mapping_gr.addQuery("resource_block", resource_sysId);
+		mapping_gr.addQuery("operation", op_signature_sysId);
+		mapping_gr.query();
+		if(mapping_gr.next()){
+		  mapping_gr.cat_item = cat_sys_id;
+		  mapping_gr.update();
+		}else{
+		  mapping_gr = new GlideRecord("sn_cmp_rb_op_cat_map");
+		  mapping_gr.resource_block = resource_sysId;
+		  mapping_gr.operation = op_signature_sysId;
+		  mapping_gr.cat_item = cat_sys_id;
+		  mapping_gr.insert();
+		}	
+		
+		// will call to create script for Hiding system needed valiable
+		var type = "onLoad";
+		var name = "Hide system needed variable";
+		var script = " // System generatend script, please do not change"
+            +"\n"+"function onLoad() {"
+        	+"\n"+" g_form.setDisplay('resourceBlock', false);"
+            +"\n"+"	g_form.setDisplay('resourceId', false);"
+        	+"\n"+" g_form.setDisplay('resourceInterface', false);"
+            +"\n"+" g_form.setDisplay('operationName', false);"
+            +"\n"+"	g_form.setDisplay('credential', false);"
+            +"\n"+"}"; //format the script later;
+		
+		new global.CmpSCUtil().createCatalogClientSciprt(name,cat_sys_id,type,script);
+	},
+	
+	// Retrieve WF name for given action. Here action is 'cloud_operation' and workflow is going to be 'Cloud Resource Operation Request' out of box
+	chooseWorkflowForActionByTable :function (action, tableName) {
+        var actionMappings = new GlideRecord('task_action_workflow');
+        actionMappings.addQuery('table', tableName);
+        actionMappings.addQuery('action', action);
+        actionMappings.query();
+        if (!actionMappings.next()) 
+            return '';
+                                
+        return '' + actionMappings.workflow;
+	},
+
+    type: 'CreateCatItemForOperation'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 10:26:08</sys_created_on>
+        <sys_id>b088e60d538103002111620143dc34a6</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>CreateCatItemForOperation</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b088e60d538103002111620143dc34a6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-08 18:59:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

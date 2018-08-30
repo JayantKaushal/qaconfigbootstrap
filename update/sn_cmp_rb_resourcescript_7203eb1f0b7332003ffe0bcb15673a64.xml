@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>List_LaunchConfiguration_Response_Processor</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc) {&#13;
+	var cloudModelString = [];&#13;
+&#13;
+var launchConfigResponse = global.JSON.parse(response);&#13;
+&#13;
+//Checking whether CAPI returned valid Response&#13;
+if(!(isEmpty(launchConfigResponse))){	&#13;
+	if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult)))&#13;
+		if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations)))&#13;
+			if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations.member))){&#13;
+				&#13;
+				var launchConfigArr = convertMapToList(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations.member);&#13;
+				&#13;
+				for(var i=0;i&lt;launchConfigArr.length;i++){&#13;
+					var imageIdTrim = launchConfigArr[i].ImageId.substring(launchConfigArr[i].ImageId.indexOf("/")+1,launchConfigArr[i].ImageId.length);&#13;
+					var hardwareId = launchConfigArr[i].InstanceType;&#13;
+					var monitoring = false;&#13;
+					if(!(isEmpty(launchConfigArr[i].InstanceMonitoring)))&#13;
+						if(!(isEmpty(launchConfigArr[i].InstanceMonitoring.Enabled)))&#13;
+							monitoring = launchConfigArr[i].InstanceMonitoring.Enabled;&#13;
+					&#13;
+					var launchConfigInfo ={&#13;
+						"cmdb_ci_sa_launch_config": {&#13;
+							"identification": {&#13;
+								"cmdb_ci_cloud_service_account": {&#13;
+									"criterion": {&#13;
+										"object_id": cloudServiceAccountId&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_aws_datacenter": {&#13;
+									"criterion": {&#13;
+										"object_id": ldc&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_sa_launch_config": {&#13;
+									"criterion": {&#13;
+										"object_id": launchConfigArr[i].LaunchConfigurationName&#13;
+									}&#13;
+								}&#13;
+							},&#13;
+							"attributes": {&#13;
+								"name": launchConfigArr[i].LaunchConfigurationName,&#13;
+								"object_id": launchConfigArr[i].LaunchConfigurationName,&#13;
+								"launch_config_arn": launchConfigArr[i].LaunchConfigurationARN,&#13;
+								"kernel_id": launchConfigArr[i].KernelId,&#13;
+								"ram_disk_id": launchConfigArr[i].RamdiskId,&#13;
+								"ebs_optimized": launchConfigArr[i].EbsOptimized,&#13;
+								"user_data": launchConfigArr[i].UserData,&#13;
+								"monitoring": monitoring&#13;
+							},&#13;
+							"references": {&#13;
+								"cmdb_ci_os_template": {&#13;
+									"identification": {&#13;
+										"cmdb_ci_cloud_service_account": {&#13;
+											"criterion": {&#13;
+												"object_id": cloudServiceAccountId&#13;
+											}&#13;
+										},&#13;
+										"cmdb_ci_aws_datacenter": {&#13;
+											"criterion": {&#13;
+												"object_id": ldc&#13;
+											}&#13;
+										},&#13;
+										"cmdb_ci_os_template": {&#13;
+											"criterion": {&#13;
+												"object_id": imageIdTrim&#13;
+											}&#13;
+										}&#13;
+									},&#13;
+									"attributes": {&#13;
+										"object_id": imageIdTrim&#13;
+									}&#13;
+								},&#13;
+								"cmdb_ci_compute_template": {&#13;
+									"identification": {&#13;
+										"cmdb_ci_cloud_service_account": {&#13;
+											"criterion": {&#13;
+												"object_id": cloudServiceAccountId&#13;
+											}&#13;
+										},&#13;
+										"cmdb_ci_aws_datacenter": {&#13;
+											"criterion": {&#13;
+												"object_id": ldc&#13;
+											}&#13;
+										},&#13;
+										"cmdb_ci_compute_template": {&#13;
+											"criterion": {&#13;
+												"object_id": hardwareId&#13;
+											}&#13;
+										}&#13;
+									},&#13;
+									"attributes": {&#13;
+										"object_id": hardwareId&#13;
+									}&#13;
+								}&#13;
+							},&#13;
+						}&#13;
+					};&#13;
+					launchConfigInfo.cmdb_ci_sa_launch_config["relationships"] = {};&#13;
+&#13;
+					var securityGrpMapArr = [];&#13;
+					//Checking If Object named "SecurityGroups" exists in the CAPI response&#13;
+					if(!(isEmpty(launchConfigArr[i].SecurityGroups))){&#13;
+						//Checking If Object named "member" exists in the "SecurityGroups" object of CAPI response&#13;
+						if(!(isEmpty(launchConfigArr[i].SecurityGroups.member))){&#13;
+							securityGrpMapArr = convertMapToList(launchConfigArr[i].SecurityGroups.member);&#13;
+&#13;
+							if(securityGrpMapArr.length&gt;0)&#13;
+								launchConfigInfo.cmdb_ci_sa_launch_config.relationships['cmdb_ci_compute_security_group'] = [];&#13;
+							&#13;
+							for(var j=0;j&lt;securityGrpMapArr.length;j++){&#13;
+								var securityGroupMapping = {&#13;
+									  "identification": {&#13;
+											"cmdb_ci_cloud_service_account": {&#13;
+												"criterion": {&#13;
+													"object_id": cloudServiceAccountId&#13;
+												}&#13;
+											},&#13;
+											"cmdb_ci_aws_datacenter": {&#13;
+												"criterion": {&#13;
+													"object_id": ldc&#13;
+													}&#13;
+												},&#13;
+											"cmdb_ci_sa_launch_config": {&#13;
+												"criterion": {&#13;
+													"object_id": launchConfigArr[i].LaunchConfigurationName&#13;
+												}&#13;
+											},&#13;
+											"cmdb_ci_compute_security_group": {&#13;
+												"criterion": {&#13;
+													"object_id": securityGrpMapArr[j]&#13;
+												}&#13;
+											}&#13;
+										},&#13;
+										"attributes": {&#13;
+											"object_id": securityGrpMapArr[j]&#13;
+										}&#13;
+								};&#13;
+								launchConfigInfo.cmdb_ci_sa_launch_config.relationships.cmdb_ci_compute_security_group.push(securityGroupMapping);&#13;
+							}&#13;
+						}&#13;
+					}&#13;
+&#13;
+					cloudModelString.push(launchConfigInfo);&#13;
+				}&#13;
+			}&#13;
+		return global.JSON.stringify(cloudModelString);&#13;
+	}&#13;
+}&#13;
+&#13;
+//Following Function converts Map to List&#13;
+function convertMapToList(value){&#13;
+	if(!(Array.isArray(value))){&#13;
+		//Converting to List to Map&#13;
+		var loadList = [];&#13;
+		loadList.push(value);&#13;
+		return loadList;&#13;
+	}&#13;
+	else&#13;
+		return value;&#13;
+}&#13;
+&#13;
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)&#13;
+function isEmpty(value){&#13;
+  return (value == null || value.length === 0);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc) {
+	var cloudModelString = [];
+
+var launchConfigResponse = global.JSON.parse(response);
+
+//Checking whether CAPI returned valid Response
+if(!(isEmpty(launchConfigResponse))){	
+	if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult)))
+		if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations)))
+			if(!(isEmpty(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations.member))){
+				
+				var launchConfigArr = convertMapToList(launchConfigResponse.DescribeLaunchConfigurationsResult.LaunchConfigurations.member);
+				
+				for(var i=0;i<launchConfigArr.length;i++){
+					var imageIdTrim = launchConfigArr[i].ImageId.substring(launchConfigArr[i].ImageId.indexOf("/")+1,launchConfigArr[i].ImageId.length);
+					var hardwareId = launchConfigArr[i].InstanceType;
+					var monitoring = false;
+					if(!(isEmpty(launchConfigArr[i].InstanceMonitoring)))
+						if(!(isEmpty(launchConfigArr[i].InstanceMonitoring.Enabled)))
+							monitoring = launchConfigArr[i].InstanceMonitoring.Enabled;
+					
+					var launchConfigInfo ={
+						"cmdb_ci_sa_launch_config": {
+							"identification": {
+								"cmdb_ci_cloud_service_account": {
+									"criterion": {
+										"object_id": cloudServiceAccountId
+									}
+								},
+								"cmdb_ci_aws_datacenter": {
+									"criterion": {
+										"object_id": ldc
+									}
+								},
+								"cmdb_ci_sa_launch_config": {
+									"criterion": {
+										"object_id": launchConfigArr[i].LaunchConfigurationName
+									}
+								}
+							},
+							"attributes": {
+								"name": launchConfigArr[i].LaunchConfigurationName,
+								"object_id": launchConfigArr[i].LaunchConfigurationName,
+								"launch_config_arn": launchConfigArr[i].LaunchConfigurationARN,
+								"kernel_id": launchConfigArr[i].KernelId,
+								"ram_disk_id": launchConfigArr[i].RamdiskId,
+								"ebs_optimized": launchConfigArr[i].EbsOptimized,
+								"user_data": launchConfigArr[i].UserData,
+								"monitoring": monitoring
+							},
+							"references": {
+								"cmdb_ci_os_template": {
+									"identification": {
+										"cmdb_ci_cloud_service_account": {
+											"criterion": {
+												"object_id": cloudServiceAccountId
+											}
+										},
+										"cmdb_ci_aws_datacenter": {
+											"criterion": {
+												"object_id": ldc
+											}
+										},
+										"cmdb_ci_os_template": {
+											"criterion": {
+												"object_id": imageIdTrim
+											}
+										}
+									},
+									"attributes": {
+										"object_id": imageIdTrim
+									}
+								},
+								"cmdb_ci_compute_template": {
+									"identification": {
+										"cmdb_ci_cloud_service_account": {
+											"criterion": {
+												"object_id": cloudServiceAccountId
+											}
+										},
+										"cmdb_ci_aws_datacenter": {
+											"criterion": {
+												"object_id": ldc
+											}
+										},
+										"cmdb_ci_compute_template": {
+											"criterion": {
+												"object_id": hardwareId
+											}
+										}
+									},
+									"attributes": {
+										"object_id": hardwareId
+									}
+								}
+							},
+						}
+					};
+					launchConfigInfo.cmdb_ci_sa_launch_config["relationships"] = {};
+
+					var securityGrpMapArr = [];
+					//Checking If Object named "SecurityGroups" exists in the CAPI response
+					if(!(isEmpty(launchConfigArr[i].SecurityGroups))){
+						//Checking If Object named "member" exists in the "SecurityGroups" object of CAPI response
+						if(!(isEmpty(launchConfigArr[i].SecurityGroups.member))){
+							securityGrpMapArr = convertMapToList(launchConfigArr[i].SecurityGroups.member);
+
+							if(securityGrpMapArr.length>0)
+								launchConfigInfo.cmdb_ci_sa_launch_config.relationships['cmdb_ci_compute_security_group'] = [];
+							
+							for(var j=0;j<securityGrpMapArr.length;j++){
+								var securityGroupMapping = {
+									  "identification": {
+											"cmdb_ci_cloud_service_account": {
+												"criterion": {
+													"object_id": cloudServiceAccountId
+												}
+											},
+											"cmdb_ci_aws_datacenter": {
+												"criterion": {
+													"object_id": ldc
+													}
+												},
+											"cmdb_ci_sa_launch_config": {
+												"criterion": {
+													"object_id": launchConfigArr[i].LaunchConfigurationName
+												}
+											},
+											"cmdb_ci_compute_security_group": {
+												"criterion": {
+													"object_id": securityGrpMapArr[j]
+												}
+											}
+										},
+										"attributes": {
+											"object_id": securityGrpMapArr[j]
+										}
+								};
+								launchConfigInfo.cmdb_ci_sa_launch_config.relationships.cmdb_ci_compute_security_group.push(securityGroupMapping);
+							}
+						}
+					}
+
+					cloudModelString.push(launchConfigInfo);
+				}
+			}
+		return global.JSON.stringify(cloudModelString);
+	}
+}
+
+//Following Function converts Map to List
+function convertMapToList(value){
+	if(!(Array.isArray(value))){
+		//Converting to List to Map
+		var loadList = [];
+		loadList.push(value);
+		return loadList;
+	}
+	else
+		return value;
+}
+
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)
+function isEmpty(value){
+  return (value == null || value.length === 0);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-12 10:50:50</sys_created_on>
+        <sys_id>7203eb1f0b7332003ffe0bcb15673a64</sys_id>
+        <sys_mod_count>41</sys_mod_count>
+        <sys_name>List_LaunchConfiguration_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_7203eb1f0b7332003ffe0bcb15673a64</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-08 11:32:32</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

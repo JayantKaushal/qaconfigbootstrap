@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBillingAjax</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>CmpBillingAjax</name>
+        <script><![CDATA[var CmpBillingAjax = Class.create();
+CmpBillingAjax.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+	runBillingJobForDialogBox: function() {
+		var jobId = this.getParameter('sysparm_job_id');
+		var startYM = this.getParameter('sysparm_start_month');
+		var endYM = this.getParameter('sysparm_end_month');
+		var clearData = (this.getParameter('sysparm_clear_data') == 'true');
+
+		var startYear = startYM.substring(0,4);
+		var startMonth = startYM.substring(5,7);
+		var endYear = endYM.substring(0,4);
+		var endMonth = endYM.substring(5,7);
+
+		var report = new CmpBillingJobUtil();
+		return report.runThisJob(jobId, startYear, startMonth, endYear, endMonth, clearData);
+	},
+
+	// the status should either be 'In Progress' or 'Finish' only
+	updateJobStatus : function(jobId, status) {
+		var gr = new GlideRecord('sn_cmp_billing_schedule');
+		if(gr.get(jobId)){
+			gr.current_job_status = status;
+			/* eslint-disable */
+			var result = gr.update();
+			/* eslint-enable */
+		}
+	},
+	
+	resetJobStatus : function() {
+		var jobConfigId = this.getParameter('sysparm_job_config_id');
+		this.updateJobStatus(jobConfigId, 'Finish');
+	},
+
+	getCurrentWfContextId: function(){
+		var jobConfigId = this.getParameter('sysparm_job_config_id');
+		return new CmpBillingJobUtil().getCurrentWfContextId(jobConfigId);
+	},
+	
+	cancelCurrentWfContext: function() {
+		var jobConfigId = this.getParameter('sysparm_job_config_id');
+		this._cancelCurrentWfContext(jobConfigId);
+	},
+
+	_cancelCurrentWfContext: function(jobConfigId) {
+	
+		var jobUtil = new CmpBillingJobUtil();
+		var parentContextId = jobUtil.getCurrentWfContextId(jobConfigId);
+		var childContextId = jobUtil.getChildWfContextId(parentContextId);
+
+		var childGr = new GlideRecord('wf_context');
+		if (childGr.get(childContextId)) {
+			wf = new global.Workflow();
+			wf.cancelContext(childGr);
+			wf.cancel(childGr);
+			wf.broadcastKill(childGr);
+		}
+		var parentGr = new GlideRecord('wf_context');
+		if (parentGr.get(parentContextId)) {
+			wf = new global.Workflow();
+			wf.cancelContext(parentGr);
+			wf.cancel(parentGr);
+			wf.broadcastKill(parentGr);
+		}
+	},
+	
+	getImportTableForProvider: function(){
+		var providerId = this.getParameter('sysparm_job_provider_id');
+		var provPropGr = new GlideRecord('sn_capi_provider_property');
+		provPropGr.addQuery('provider', providerId);
+		provPropGr.addQuery('key', 'billing_import_table');
+		provPropGr.query();
+		if (provPropGr.next()) {
+			return provPropGr.getValue('value');
+		}
+		return '';
+	},
+	
+	type: 'CmpBillingAjax'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-10 07:17:18</sys_created_on>
+        <sys_id>36b98eb4930f22004a9032bfa67ffb5b</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>CmpBillingAjax</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_36b98eb4930f22004a9032bfa67ffb5b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-16 18:03:48</sys_updated_on>
+    </sys_script_include>
+</record_update>

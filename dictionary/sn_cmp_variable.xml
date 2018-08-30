@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="item_option_new" label="Cloud Variable" max_length="40" name="sn_cmp_variable" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Validation Error(Regex)" max_length="4000" name="error_text" type="string"/>
+        <element label="Global Property" max_length="32" name="global_prop" reference="sn_cmp_bp_global_prop" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Pool Filter value" max_length="1000" name="pool_filter" type="string"/>
+        <element label="Read Only" max_length="40" name="read_only" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Validation(Regex)" max_length="4000" name="regex" type="string"/>
+        <element label="Visibility" max_length="40" name="visibility" type="boolean"/>
+        <index name="index">
+            <element name="global_prop"/>
+        </index>
+    </element>
+</database>

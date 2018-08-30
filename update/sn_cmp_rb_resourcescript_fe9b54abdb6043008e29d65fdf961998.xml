@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Azure alert template</name>
+        <resource display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource>
+        <script>{
+  "$schema": "https:\/\/schema.management.azure.com\/schemas\/2015-01-01\/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "activityLogAlertName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique name (within the Resource Group) for the Activity log alert."
+      }
+    },
+    "activityLogAlertEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Indicates whether or not the alert is enabled."
+      }
+    },
+    "operationNameCondition": {
+      "type": "array",
+      "metadata": {
+        "description": "condition for Operation Name."
+      }
+    },
+    "actionGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique name (within the Resource Group) for the Action group."
+      }
+    },
+    "actionGroupShortName": {
+      "type": "string",
+      "metadata": {
+        "description": "Short name (maximum 12 characters) for the Action group."
+      }
+    },
+    "webhookReceiverName": {
+      "type": "string",
+      "metadata": {
+        "description": "Webhook receiver service URI."
+      }
+    },
+    "webhookServiceUri": {
+      "type": "string",
+      "metadata": {
+        "description": "Webhook receiver service URI."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights\/activityLogAlerts",
+      "apiVersion": "2017-04-01",
+      "name": "[parameters('activityLogAlertName')]",
+      "location": "Global",
+      "dependsOn": [
+        "[concat('Microsoft.Insights\/actionGroups\/', parameters('actionGroupName'))]"
+      ],
+      "properties": {
+        "enabled": "[parameters('activityLogAlertEnabled')]",
+        "scopes": [
+          "[subscription().id]"
+        ],
+        "condition": {
+          "allOf": [
+            {
+              "field": "category",
+              "equals": "Administrative"
+            },
+            {
+              "field": "status",
+              "equals": "Succeeded",
+              "containsAny": null
+            },
+            {
+              "anyOf": "[parameters('operationNameCondition')]"
+            }
+          ]
+        },
+        "actions": {
+          "actionGroups": [
+            {
+              "actionGroupId": "[resourceId('Microsoft.Insights\/actionGroups', parameters('actionGroupName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights\/actionGroups",
+      "apiVersion": "2017-04-01",
+      "name": "[parameters('actionGroupName')]",
+      "location": "Global",
+      "properties": {
+        "groupShortName": "[parameters('actionGroupShortName')]",
+        "enabled": true,
+        "smsReceivers": [
+          
+        ],
+        "emailReceivers": [
+          
+        ],
+        "webhookReceivers": [
+          {
+            "name": "[parameters('webhookReceiverName')]",
+            "serviceUri": "[parameters('webhookServiceUri')]"
+          }
+        ]
+      }
+    }
+  ]
+}</script>
+        <script_js/>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>yuedong.huang@snc</sys_created_by>
+        <sys_created_on>2017-08-18 21:45:50</sys_created_on>
+        <sys_id>fe9b54abdb6043008e29d65fdf961998</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Azure alert template</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_fe9b54abdb6043008e29d65fdf961998</sys_update_name>
+        <sys_updated_by>yuedong.huang@snc</sys_updated_by>
+        <sys_updated_on>2017-08-18 22:32:45</sys_updated_on>
+        <type>18</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

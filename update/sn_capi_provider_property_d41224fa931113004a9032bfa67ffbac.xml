@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_capi_provider_property">
+    <sn_capi_provider_property action="INSERT_OR_UPDATE">
+        <key>billing_report_type</key>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <sys_class_name>sn_capi_provider_property</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-09 17:15:38</sys_created_on>
+        <sys_id>d41224fa931113004a9032bfa67ffbac</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_capi_provider_property_d41224fa931113004a9032bfa67ffbac</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-09 22:40:25</sys_updated_on>
+        <value>aws-billing-detailed-line-items-with-resources-and-tags</value>
+    </sn_capi_provider_property>
+</record_update>

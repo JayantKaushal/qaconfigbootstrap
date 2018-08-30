@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_ng_template">
+    <sp_ng_template action="INSERT_OR_UPDATE">
+        <id>catalogWizardPage.html</id>
+        <sp_widget display_value="Cloud Catalog Item Wizard">bc5e56f60bd32200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>sp_ng_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 00:01:25</sys_created_on>
+        <sys_id>b8a0e23a0bd32200eff7ef9bb4673af6</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>catalogWizardPage.html</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_ng_template_b8a0e23a0bd32200eff7ef9bb4673af6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-29 00:18:47</sys_updated_on>
+        <template><![CDATA[<div ng-show="activePage==true">
+  <h4 style="margin:0 0 20px 10px;padding:0;"
+      ng-if="pageTitle!=undefined|| pageTitle!=''">
+    {{pageTitle}}
+  </h4>
+  <div ng-transclude></div>
+</div>]]></template>
+    </sp_ng_template>
+</record_update>

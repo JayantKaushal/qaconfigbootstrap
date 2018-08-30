@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetBPMetadataAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetBPMetadataAction</name>
+        <script><![CDATA[var CMPGetBPMetadataAction = Class.create();
+CMPGetBPMetadataAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction : function(params) {
+		try {
+			if (!params.layer_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetBPMetadataAction.doAction: Undefined layer id",
+					null
+				);
+			}
+			var layerInstance = sn_smd.SMUtils.loadLayer(params.layer_id);
+			var graphMetadata = {};
+			var modelVersionObj = new sn_smd.SMSvcDefinition(params.layer_id, null, null);
+			graphMetadata.checkpointId = modelVersionObj.getCheckpoint().getSysId();
+			graphMetadata.isCheckedOut = modelVersionObj.isCheckedout();
+			graphMetadata.name = layerInstance.getName();
+			graphMetadata.description = layerInstance.getDescription();
+					
+			return graphMetadata;
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(gs.getMessage("Failed to load the metadata"),
+			      "CMPGetBPMetadataAction.doAction: Failed to load the metadata",
+				  error
+			);
+		}
+	},
+
+    type: 'CMPGetBPMetadataAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-25 06:50:40</sys_created_on>
+        <sys_id>6bd61fe59f532200a0d5b10f842e702a</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPGetBPMetadataAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_6bd61fe59f532200a0d5b10f842e702a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-25 06:55:11</sys_updated_on>
+    </sys_script_include>
+</record_update>

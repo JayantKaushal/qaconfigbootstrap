@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_resource_type_operation">
+    <sn_cmp_resource_type_operation action="INSERT_OR_UPDATE">
+        <discovery_operation/>
+        <discovery_step display_value="ITapp Azure Compute Manager.List resource groups">cd49df039fa0320048111f80a57fcf22</discovery_step>
+        <resource_type display_value="Microsoft.Resources/resourceGroups">c0c587139f60320048111f80a57fcf1e</resource_type>
+        <sys_class_name>sn_cmp_resource_type_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-21 19:03:05</sys_created_on>
+        <sys_id>da8613cfd725320097eb6ccf6e6103ed</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>c0c587139f60320048111f80a57fcf1e</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_resource_type_operation_da8613cfd725320097eb6ccf6e6103ed</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-21 19:03:05</sys_updated_on>
+    </sn_cmp_resource_type_operation>
+</record_update>

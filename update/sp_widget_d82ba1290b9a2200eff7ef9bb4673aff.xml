@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $location, $rootScope, $timeout) {
+	var c = this;
+
+	c.isActiveTab = function(tab){
+		return c.data.tab == tab;
+	};
+
+	c.callTabClickEvent = function(tab){
+		if(c.data.tab == tab)
+			return;
+		c.data.tab = tab;
+		c.data.taskTable = undefined;
+		c.server.update();
+	};
+
+	var unsub = $scope.$on('cloudRequestClickEvent', function(e,item) {
+		c.data.tab = item.tab || 'status';
+		c.data.is_form_load = false;
+		c.data.req_item_sys_id = item.sys_id || c. data.req_item_sys_id;
+		c.data.cat_name = item.cat_name || c.data.cat_name;
+		c.data.number = item.number || c.data.number;
+		c.data.taskTable = undefined;
+		c.server.update();
+	});
+
+	$scope.$on('$destroy', function(){
+		unsub();
+	});
+
+	var unsub1 = $scope.$on('showTaskForm', function(e, tableName, rowSysId) {	
+		c.data.is_form_load = true;
+		c.data.task_table_name = tableName;
+		c.data.task_sys_id = rowSysId;
+		c.server.update();
+	});
+
+	$scope.$on('$destroy', function(){
+		unsub1();
+	});
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>li &gt; a {&#13;
+  color : #525252; &#13;
+  font-size : 14px;&#13;
+}&#13;
+&#13;
+li.active &gt; a,&#13;
+li.active &gt; a:focus,&#13;
+li.active &gt; a:hover {&#13;
+  color : #1570bd;&#13;
+  border : none;&#13;
+  border-bottom : 3px solid #1570bd;&#13;
+}&#13;
+&#13;
+.l-h-40 {&#13;
+  line-height: 40px;&#13;
+}&#13;
+.list-action {&#13;
+  display:block;&#13;
+  padding:0 6px;&#13;
+  cursor: pointer;&#13;
+}&#13;
+.list-action:hover {&#13;
+  background-color: #fff;&#13;
+}&#13;
+&#13;
+.nav-tabs {&#13;
+  border: 1px solid #ddd;&#13;
+  background-color: #f5f5f5;&#13;
+  border-radius: 0px;&#13;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .05);&#13;
+}&#13;
+&#13;
+.nav-tabs &gt; li.active &gt; a {&#13;
+  background-color : transparent; &#13;
+}&#13;
+&#13;
+.no-record {&#13;
+  font-size: 2em;&#13;
+  margin-left: 15%;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-requests-tabs</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,el, attrs, ctrl) {
+	$(document).ready(function(){
+		setTimeout(function() {
+			ctrl.callTabClickEvent('status');
+		});
+		$('#myTab > li > a').click(function(e){
+			ctrl.callTabClickEvent(e.target.id);
+		});
+	});
+}]]></link>
+        <name>Cloud Requests Tabs</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.req_item_sys_id = options.sys_id || input.req_item_sys_id;
+	data.cat_name = options.cat_name || input.cat_name;
+	data.number = options.number || input.number; 
+	data.widgetOptions = {};
+	data.is_form_load = false;
+
+	if(input && input.tab)
+		getWidget(input.tab);
+	else 
+		getWidget('status');
+
+	if(gs.getUser().hasRole('itil'))
+		data.tabName = gs.getMessage("Comments/Work Notes");
+	else
+		data.tabName = gs.getMessage("Comments");
+
+	function getWidget(activeTab){
+		if (activeTab == 'status' && data.req_item_sys_id){
+
+			data.widgetOptions.req_item_id = data.req_item_sys_id;
+			data.cloudRequestStatus = $sp.getWidget("cloud-request-status", data.widgetOptions);
+			data.cloudStackStatus = $sp.getWidget("cloud-stack-status", data.widgetOptions);
+		}
+		else if (activeTab == 'messages' && data.req_item_sys_id){
+			data.widgetOptions = {table: "sc_req_item", 
+														sys_id: data.req_item_sys_id,
+														title: data.cat_name + " - " + data.number,
+														includeExtended: true};
+
+			data.cloudTicketConversations = $sp.getWidget("cloud-ticket-conversations", data.widgetOptions);
+		}
+		else if (activeTab == 'requestDetails' && data.req_item_sys_id)
+		{
+			data.widgetOptions = {table: "sc_req_item", 
+														sys_id: data.req_item_sys_id, 
+														disableUIActions: true, 
+														hideRelatedLists: true, 
+														view: "User_Portal"};
+			data.requestDetails = $sp.getWidget('cloud-request-form', data.widgetOptions);
+		}
+		else if(activeTab == 'tasks' && data.req_item_sys_id)
+		{
+			data.is_form_load = options.is_form_load || input.is_form_load;
+			data.task_table_name = options.task_table_name || input.task_table_name;
+			data.task_sys_id = options.task_sys_id || input.task_sys_id;
+			if(data.is_form_load == true){
+				data.widgetOptions = {table: data.task_table_name , 
+															sys_id: data.task_sys_id, 
+															hideRelatedLists: true, 
+															disableUIActions: true, 
+															view: 'CloudOperations'};
+				data.taskForm = $sp.getWidget('cloud-widget-form', data.widgetOptions);
+			} else 
+			{
+				data.widgetOptions.table = 'sc_task';
+				data.widgetOptions.view = "User_Portal";
+				var gr = new GlideRecordSecure(data.widgetOptions.table);
+				if (!gr.isValid()) {
+					data.widgetOptions.invalid_table = true;
+					data.widgetOptions.table_label = data.table;
+					return;
+				}
+				data.widgetOptions.isFormLoadSameWidget = true;
+				data.widgetOptions.eventName = 'showTaskForm';
+				data.widgetOptions.filter ='request_item='+ data.req_item_sys_id;
+				data.widgetOptions.title = gr.getLabel();
+				data.widgetOptions.table_label = gr.getLabel();
+				data.widgetOptions.fields = "number,state,short_description,request_item,assigned_to,cmdb_ci";
+				copyParameters(data.widgetOptions, ['p', 'o', 'd']);
+				copyParameters(data.widgetOptions, ['relationship_id', 'apply_to', 'apply_to_sys_id']);
+				data.widgetOptions.show_keywords  = false;
+				data.widgetOptions.show_breadcrumbs = false;
+				data.widgetOptions.show_new = false;
+				data.taskTable = $sp.getWidget('cloud-datatable', data.widgetOptions);
+			} 
+		}
+	}
+
+
+	function copyParameters(to, names) {
+		names.forEach(function(name) {
+			data[name] = $sp.getParameter(name);
+		});
+	}
+})();
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-06 05:51:45</sys_created_on>
+        <sys_id>d82ba1290b9a2200eff7ef9bb4673aff</sys_id>
+        <sys_mod_count>398</sys_mod_count>
+        <sys_name>Cloud Requests Tabs</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_d82ba1290b9a2200eff7ef9bb4673aff</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 12:16:47</sys_updated_on>
+        <template><![CDATA[<div>
+  <ul id="myTab" class="nav nav-tabs" role="tablist">
+    <li ng-class="{'active': c.isActiveTab('status')}" role="tab"><a id="status" href="javascript:void(0)" data-toggle="tab">${Status}</a></li>
+    <li ng-class="{'active': c.isActiveTab('messages')}" role="tab"><a id="messages" href="javascript:void(0)" data-toggle="tab">{{c.data.tabName}}</a></li>
+    <li ng-class="{'active': c.isActiveTab('requestDetails')}" role="tab"><a id="requestDetails" href="javascript:void(0)" data-toggle="tab">${Request Details}</a></li>
+    <li ng-class="{'active': c.isActiveTab('tasks')}" role="tab"><a id="tasks" href="javascript:void(0)" data-toggle="tab">${Tasks}</a></li>
+  </ul>
+  <div id="myTabContent" class="tab-content">
+   <div ng-switch="c.data.tab">
+    <div class="row" ng-switch-when="status">
+      <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('status')}" id="statuspanel" role="tabpanel" aria-labelledby="status" tabindex="0">
+            <div class="col-md-4" style="padding-left: 0px;">
+              <sp-widget widget="data.cloudRequestStatus"></sp-widget>
+            </div>
+            <div class="col-md-8" style="padding-right: 0px;">
+              <sp-widget widget="data.cloudStackStatus"></sp-widget>
+        	</div>	
+        </div>
+      </div>
+      <div class="row" ng-switch-when="messages">
+        <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('messages')}" id="messagespanel" role="tabpanel" aria-labelledby="messages" tabindex="0">
+          <sp-widget widget="data.cloudTicketConversations"></sp-widget>
+        </div>
+      </div>
+      <div class="row" ng-switch-when="requestDetails">
+        <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('requestDetails')}" id="requestdetailspanel" role="tabpanel" aria-labelledby="requestDetails" tabindex="0">
+          <sp-widget widget="data.requestDetails"></sp-widget>
+        </div>
+      </div>
+      <div class="row" ng-switch-when="tasks">
+        <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('tasks')}" id="taskspanel" role="tabpanel" aria-labelledby="tasks" tabindex="0">
+          <div ng-switch="c.data.is_form_load">
+            <div ng-switch-when="false">
+           	  <sp-widget  widget="data.taskTable"></sp-widget>
+            </div>
+            <div ng-switch-when="true">
+              <sp-widget  widget="data.taskForm"></sp-widget>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

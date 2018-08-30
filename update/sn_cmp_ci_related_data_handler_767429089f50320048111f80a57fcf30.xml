@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Add CI resource to a stack.  This is done when a 3rd party provider's template type is provisioned and the resources are returned post-provisioning.  Each resource is dynamically discovered if it can be and added to the stack after the CI is created.  A catch-all resource block called "Cloud Resource" is associated with any resource that does not have a resource block of its own.  This is so the CI can be added to the stack and can potentially have a generic operation against it (like delete).</description>
+        <name>AddCIToStack</name>
+        <script><![CDATA[// Look up name
+var name = '';
+var gr = new GlideRecord(ci_class);
+if (gr.get(ci_sys_id))
+	name = '' + gr.name;
+
+// Look up resource block
+var resourceBlock = 'Cloud Resource'; // Default catch-all resource block
+var rb = new GlideRecord('sn_cmp_rb_resourceblock');
+rb.addQuery('refcitype', ci_class);
+rb.query();
+
+if (rb.next())
+	resourceBlock = '' + rb.name;
+
+var resourceNode = {};
+resourceNode.resourceName = resourceBlock;
+resourceNode.alias = name;
+resourceNode.ciInstanceId = ci_sys_id;
+resourceNode.isProvisioned = true;
+resourceNode.parentResourceAlias = related_data.step.invocatingNode.resourceName;
+resourceNode.location = getLDCId(related_data.cloud_account, related_data.step.ldc);
+new sn_cmp_api.BPOrchestratorServiceScript().injectStackItem(global.JSON.stringify(resourceNode), 
+													  related_data.correlation_id);
+
+function getLDCId(accountId, ldc) {
+	var ldcSysId = '';
+	var ldcGr = new GlideRecord('cmdb_ci_logical_datacenter');
+	ldcGr.addQuery('object_id', ldc);
+	ldcGr.query();
+
+	var ldcs = [];
+	while (ldcGr.next())
+		ldcs.push('' + ldcGr.sys_id);
+
+	var accountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+	if (accountGr.get('account_id', accountId)) {
+		var gr = new GlideRecord('cmdb_rel_ci');
+		gr.addQuery('child.sys_id', '' + accountGr.sys_id);
+		gr.addQuery('parent.sys_id', 'IN', ldcs.join());
+		gr.query();
+
+		if (gr.next())
+			ldcSysId = '' + gr.parent.sys_id;
+	}	
+	
+	return ldcSysId;
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+// Look up name
+var name = '';
+var gr = new GlideRecord(ci_class);
+if (gr.get(ci_sys_id))
+	name = '' + gr.name;
+
+// Look up resource block
+var resourceBlock = 'Cloud Resource'; // Default catch-all resource block
+var rb = new GlideRecord('sn_cmp_rb_resourceblock');
+rb.addQuery('refcitype', ci_class);
+rb.query();
+
+if (rb.next())
+	resourceBlock = '' + rb.name;
+
+var resourceNode = {};
+resourceNode.resourceName = resourceBlock;
+resourceNode.alias = name;
+resourceNode.ciInstanceId = ci_sys_id;
+resourceNode.isProvisioned = true;
+resourceNode.parentResourceAlias = related_data.step.invocatingNode.resourceName;
+resourceNode.location = getLDCId(related_data.cloud_account, related_data.step.ldc);
+new sn_cmp_api.BPOrchestratorServiceScript().injectStackItem(global.JSON.stringify(resourceNode), 
+													  related_data.correlation_id);
+
+function getLDCId(accountId, ldc) {
+	var ldcSysId = '';
+	var ldcGr = new GlideRecord('cmdb_ci_logical_datacenter');
+	ldcGr.addQuery('object_id', ldc);
+	ldcGr.query();
+
+	var ldcs = [];
+	while (ldcGr.next())
+		ldcs.push('' + ldcGr.sys_id);
+
+	var accountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+	if (accountGr.get('account_id', accountId)) {
+		var gr = new GlideRecord('cmdb_rel_ci');
+		gr.addQuery('child.sys_id', '' + accountGr.sys_id);
+		gr.addQuery('parent.sys_id', 'IN', ldcs.join());
+		gr.query();
+
+		if (gr.next())
+			ldcSysId = '' + gr.parent.sys_id;
+	}	
+	
+	return ldcSysId;
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-08 23:39:08</sys_created_on>
+        <sys_id>767429089f50320048111f80a57fcf30</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>AddCIToStack</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_767429089f50320048111f80a57fcf30</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-04-18 20:26:05</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>target_entity_id</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_Trigger_Type_On_Change</name>
+        <order/>
+        <script><![CDATA[var BLUEPRINT_PROVISION = "2";
+var BLUEPRINT_APPROVAL = "4";
+var CATALOG_ITEM_LAUNCH = "6";
+var CATALOG_ITEM_REQUEST_START = "8";
+var CATALOG_ITEM_REQUEST_END = "9";
+var CLOUD_EVENT = "7";
+var RESOURCE_OPERATION = "3";
+var STACK_APPROVAL = "5";
+var STACK_RESOURCE_OPERATION_APPROVAL = "10";
+var ON_TASK_CLEANUP = "13";
+function onChange(control, oldValue, newValue, isLoading, isTemplate) {
+	if (isLoading || newValue === '') {
+		return;
+	}	
+	initializeUIDisplay();
+	var targetType = g_form.getValue("target_entity_id");
+	switch( targetType){
+		case BLUEPRINT_PROVISION:
+		// blueprint policy code goes here
+		cloudBlueprint();
+		break;
+		case RESOURCE_OPERATION:
+		// Resource policy code goes here
+		cloudResource();
+		break;
+		case BLUEPRINT_APPROVAL:
+		// Approval policy code goes here
+		cloudApproval();
+		break;
+		case STACK_APPROVAL:
+		// Stack policy code goes here
+		cloudStack();
+		break;
+		case CATALOG_ITEM_LAUNCH:
+		//naming policy code goes here
+		cloudCatalogItem();
+		break;
+		case CLOUD_EVENT:
+		//cloud event policy code goes here
+		cloudEvent();
+		break;
+		case CATALOG_ITEM_REQUEST_START:
+		//Catalog item request code goes here
+		cloudBlueprint();
+		break;
+		case CATALOG_ITEM_REQUEST_END:
+		//Catalog item request code goes here
+		cloudBlueprint();
+		break;
+		case STACK_RESOURCE_OPERATION_APPROVAL:
+		//Catalog item request code goes here
+		cloudResourceApproval();
+		break;
+		case ON_TASK_CLEANUP:
+		cloudTaskCleanup();
+		break;
+		default:
+		g_form.setDisplay("target_entity_instance_id", false);
+		g_form.setDisplay("operation_id", false);
+		g_form.setDisplay("operation_name", false);
+	}
+	attachEntityIdChangeEvent();
+}
+function cloudTaskCleanup(){
+	g_form.setDisplay("target_entity_instance_id", false);
+	g_form.setDisplay("operation_name", false);
+}
+function cloudBlueprint() {
+	setBlueprintLabel();
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+}
+function cloudResource(){
+	setResourceLabel();
+	displayOperationHelpText();	
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("moment", true);
+	g_form.setMandatory("moment", true);
+	g_form.setMandatory("target_entity_instance_id", true);
+	g_form.setMandatory("operation_name", true);	
+}
+function cloudResourceApproval(){
+	setResourceLabel();
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("moment", false);
+	displayHelpText( 'resource', 'resource');
+}
+function cloudCatalogItem(){
+	setCatalogLabel();
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", false);
+}
+function cloudStack(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_blueprint", "Blueprint");
+	g_form.setLabelOf("target_entity_instance_id", "Blueprint");
+	g_form.setLabelOf("target_entity_table", "Blueprint table");
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+	displayHelpText( 'blueprint', 'blueprint');	
+}
+function setCloudResourceType(){
+	g_form.setValue("target_entity_table", "sn_capi_resource_type", "Cloud Resource");
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Cloud Resource"));
+	g_form.setLabelOf("target_entity_table", getMessage("Cloud Resource"));
+}
+function initializeUIDisplay(){
+	g_form.setMandatory("moment", false);
+	g_form.setMandatory("target_entity_instance_id", false);
+	g_form.setMandatory("operation_name", false);		
+	g_form.setValue("target_entity_instance_id", "");
+	g_form.setDisplay("moment", false);
+	g_form.clearOptions("operation_name");
+	g_form.setDisplay("operation_id", false);
+	g_form.setDisplay("target_entity_table", false);
+	g_form.setDisplay("target_entity_instance_id", false);
+}
+function cloudEvent(){
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", false);
+	setCloudResourceType();
+}
+function cloudApproval(){
+	setBlueprintLabel();
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+}
+function documentIDPopup(label){
+	var documentKey = document.getElementById("document_key");
+	if( documentKey != null){
+		var documentKeyDiv = documentKey.parentElement;
+		if( documentKeyDiv != null){
+			if( documentKeyDiv.previousSibling != null){
+				documentKeyDiv.previousSibling.style.display = "none";
+			}
+			if( documentKeyDiv != null){
+				var documentKeyLabels = documentKeyDiv.parentElement.getElementsByTagName("label");
+				if( documentKeyLabels !== undefined && documentKeyLabels.length > 0){
+					documentKeyLabels[0].textContent = label;
+				}
+
+			}
+		}
+	}
+}
+function setCatalogLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_cat_item", getMessage("CatalogItem"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Catalog Item"));
+	g_form.setLabelOf("target_entity_table", getMessage("Catalog Item table"));
+	displayHelpText( 'catalog', 'catalog item');	
+}
+function setStackLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_blueprint", getMessage("Blueprint"));
+	g_form.setLabelOf("target_entity_table", getMessage("Stack table"));
+}
+function setBlueprintLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_blueprint", getMessage("Blueprint"));
+	g_form.setLabelOf("target_entity_table", getMessage("Blueprint table"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Blueprint"));
+	displayHelpText( 'blueprint', 'blueprint');	
+
+}
+function setResourceLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_rb_resourceblock", getMessage("ResourceBlock"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Resource Block"));
+	g_form.setLabelOf("target_entity_table", getMessage("Resource block table"));
+}
+function attachEntityIdChangeEvent(){
+	var targetEntityInstanceIdEle = g_form.getControl( 'target_entity_instance_id');
+	var inputTags = targetEntityInstanceIdEle.parentElement.getElementsByTagName('input');
+	if( targetEntityInstanceIdEle.getAttribute('hasTriggerEventChange') != null){
+		return;
+	}
+	if( inputTags != null){
+		for( var i=0;i<inputTags.length;i++){
+			if( inputTags[i].id != null && inputTags[i].id == 'sys_display.sn_cmp_pol_policy.target_entity_instance_id'){
+				targetEntityInstanceIdEle.setAttribute('hasTriggerEventChange', true);
+				Event.observe(inputTags[i], 'change', triggerChangeEvent);
+				break;
+			}
+		}
+	}
+}
+function triggerChangeEvent(event) {
+	if( event.target.value == ''){
+		var eventTar = event.target;
+		g_form.setValue('target_entity_instance_id', '');
+		if( eventTar.parentElement != null &&
+		   eventTar.parentElement.parentElement != null &&
+		   eventTar.parentElement.parentElement.parentElement != null &&
+		   eventTar.parentElement.parentElement.parentElement.getElementsByTagName('a') != null){
+			var tag = eventTar.parentElement.parentElement.parentElement.getElementsByTagName('a');
+			if(tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'] != null && tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'].getAttribute('data-sysid') != null){
+				tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'].setAttribute('data-sysid', '');
+				g_form.clearOptions("operation_name");
+				displayHelpText( 'instance', 'value');
+			}
+		}
+	}
+}
+function displayHelpText( type, label){
+	if( !type)
+		type = 'instance';
+	if( !label)
+		label = 'value';
+	if( g_form.getValue('target_entity_instance_id') == ''){
+		g_form.hideFieldMsg( 'target_entity_instance_id',true);	
+		g_form.showFieldMsg('target_entity_instance_id', getMessage('Policy is executed on every '+ type + ', when ' + label + ' is empty.'), 'info', true);
+	}
+	displayOperationHelpText();
+}
+
+function displayOperationHelpText(){
+	if( g_form.getValue('operation_name').trim() == ""){
+		g_form.hideFieldMsg( 'operation_name',true);				
+		if( g_form.getValue("target_entity_id") != RESOURCE_OPERATION){
+			g_form.showFieldMsg('operation_name', getMessage('Policy is executed on every operation, when operation is empty.'), 'info', true);			
+		}
+	}	
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-06 21:23:33</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>ac9236d75b403200a821273a41f91ab2</sys_id>
+        <sys_mod_count>128</sys_mod_count>
+        <sys_name>Policy_Trigger_Type_On_Change</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_ac9236d75b403200a821273a41f91ab2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-01 11:43:53</sys_updated_on>
+        <table>sn_cmp_pol_policy</table>
+        <type>onChange</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

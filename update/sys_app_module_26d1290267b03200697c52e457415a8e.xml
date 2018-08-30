@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_app_module">
+    <sys_app_module action="INSERT_OR_UPDATE">
+        <active>false</active>
+        <application display_value="Cloud Management">f7c511a2eb752200979aa5115206fe8f</application>
+        <assessment/>
+        <content_page/>
+        <device_type/>
+        <filter/>
+        <hint/>
+        <homepage/>
+        <image/>
+        <link_type>SEPARATOR</link_type>
+        <map_page/>
+        <mobile_title>Cloud Operations &amp; Troubleshooting</mobile_title>
+        <mobile_view_name>Mobile</mobile_view_name>
+        <name>cmdb_ci_lb_ace</name>
+        <order>600</order>
+        <override_menu_roles>false</override_menu_roles>
+        <query/>
+        <report/>
+        <roles>sn_cmp.cloud_admin,sn_cmp.cloud_operator,sn_cmp.cloud_service_designer</roles>
+        <sys_class_name>sys_app_module</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-09 01:05:59</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>26d1290267b03200697c52e457415a8e</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>Cloud Operations &amp; Troubleshooting</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_app_module_26d1290267b03200697c52e457415a8e</sys_update_name>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2018-08-30 09:05:57</sys_updated_on>
+        <timeline_page/>
+        <title>Cloud Operations &amp; Troubleshooting</title>
+        <uncancelable>false</uncancelable>
+        <view_name/>
+        <window_name/>
+    </sys_app_module>
+</record_update>

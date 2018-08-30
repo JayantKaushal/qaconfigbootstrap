@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getByLDC</name>
+        <resource_pool display_value="StorageAccountPool">8aa0960d0b913200dbe7aac125673a86</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param locationId - the sysId of LDC
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var filteredRecords = [];
+
+	// TODO: write script to set filtered records
+	if(json != null && json != ""){
+	  var map = new global.JSON().decode(json);
+	 filteredRecords = new sn_cmp_api.ExpressionResolverUtilScript().getMetadataRelations(map.Location, 'Hosts', 'cmdb_ci_cloud_storage_account', 'flat', 1);
+	}else{
+		gs.error("input json is blank - "+json);
+	}
+
+		return filteredRecords;
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-02 22:36:32</sys_created_on>
+        <sys_id>f0c11e0d0b913200dbe7aac125673a92</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>getByLDC</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_f0c11e0d0b913200dbe7aac125673a92</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-03 00:24:00</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

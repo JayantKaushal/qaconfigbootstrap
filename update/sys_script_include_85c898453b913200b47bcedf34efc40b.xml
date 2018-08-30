@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOpImpleStepScriptNameAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOpImpleStepScriptNameAction</name>
+        <script><![CDATA[var CMPCreateOpImpleStepScriptNameAction = Class.create();
+CMPCreateOpImpleStepScriptNameAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.stepId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOpImpleStepScriptNameAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			var resourceBlockId = params.resourceBlockId;
+			var scriptName = params.scriptName;
+			var stepId = params.stepId;
+			
+			//addTranslatorToStep is void method, not return any values
+			var createTranslObj = resourceBlockServiceScript.addTranslatorToStep(resourceBlockId, stepId, scriptName);
+			//var createTrans = new global.JSON().decode(createTranslObj);
+			return createTranslObj;
+			//Guset Interface operation list
+			/*var scriptName = params.scriptName;
+			var stepId = params.stepId;
+			var scriptId = params.scriptId;
+			var gr = new GlideRecord('sn_cmp_rb_step_translator');
+			gr.addQuery("step", stepId);
+			gr.addQuery("script", scriptId);
+			gr.query();
+			var isRecordExists = false;
+			while (gr.next()) {
+				isRecordExists = true;
+			}
+			if(isRecordExists) {
+				var grInsert = new GlideRecord('sn_cmp_rb_step_translator');
+				grInsert.setValue("step", stepId);
+				grInsert.setValue("script", scriptId);
+				grInsert.insert();
+			}
+			return true;*/
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add translator for resource block operations steps"),
+				"CMPCreateOpImpleStepScriptNameAction.doAction(): Failed to add translator for resource block operations steps",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOpImpleStepScriptNameAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-02 14:23:01</sys_created_on>
+        <sys_id>85c898453b913200b47bcedf34efc40b</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPCreateOpImpleStepScriptNameAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_85c898453b913200b47bcedf34efc40b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-03 08:48:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="ecc_agent_script_include">
+    <ecc_agent_script_include action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Base billing probe class with common logic for downloading billing data and sending back the output in chunks via the ECC queue.</description>
+        <name>CmpBillingProbe</name>
+        <script><![CDATA[/* jshint -W030 */
+
+ms.include("CmpBillingIncludes");
+
+var CmpBillingProbe = Class.create();
+
+(function() {
+	
+CmpBillingProbe.prototype = Object.extendsObject(AProbe, {
+
+	inputStream : null,
+	reader : null,
+	chunkSize : 300000,
+	MINIMUM_HEADER_LENGTH : 100,
+	includeZeroCostItems: false,
+	includedDays : [true, true, true, true, true, true, true, true, true, true,
+					true, true, true, true, true, true, true, true, true, true,
+					true, true, true, true, true, true, true, true, true, true, true],
+	
+    initialize : function(probe) {
+        this.probe = probe;
+        this.output = "";
+    },
+
+	
+    /**
+     * Runs the probe instance
+     */
+    run : function() {
+		ms.log("Running "+this.type+"...");
+        if (this.init()) {
+			this.process();
+		}
+        this.cleanup();
+        return;
+
+	},
+    
+    /**
+      * Attempts to initialize the service instance to allow the process method to do its work
+      */
+    init : function() {
+		var credentialId = (this.hasParameter('credential')) ? this.getParameter('credential') : ""; 
+		var endpoint = this.getParameter('endpoint', "");
+		var year = this.getParameter('year', "");
+		var month = this.getParameter('month', "");
+		var accountNum =  (this.hasParameter('account')) ? this.getParameter('account') : ""; 
+		var bucket = this.getParameter('bucket', "");
+		
+		if (this.hasParameter('included_days')) {
+			var daysStr = this.getParameter('included_days');
+			if (daysStr) {
+				var daysStrArr = daysStr.split(",");
+				for (var i=0; i<daysStrArr.length; i++)
+					this.includedDays[i] = (daysStrArr[i] == 'true');
+			}
+		}
+		
+		if (this.hasParameter('chunk_size'))
+			this.chunkSize = parseInt(''+this.getParameter('chunk_size'));
+		
+		this.includeZeroCostItems = ('true' == this.getParameter('include_zero_cost_items'));
+		var creds = this.getCredentials(this.CREDENTIAL_TYPE);
+
+		// Find matching credential
+		var credential = null;
+		while (creds.hasNext()) {
+			credential = creds.next();
+			if (credential.getID() == credentialId) {
+				break;
+			}
+		}
+		if (credential) {
+			try {
+				if (!this.connect(credential, endpoint, year, month, accountNum, bucket))
+					return false;
+			} catch (ex) {
+				this.setError("Unable to establish connection to " + endpoint + ": " + ex);
+				ms.log('Trace for '+ex+':');
+				var traceArr = ex.getStackTrace();
+				for (var element in traceArr) {
+					ms.log(traceArr[element]);
+				}
+				return false;
+			}
+		} else {
+			this.setError("Credential with ID "+credentialId+" not found.");
+			return false;
+		}
+		return true;		
+    },
+    
+    /**
+      * Abstract function to run the probe functionality - the derived probes should have a body for this
+      */
+    process : function() {
+		
+		try {
+			var lineNum = parseInt(this.getParameter('line_number', '0'));
+			var result = "";
+			var totalLines = 0;
+			var skippedLines = 0;
+			
+			var line = this.reader.readLine();
+
+			// skip any short or empty lines at the top to get to the line with the column headers
+			while (line && line.length() < this.MINIMUM_HEADER_LENGTH) {
+				line = this.reader.readLine();
+			}
+			var header = line+"\n";
+
+			while (line && line.length() > 0) {
+
+				// Send a chunk and reset output if the size limit is almost hit
+				if (this.output.length + line.length() > this.chunkSize) {
+					this.sendOutput(this.output);
+					this.output = header;			
+				}
+
+				var leftover = new Packages.java.lang.String("");
+				if (line.search(/"0.[0-9]+","0.0000000[0-9]+","0.[0-9]+","0.0000000[0-9]+"/) >= 0
+				    || line.indexOf('"0","0.000000"') >= 0) {
+					//Include zero cost line items of type BoxUsage only for now
+					if (!this.includeZeroCostItems || line.indexOf('BoxUsage:') < 0)
+						skippedLines++;
+				} else if (line.endsWith("\"") || line.endsWith(",")) {
+					var day = this.getDayForLine(line);
+					if (this.includedDays[day])
+						this.output += line+"\n";
+					else
+						skippedLines++;
+				} else if (line.length() < 10000)
+					leftover = line.trim();
+
+				line = this.reader.readLine();
+				if (line != null && leftover != null && leftover.length() > 0)
+					line = leftover.concat(line);
+				totalLines++;
+			}
+
+			this.sendOutput(this.output);
+			ms.log('Total line count: '+totalLines+" ("+skippedLines+" lines were skipped)");
+		} catch (ex) {
+			this.setError("Error while reading file: "+ ex);
+			return false;
+		}
+		return true;
+    },
+
+	/**
+	* Get the (zero-indexed) day of the month associated with this line item.
+	* Override in subclasses
+	*/
+	getDayForLine : function(line) {
+		return 0;
+	},
+    
+    /**
+     * Logs out of the ServiceInstance connected to vCenter and creates the output result records when
+     * we weren't able to connect so the error that is set gets propagated properly
+     */
+    cleanup : function() {
+		this.sendOutput("Download complete");
+		try {
+			this.reader.close();
+		} catch (exc) {
+			// do nothing
+		}
+		try {
+			this.inputStream.close();
+		} catch (exc) {
+			// do nothing
+		}
+	},
+
+	sendOutput : function(output) {
+		this.createOutputResult(output);
+		var sequence = Counter.next("ecc:sequence");
+		this.probe.queue(this.type+"Result", this.getParameter('topic'),
+						 this.getParameter('name'), this.getParameter('source'),
+						 this.getParameter('ecc_queue'), sequence);
+	},
+    
+           
+    type: "CmpBillingProbe"
+});
+
+
+})();
+]]></script>
+        <sys_class_name>ecc_agent_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-07 01:40:06</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>e5e4fb9193eb22004a9032bfa67ffbfd</sys_id>
+        <sys_mod_count>67</sys_mod_count>
+        <sys_name>CmpBillingProbe</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>ecc_agent_script_include_e5e4fb9193eb22004a9032bfa67ffbfd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-20 20:40:27</sys_updated_on>
+    </ecc_agent_script_include>
+</record_update>

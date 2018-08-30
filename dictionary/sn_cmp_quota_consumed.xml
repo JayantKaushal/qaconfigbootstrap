@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Quota Consumed" max_length="40" name="sn_cmp_quota_consumed" type="collection">
+        <element attributes="scale=8" label="Amount consumed" max_length="30" name="amount_consumed" type="decimal"/>
+        <element label="Group" max_length="32" name="group" reference="sys_user_group" type="reference"/>
+        <element label="Needs update" max_length="40" name="needs_update" type="boolean"/>
+        <element label="Quota definition" max_length="32" name="quota_definition" reference="sn_cmp_quota_definition" type="reference"/>
+        <element label="User" max_length="32" name="user" reference="sys_user" type="reference"/>
+        <index name="index">
+            <element name="quota_definition"/>
+        </index>
+        <index name="index2">
+            <element name="user"/>
+        </index>
+        <index name="index3">
+            <element name="group"/>
+            <element name="user"/>
+            <element name="quota_definition"/>
+        </index>
+        <index name="index4">
+            <element name="group"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Script Template" max_length="40" name="sn_cmp_pol_template" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Logic Name" mandatory="true" max_length="100" name="logic_name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" label="Template" max_length="4000" name="template" type="string"/>
+        <index name="index">
+            <element name="logic_name"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+    </element>
+</database>

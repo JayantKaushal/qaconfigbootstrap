@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_resource_type_operation">
+    <sn_cmp_resource_type_operation action="INSERT_OR_UPDATE">
+        <discovery_operation display_value="Get Resource">29e22f029f14320048111f80a57fcf60</discovery_operation>
+        <discovery_step display_value="Azure Cloud Resource Interface.getResource">dd23509a9f10320048111f80a57fcf2c</discovery_step>
+        <resource_type display_value="Cloud Resource">e1fb79d29f90320048111f80a57fcfdd</resource_type>
+        <sys_class_name>sn_cmp_resource_type_operation</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-07 22:41:37</sys_created_on>
+        <sys_id>f637bfe1d7f0320097eb6ccf6e61038b</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>e1fb79d29f90320048111f80a57fcfdd</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_resource_type_operation_f637bfe1d7f0320097eb6ccf6e61038b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-23 21:30:51</sys_updated_on>
+    </sn_cmp_resource_type_operation>
+</record_update>

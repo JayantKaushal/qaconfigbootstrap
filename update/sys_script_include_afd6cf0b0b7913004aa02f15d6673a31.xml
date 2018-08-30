@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCheckCloudAccountNameExistsAction</api_name>
+        <client_callable>false</client_callable>
+        <description>This Action checks whether cloud account name already exists.</description>
+        <name>CMPCheckCloudAccountNameExistsAction</name>
+        <script><![CDATA[var CMPCheckCloudAccountNameExistsAction = Class.create();
+CMPCheckCloudAccountNameExistsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction : function(params) {
+		try {
+			var response = {};
+			var gr =  new GlideRecord('cmdb_ci_cmp_cloud_account');
+			gr.addQuery('name', params.name);
+			gr.query();
+			response.nameExists = gr.hasNext();
+			return response;
+		} catch(error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Check cloud account name exists API failed"),
+				"CMPCheckCloudAccountNameExistsAction.doAction(): Unable to check if the cloud account name already exists.",
+				error
+			);
+		}
+	},
+
+    type: 'CMPCheckCloudAccountNameExistsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-05-05 20:26:43</sys_created_on>
+        <sys_id>afd6cf0b0b7913004aa02f15d6673a31</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CMPCheckCloudAccountNameExistsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_afd6cf0b0b7913004aa02f15d6673a31</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-06 06:56:59</sys_updated_on>
+    </sys_script_include>
+</record_update>

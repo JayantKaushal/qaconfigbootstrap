@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Default Quota" max_length="40" name="sn_cmp_quota_default" type="collection">
+        <element label="Group Max Limit" mandatory="true" max_length="100" name="max_limit" type="int"/>
+        <element display="true" label="Quota Definition" mandatory="true" max_length="32" name="quota_definition" reference="sn_cmp_quota_definition" reference_cascade_rule="delete" type="reference"/>
+        <element label="Per User Limit" mandatory="true" max_length="100" name="user_limit" type="int"/>
+        <index name="index">
+            <element name="quota_definition"/>
+        </index>
+    </element>
+</database>

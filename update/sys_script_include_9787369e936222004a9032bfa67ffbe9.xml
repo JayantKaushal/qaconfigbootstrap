@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBillingTransformUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CmpBillingTransformUtil</name>
+        <script><![CDATA[var CmpBillingTransformUtil = Class.create();
+/* eslint-disable no-dupe-keys, no-new-wrappers */
+CmpBillingTransformUtil.prototype = {
+
+	MAP_TABLE: 'sn_cmp_cost_import_map',
+	USAGE_PROFILE_TABLE: 'sn_cmp_usage_profile',
+	USAGE_CATEGORY_TABLE: 'sn_cmp_usage_category',
+	COST_TABLE: 'sn_cmp_cost',
+	COST_LDC_TABLE: 'sn_cmp_cost_ldc',
+	COST_RESOURCE_TABLE: 'sn_cmp_cost_rsrc',
+	STACK_ITEM_TABLE: 'sn_cmp_stack_item',
+	TAG_NAME_TABLE: 'sn_cmp_tag_name',
+	TAG_VALUE_SET_TABLE: 'sn_cmp_tag_value_set',
+	RESOURCE_TAG_HISTORY_TABLE: 'sn_cmp_rsrc_tag_history',
+	RESOURCE_TYPE_TABLE: 'sn_capi_resource_type',
+	TAG:'[CmpBillingTransformUtil]',
+	JSON: null,
+
+	tagUtil: null,
+	fieldMaps: {},
+	usageProfileMap: {},
+	resourceMap: {},
+	datacenterMap: {},
+	rtMap: {},
+	usageCategoryMap: {},
+	tagValueSetMap: {},
+	
+    initialize: function() {
+		this.tagUtil = new CmpTagUtil();
+		this.JSON = new global.JSON();
+		
+		this.usageProfileMap = {};
+		var upGr = new GlideRecord(this.USAGE_PROFILE_TABLE);
+		upGr.query();
+		while (upGr.next()) {
+			var ukey = upGr.usage_category.name+'|'+upGr.rate+'|'+upGr.usage_unit;
+			this.usageProfileMap[ukey] = upGr.getUniqueValue();
+		}
+
+		this.datacenterMap = {};
+		var ldcGr = new GlideRecord(this.COST_LDC_TABLE);
+		ldcGr.query();
+		while (ldcGr.next()) {
+			var dkey = ldcGr.account_id+'|'+ldcGr.region;
+			this.datacenterMap[dkey] = ldcGr.getUniqueValue();
+		}
+		
+		this.resourceMap = {};
+		var rsrcGr = new GlideRecord(this.COST_RESOURCE_TABLE);
+		rsrcGr.query();
+		while (rsrcGr.next()) {
+			var rkey = rsrcGr.resource_id+'|'+rsrcGr.datacenter.account_id+'|'+rsrcGr.datacenter.region;
+			this.resourceMap[rkey] = {'sys_id': rsrcGr.getUniqueValue(),
+									  'region': rsrcGr.datacenter.region+''};
+		}
+		this.regionLookUpCount = 0;
+	
+		this.rtMap = {};
+		var rtGr = new GlideRecord(this.RESOURCE_TYPE_TABLE);
+		rtGr.query();
+		while (rtGr.next()) {
+			var ckey = rtGr.name+'';
+			this.rtMap[ckey] = {'sys_id': rtGr.getUniqueValue(), 'ci_class': rtGr.ci_class+''};
+		}
+
+		this.usageCategoryMap = {};
+		var ucGr = new GlideRecord(this.USAGE_CATEGORY_TABLE);
+		ucGr.query();
+		while (ucGr.next()) {
+			var uckey = ucGr.name+'';
+			this.usageCategoryMap[uckey] = ucGr.getUniqueValue();
+		}
+		
+		this.tagValueSetMap = {};
+		
+		// Build in-memory map of conditions to target values
+		var mapsGr = new GlideRecord(this.MAP_TABLE);
+		mapsGr.addActiveQuery();
+		mapsGr.orderBy('order');
+		mapsGr.query();
+		while (mapsGr.next()) {
+			var sourceTable = mapsGr.getValue('source_table');
+			if (gs.nil(this.fieldMaps[sourceTable])) {
+				this.fieldMaps[sourceTable] = {};
+			}
+			var targetField = mapsGr.getValue('target_field');
+			if (gs.nil(this.fieldMaps[sourceTable][targetField])) {
+				this.fieldMaps[sourceTable][targetField] = [];
+			}
+			var fieldMap = {'condition' :  mapsGr.getValue('condition')};
+			fieldMap['target_value'] = mapsGr.getValue('target_value');				
+			this.fieldMaps[sourceTable][targetField].push(fieldMap);
+		}
+	},
+	
+	/**
+	* Run transforms on any unprocessed import sets.
+	*/
+	transformAll: function(importTable, logId) {
+		gs.info(this.TAG+'Starting billing import transforms...');
+		var startTime = new GlideDateTime().getValue();
+		var importSetGr = new GlideRecord("sys_import_set");
+		importSetGr.addQuery('table_name', importTable);
+		importSetGr.addQuery('state', 'NOT IN', 'processed,cancelled');
+		importSetGr.orderBy('number');
+		importSetGr.query();
+		var setCount = importSetGr.getRowCount();
+		var setsProcessed = 0;
+		while (importSetGr.next()) {
+			var logGr = new GlideRecord('sn_cmp_billing_job_log');
+			if (!gs.nil(logId) && logGr.get(logId)) {
+				var progress = Math.floor((100.0*setsProcessed)/setCount);				
+				logGr.details = 'Generating reports ('+progress+'%)';
+				logGr.update();
+			}
+
+			var importSetId = importSetGr.getUniqueValue();
+			new global.CmpImportHelper().processImportSet(importSetId);
+			setsProcessed++;
+		}
+		this.populateResourceReferences(startTime);
+		this.fixEmptyRegions(startTime);
+		gs.info(this.TAG+'Completed billing import transforms.');
+	},
+	
+	/**
+	* Try to fill in missing cmdb_ci references for any sn_cmp_cost_rsrc records
+	* with empty resource refs that were not updated since the beginning of the transform,
+	* but are used by the cost records updated since the beginning of the transform.
+	*/
+	populateResourceReferences: function(startTime) {
+		var rsrcGr = new GlideRecord(this.COST_RESOURCE_TABLE);
+		rsrcGr.addNullQuery('resource');
+		rsrcGr.addQuery('sys_updated_on','<',startTime);
+		var qc = rsrcGr.addJoinQuery(this.COST_TABLE, 'sys_id', 'resource');
+		qc.addCondition('sys_updated_on','>=',startTime);
+		rsrcGr.query();
+		while (rsrcGr.next()) {
+			var dcGr = new GlideRecord(this.COST_LDC_TABLE);
+			if (dcGr.get(rsrcGr.datacenter)) {
+				var rsrcLdc = this.getCIsByIdAndAccount(
+					this.rtMap[rsrcGr.resource_type.name]['ci_class'],
+					dcGr.getValue('account_id'), dcGr.getValue('region'),
+					rsrcGr.getValue('resource_id')
+				);
+				rsrcGr.resource = rsrcLdc.resource;
+				if (gs.nil(dcGr.ldc)) {
+					dcGr.ldc = rsrcLdc.ldc;
+					dcGr.update();
+				}
+				if (!gs.nil(rsrcGr.resource)) {
+					var siGr = new GlideRecord(this.STACK_ITEM_TABLE);
+					if (siGr.get('ci_instance_id', rsrcGr.resource))
+						rsrcGr.stack = siGr.stack;
+					rsrcGr.update();					
+				}
+			}
+		}
+	},	
+	
+	/**
+	* Map values from source billing record into a new or existing usage profile record.
+	*/
+	mapUsageProfile: function(source, rateField) {
+		var usageCategoryName = this.mapToValue(source, 'usage_category');
+		var usageUnit = this.mapToValue(source, 'usage_unit');
+		var rate = source[rateField];
+		
+		var key = usageCategoryName+'|'+rate+'|'+usageUnit;
+		if (!this.usageProfileMap.hasOwnProperty(key)) {
+			var upGr = new GlideRecord(this.USAGE_PROFILE_TABLE);
+			upGr.initialize();
+			if (!gs.nil(usageCategoryName)) {
+				upGr.usage_category = this.usageCategoryMap[usageCategoryName];
+			}
+			upGr.rate = rate;
+			upGr.usage_unit = usageUnit;
+			this.usageProfileMap[key] = upGr.insert();
+		}
+		return this.usageProfileMap[key];
+	},
+	
+	/**
+	* Map values from source billing record into a new or existing cost resource record.
+	*/
+	mapResource: function(source, rsrcField, acctField) {
+		
+		var rsrcId = source[rsrcField]+'';
+		var acctId = source[acctField]+'';
+		if (gs.nil(rsrcId)) {
+			rsrcId = '(empty)';
+		} else {
+			// If an ID is long and includes a path,
+			// shorten it to the final name in the path.
+			if (rsrcId.length > 40) {
+				var lastSlash = rsrcId.lastIndexOf("/");
+				if (lastSlash >= 0) {
+					rsrcId = rsrcId.substring(lastSlash+1);
+				}
+			}
+		}
+
+		var region = this.mapToValue(source, 'region');
+		var rkey = rsrcId+'|'+acctId+'|'+region;
+		this.regionLookUpCount++;
+		
+		if (!this.resourceMap.hasOwnProperty(rkey)
+		   || gs.nil(this.resourceMap[rkey].region)) {
+			
+			var dkey = acctId+'|'+region;
+			if (!this.datacenterMap.hasOwnProperty(dkey)) {
+				var ldcGr = new GlideRecord(this.COST_LDC_TABLE);
+				ldcGr.initialize();
+				ldcGr.account_id = acctId;
+				ldcGr.region = region;
+				this.datacenterMap[dkey] = ldcGr.insert();
+			}			
+
+			var rsrcGr = new GlideRecord(this.COST_RESOURCE_TABLE);
+			if (this.resourceMap.hasOwnProperty(rkey)) {
+				if (!gs.nil(region) && rsrcGr.get(this.resourceMap[rkey].sys_id)) {
+					rsrcGr.datacenter = this.datacenterMap[dkey];
+					rsrcGr.update();
+				}
+			} else {
+				rsrcGr.initialize();
+				rsrcGr.resource_id = rsrcId;
+				var rtName = this.mapToValue(source, 'name');
+				if (!gs.nil(rtName)) {
+					rsrcGr.resource_type = this.rtMap[rtName]['sys_id'];
+
+					// Look up resource and datacenter CIs and fill in the references if found
+					var rsrcLdc = this.getCIsByIdAndAccount(this.rtMap[rtName]['ci_class'],
+														acctId, region, source[rsrcField]);
+					rsrcGr.resource = rsrcLdc.resource;
+					var dcGr = new GlideRecord(this.COST_LDC_TABLE);
+					if (dcGr.get(this.datacenterMap[dkey])) {
+						if (gs.nil(dcGr.ldc)) {
+							dcGr.ldc = rsrcLdc.ldc;
+							dcGr.update();
+						}
+					}
+
+					if (!gs.nil(rsrcGr.resource)) {
+						var siGr = new GlideRecord(this.STACK_ITEM_TABLE);
+						siGr.addQuery('ci_instance_id', rsrcGr.resource);
+						siGr.query();
+						if (siGr.next()) {
+							rsrcGr.stack = siGr.stack;
+						}
+					}
+
+				}
+				rsrcGr.datacenter = this.datacenterMap[dkey];
+				var rsrcSysId = rsrcGr.insert();
+				this.resourceMap[rkey] =  {'sys_id' : rsrcSysId, 'region' : region };
+
+			}
+		}
+		return this.resourceMap[rkey].sys_id;
+	},
+	
+	// Retrieve CIs matching the given class, account, region, and ID
+	getCIsByIdAndAccount: function(ciClass, acctId, region, rsrcId) {
+		var emptyRet = {'resource':'', 'ldc':''};
+		if (gs.nil(ciClass) || gs.nil(acctId) || gs.nil(rsrcId)) {
+			return emptyRet;
+		}
+		
+		var rsrcGr = new GlideRecord('cmdb_ci_vm_object');
+		var qc = rsrcGr.addQuery('object_id', rsrcId);
+		qc.addOrCondition('object_id', 'ENDSWITH', '/'+rsrcId);  // support EC2 object ids
+		rsrcGr.query();
+		while (rsrcGr.next()) {
+
+			var relLdcGr = new GlideRecord('cmdb_rel_ci');
+			relLdcGr.addQuery('parent', rsrcGr.sys_id+'');
+			relLdcGr.addQuery('type.name', 'Hosted on::Hosts');
+			relLdcGr.query();
+			while (relLdcGr.next()) {
+
+				if (relLdcGr.child.region == region || gs.nil(region) || region == 'unknown region') {
+					var relAcctGr = new GlideRecord('cmdb_rel_ci');
+					relAcctGr.addQuery('parent', relLdcGr.child+'');
+					relAcctGr.addQuery('type.name', 'Hosted on::Hosts');
+					relAcctGr.query();
+					while (relAcctGr.next()) {
+						if (relAcctGr.child.account_id == acctId
+							|| (!gs.nil(region) && region.startsWith("us-gov")))
+							return {'resource': rsrcGr.sys_id+'', 'ldc': relLdcGr.child+''};
+					}
+				}
+			}
+		}
+		return emptyRet;
+	},
+	
+	mapTagValues: function(source, rsrc, dateField, tvField) {
+		var tvObj = this.JSON.decode(source[tvField]);
+
+		// Sometimes the resources in servicenow may have more up-to-date tags than those
+		// pushed to the cloud, or the tags may not be on the cloud at all.
+		//
+		// If the resource cmdb_ci record has tag values for this time frame or sooner,
+		// and the tag value set is more up-to-date than the tag values in the bill,
+		// then use the tag value set from the ci instead of the values in the billing record.
+		var rsrcGr = new GlideRecord(this.COST_RESOURCE_TABLE);
+		if (rsrcGr.get(rsrc)) {
+			if (!gs.nil(rsrcGr.resource)) {
+				
+				// tag ids are ordered by a hex-encoded date of creation
+				// Use this to determine whether the resource was tagged before or during the day of billing
+				var date = source[dateField];
+				var gdt = new GlideDateTime(date);
+				gdt.addDaysUTC(1); // Add 1 day to support tags added during the day of billing 
+				var tagIdLimit = gdt.getNumericValue().toString(16) + '0000000000000';
+				
+				var tagHistGr = new GlideRecord(this.RESOURCE_TAG_HISTORY_TABLE);
+				tagHistGr.addQuery('cmdb_ci', rsrcGr.resource);
+				tagHistGr.addQuery('tag_values.tag_id', '<', tagIdLimit);
+				tagHistGr.orderByDesc('tag_values.tag_id');
+				tagHistGr.query();
+				if (tagHistGr.next()) {
+					if (gs.nil(tvObj) || !tvObj.hasOwnProperty('Tag Id')
+							|| tagHistGr.tag_values.tag_id+'' > tvObj['Tag Id']) {
+						return tagHistGr.tag_values; 
+					}
+				}
+			} 
+		}
+		
+		// If the resource CI tags were not used, find or create a tag value set
+		// based on the values in the bill.
+		if (!gs.nil(tvObj)) {
+			var tvkey = this.tagUtil.getOrGenerateTagId(tvObj);
+			if (!this.tagValueSetMap.hasOwnProperty(tvkey)) {				
+				this.tagValueSetMap[tvkey] = this.tagUtil.getOrCreateTagValueSet(tvObj);
+			}
+			return this.tagValueSetMap[tvkey];
+		}
+		return '';
+	},
+	
+	/**
+	* Find the appropriate value for the given target field by looping
+	* through the mappings choosing the first whose condition is true
+	* for the given source.
+	*/
+	mapToValue: function(source, targetField) {
+		var srcTable = source.getTableName();
+		if (gs.nil(this.fieldMaps[srcTable]) || gs.nil(this.fieldMaps[srcTable][targetField])) {
+			return '';
+		}
+		var fMaps = this.fieldMaps[srcTable][targetField];
+		var importHelper = new global.CmpImportHelper();
+		for (var i=0; i<fMaps.length; i++) {
+			if (gs.nil(fMaps[i].condition)
+				|| importHelper.checkRecordCaseInsensitive(source, fMaps[i].condition)) {
+				return fMaps[i].target_value;
+			} 
+		}
+		// Map to empty value if no match is found
+		return '';
+	},
+
+	/**
+	* Find any cost-resource records with an unknown region, and see if
+	* a cost-resource record exists for the same rsrc/account_id in a known region.
+	* if so, reset all referencing cost records to point to the resource with the
+	* known region, and delete the one with the unknown region.
+	*/	
+	fixEmptyRegions: function(startTime) {
+		var rsrcGr = new GlideRecord(this.COST_RESOURCE_TABLE);
+		rsrcGr.addNullQuery('datacenter.region');
+		rsrcGr.addNotNullQuery('resource_id');
+		rsrcGr.addQuery('resource_id','!=','(empty)');
+		rsrcGr.addQuery('sys_updated_on','>=',startTime);
+		rsrcGr.query();
+		while (rsrcGr.next()) {
+			var rsrcGr2 = new GlideRecord(this.COST_RESOURCE_TABLE);
+			rsrcGr2.addQuery('resource_id', rsrcGr.resource_id);
+			rsrcGr2.addQuery('datacenter.account_id', rsrcGr.datacenter.account_id);
+			rsrcGr2.addNotNullQuery('datacenter.region');
+			rsrcGr2.orderByDesc('updated');
+			rsrcGr2.query();
+			if (rsrcGr2.next()) {
+				var costGr = new GlideRecord(this.COST_TABLE);
+				costGr.addQuery('resource', rsrcGr.getUniqueValue());
+				costGr.query();				
+				costGr.setValue('resource', rsrcGr2.getUniqueValue());
+				costGr.updateMultiple();
+				rsrcGr.deleteRecord();
+			}
+		}
+	},
+	
+	/**
+	* Add the sourceValue to the targetValue and return. Round very small
+	* values to zero to avoid exponential-notation-related conversion
+	* errors later on.
+	*/
+	add: function(sourceValue, targetValue) {
+		var answer = (1.0*targetValue) + (1.0*sourceValue);
+		return (Math.abs(answer) >= 0.000001 ? answer : 0);
+	},
+	
+    type: 'CmpBillingTransformUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-21 05:36:47</sys_created_on>
+        <sys_id>9787369e936222004a9032bfa67ffbe9</sys_id>
+        <sys_mod_count>212</sys_mod_count>
+        <sys_name>CmpBillingTransformUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_9787369e936222004a9032bfa67ffbe9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-02 19:28:59</sys_updated_on>
+    </sys_script_include>
+</record_update>

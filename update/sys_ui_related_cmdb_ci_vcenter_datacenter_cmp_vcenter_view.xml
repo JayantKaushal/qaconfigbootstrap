@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_related sys_domain="global" table="cmdb_ci_vcenter_datacenter" version="2" view="cmp_vcenter_view">
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>0</position>
+            <related_list>REL:f36c7b1ed731320097eb6ccf6e610313</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0683b0280b16130033e5403f15673a1b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>1</position>
+            <related_list>REL:58538caed731320097eb6ccf6e6103b8</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0e83b0280b16130033e5403f15673a1b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>2</position>
+            <related_list>REL:3074c4eed731320097eb6ccf6e6103c3</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0283b0280b16130033e5403f15673a1c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>3</position>
+            <related_list>REL:dfa3414cd742320097eb6ccf6e61038b</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0683b0280b16130033e5403f15673a1c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>4</position>
+            <related_list>REL:5b71c1c8d742320097eb6ccf6e61031a</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0a83b0280b16130033e5403f15673a1c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>5</position>
+            <related_list>REL:7d22410cd742320097eb6ccf6e610356</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0e83b0280b16130033e5403f15673a1c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>6</position>
+            <related_list>REL:1804494cd742320097eb6ccf6e61031e</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0283b0280b16130033e5403f15673a1d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>7</position>
+            <related_list>REL:ecf10dc8d742320097eb6ccf6e6103b9</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0683b0280b16130033e5403f15673a1d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>8</position>
+            <related_list>REL:42a488eed731320097eb6ccf6e610314</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0a83b0280b16130033e5403f15673a1d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>9</position>
+            <related_list>REL:44c340eed731320097eb6ccf6e61037b</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0e83b0280b16130033e5403f15673a1d</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="VMware vCenter Datacenter - cmp_vcenter_view" name="cmdb_ci_vcenter_datacenter" related_list="NULL" sys_domain="global" view="bb00e2fd0b02130033e5403f15673acf">4a83b0280b16130033e5403f15673a1a</list_id>
+            <order_by/>
+            <position>10</position>
+            <related_list>REL:a94484eed731320097eb6ccf6e6103c2</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_id>0283b0280b16130033e5403f15673a1e</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list action="INSERT_OR_UPDATE">
+            <calculated_name>VMware vCenter Datacenter - cmp_vcenter_view</calculated_name>
+            <filter/>
+            <name>cmdb_ci_vcenter_datacenter</name>
+            <order_by/>
+            <position/>
+            <related_list/>
+            <sys_class_name>sys_ui_related_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2018-05-22 11:48:23</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>4a83b0280b16130033e5403f15673a1a</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>VMware vCenter Datacenter - cmp_vcenter_view</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_related_cmdb_ci_vcenter_datacenter_cmp_vcenter_view</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2018-05-22 11:48:23</sys_updated_on>
+            <sys_user/>
+            <view display_value="cmp_vcenter_view" name="cmp_vcenter_view">bb00e2fd0b02130033e5403f15673acf</view>
+            <view_name/>
+        </sys_ui_related_list>
+    </sys_ui_related>
+</record_update>

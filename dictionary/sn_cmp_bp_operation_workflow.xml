@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Operation Workflow" max_length="40" name="sn_cmp_bp_operation_workflow" type="collection">
+        <element label="Blueprint" max_length="32" name="blueprint" reference="sn_cmp_bp_blueprint" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Guest Association Name" max_length="200" name="guest_association_name" type="string"/>
+        <element label="GuestResource" max_length="32" name="guest_resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Host Association Name" max_length="200" name="host_association_name" type="string"/>
+        <element label="Host Resource" max_length="32" name="host_resource" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Operation" max_length="32" name="operation" reference="sn_cmp_rb_operationsignature" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Resorce Property Id" max_length="200" name="resource_property_id" type="string"/>
+        <index name="index">
+            <element name="blueprint"/>
+        </index>
+        <index name="index2">
+            <element name="host_resource"/>
+        </index>
+        <index name="index3">
+            <element name="guest_resource"/>
+        </index>
+        <index name="index4">
+            <element name="operation"/>
+        </index>
+    </element>
+</database>

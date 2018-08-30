@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDeleteBlueprintCatalogAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDeleteBlueprintCatalogAction</name>
+        <script><![CDATA[var CMPDeleteBlueprintCatalogAction = Class.create();
+CMPDeleteBlueprintCatalogAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try{
+			
+			//TODO: if we delete the form then
+			// automatically it will delete catalog also
+			
+			var catalogItemDeleted = new BlueprintServiceHelper().deleteCatalogItem(params.catalogId);
+			if(!catalogItemDeleted) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("This Catalog has atleast one 'Active' Stack associated to it. Please terminate the Stack(s) before deleting the Catalog."),
+				"CMPDeleteCatalogAction.doAction: This Catalog has atleast one 'Active' Stack associated to it. Please terminate the Stack(s) before deleting the Catalog.",
+				null
+				);
+			}
+			return true;
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to delete blueprints catalog."),
+				"CMPGetBlueprintCatalogAction.doAction(): Failed to delete blueprints catalog",
+				error
+			);
+		}
+    },
+
+    type: 'CMPDeleteBlueprintCatalogAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 08:37:54</sys_created_on>
+        <sys_id>11739baa0bac03003bace58525673a41</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPDeleteBlueprintCatalogAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_11739baa0bac03003bace58525673a41</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-22 11:49:44</sys_updated_on>
+    </sys_script_include>
+</record_update>

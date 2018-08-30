@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Condition" max_length="40" name="sn_cmp_bp_condition" type="collection">
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Condition Group End" max_length="40" name="condition_group_end" type="string">
+            <choice>
+                <element inactive_on_update="false" label="End" sequence="1" value=")"/>
+                <element inactive_on_update="false" label="End -&gt; And" sequence="2" value=") &amp;&amp;"/>
+                <element inactive_on_update="false" label="End -&gt; OR" sequence="3" value=") ||"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Condition Group Start" max_length="40" name="condition_group_start" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Start" sequence="1" value="("/>
+            </choice>
+        </element>
+        <element choice="1" label="Condition Status" max_length="40" name="condition_status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Active" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="InActive" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element choice="1" label="Condition Type" max_length="40" name="condition_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="And" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Or" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Operand" max_length="200" name="operand" type="string"/>
+        <element choice="1" label="Operator" max_length="40" name="operator" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="EqualsTo" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="NotEqualsTo" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="StartsWith" sequence="3" value="3"/>
+                <element inactive_on_update="false" label="Contains" sequence="4" value="4"/>
+                <element inactive_on_update="false" label="GreaterThan" sequence="5" value="5"/>
+                <element inactive_on_update="false" label="LessThan" sequence="6" value="6"/>
+                <element inactive_on_update="false" label="isBlank" sequence="7" value="7"/>
+                <element inactive_on_update="false" label="isNotBlank" sequence="8" value="8"/>
+            </choice>
+        </element>
+        <element default="1000" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element label="Rule" max_length="32" name="rule" reference="sn_cmp_bp_rule" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="200" name="value" type="string"/>
+        <index name="index">
+            <element name="rule"/>
+        </index>
+    </element>
+</database>

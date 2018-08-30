@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource Script" max_length="40" name="sn_cmp_rb_resourcescript" type="collection">
+        <element label="Name" mandatory="true" max_length="200" name="name" type="12"/>
+        <element label="Resource" max_length="32" name="resource" read_only="true" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Script" max_length="4000" name="script" type="string"/>
+        <element label="Script" max_length="4000" name="script_js" type="script_plain"/>
+        <element choice="1" label="Type" mandatory="true" max_length="40" name="type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Shell Script" sequence="1" value="6"/>
+                <element inactive_on_update="false" label="Powershell Script" sequence="2" value="10"/>
+                <element inactive_on_update="false" label="Response Processor" sequence="3" value="7"/>
+                <element inactive="true" inactive_on_update="true" label="Command Script" sequence="4" value="9"/>
+                <element inactive_on_update="false" label="Python" sequence="5" value="13"/>
+                <element inactive="true" inactive_on_update="true" label="Groovy" sequence="6" value="14"/>
+                <element inactive_on_update="false" label="Instance Script" sequence="7" value="17"/>
+                <element inactive_on_update="false" label="ARM Template" sequence="8" value="18"/>
+                <element inactive_on_update="false" label="CloudFormation Template" sequence="9" value="19"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="resource"/>
+        </index>
+    </element>
+</database>

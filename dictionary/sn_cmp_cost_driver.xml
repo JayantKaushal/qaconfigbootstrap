@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Cost Driver" max_length="40" name="sn_cmp_cost_driver" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Associated Resource Template" max_length="40" name="associated_resource_template" type="string"/>
+        <element choice="1" label="Cost Type" max_length="40" name="cost_type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Single" sequence="1" value="single"/>
+                <element inactive_on_update="false" label="Combo" sequence="2" value="combo"/>
+            </choice>
+        </element>
+        <element default="1" label="Enabled" max_length="40" name="enabled" type="boolean"/>
+        <element label="Preference" max_length="40" name="preference" type="integer"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci_cmp_price_product_base,skip_root=true,base_start=true" choice="1" label="Pricing Product" max_length="80" name="pricing_product" type="table_name">
+            <choice/>
+        </element>
+        <element dependent="pricing_product" label="Pricing Product Attribute" max_length="80" name="pricing_product_attribute" type="field_name"/>
+        <element hint="Cloud Provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element hint="Resource Block" label="Resource Block" mandatory="true" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element dependent="resource_block" label="Resource Operation" max_length="32" name="resource_operation" reference="sn_cmp_rb_op_impl" type="reference"/>
+        <element dependent="resource_operation" label="Resource Operation Attribute" max_length="32" name="resource_operation_attribute" reference="sn_cmp_rb_op_impl_param" type="reference"/>
+        <element attributes="allow_public=true,base_table=sn_cmp_profile_base,skip_root=true,base_start=true" hint="Profile" label="Resource profile" max_length="80" name="resource_profile" type="table_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Template Attribute" max_length="40" name="resource_template_attribute" type="string"/>
+        <index name="index">
+            <element name="resource_operation"/>
+        </index>
+        <index name="index2">
+            <element name="provider"/>
+        </index>
+        <index name="index3">
+            <element name="resource_block"/>
+        </index>
+        <index name="index4">
+            <element name="resource_operation_attribute"/>
+        </index>
+    </element>
+</database>

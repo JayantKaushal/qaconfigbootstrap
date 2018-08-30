@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPFormBehaviorUtil</api_name>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>CMPFormBehaviorUtil</name>
+        <script><![CDATA[var CMPFormBehaviorUtil = Class.create();
+CMPFormBehaviorUtil.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	fetchCatalogPropertiesForRule : function(ruleId)  {
+		if( !ruleId)
+			ruleId = this.getParameter("ruleId");
+		var formBehaviorId = this.fetchformBehavior(ruleId);
+		var catalogPropsGR = new GlideRecord('sn_cmp_bp_catalog_prop');
+		catalogPropsGR.addQuery('bp_cat_form_behavior', formBehaviorId);
+		catalogPropsGR.query();
+		var catalogProps = [];
+		while( catalogPropsGR.next()){
+			var catalogProp = {};
+			catalogProp.id = catalogPropsGR.getUniqueValue();
+			catalogProp.name = catalogPropsGR.getValue('name');
+			catalogProp.label = catalogPropsGR.getValue('name'); 
+			catalogProps.push(catalogProp);
+		}
+		return JSON.stringify(catalogProps);		
+	},
+	fetchformBehavior : function(ruleId){
+		var ruleGR = new GlideRecord('sn_cmp_bp_rule');
+        var formBehaviorId = '';
+		if( ruleGR.get(ruleId)){
+			if( ruleGR.event != null && ruleGR.event.form_behavior !=null){
+				formBehaviorId = ruleGR.event.form_behavior.toString();
+			}
+		}
+		return formBehaviorId;
+	},
+	fetchCatalogFormBehaviorByFormGroup : function( formGroupId){
+		if( !formGroupId)
+			formGroupId = this.getParameter("formGroupId");
+		var output = {};
+		var gr = new GlideRecord('sn_cmp_bp_form_ui_group');
+		if( gr.get(formGroupId)){
+			gs.info( "CMPFormBehaviorUtil fetchCatalogFormBehaviorByFormGroup  " +  gr.getUniqueValue() + '   ' + gr.getValue('bp_cat_form_behavior'));
+			output['formBehavior'] = gr.getValue('bp_cat_form_behavior');
+		}
+		gs.info("CMPFormBehaviorUtil fetchCatalogFormBehaviorByFormGroup output = " + JSON.stringify(output));
+		return JSON.stringify(output);
+	},
+    type: 'CMPFormBehaviorUtil'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-24 01:21:09</sys_created_on>
+        <sys_id>dbb4aecf5b110300ef3f273a41f91a1e</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>CMPFormBehaviorUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_dbb4aecf5b110300ef3f273a41f91a1e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-15 18:12:20</sys_updated_on>
+    </sys_script_include>
+</record_update>

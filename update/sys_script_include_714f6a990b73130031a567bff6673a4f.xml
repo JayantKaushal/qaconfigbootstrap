@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCloudPortalOverviewPage</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCloudPortalOverviewPage</name>
+        <script><![CDATA[var CMPCloudPortalOverviewPage = Class.create();
+CMPCloudPortalOverviewPage.prototype = {
+
+	initialize: function() {
+	},
+	
+	getCurrentMonthSpend : function(){
+		var dataArray = [];
+		var total = 0;
+		var is_group_admin = CMPUserPortalHelper.isGroupAdmin();
+		var is_admin = CMPUserPortalHelper.isAdmin();
+		var view = CMPUserPortalHelper.getUserPortalViewPreference();
+		
+		var ga = new GlideAggregate('sn_cmp_cost_monthly');
+		ga.addQuery('usage_date','>=',gs.beginningOfThisMonth());
+		
+		if ((!is_group_admin && !is_admin) || ((is_admin || is_group_admin) && view == 'mine')) {
+			ga.addQuery('tag_values.user.value_id', gs.getUserID());
+		} else if ((is_admin || is_group_admin) && view == 'group') {
+			var group_ids = CMPUserPortalHelper.getMemberOfGroupSysIdsByUser();
+			ga.addEncodedQuery("tag_values.user_group.value_idIN" + group_ids.join(','));
+		}
+		
+		ga.addAggregate('SUM', 'cost');
+		ga.groupBy('category');
+		ga.query();
+		
+		while(ga.next()){
+			var obj = {};
+			obj.name = ga.getDisplayValue('category');
+			obj.y = parseFloat(parseFloat(ga.getAggregate('SUM','cost')).toFixed(2));
+			total += obj.y;
+			dataArray.push(obj);
+		}
+		
+		return {total: total, dataArray: dataArray};
+		
+	},
+		
+	type: 'CMPCloudPortalOverviewPage'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-08-07 18:18:49</sys_created_on>
+        <sys_id>714f6a990b73130031a567bff6673a4f</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>CMPCloudPortalOverviewPage</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_714f6a990b73130031a567bff6673a4f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-08 19:05:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

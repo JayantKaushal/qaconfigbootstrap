@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_pol_action_script">
+    <sn_cmp_pol_action_script action="INSERT_OR_UPDATE">
+        <action_script_cat display_value="SchedulingDefaults">d589b67b93f332004a9032bfa67ffbbb</action_script_cat>
+        <description/>
+        <name>SchedulingDefaults</name>
+        <script><![CDATA[var SchedulingDefaults = Class.create();
+SchedulingDefaults.prototype = {
+	parameters : "",
+	initialize: function(parameters) {
+		this.parameters = JSON.parse(parameters);
+	},
+	execute: function() {
+		if(this.parameters !=  null && this.parameters.formData != null){
+        	var inputData = JSON.parse(JSON.stringify(this.parameters.formData));
+		    var outputFormData = this.customScript(inputData);
+            if( outputFormData != null){
+                this.parameters.formData = outputFormData;
+            }
+       	}
+		var output = {};
+		output.answer = this.parameters;
+		return JSON.stringify(output);
+	},
+	customScript : function( formData){ 
+                // Manipulation of form parameters are supported. Changes in any other attributes
+                // will be ignored.
+               // The data available for manipulation is as follows:
+               // Form Data -  for example: StackName can be accessed through formData.StackName
+               // formData.StackName = "MyStack";
+               // User Data  - for example: User Id can be accessed through this.parameters.userData
+               // if(this.parameter.userData.userId == 'servicenowuserId')
+		if (this.parameters.hasOwnProperty("ciInstanceId") 
+				&& !!this.parameters.ciInstanceId && this.parameters.ciInstanceId!="null") {
+			var stackGr = new GlideRecord("sn_cmp_stack");
+			if (stackGr.get(this.parameters.ciInstanceId)) {
+				if (formData.hasOwnProperty("LeaseEndDate"))
+					formData.LeaseEndDate = new GlideDateTime(stackGr.getValue("end_date")).getDisplayValue();
+				if (formData.hasOwnProperty("ScheduleTimeZone"))
+					formData.ScheduleTimeZone = stackGr.getValue("time_zone");
+				if (formData.hasOwnProperty("ScheduleProfile")) {
+					var spGr = new GlideRecord("sn_cmp_schedule_profile");
+					if (gs.nil(stackGr.getValue("schedule")))
+						spGr.addNullQuery("schedule");
+					else
+						spGr.addQuery("schedule", stackGr.getValue("schedule"));
+					spGr.query();
+					if (spGr.next()) {
+						formData.ScheduleProfile = spGr.getDisplayValue();
+					}
+				}				
+			}
+		} else {
+			gdt = new GlideDateTime();
+			gdt.addDays(90);
+			if (formData.hasOwnProperty("LeaseEndDate"))
+				formData.LeaseEndDate = gdt.getDisplayValue();			
+			if (formData.hasOwnProperty("ScheduleTimeZone")) {
+				formData.ScheduleTimeZone = gs.getProperty("glide.sys.default.tz", "America/Los_Angeles");
+				var userGr = new GlideRecord("sys_user");
+				userGr.addQuery('sys_id', gs.getUserID());
+				userGr.addNotNullQuery('time_zone');
+				userGr.query();
+				if (userGr.next())
+					formData.ScheduleTimeZone = userGr.getValue('time_zone');
+			}
+		}
+		
+		return formData;
+	},
+    isGroupMember: function(id){
+        var policyExecutionUtil = new sn_cmp.PolicyExecutionUtil();
+        return policyExecutionUtil.isGroupMember( this.parameter.userData.userId, id);
+    },
+    isRoleMember: function(id){
+        var policyExecutionUtil = new sn_cmp.PolicyExecutionUtil();
+        return policyExecutionUtil.isRoleMember( this.parameter.userData.userId, id);
+    },
+	debug: function(msg) {
+		gs.debug('*** DEBUG: (' + this.type + '): ' + msg);
+	},
+	info: function(msg) {
+		gs.info('*** INFO: (' + this.type + '): ' + msg);
+	},
+	warn: function(msg) {
+		gs.warn('*** WARNING: (' + this.type + '): ' + msg);
+	},
+	error: function(msg) {
+		gs.error('*** ERROR: (' + this.type + '): ' + msg);
+	},
+	type: 'SchedulingDefaults'
+};
+
+var SchedulingDefaultsObj = new SchedulingDefaults(inputAttributes);
+var outputParams = SchedulingDefaultsObj.execute();
+gs.info( "Output of script is = " + outputParams);]]></script>
+        <sys_class_name>sn_cmp_pol_action_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-13 21:11:58</sys_created_on>
+        <sys_id>406afa7b93f332004a9032bfa67ffbc8</sys_id>
+        <sys_mod_count>19</sys_mod_count>
+        <sys_name>SchedulingDefaults</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_pol_action_script_406afa7b93f332004a9032bfa67ffbc8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-11 17:06:44</sys_updated_on>
+    </sn_cmp_pol_action_script>
+</record_update>

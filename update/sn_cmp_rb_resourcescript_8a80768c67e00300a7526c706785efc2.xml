@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Associate_ServerArray_VMs_To_Stack</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script>function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {&#13;
+	&#13;
+	var tagsInfo = "";&#13;
+	var reqContext = global.JSON.parse(requestorContext);&#13;
+	var nodesResponse = global.JSON.parse(response);&#13;
+	&#13;
+	for(var i=0; i&lt;nodesResponse.length; i++){&#13;
+		var vmGR = getGlideRecord('cmdb_ci_vm_instance','object_id',nodesResponse[i].nodeId);&#13;
+		if(!(isEmpty(nodesResponse[i].tags))){&#13;
+			tagsInfo = nodesResponse[i].tags;&#13;
+			for(var j=0; j&lt; tagsInfo.length; j++){&#13;
+				//Checking If VM belong to any Scaling Group&#13;
+				if(tagsInfo[j].key == "aws:autoscaling:groupName"){&#13;
+					//Fetching Server Array associated for the VM&#13;
+					var serverArrayGR = getGlideRecord('cmdb_ci_sa_server_array','object_id',tagsInfo[j].value);&#13;
+					//Fetching the Relation of Stack and Server Array from cmdb_rel_ci&#13;
+					var relCiGR = getGlideRecord('cmdb_rel_ci','child',serverArrayGR.getValue('sys_id'));&#13;
+					//Fetching the Stack to update the VM as Stack Items&#13;
+					var stackGR = getGlideRecord('sn_cmp_stack','sys_id',relCiGR.getValue('parent'));&#13;
+					vmGR.assigned_to = stackGR.getValue('assigned_to');&#13;
+					vmGR.assignment_group = stackGR.getValue('assignment_group');&#13;
+					vmGR.update();&#13;
+					&#13;
+					var gr = new GlideRecord('sn_cmp_stack_item');&#13;
+					gr.addQuery('ci_instance_id',vmGR.getValue('sys_id'));&#13;
+					gr.query();&#13;
+					if(!(gr.hasNext())){&#13;
+						gr.initialize();&#13;
+						gr.alias = vmGR.getValue('name');&#13;
+						gr.ci_instance_id = vmGR.getValue('sys_id');&#13;
+						gr.parent_block_id = getGlideRecord('sn_cmp_rb_resourceblock','name','AWS Datacenter').getValue('sys_id');&#13;
+						gr.resource_block_id = getGlideRecord('sn_cmp_rb_resourceblock','name','Virtual Server Array').getValue('sys_id');&#13;
+						gr.stack = stackGR.getValue('sys_id');&#13;
+						gr.status = 2; //'Processed'&#13;
+						gr.insert();&#13;
+					}&#13;
+				}&#13;
+			}&#13;
+		}&#13;
+	}&#13;
+}&#13;
+&#13;
+//Glide Record Query&#13;
+function getGlideRecord(tableName,columnValue,expectedValue){&#13;
+	var queryGR = new GlideRecord(tableName);&#13;
+	queryGR.addQuery(columnValue,expectedValue);&#13;
+	queryGR.query();&#13;
+	if(queryGR.next())&#13;
+		return queryGR;&#13;
+}&#13;
+&#13;
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)&#13;
+function isEmpty(value){&#13;
+	return (value == null || value.length === 0);&#13;
+}</script>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {
+	
+	var tagsInfo = "";
+	var reqContext = global.JSON.parse(requestorContext);
+	var nodesResponse = global.JSON.parse(response);
+	
+	for(var i=0; i<nodesResponse.length; i++){
+		var vmGR = getGlideRecord('cmdb_ci_vm_instance','object_id',nodesResponse[i].nodeId);
+		if(!(isEmpty(nodesResponse[i].tags))){
+			tagsInfo = nodesResponse[i].tags;
+			for(var j=0; j< tagsInfo.length; j++){
+				//Checking If VM belong to any Scaling Group
+				if(tagsInfo[j].key == "aws:autoscaling:groupName"){
+					//Fetching Server Array associated for the VM
+					var serverArrayGR = getGlideRecord('cmdb_ci_sa_server_array','object_id',tagsInfo[j].value);
+					//Fetching the Relation of Stack and Server Array from cmdb_rel_ci
+					var relCiGR = getGlideRecord('cmdb_rel_ci','child',serverArrayGR.getValue('sys_id'));
+					//Fetching the Stack to update the VM as Stack Items
+					var stackGR = getGlideRecord('sn_cmp_stack','sys_id',relCiGR.getValue('parent'));
+					vmGR.assigned_to = stackGR.getValue('assigned_to');
+					vmGR.assignment_group = stackGR.getValue('assignment_group');
+					vmGR.update();
+					
+					var gr = new GlideRecord('sn_cmp_stack_item');
+					gr.addQuery('ci_instance_id',vmGR.getValue('sys_id'));
+					gr.query();
+					if(!(gr.hasNext())){
+						gr.initialize();
+						gr.alias = vmGR.getValue('name');
+						gr.ci_instance_id = vmGR.getValue('sys_id');
+						gr.parent_block_id = getGlideRecord('sn_cmp_rb_resourceblock','name','AWS Datacenter').getValue('sys_id');
+						gr.resource_block_id = getGlideRecord('sn_cmp_rb_resourceblock','name','Virtual Server Array').getValue('sys_id');
+						gr.stack = stackGR.getValue('sys_id');
+						gr.status = 2; //'Processed'
+						gr.insert();
+					}
+				}
+			}
+		}
+	}
+}
+
+//Glide Record Query
+function getGlideRecord(tableName,columnValue,expectedValue){
+	var queryGR = new GlideRecord(tableName);
+	queryGR.addQuery(columnValue,expectedValue);
+	queryGR.query();
+	if(queryGR.next())
+		return queryGR;
+}
+
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)
+function isEmpty(value){
+	return (value == null || value.length === 0);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-08 11:37:05</sys_created_on>
+        <sys_id>8a80768c67e00300a7526c706785efc2</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>Associate_ServerArray_VMs_To_Stack</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_8a80768c67e00300a7526c706785efc2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-08 16:11:59</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

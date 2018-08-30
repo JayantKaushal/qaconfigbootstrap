@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPReconciler</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPReconciler</name>
+        <script><![CDATA[var CMPReconciler = Class.create();
+CMPReconciler.prototype = {
+	initialize: function() {
+	},
+	
+	reconcile : function(orderGrSysId) {
+		var orderGr = new GlideRecord('sn_cmp_order');
+		if (!orderGr.get(orderGrSysId))
+			return;
+		var ldcId = orderGr.getValue('owner_instance');
+		if (!ldcId)
+			return;
+		var LDCGr = this.getLDCGr(ldcId);
+		if (!LDCGr)
+			return;
+		
+		var orderDate = orderGr.getDisplayValue('order_date');
+		
+		var steps = new GlideRecord('sn_cmp_order_step_status');
+		steps.addQuery('order', orderGr.getUniqueValue());
+		steps.addQuery('status', '3'); //completed
+		steps.query();
+		while (steps.next()) {
+			var apiStep = global.JSON.parse(steps.getValue('api_step'));
+			if (!apiStep)
+				continue;
+			var capiInterface = apiStep.interfaceName;
+			var capiMethod = apiStep.methodName;
+			var stepGr = this.getDiscoveryStepGr(capiInterface, capiMethod);
+			if (!stepGr)
+				continue;
+			var resourceType = this.getResourceTypeFromStep(stepGr);
+			if (!resourceType)
+				continue;
+			this.reconcileCI(resourceType, ldcId, orderDate);
+		}
+	},
+	
+	getLDCGr : function(ldcId) {
+		var LDCGr = new GlideRecord('cmdb_ci_logical_datacenter');
+		if (LDCGr.get(ldcId))
+			return LDCGr;
+		return null;
+	},
+	
+	getDiscoveryStepGr : function(capiInterface, capiMethod) {
+		var stepGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+		stepGr.addQuery('capi_interface.interface_name', capiInterface);
+		stepGr.addQuery('capi_method.operation_name', capiMethod);
+		stepGr.query();
+		if (stepGr.hasNext())
+			return stepGr;
+		return null;
+	},
+	
+	getResourceTypeFromStep : function(stepGr) {
+		var discoStepMapping = new GlideRecord('sn_cmp_resource_type_operation');
+		while (stepGr.next()) {
+			if (discoStepMapping.get('discovery_step', stepGr.getUniqueValue()))
+				return discoStepMapping.resource_type;
+		}
+		return null;
+	},
+	
+	reconcileCI : function(resourceType, ldcId, orderDate) {
+		var ciClass = resourceType.ci_class+'';
+		if (!ciClass)
+			return;
+		var ci = new GlideRecord(ciClass);
+		ci.addQuery('operational_status', '!=','2'); //filter out already reconciled CIs
+		ci.query();
+		while (ci.next()) {
+			var rel = new GlideRecord('cmdb_rel_ci');
+			var qc1 = rel.addQuery('parent', ci.getUniqueValue());
+			qc1.addOrCondition('parent', ldcId);
+			var qc2 = rel.addQuery('child', ldcId);
+			qc2.addOrCondition('child', ci.getUniqueValue());
+			var qc3 = rel.addQuery('type.name', 'Hosted on::Hosts');
+			qc3.addOrCondition('type.name', 'Contains::Contained by');
+			rel.query();
+			if (rel.next()) {
+				if (this.isCIStale(ci, orderDate))
+					this.markCIAbsent(ci);
+				this.reconcileChildCIs(resourceType, ci, orderDate);
+			}
+		}
+	},
+	
+	reconcileChildCIs : function(resourceType, parentCI, date) {
+		var childCIClass = this.getChildCIClass(resourceType);
+		if (!childCIClass)
+			return;
+		var childCIs = this.getChildCIs(parentCI, childCIClass);
+		
+		for (var index=0; index<childCIs.length; index++) {
+			var childCI = childCIs[index];
+			var ci = new GlideRecord(childCI.table);
+			if (ci.get(childCI.sysId)) {
+				if (this.isCIStale(ci, date))
+					this.markCIAbsent(ci);
+			}
+		}
+	},
+	
+	getChildCIClass : function(resourceType) {
+		var childCIClass = [];
+		var rtMapping = new GlideRecord('sn_capi_rt_rel');
+		rtMapping.addQuery('parent', resourceType);
+		rtMapping.query();
+		while (rtMapping.next()) 
+			childCIClass.push(rtMapping.child.ci_class+'');	
+		return childCIClass;		
+	},
+	
+	getChildCIs : function(ci, childCIClass) {
+		var childCIs = [];
+		var rel = new GlideRecord('cmdb_rel_ci');
+		rel.addQuery('parent', ci.getUniqueValue());
+		rel.addQuery('type.name', 'Contains::Contained by');
+		rel.addQuery('child.sys_class_name', 'IN', childCIClass);
+		rel.addQuery('child.operational_status', '!=', '2');//filter out already reconciled CIs
+		rel.query();
+		while (rel.next()) {
+			var childCI = {};
+			childCI.sysId = rel.getValue('child');
+			childCI.table = rel.child.sys_class_name+'';
+			childCIs.push(childCI);
+		}
+		return childCIs;
+	},
+	
+	isCIStale : function(ci, date) {
+		var mostRecentDisco = ci.getDisplayValue('last_discovered');
+		if (mostRecentDisco < date)
+			return true;
+		return false;
+	},
+	
+	markCIAbsent : function(ci) {
+		if (!ci.isValidField('operational_status') || !ci.isValidField('install_status'))
+			return;
+		if (ci.isValidField('state'))
+			ci.state = 'terminated';
+		ci.operational_status = '2';//non-operational
+		ci.install_status = '100';//absent
+		ci.update();
+	},
+	
+	retireCI : function(ci) {
+		if (!ci.isValidField('operational_status') || !ci.isValidField('install_status'))
+			return;
+		if (ci.isValidField('state'))
+			ci.state = 'terminated';
+		ci.operational_status = '6';//retired
+		ci.update();
+	},
+	
+	markErroredCI : function(ci) {
+		if (!ci.isValidField('operational_status') || !ci.isValidField('install_status') || !ci.isValidField('state'))
+			return;
+
+		ci.operational_status = '2';//non-operational
+		ci.install_status = '100';//absent
+		ci.update();
+	},
+
+	reviveCI : function(ci) {
+		if (!ci.isValidField('operational_status') || !ci.isValidField('install_status'))
+			return;
+		ci.operational_status = '1';//operational
+		ci.install_status = '1';//installed
+		ci.update();
+	},
+	
+	type: 'CMPReconciler'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-20 18:42:16</sys_created_on>
+        <sys_id>3d264e72d7a1320097eb6ccf6e61037f</sys_id>
+        <sys_mod_count>33</sys_mod_count>
+        <sys_name>CMPReconciler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_3d264e72d7a1320097eb6ccf6e61037f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-11 07:47:37</sys_updated_on>
+    </sys_script_include>
+</record_update>

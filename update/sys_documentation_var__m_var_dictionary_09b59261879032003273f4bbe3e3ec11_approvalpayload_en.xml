@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_documentation element="approvalpayload" label="Approval" language="en" table="var__m_var_dictionary_09b59261879032003273f4bbe3e3ec11">
+        <sys_documentation action="INSERT_OR_UPDATE">
+            <element>approvalpayload</element>
+            <help/>
+            <hint/>
+            <label>Approval</label>
+            <language>en</language>
+            <name>var__m_var_dictionary_09b59261879032003273f4bbe3e3ec11</name>
+            <plural>Approval</plural>
+            <sys_class_name>sys_documentation</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2017-02-16 21:59:47</sys_created_on>
+            <sys_id>d1248aac878132006a13f4bbe3e3ecc2</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>Approval</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_documentation_var__m_var_dictionary_09b59261879032003273f4bbe3e3ec11_approvalpayload_en</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2017-02-16 21:59:47</sys_updated_on>
+            <url/>
+            <url_target/>
+        </sys_documentation>
+    </sys_documentation>
+</record_update>

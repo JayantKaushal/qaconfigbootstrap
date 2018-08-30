@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetOperationStepTranslatorAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetOperationStepTranslatorAction</name>
+        <script><![CDATA[var CMPGetOperationStepTranslatorAction = Class.create();
+CMPGetOperationStepTranslatorAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.op_step_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetOperationStepTranslatorAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			//Guset Interface operation list
+			var gr = new GlideRecord('sn_cmp_rb_step_translator');
+			if(params.op_step_id || params.op_step_id != "")
+				gr.addQuery("step", params.op_step_id);
+			gr.orderBy('order');
+			gr.query();
+			var opStepTranslatorList = [];
+			
+			while (gr.next()) {
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.scriptId = gr.getValue('script');
+				rbObj.script = gr.getDisplayValue('script');
+				rbObj.order = gr.getValue('order');
+				rbObj.checked = false; //Using for delete option with checkbox in the grid
+				opStepTranslatorList.push(rbObj);
+			}
+			return opStepTranslatorList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get translator for resource block operations steps"),
+				"CMPGetOperationStepTranslatorAction.doAction(): Failed to get translator for resource block operations steps",
+				error
+			);
+		}
+    },
+    type: 'CMPGetOperationInputParamAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-24 04:41:13</sys_created_on>
+        <sys_id>c2c16bb63b013200a856cedf34efc49d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPGetOperationStepTranslatorAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c2c16bb63b013200a856cedf34efc49d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-05-30 08:55:32</sys_updated_on>
+    </sys_script_include>
+</record_update>

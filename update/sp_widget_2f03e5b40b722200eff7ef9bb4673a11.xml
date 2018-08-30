@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $sce, $location, spUtil, $rootScope) {
+	spUtil.setSearchPage($scope.data.t);
+	$scope.showScore = $scope.options.show_score == 'true' || $scope.options.show_score == true;
+
+	$scope.getBGImage = function(item) {
+		return {"background-image": "url('" + item.picture + "')"};
+	}
+
+	$scope.highlight = function(haystack, needle) {
+		if (!haystack)
+			return "";
+
+		if (!needle)
+			return $sce.trustAsHtml(haystack);
+
+		return $sce.trustAsHtml(haystack.replace(new RegExp(needle, "gi"), function(match) {
+			return '<mark class="highlight">' + match + '</mark>';
+		}));
+	}
+
+	if($scope.data.t && $scope.data.q){		
+		var bc = [{label: 'Cloud Search', url: '?id=cloud_search'}];
+		bc[bc.length] = {label: $scope.data.source_labels[$scope.data.t], url: '?id=cloud_search&spa=1&t='+ $scope.data.t + "&q=" + $scope.data.q};
+
+		$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+		spUtil.setSearchPage('sc');
+	}
+
+	var unsub = $rootScope.$on('cloudSearchEvent', function(e,info) {	
+		$location.url(info.url).search('spa', '1').replace();
+
+		$scope.data.t =  $location.search().t;
+		$scope.data.q =  $location.search().q;
+
+		$scope.server.update().then(function(){
+			
+			if($scope.data.t){
+				var bc = [{label: 'Cloud Search', url: '?id=cloud_search'}];
+				bc[bc.length] = {label: $scope.data.source_labels[$scope.data.t], url: '?id=cloud_search&spa=1&t='+ $scope.data.t + "&q=" + $scope.data.q};
+
+				$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+				spUtil.setSearchPage('sc');
+			}
+			else {
+				var bc = [{label: 'Cloud Search', url: '?id=cloud_search&spa=1&t=&q='+ $scope.data.q}];
+				$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+				spUtil.setSearchPage('sc');
+			}
+		});
+	});
+
+	$scope.$on('$destroy', function(){
+		unsub();
+	});
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>a.question-tag {
+  color: #39739d;
+  background-color: #e1ecf4;
+  border: 1px solid #e1ecf4;
+  display: inline-block;
+  margin: 4px 4px 4px 0;
+  border-radius: 0;
+  text-align: center;
+  line-height: 1;
+  padding: .4em .5em;
+}
+
+.panel-heading{
+  height: 42px;
+  padding-top: 12px;
+}
+
+.panel {
+  border: none;
+  overflow-y: auto;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-search-page</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope, element, attrs, ctrl) {
+	
+	var lazyLoader = $injector.get("lazyLoader");
+	lazyLoader.putTemplates(scope.data.resultTemplates);
+
+	$(document).ready(function(){
+		resize_window();	
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 178) + 'px';
+		$(element).find('.panel').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Search Page</name>
+        <option_schema>[{"hint":"Show search result relative ranking","name":"show_score","label":"Show score","type":"boolean"},{"hint":"Maximum number of search results when not specifying a search group (default 30)","name":"max_all","label":"Max results for All search","type":"integer"},{"hint":"Maximum number of search results when specifying a search group (default 15)","name":"max_group","label":"Max results for single search group","type":"integer"}]</option_schema>
+        <public>true</public>
+        <roles/>
+        <script><![CDATA[// populate the 'data' variable
+data.source_labels = {
+	'stacks' : "Stacks",
+	'requests': "Requests",
+	'catalogs': "Catalogs",
+	'incidents' : "Incidents",
+	'change_requests' : "Change Requests",
+	'load_balancers': "Load Balancers",
+	'storage_volumes': "Storage Volumes",
+	'keys': "Keys",
+	'virtual_machines' : "Virtual Machines",
+	'subnets': "Subnets",
+	'networks': "Networks",
+	'routers' : "Routers",
+	'internet_gateways' : "Internet Gateways"
+};
+
+data.showPrices = $sp.showCatalogPrices();
+data.q = $sp.getParameter('q');
+data.t = $sp.getParameter('t');
+data.results = [];
+
+if (data.t)
+	data.limit = options.max_group || 15;
+else
+	data.limit = options.max_all || 30;
+
+//Gotta decide if we want to use the portal's sources, or use the defaults declared by
+//the sys property
+var useDefaultPortals;
+if (!$sp.getPortalRecord()) {
+	useDefaultPortals = true;
+} else {
+	var searchSourcesForPortalGR = new GlideRecord("m2m_sp_portal_search_source");
+	searchSourcesForPortalGR.addQuery("sp_portal", $sp.getPortalRecord().getUniqueValue());
+	searchSourcesForPortalGR.query();
+	useDefaultPortals = searchSourcesForPortalGR.getRowCount() == 0;
+}
+
+data.resultTemplates = {};
+
+if (useDefaultPortals) {
+	var defaultSearchSourceGR = new GlideRecord("sp_search_source");
+	var defaultSearchSourceIDList = gs.getProperty("glide.service_portal.default_search_sources", "");
+	defaultSearchSourceGR.addQuery("sys_id", "IN", defaultSearchSourceIDList);
+	if (data.t)
+		defaultSearchSourceGR.addQuery("id", data.t);
+	defaultSearchSourceGR.query();
+	while(defaultSearchSourceGR.next()) {
+		data.resultTemplates["sp-search-source-" + defaultSearchSourceGR.getValue("id") + ".html"] = $sp.translateTemplate(defaultSearchSourceGR.getValue("search_page_template"));
+		getResults(defaultSearchSourceGR);
+	}
+} else {
+	var m2mSearchSourceGR = new GlideRecord("m2m_sp_portal_search_source");
+	if (data.t)
+		m2mSearchSourceGR.addQuery("sp_search_source.id", data.t);
+	m2mSearchSourceGR.addQuery("sp_portal", $sp.getPortalRecord().getUniqueValue());
+	m2mSearchSourceGR.query();
+	while(m2mSearchSourceGR.next()) {
+		var searchSourceGR = m2mSearchSourceGR.getElement("sp_search_source").getRefRecord();
+		data.resultTemplates["sp-search-source-" + searchSourceGR.getValue("id") + ".html"] = $sp.translateTemplate(searchSourceGR.getValue("search_page_template"));
+		getResults(searchSourceGR);
+	}
+}
+
+function getResults(gr) {
+	if (gr.is_scripted_source) {
+		var input = {};
+		input.query = data.q;
+		var evaluator = new GlideScopedEvaluator();
+		var results = evaluator.evaluateScript(gr, "data_fetch_script", input);
+
+		results.forEach(function(item) {
+			item.templateID = "sp-search-source-" + gr.getValue("id") + ".html";
+			data.results.push(item);
+		});
+	} else {
+		var primaryField = gr.getValue("primary_display_field");
+		var displayFields = gr.getValue("display_fields");
+
+		var resultGR = new GlideRecordSecure(gr.getValue("source_table"));
+		var condition = gr.getValue("condition");
+		if (condition)
+			resultGR.addEncodedQuery(condition);
+		if (data.q)
+			resultGR.addQuery('123TEXTQUERY321', data.q);
+		resultGR.query();
+
+		var searchTableCount = 0;
+		while (resultGR.next() && searchTableCount < data.limit) {
+			if (!resultGR.canRead())
+				continue;
+
+			var secondaryValues = {};
+
+			if (displayFields)
+				displayFields.split(",").forEach(function(field) {
+					var obj = getField(resultGR, field);
+					secondaryValues[field] = obj;
+				});
+
+			data.results.push({
+				primary: (primaryField) ? resultGR.getValue(primaryField) : resultGR.getDisplayValue(),
+				sys_id: resultGR.getUniqueValue(),
+				table: resultGR.getTableName(),
+				templateID: "sp-search-source-" + gr.getValue("id") + ".html",
+				fields: secondaryValues
+			});
+			searchTableCount++;
+		}
+	}
+}
+
+function getField(gr, name) {
+	var f = {};
+	f.display_value = gr.getDisplayValue(name);
+	f.value = gr.getValue(name);
+	var ge = gr.getElement(name);
+	if (ge == null)
+		return f;
+
+	f.type = ge.getED().getInternalType()
+	f.label = ge.getLabel();
+	return f;
+}
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-28 17:52:26</sys_created_on>
+        <sys_id>2f03e5b40b722200eff7ef9bb4673a11</sys_id>
+        <sys_mod_count>48</sys_mod_count>
+        <sys_name>Cloud Search Page</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_2f03e5b40b722200eff7ef9bb4673a11</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-16 11:08:37</sys_updated_on>
+        <template><![CDATA[<div>
+  <div class="panel">
+    <div ng-if="data.results.length==0">
+      <div class="panel-heading"><h4 class="panel-title">${No results}</h4></div>
+      <div class="panel-body wrapper break-word">
+        <p>${Your search - <b>{{data.q}}</b> - did not match any documents}</p>
+        <p>${Suggestions}:</p>
+        <ul>
+          <li>${Make sure all words are spelled correctly}</li>
+          <li>${Try different, more general, or fewer keywords}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div ng-if="data.results.length>0" class="panel-heading break-word">
+      <h4 class="panel-title">${Search results for '{{data.q}}'}</h4>
+    </div>
+
+    <div ng-repeat="item in data.results | orderBy:'score':true | limitTo:data.limit" class="panel-body b-b ">
+      <div ng-include="item.templateID"></div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

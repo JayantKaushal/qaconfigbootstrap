@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPBlueprintAddAttachAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPBlueprintAddAttachAction</name>
+        <script><![CDATA[var CMPBlueprintAddAttachAction = Class.create();
+CMPBlueprintAddAttachAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.layer_id || !params.source_id || !params.target_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPBlueprintAddAttachAction.doAction: Undefined element type, name, and/or layer id",
+					null
+				);
+			}
+			//this will take the checkpoints if passed.
+			var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			
+			var newRelationship = versionObj.addRelationship(params.source_id, params.target_id, params.attachType);
+			var newVersion = versionObj.getNewVersion();
+			newRelationship.checkpointId = newVersion.getCheckpointId();
+			
+			var cmpAddEdgeAction = new CMPAddEdgeAction();
+			cmpAddEdgeAction.addStageResource(params.blueprint_id,params.source_name,params.source_resblockid,params.source_citype);
+			cmpAddEdgeAction.addStageResource(params.blueprint_id,params.target_name,params.target_resblockid,params.target_citype);
+			
+			return newRelationship;
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add the relationship"),
+				"CMPBlueprintAddAttachActionAction.doAction(): Failed to add the attach to the resource block",
+				error
+			);
+		}
+	},
+
+    type: 'CMPBlueprintAddAttachAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-24 10:38:21</sys_created_on>
+        <sys_id>0414700b0b0132003bace58525673a8f</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPBlueprintAddAttachAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0414700b0b0132003bace58525673a8f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-06 11:39:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

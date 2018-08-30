@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Form" max_length="40" name="sn_cmp_bp_form_behavior" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Name" max_length="200" name="alias_name" type="string"/>
+        <element label="Blueprint" max_length="32" name="bp_association" reference="sn_cmp_bp_blueprint" reference_cascade_rule="delete" type="reference"/>
+        <element label="Catalog item" max_length="32" name="cat_item_association" reference="sn_cmp_bp_cat_item" type="reference"/>
+        <element label="Parent form behavior" max_length="32" name="parent_form_behavior" reference="sn_cmp_bp_form_behavior" type="reference"/>
+        <element label="Blueprint operation" max_length="32" name="stage_operation" reference="sn_cmp_bp_stage_op" type="reference"/>
+        <element label="UI Category" max_length="32" name="ui_category" reference="sc_category" type="reference"/>
+        <index name="index">
+            <element name="parent_form_behavior"/>
+        </index>
+        <index name="index2">
+            <element name="stage_operation"/>
+        </index>
+        <index name="index3">
+            <element name="ui_category"/>
+        </index>
+        <index name="index4">
+            <element name="cat_item_association"/>
+        </index>
+        <index name="index5">
+            <element name="bp_association"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Rule Association" max_length="40" name="sn_cmp_bp_rule_association" type="collection">
+        <element label="BLueprint Form behavior" max_length="32" name="bp_cat_form_behavior" reference="sn_cmp_bp_form_behavior" type="reference"/>
+        <element label="Event" max_length="32" name="event" reference="sn_cmp_bp_event" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Parameter Mapping" max_length="200" name="param_mapping" type="string"/>
+        <index name="index">
+            <element name="event"/>
+        </index>
+        <index name="index2">
+            <element name="bp_cat_form_behavior"/>
+        </index>
+    </element>
+</database>

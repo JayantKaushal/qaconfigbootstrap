@@ -1,0 +1,720 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPBPExecutionPlanGenerator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPBPExecutionPlanGenerator</name>
+        <script><![CDATA[var CMPBPExecutionPlanGenerator = Class.create();
+CMPBPExecutionPlanGenerator.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+
+    BP_STAGE_RESOURCE_OP_GRAPH : 'sn_cmp_bp_stage_res_op_graph',
+
+    initialize: function() {
+    },
+
+	/*
+	*Function will generate the parallel execution plan for a particular operation
+	*/
+	generateParallelExecutionPlanForOperation : function(stageModelId, bpOperationId) {
+		this.cleanUpExecutionPlan(bpOperationId);
+		this.formExecutionPlanData(stageModelId,bpOperationId);
+		//update the execution plan sync flag
+		this.updateExecutionPlanSyncFlag(bpOperationId, "generate");
+		
+		// set the isCustomized flag
+		// flag it so no more auto sorting for serial plan
+		new CMPBlueprintOrchestrationHelper().updateStageOperationIsPlanCustomized(bpOperationId, 1);
+	},
+
+	/*
+	* Function will generate the parallel execution plan for all the stage operation of the blueprint
+	*/
+	generateParallelExecutionPlanForAllOperation : function(stageModelId) {
+		//Getting all blueprint stage operation
+		var bpStageOperation = new GlideRecord("sn_cmp_bp_stage_op");
+		bpStageOperation.addQuery("blueprint_stage_model",stageModelId);
+		bpStageOperation.query();
+		while(bpStageOperation.next()){
+			this.generateParallelExecutionPlanForOperation(stageModelId,bpStageOperation.getUniqueValue());
+		}
+	},
+
+	/*
+	* Function will generate the serial execution plan
+	*/
+
+	generateSerialExecutionPlanForOperation : function(stageModelId, bpOperationId) {
+		this.cleanUpExecutionPlan(bpOperationId);
+		
+		var blueprintStageOpGr = new GlideRecord("sn_cmp_bp_stage_op");
+		blueprintStageOpGr.addQuery("sys_id",bpOperationId);
+		blueprintStageOpGr.query();
+		if(blueprintStageOpGr.next()) {
+			blueprintStageOpGr.parallel_plan_generated = 0;
+			blueprintStageOpGr.is_plan_synced = 0;
+			blueprintStageOpGr.update();
+		}
+		
+		var blueprintServiceScript = new sn_cmp_api.BlueprintServiceScript();
+		blueprintServiceScript.generateSerialExecutionPlanForOperation(bpOperationId);
+	},
+	
+	/*
+	* Function will generate the serial execution plan (old)
+	*/
+
+	generateSerialExecutionPlanForOperationOld : function(stageModelId, bpOperationId) {
+	    this.cleanUpExecutionPlan(bpOperationId);
+		var blueprintStageOpGr = new GlideRecord("sn_cmp_bp_stage_op");
+		blueprintStageOpGr.addQuery("sys_id",bpOperationId);
+		blueprintStageOpGr.query();
+		if(blueprintStageOpGr.next()) {
+			blueprintStageOpGr.parallel_plan_generated = 0;
+			blueprintStageOpGr.is_plan_synced = 0;
+			blueprintStageOpGr.update();
+		}
+
+		var bpStageResourceOp = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		bpStageResourceOp.addQuery("bp_stage_operation",bpOperationId);
+		bpStageResourceOp.orderBy("operation_order");
+		bpStageResourceOp.query();
+		while(bpStageResourceOp.next()) {
+			var updateRecord = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+			updateRecord.addQuery("blueprint_stage_op",bpOperationId);
+			updateRecord.query();
+			while(updateRecord.next()){
+			if(gs.nil(updateRecord.child_operation)) {
+				updateRecord.setValue("child_operation",bpStageResourceOp.getUniqueValue());
+				updateRecord.update();
+			}
+		}
+		//Creating new parent operation for stage resource graph
+		var glideRecord = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+			glideRecord.setValue("blueprint_stage_op",bpOperationId);
+			glideRecord.setValue("parent_operation",bpStageResourceOp.getUniqueValue());
+			glideRecord.setValue("status","true");
+			glideRecord.setValue("in_degree","0");
+			glideRecord.insert();
+		}
+	},
+
+	/*
+	* Cleaning up the existing execution plan
+	*/
+	cleanUpExecutionPlan : function(blueprintOperation) {
+		//Cleaning up the data
+		var executionPlanDataGR = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		executionPlanDataGR.addQuery("blueprint_stage_op",blueprintOperation);
+		executionPlanDataGR.query();
+		executionPlanDataGR.deleteMultiple();
+	},
+
+	/*
+	* Function will update the flag that execution plan is now sync with deployment model for a operation.
+	* @params bpOperationId
+	* @params context - "generate"- when we generating the parallel plan for the first time,
+	*				    "flip" -if parallel plan is already generated but execution plan is not in sync
+	*/
+	updateExecutionPlanSyncFlag : function(bpOperationId,context) {
+		var bpStageop = new GlideRecord("sn_cmp_bp_stage_op");
+		bpStageop.query("sys_id",bpOperationId);
+		bpStageop.query();
+		if(bpStageop.next()) {
+			if(context == "generate") {
+			//flag to indicate that parallel plan is generated for this operation
+				bpStageop.parallel_plan_generated = 1;
+			//flag to indicate that now plan is sync with the deployment model
+				bpStageop.is_plan_synced = 1;
+			} else if(context == "flip") {
+				if(bpStageop.parallel_plan_generated) {
+					bpStageop.is_plan_synced = 0;
+				}
+			}
+				bpStageop.update();
+			}
+		},
+
+
+	/*
+	* Forming the operation and its parents graph, execution plan generated is depends on:-
+	* Hosted on, Attach, Stack Expression and Output Attributes
+	*/
+	formExecutionPlanData : function(bpStageModel, blueprintOperation) {
+		var startTime = new Date().getTime();
+
+		//stageResourceOperationsGraph is the final object which will holds the execution plan data
+		var stageResourceHostedOnRel={}, stageResourceAttachRel = {}, stageResourceOperationsGraph = {},allStageResourceOpIdObj={},allStageResourceOpNameObj={};
+
+		//Fetching the relationship information from the deployment diagram
+		var stageResourceRelGr = new GlideRecord("sn_cmp_bp_stage_resource_dep");
+		stageResourceRelGr.addQuery("bp_stage_model",bpStageModel);
+		stageResourceRelGr.query();
+		while(stageResourceRelGr.next()) {
+			var stageResourceGuests=[];
+			var hostAliasName = stageResourceRelGr.host_association_name+"";
+			var guestAliasName = stageResourceRelGr.guest_association_name+"";
+			//if binding is of type :- HostedOn
+			if(stageResourceRelGr.getValue("deployment_type") == 1) {
+				if(gs.nil(stageResourceHostedOnRel[guestAliasName])) {
+					stageResourceHostedOnRel[guestAliasName] = new Array(hostAliasName);
+				} else {
+					stageResourceGuests = stageResourceHostedOnRel[guestAliasName];
+					stageResourceGuests.push(hostAliasName);
+					stageResourceHostedOnRel[guestAliasName] = stageResourceGuests;
+				}
+			} else {
+				// if binding is of type :- Attach
+				stageResourceAttachRel[guestAliasName] = hostAliasName;
+			}
+		}
+
+		var stageResourceProvisionOpObj ={},stageResourceOtherOpObj={}, stageResourceOtherOp = [],tlrOperation="",blueprintStageOperation="";
+		var stageResourceOpGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOpGr.addQuery("bp_stage_operation",blueprintOperation);
+		stageResourceOpGr.orderBy("sys_created_on");
+		stageResourceOpGr.query();
+		while(stageResourceOpGr.next()) {
+			blueprintStageOperation = stageResourceOpGr.getDisplayValue("bp_stage_operation");
+			var stageResource = stageResourceOpGr.getDisplayValue("bp_stage_resource")+"";
+			var operationId = stageResourceOpGr.getUniqueValue()+"";
+			var stageResourceOpAlias = stageResourceOpGr.alias_name+"";
+			allStageResourceOpIdObj[operationId] = stageResourceOpAlias;
+			allStageResourceOpNameObj[stageResourceOpAlias] = operationId;
+			if(!stageResourceOpGr.bp_stage_resource.resource_block.is_tlr) {
+				var resourceOp = stageResourceOpGr.getDisplayValue("rb_operation_impl")+"";
+				var resourceOpType = stageResourceOpGr.rb_operation_impl.operation.operation_type.name+"";
+
+				if((resourceOpType == "PROVISION" || resourceOp == "Provision" || resourceOp =="Deprovision" || resourceOp == "Start" || resourceOp == "Stop") && gs.nil(stageResourceProvisionOpObj[stageResource])) {
+					stageResourceProvisionOpObj[stageResource]= operationId;
+				} else {
+					if(gs.nil(stageResourceOtherOpObj[stageResource])) {
+						stageResourceOtherOpObj[stageResource] = new Array(operationId);
+					} else {
+						stageResourceOtherOp = stageResourceOtherOpObj[stageResource];
+						stageResourceOtherOp.push(operationId);
+						stageResourceOtherOpObj[stageResource] = stageResourceOtherOp;
+					}
+				}
+			} else
+				tlrOperation = operationId;
+		}
+		//creating graph according to hosted on bindings
+		stageResourceOperationsGraph = this.createGraphAccordingToHostedOnBindings(stageResourceHostedOnRel, stageResourceProvisionOpObj, stageResourceOperationsGraph);
+
+			// preparing stageResourceOperationsGraph for attach bindings
+		if(!this.isEmpty(stageResourceAttachRel)){
+			stageResourceOperationsGraph = this.createPlanForAttachBindingsOperation(stageResourceAttachRel,stageResourceProvisionOpObj,stageResourceOtherOpObj,stageResourceOperationsGraph);
+	}
+
+		//if stage resource contains more than one operation serilizing them
+		stageResourceOperationsGraph = this.serializeOperationOfSameStageResource(stageResourceProvisionOpObj,stageResourceOtherOpObj, stageResourceOperationsGraph);
+
+		//finding operation dependencies from stack expression
+		var stackExpressionDependantOperationObj = this.findStackAndOutputExpressionsDependencies(blueprintOperation,stageResourceProvisionOpObj,stageResourceOtherOpObj,allStageResourceOpNameObj);
+		if(!this.isEmpty(stackExpressionDependantOperationObj)) {
+			stageResourceOperationsGraph =  this.createStageResourceOpGraphAccordingToStackExp(stageResourceOperationsGraph,stackExpressionDependantOperationObj);
+		}
+
+		//Doing a validation if cycle exists in the graph
+		var isCyclicGraph = true;
+		while(isCyclicGraph) {
+			var cycleOfNodes = 	this.detectCycleInGraph(stageResourceOperationsGraph);
+			if(!gs.nil(cycleOfNodes)) {
+				var operationsFormingCycle = [];
+				for(var i=0;i<cycleOfNodes.length ; i++) {
+					operationsFormingCycle.push(allStageResourceOpIdObj[cycleOfNodes[i]]);
+				}
+				gs.info("Cycle of nodes detected : operations forming cycle are - "+operationsFormingCycle);
+				//removing the edge which is forming cycle
+				stageResourceOperationsGraph = this.removeCycleEdgeFromGraph(stageResourceOperationsGraph,cycleOfNodes);
+			} else
+				isCyclicGraph = false;
+		}
+
+		var operations = this.findOperationsWithNoChild(stageResourceOperationsGraph, blueprintOperation,tlrOperation);
+		stageResourceOperationsGraph[tlrOperation] = operations;
+
+		var endTime = new Date().getTime();
+		//Time logging
+		gs.info("Time taken to generate the parallel execution plan :"+(endTime-startTime));
+		// by this point stageResourceOperationsGraph is fully prepared inserting data to table
+		this.insertDataToStageResourceGraph(blueprintOperation, stageResourceOperationsGraph,blueprintStageOperation);
+},
+
+
+	/*
+	* Method will remove the edge which is forming cycle in the graph
+	*/
+	removeCycleEdgeFromGraph : function(stageResourceOperationsGraph,cycleOfNodes) {
+		//Getting the last edge
+		var node1 = cycleOfNodes[cycleOfNodes.length-1];
+		var node2 = cycleOfNodes[cycleOfNodes.length-2];
+		var indexOfNode = stageResourceOperationsGraph[node1].indexOf(node2);
+		if(indexOfNode > -1)
+			stageResourceOperationsGraph[node1].splice(indexOfNode,1);
+
+		return stageResourceOperationsGraph;
+	},
+
+	/*
+	* Method will find deployment model attach bindings and update execution plan graph
+	*/
+	createPlanForAttachBindingsOperation : function(stageResourceAttachRel,stageResourceProvisionOpObj,stageResourceOtherOpObj,stageResourceOperationsGraph) {
+	for(var key in stageResourceAttachRel) {
+				var hostAttached = key;
+				var guestAlias = stageResourceAttachRel[hostAttached];
+				var hostProvisionOperation = stageResourceProvisionOpObj[hostAttached];
+				var hostOtherOperation = stageResourceOtherOpObj[hostAttached];
+				var lastOperation  = hostProvisionOperation;
+				if(!gs.nil(hostOtherOperation)) {
+					if(hostOtherOperation.length > 0)
+						lastOperation = hostOtherOperation[hostOtherOperation.length-1];
+				}
+				if(!gs.nil(stageResourceOtherOpObj[guestAlias])) {
+					var guestAttachedOp = stageResourceOtherOpObj[guestAlias][0];
+					if(gs.nil(stageResourceOperationsGraph[guestAttachedOp])) {
+						stageResourceOperationsGraph[guestAttachedOp] = new Array(hostProvisionOperation);
+					} else {
+						var existingOp = stageResourceOperationsGraph[guestAttachedOp];
+						if(gs.nil(existingOp)) {
+							stageResourceOperationsGraph[guestAttachedOp] = new Array(hostProvisionOperation);
+						} else {
+							existingOp.push(hostProvisionOperation);
+							stageResourceOperationsGraph[guestAttachedOp] = existingOp;
+						}
+					}
+				}
+		}
+		return stageResourceOperationsGraph;
+	},
+
+	/*
+	* Function will find the child Operations of the parent
+	*/
+	findAndDeleteChildOperations : function(operation,stageResourceOperationsGraph) {
+		var childOperations = [];
+		var resourceName = this.findMyResourceBlock(operation);
+		for(var key in stageResourceOperationsGraph) {
+			var parentsOp = stageResourceOperationsGraph[key];
+			var indexOfOperation = parentsOp.indexOf(operation);
+			if(indexOfOperation != -1 && resourceName == "Virtual Server") {
+				childOperations.push(key);
+				stageResourceOperationsGraph[key].splice(indexOfOperation,1);
+			}
+		}
+		return childOperations;
+	},
+
+	/*
+	* Function will return the array of operations with no childs
+	*/
+	findOperationsWithNoChild : function(stageResourceOperationsGraph,blueprintOperation,tlrOperation) {
+		var operationWithNoChilds =[];
+		// Creating a array of all values
+		var operations = Object.keys(stageResourceOperationsGraph).map(function(key) {
+    return stageResourceOperationsGraph[key];
+});
+		var flattenOperations = [].concat.apply([], operations);
+		var stageResourceOpGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOpGr.addQuery("bp_stage_operation",blueprintOperation);
+		stageResourceOpGr.query();
+		while(stageResourceOpGr.next()) {
+			if(tlrOperation !=stageResourceOpGr.getUniqueValue()) {
+				var stageResourceOp = stageResourceOpGr.getUniqueValue();
+				if(flattenOperations.indexOf(stageResourceOp) == -1) {
+					operationWithNoChilds.push(stageResourceOp);
+				}
+		}
+	}
+		return operationWithNoChilds;
+	},
+
+	/*
+	* Method will find deployment model hosted on bindings and create execution plan graph
+	*/
+	serializeOperationOfSameStageResource : function(stageResourceProvisionOpObj,stageResourceOtherOpObj, stageResourceOperationsGraph) {
+		for(var bpStageResource in stageResourceProvisionOpObj) {
+			var parentOperation = stageResourceProvisionOpObj[bpStageResource];
+			//otherOperationArray
+			var otherOperationOfStageResource = stageResourceOtherOpObj[bpStageResource];
+			if(!gs.nil(otherOperationOfStageResource)) {
+				var childOperations = this.findAndDeleteChildOperations(parentOperation,stageResourceOperationsGraph);
+				var totalOtherOpOfSameStageResource = otherOperationOfStageResource.length -1;
+			for(var i=0;i<=totalOtherOpOfSameStageResource; i++) {
+					var otherStageOp = otherOperationOfStageResource[i]+"";
+					var existingOperations = stageResourceOperationsGraph[otherStageOp];
+				if(gs.nil(existingOperations))
+					stageResourceOperationsGraph[otherStageOp] = new Array(parentOperation);
+				else
+					stageResourceOperationsGraph[otherStageOp].push(parentOperation);
+
+				parentOperation = otherStageOp;
+				//means it is the last operation of the same stage resource
+				if(i == totalOtherOpOfSameStageResource) {
+					for(var j =0 ; j<childOperations.length; j++) {
+							stageResourceOperationsGraph[childOperations[j]].push(parentOperation);
+					}
+				}
+			  }
+			}
+		}
+		return stageResourceOperationsGraph;
+	},
+
+	/*
+	* Method will find the resource block name of a operation
+	*/
+	findMyResourceBlock : function(parentOperation) {
+		var resourceNameGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		resourceNameGr.get(parentOperation);
+		var resourceName = resourceNameGr.resource_block.name+"";
+		return resourceName;
+	},
+
+	/*
+	* Method will create the graph according to hosted on bindings
+	*/
+	createGraphAccordingToHostedOnBindings: function(stageResourceHostedOnRel,stageResourceProvisionOpObj,stageResourceOperationsGraph){
+
+		for(var guestResource in stageResourceHostedOnRel) {
+			var guest = guestResource;
+			var hosts = stageResourceHostedOnRel[guest];
+			var stageResourceParentsOperation = [];
+			for(var j=0;j<hosts.length;j++) {
+				var dependantOperation = stageResourceProvisionOpObj[hosts[j]];
+				if(!gs.nil(dependantOperation))
+					stageResourceParentsOperation.push(stageResourceProvisionOpObj[hosts[j]]);
+			}
+			if(!gs.nil(stageResourceProvisionOpObj[guest]))
+				stageResourceOperationsGraph[stageResourceProvisionOpObj[guest]] = stageResourceParentsOperation;
+
+	}
+		return stageResourceOperationsGraph;
+	},
+
+	/*
+	* Finding the stack and output expressions operation dependencies
+	*/
+	findStackAndOutputExpressionsDependencies : function(blueprintOperation,stageResourceProvisionOpObj,stageResourceOtherOpObj,allStageResourceOpNameObj) {
+		//final object which contains the stack and output attributes expression dependencies
+		var  dependantOperationsObj = {};
+		//forming graph for the stack expressions
+		var stageResourceOpGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOpGr.addQuery("bp_stage_operation",blueprintOperation);
+		stageResourceOpGr.query();
+		while(stageResourceOpGr.next()) {
+		var operationId = stageResourceOpGr.getUniqueValue();
+		var stageResource = stageResourceOpGr.getDisplayValue("bp_stage_resource");
+			var expressionGr = new GlideRecord("sn_cmp_bp_stage_res_op_attr");
+			expressionGr.addQuery("stage_resource_operation",operationId);
+			expressionGr.addQuery("default_value", 'CONTAINS', "Stack.items").addOrCondition("default_value", 'CONTAINS', "Outputs");
+			expressionGr.query();
+			while(expressionGr.next()) {
+				var defaultValue = expressionGr.getValue("default_value");
+				var runTimeExpressions = new sn_cmp_api.ExpressionResolverUtilScript().findRuntimeExpressions(defaultValue);
+				var expressionsArray = JSON.parse(runTimeExpressions);
+				for (var exp  in expressionsArray) {
+					var expression = expressionsArray[exp];
+					if(expression.includes("Stack.items"))
+						dependantOperationsObj = this.findStackExpressionsDependentOperation(operationId,stageResource, expression,stageResourceOtherOpObj,stageResourceProvisionOpObj,dependantOperationsObj);
+					else if(expression.includes("Outputs"))
+						dependantOperationsObj = this.findOutputAttributesDependentOperation(expression,operationId,allStageResourceOpNameObj,dependantOperationsObj);
+				}
+			}
+		}
+		return dependantOperationsObj;
+	},
+	/*
+	* Find stack expression dependencies
+	*/
+	findStackExpressionsDependentOperation : function(operationId,stageResource, expression,stageResourceOtherOpObj,stageResourceProvisionOpObj,stackExpressionDependantOperationObj) {
+			//need to correct the regex
+				var dependantStageResource = expression.match(/(Stack.items)\[(.*?)\]/)[2];
+			//checking if the operation id and dependant stage resource operation are not of same stage resource
+				if(stageResource != dependantStageResource){
+					var totalOtherStageResourceOp = gs.nil(stageResourceOtherOpObj[dependantStageResource]) ? -1 : stageResourceOtherOpObj[dependantStageResource].length;
+					// if other operation of same stage resource are nil take provision as connection operation else other last operation
+					var dependantStageResourceOperation =  totalOtherStageResourceOp>0 ?stageResourceOtherOpObj[dependantStageResource][totalOtherStageResourceOp-1] : stageResourceProvisionOpObj[dependantStageResource];
+
+					var stackDependantStageResourcesOperation = stackExpressionDependantOperationObj[operationId];
+						if(gs.nil(stackDependantStageResourcesOperation)) {
+							stackExpressionDependantOperationObj[operationId] = new Array(dependantStageResourceOperation);
+						} else {
+							if(stackDependantStageResourcesOperation.indexOf(dependantStageResourceOperation) == -1) {
+							stackDependantStageResourcesOperation.push(dependantStageResourceOperation);
+							stackExpressionDependantOperationObj[operationId] = stackDependantStageResourcesOperation;
+						}
+					 }
+			}
+		return stackExpressionDependantOperationObj;
+	},
+
+	/**
+	* Find output expression dependencies
+	*/
+	findOutputAttributesDependentOperation : function(expression, operationId,allStageResourceOpNameObj,outputAttributeDependantOperationObj) {
+		var dependantStageResource = expression.match(/(Outputs)\[(.*?)\]/)[2];
+		var dependantStageResourceOp = allStageResourceOpNameObj[dependantStageResource];
+		if(dependantStageResource != "this" && !gs.nil(dependantStageResourceOp)) {
+			var existingDependentOperation = outputAttributeDependantOperationObj[operationId];
+
+					if(gs.nil(existingDependentOperation)) {
+						outputAttributeDependantOperationObj[operationId] = new Array(dependantStageResourceOp);
+					} else {
+						if(existingDependentOperation.indexOf(dependantStageResourceOp) == -1) {
+						existingDependentOperation.push(dependantStageResourceOp);
+						outputAttributeDependantOperationObj[operationId] = existingDependentOperation;
+					}
+			 }
+		}
+		return outputAttributeDependantOperationObj;
+	},
+
+	/*
+	* Updating stageResourceOperationsGraph if stack expression dependencies found
+	*/
+	createStageResourceOpGraphAccordingToStackExp : function(stageResourceOperationsGraph,stackExpressionDependantOperationObj) {
+		for(var operation in stackExpressionDependantOperationObj) {
+				var existingParentOperations = stageResourceOperationsGraph[operation];
+				var depandantOperations = stackExpressionDependantOperationObj[operation];
+			if(!gs.nil(existingParentOperations)) {
+					for(var i=0; i <depandantOperations.length; i++ ){
+						if(existingParentOperations.indexOf(depandantOperations[i]) == -1) {
+							existingParentOperations.push(depandantOperations[i]);
+							stageResourceOperationsGraph[operation] = existingParentOperations;
+						}
+					}
+			}
+		}
+		return stageResourceOperationsGraph;
+	},
+
+
+	/*
+	* Method will find cycle in the Graph and return you the nodes which are forming cycle
+	* @params graph(Javascript Object)
+	*/
+	detectCycleInGraph : function (graph) {
+		//Converting all keys to array
+		var operationKeys = Object.keys(graph).map(function (node) {
+			return [node];
+		});
+
+			while (operationKeys.length) {
+				var batch = [];
+				for(var i= 0; i<operationKeys.length ; i++)
+				{
+				   var path = operationKeys[i];
+					var parents = graph[path[0]] || [];
+					 for(var j= 0; j<parents.length ; j++)
+					{
+				   var  node = parents[j];
+						if (node == path[path.length-1])
+						{
+							//creating new array with new reference
+							var cycleNodesFound = path.slice();
+							//putting the node as first element
+							cycleNodesFound.unshift(node);
+							 return cycleNodesFound;
+						}
+					   var  tempArray = path.slice();
+						tempArray.unshift(node);
+						batch.push(tempArray);
+					}
+				}
+				operationKeys = batch;
+			}
+	},
+
+
+	/*
+	* On change of interface of a resource function will update the execution plan with the new stage resource opreation
+	*/
+	changeInterfaceOfStageResource : function(blueprintId, blueprintOperationId, stageResorceOperationId, operationImplId, stageResorceId, interfaceId,conditionText) {
+		var order = "", stageResourceOpObj={}, stageResourceName="", interfaceName="", operationName="";
+		//Preserving the in-links of execution plan for stageResorceOperationId
+		var inlinksOfStageResourceOp =[],outLinksOfStageResourceOp = [];
+		var inLinksStageResourceOpGraph = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		inLinksStageResourceOpGraph.addQuery("parent_operation",stageResorceOperationId);
+		inLinksStageResourceOpGraph.query();
+		while(inLinksStageResourceOpGraph.next()) {
+			inlinksOfStageResourceOp.push(inLinksStageResourceOpGraph.getUniqueValue());
+		}
+		//Preserving outlinks of execution plan for stageResorceOperationId
+		var outLinksStageResourceOpGraph = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+		outLinksStageResourceOpGraph.addQuery("child_operation",stageResorceOperationId);
+		outLinksStageResourceOpGraph.query();
+		while(outLinksStageResourceOpGraph.next()) {
+			outLinksOfStageResourceOp.push(outLinksStageResourceOpGraph.getUniqueValue());
+		}
+		//deleted the old stage resource operation
+		var stageResourceOpGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		stageResourceOpGr.addQuery("sys_id",stageResorceOperationId);
+		stageResourceOpGr.query();
+		if(stageResourceOpGr.next()) {
+			order = stageResourceOpGr.operation_order+"";
+			stageResourceName = stageResourceOpGr.bp_stage_resource.alias_name+"";
+			operationName = stageResourceOpGr.rb_operation_impl.operation.name+"";
+			stageResourceOpGr.deleteRecord();
+		}
+		//Creating the new stage Resource operation it will generate the gobal property etc
+		var newStageResourceOpId = new sn_cmp_api.BlueprintServiceScript().addBlueprintOperationStep(blueprintId,blueprintOperationId,stageResorceId,operationImplId,conditionText,false);
+
+		//Maintaing the order of the operation
+		var updateStageResourceOpGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+		updateStageResourceOpGr.addQuery("sys_id",newStageResourceOpId);
+		updateStageResourceOpGr.query();
+		if(updateStageResourceOpGr.next()) {
+			updateStageResourceOpGr.operation_order = order;
+			updateStageResourceOpGr.update();
+		}
+
+		//updating the excution plan new stageresourceoperationId for the inlinks and outlinks
+		for(var i=0;i<inlinksOfStageResourceOp.length;i++) {
+				var updateInLinksStageResourceOpGraph = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+				updateInLinksStageResourceOpGraph.addQuery("sys_id",inlinksOfStageResourceOp[i]);
+				updateInLinksStageResourceOpGraph.query();
+				if(updateInLinksStageResourceOpGraph.next()) {
+					updateInLinksStageResourceOpGraph.parent_operation = newStageResourceOpId;
+					updateInLinksStageResourceOpGraph.update();
+				}
+		}
+
+		for(var j=0; j<outLinksOfStageResourceOp.length; j++) {
+				var updateOutlinksStageResourceOpGraph = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+				updateOutlinksStageResourceOpGraph.addQuery("sys_id",outLinksOfStageResourceOp[j]);
+				updateOutlinksStageResourceOpGraph.query();
+				if(updateOutlinksStageResourceOpGraph.next()) {
+					updateOutlinksStageResourceOpGraph.child_operation = newStageResourceOpId;
+					updateOutlinksStageResourceOpGraph.update();
+				}
+		}
+		//forming the object to refresh data in UI
+		var interfaceGr = new GlideRecord("sn_cmp_rb_resourceinterface");
+		interfaceGr.get(interfaceId);
+		interfaceName = interfaceGr.name+"";
+		stageResourceOpObj["id"] = newStageResourceOpId;
+		stageResourceOpObj["element_name"] = stageResourceName;
+		stageResourceOpObj["interface"] =interfaceName;
+		stageResourceOpObj["name"] =operationName;
+
+		return stageResourceOpObj;
+	},
+
+	/*
+	*Function will insert the data to table stage resource operation graph
+	*/
+	insertDataToStageResourceGraph : function(blueprintOperation, stageResourceOperationsGraph, bpStageOperation) {
+		for(var key in stageResourceOperationsGraph) {
+		    	var parentsOperation = stageResourceOperationsGraph[key];
+			if(parentsOperation.length > 0) {
+				for(var i=0 ; i<parentsOperation.length; i++) {
+					if(bpStageOperation == "Deprovision" || bpStageOperation == "Stop" || bpStageOperation == "Cleanup" )
+						new CMPBlueprintOrchestrationHelper().makeParentChildMapping(blueprintOperation,key,parentsOperation[i],'true');
+					else
+						new CMPBlueprintOrchestrationHelper().makeParentChildMapping(blueprintOperation,parentsOperation[i],key,'true');
+
+
+				}
+			} else {
+				new CMPBlueprintOrchestrationHelper().makeParentChildMapping(blueprintOperation,"",key,'true');
+			}
+		}
+	},
+
+	/*
+	* Function will check whether the object is empty or not
+	*/
+	 isEmpty : function(object) {
+		for(var key in object) {
+			if(object.hasOwnProperty(key))
+				return false;
+		}
+		return true;
+	},
+
+	/**
+	* Method will delete the stage resource operation
+	*/
+	deleteStageResourceOperation : function(stageResourceOpId, bpOperationId) {
+		if(!gs.nil(stageResourceOpId)) {
+			var blueprintStageOp = "";
+			var parentsOperations = [];
+			var childOperations = [];
+			//Collecting all the parents of the stage resource operation which needs to be deleted
+			var parentsOpGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+			parentsOpGr.addQuery("child_operation",stageResourceOpId);
+			parentsOpGr.query();
+			while(parentsOpGr.next()) {
+				var parentOp = parentsOpGr.getValue("parent_operation");
+				if(!gs.nil(parentOp))
+					parentsOperations.push(parentOp);
+			}
+
+			//Collecting all the child of the stage resource operation which needs to be deleted
+			var childOpGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+			childOpGr.addQuery("parent_operation",stageResourceOpId);
+			childOpGr.query();
+			while(childOpGr.next()) {
+				var childOp = childOpGr.getValue("child_operation");
+				if(!gs.nil(childOp))
+					childOperations.push(childOp);
+			}
+
+			// deleting the stage resource operation inlinks and outlinks form the execution plan graph
+			var executionPlanGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+			executionPlanGr.addQuery("parent_operation",stageResourceOpId).addOrCondition("child_operation",stageResourceOpId);
+			executionPlanGr.query();
+			executionPlanGr.deleteMultiple();
+
+			var stageResourceGr = new GlideRecord("sn_cmp_bp_stage_resource_op");
+			stageResourceGr.get(stageResourceOpId);
+			stageResourceGr.deleteRecord();
+			//if deleted node has both parents and childs
+			if(parentsOperations.length > 0 && childOperations.length > 0) {
+				for(var i=0;i<parentsOperations.length; i++) {
+					for(var j=0;j<childOperations.length; j++) {
+						var operationsGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+						operationsGr.addQuery("parent_operation",parentsOperations[i]);
+						operationsGr.addQuery("child_operation",childOperations[j]);
+						operationsGr.query();
+						if(!operationsGr.next())
+							new CMPBlueprintOrchestrationHelper().makeParentChildMapping(bpOperationId, parentsOperations[i],childOperations[j], true);
+					}
+				} //if deleted node has childs but no parents - (if a operation has no parents- marking them no parents operation)
+			} else if(childOperations.length > 0 && parentsOperations.length == 0) {
+				for(var k=0;k<childOperations.length; k++) {
+						var childOperationsGr = new GlideRecord(this.BP_STAGE_RESOURCE_OP_GRAPH);
+						childOperationsGr.addQuery("parent_operation","");
+						childOperationsGr.addQuery("child_operation",childOperations[k]);
+						childOperationsGr.query();
+						if(!childOperationsGr.next())
+							new CMPBlueprintOrchestrationHelper().makeParentChildMapping(bpOperationId, "",childOperations[k], true);
+			}
+		}
+		
+		// flag it so no more auto sorting for serial plan
+		new CMPBlueprintOrchestrationHelper().updateStageOperationIsPlanCustomized(bpOperationId, 1);
+   }
+		return true;
+},
+
+    type: 'CMPBPExecutionPlanGenerator'
+
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-31 12:57:25</sys_created_on>
+        <sys_id>1554b1690bd8030003b6c97193673a26</sys_id>
+        <sys_mod_count>360</sys_mod_count>
+        <sys_name>CMPBPExecutionPlanGenerator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1554b1690bd8030003b6c97193673a26</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-24 21:01:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="OperationSignature" max_length="40" name="sn_cmp_rb_op_signature" type="collection">
+        <element choice="1" label="Access Type" max_length="40" name="access_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Private" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Public" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <element attributes="no_sort=true,slushbucket_ref_no_expand=true" label="Applicable To" max_length="1024" name="applicable_to" reference="sn_cmp_rb_resourceblock" type="glide_list"/>
+        <element label="Interface" max_length="32" name="interface" reference="sn_cmp_rb_resourceinterface" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="200" name="name" type="string"/>
+        <element label="Operation Type" max_length="32" name="operation_type" reference="sn_cmp_rb_op_type" type="reference"/>
+        <index name="index">
+            <element name="operation_type"/>
+        </index>
+        <index name="index2">
+            <element name="interface"/>
+        </index>
+    </element>
+</database>

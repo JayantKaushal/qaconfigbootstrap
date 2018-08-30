@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope, $rootScope, $window, spUtil) {
+	
+  spUtil.recordWatch($scope, "sn_cmp_order_step_status","",function(name,data){
+		spUtil.update($scope);
+	});
+	
+	spUtil.recordWatch($scope, "sn_cmp_order","",function(name,data){
+		spUtil.update($scope);
+	});
+	
+	spUtil.recordWatch($scope, "sc_req_item","",function(name,data){
+		spUtil.update($scope);
+	});
+	
+	spUtil.recordWatch($scope, "sn_cmp_cloud_trail","",function(name,data){
+		spUtil.update($scope);
+	});
+	
+  $scope.$watch("data.conversation_title", function() {
+    $rootScope.$broadcast('sp.conversation_title.changed', $scope.data.conversation_title);
+  });
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.requested-items-flex-container {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: row;
+            flex-direction: row;
+            }
+
+            .panel-title{
+            margin-top:8px;
+            }
+
+            .list-group{
+            min-height: 208px;
+            overflow:auto;
+            }
+
+            .list-group-item {
+            padding: 5px 15px;
+            border: none;
+            }
+
+            .stage-on IMG, .stage-off IMG{ margin-right:6px; }
+            .stage-on, .stage-off { margin-bottom: 6px; }
+            .stage-on{
+            //font-weight:700;
+            }
+
+            .stage-off{/*color:#999;*/ font-weight:300;}
+
+            .l-h-40 {
+            line-height: 40px;
+            }
+
+            .list-action {
+            display:block;
+            padding:0 6px;
+            cursor: pointer;
+            }
+
+            .list-action:hover {
+            background-color: #fff;
+            }</css>
+        <data_table>sp_instance_vlist</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list>title,order,color,display_field,filter,table,sp_page,order_direction,maximum_entries,order_by</field_list>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-status</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Stack Status</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.page_id = $sp.getParameter('id');
+	data.req_item_id = $sp.getParameter('req_item_sys_id') || options.req_item_id || input.req_item_id;
+
+	data.resultList = [];
+	data.trailList = [];
+	data.errorList = [];
+	
+	var request_item_gr = new GlideRecord("sc_req_item");
+	request_item_gr.addQuery("sys_id", data.req_item_id);	
+	request_item_gr.query();
+	while (request_item_gr.next()) {
+		if (!request_item_gr.canRead())
+			continue;
+		data.req_item_stage = request_item_gr.getValue('stage');
+	}
+
+	if(data.req_item_stage && data.req_item_stage == "deployment_failed" || data.req_item_stage == "Task Created for User" || data.req_item_stage == "Task Created for Operator	"){
+		var trails = new GlideRecord('sn_cmp_cloud_trail');
+		trails.addQuery('req_item',data.req_item_id);
+		trails.addEncodedQuery('message_type=4^milestone=1');
+		trails.query();
+		while(trails.next()){
+			var gdt = new GlideDateTime(trails.getValue('sys_updated_on'));
+			var obj = {};
+			obj.message = trails.getValue('status_message');
+			obj.date_details = gdt.getDisplayValue();
+			data.trailList.push(obj);
+		}
+
+		var taskGR = new GlideRecord("sc_task");
+		taskGR.addQuery("request_item",data.req_item_id);
+		taskGR.query();
+		while(taskGR.next()){
+			var gdt = new GlideDateTime(taskGR.getValue('sys_updated_on'));
+			var obj = {};
+			obj.message = taskGR.getValue('description');
+			obj.date_details = gdt.getDisplayValue();
+			data.errorList.push(obj);
+		}
+	}
+	else{
+		var stack_order_gr = new GlideRecord("sn_cmp_order");
+		stack_order_gr.addQuery("sc_req_item",data.req_item_id);
+		stack_order_gr.query();
+		while (stack_order_gr.next()) {
+
+			if (!stack_order_gr.canRead())
+				continue;
+
+			data.stack_order_sys_id = stack_order_gr.getUniqueValue();
+			data.stack_name = stack_order_gr.stack.name.getDisplayValue();
+			data.blueprint_name = stack_order_gr.context_instance.getDisplayValue();
+		}
+
+		var stack_order_step_gr = new GlideRecord("sn_cmp_order_step_status");
+		stack_order_step_gr.addQuery("order",data.stack_order_sys_id);
+		stack_order_step_gr.addQuery("type",2);
+		stack_order_step_gr.addQuery("runtime_step_type", "IN", "2,4,6");
+		stack_order_step_gr.orderBy("execution_order");
+		stack_order_step_gr.query();
+		while (stack_order_step_gr.next()) {
+
+			if (!stack_order_step_gr.canRead())
+				continue;
+
+			/*showing the interface name of the resource operation -
+			  it is needed to be shown if user is using extension interface
+			*/
+			var parentStep = stack_order_step_gr.parent_step;
+			var orderId = stack_order_step_gr.order+"";
+			var interfaceName = "", orderStepName = "";
+			var interfaceNameGr = new GlideRecord("sn_cmp_order_step_status");
+			interfaceNameGr.addQuery("order",orderId);
+			interfaceNameGr.addQuery("name",parentStep);
+			interfaceNameGr.query();
+			if(interfaceNameGr.next()){
+				interfaceName = JSON.parse(interfaceNameGr.getDisplayValue("api_step")).interfaceName;
+			}
+			orderStepName = stack_order_step_gr.name.getDisplayValue();
+			if(!gs.nil(interfaceName)) {
+				orderStepName = "["+interfaceName+"] " + orderStepName;
+			}
+
+			var gdt = new GlideDateTime(stack_order_step_gr.getValue('sys_updated_on'));
+			var orderSteps = {};
+			orderSteps.name = orderStepName;
+			orderSteps.date_details = gdt.getDisplayValue();
+			orderSteps.execution_order = stack_order_step_gr.execution_order.getDisplayValue();
+			orderSteps.status = stack_order_step_gr.getValue('status');
+			orderSteps.status_value = stack_order_step_gr.status.getDisplayValue();
+			data.resultList.push(orderSteps);
+		}
+	}
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-18 05:24:10</sys_created_on>
+        <sys_id>85e7d7d50b262200eff7ef9bb4673a8a</sys_id>
+        <sys_mod_count>276</sys_mod_count>
+        <sys_name>Cloud Stack Status</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_85e7d7d50b262200eff7ef9bb4673a8a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 17:02:50</sys_updated_on>
+        <template><![CDATA[<div class="panel b">
+  <div class="panel-heading">
+    <h4 class="panel-title">Stack Status</h4>
+  </div>
+  <div class="list-group">
+    <div ng-if="data.resultList.length == 0 && data.trailList.length == 0 && data.errorList.length == 0" class="block list-group-item">
+      No Data Available
+    </div>
+    <div ng-if="data.resultList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.resultList">
+            <div class="stage-on">  
+              <img ng-if="item.status == '5' || item.status == '3'" src="/images/icon-check-circle.png" />   
+              <img ng-if="item.status == '1'" src="/images/icon-empty-circle.png" />   
+              <img ng-if="item.status == '6' || item.status == '7' || item.status == '8'" src="/images/icon-cross-circle.png"/>
+              <img ng-if="(item.status == '2' || item.status == '4' )" src="/images/icon-ellipsis.png" />
+              {{item.date_details}} : {{item.name}} - {{item.status_value}}
+            </div> 
+          </div> 
+        </div>
+      </div>
+    </div>
+    <div ng-if="data.trailList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.trailList">
+            <div class="stage-on">   
+              <img src="/images/icon-cross-circle.png"/>
+              {{item.date_details}} : {{item.message}}
+            </div> 
+          </div> 
+        </div>
+      </div>
+    </div> 
+    <div ng-if="data.errorList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.errorList">
+            <div class="stage-on">   
+              <img src="/images/icon-cross-circle.png"/>
+              {{item.date_details}} : {{item.message}}
+            </div> 
+          </div> 
+        </div>
+      </div>
+    </div> 
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

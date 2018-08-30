@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>Create_node_creds_and_associate_to_mgmt_creds_response_processor</name>
+        <resource display_value="Virtual Server">6a4a735e0be622009e620bcb15673a04</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext) {
+	var vmResponse = global.JSON.parse(response);
+	
+	var identification = [
+	{
+		"cmdb_ci_vm_instance":
+		{
+			"identification":
+			{
+				"cmdb_ci_cloud_service_account": {
+					"criterion": {
+						"object_id": cloudServiceAccountId
+					}
+				},
+				"cmdb_ci_aws_datacenter": {
+					"criterion": {
+						"object_id":ldc
+					}
+				},
+				"cmdb_ci_vm_instance": {
+					"criterion": {
+						"object_id": vmResponse.nodeId
+					}
+				}
+			}
+		}
+	}
+	];
+	
+	var cloudModelScript = new sn_cmp_api.CloudModelProcessorScript();
+	var ciPayload = cloudModelScript.retrieveCIs(global.JSON.stringify(identification), "shallow");
+	var ci = global.JSON.parse(ciPayload);
+	var nodeSysId = ci.cmdb_ci_vm_instance.sys_id;
+	var userId = vmResponse.userId;
+	var password = vmResponse.password;
+	
+	if (userId) {
+		var nodeGenScript = new global.GenerateNodeCredentials();
+		var nodeCredId = nodeGenScript.generateNodeCredential(nodeSysId, vmResponse.nodeId, userId);
+		gs.info("Node Credential ID in Response Processor - " + nodeCredId);
+		
+		var sshKeyScript = new sn_cmp_api.SSHKeyPairScript();
+		sshKeyScript.associateToNode(nodeCredId, nodeSysId);
+		
+		if(password)
+			var nodeUserCredId = sshKeyScript.createNodeUserCredential(vmResponse.nodeId, userId, password, nodeSysId);
+	}
+	
+	return global.JSON.stringify([]);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-24 09:16:25</sys_created_on>
+        <sys_id>8ac8b8c10b203200668daac125673aa8</sys_id>
+        <sys_mod_count>30</sys_mod_count>
+        <sys_name>Create_node_creds_and_associate_to_mgmt_creds_response_processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_8ac8b8c10b203200668daac125673aa8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-25 07:51:49</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

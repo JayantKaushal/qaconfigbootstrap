@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPDoOperationOnActionRecordAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPDoOperationOnActionRecordAction</name>
+        <script><![CDATA[var CMPDoOperationOnActionRecordAction = Class.create();
+CMPDoOperationOnActionRecordAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try{
+			if (!params.operation) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter:operation"),
+				"CMPDoOperationOnActionRecordAction.doAction: Undefined operation on action record",
+				null
+				);
+			}
+			
+			var field;
+			var data = new global.JSON().decode(params.data || "{}");
+			var gr = new GlideRecord('sn_cmp_pol_action');
+			
+			if(params.operation == "insert") {
+				if (params.sys_id == "-1") {
+					for(field in data) {
+						gr[field] = data[field];
+					}
+					return gr.insert();
+				}
+			}
+			
+			if(params.operation == "insert" || params.sys_id == "-1") {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter: sys_id or operation"),
+				"CMPDoOperationOnActionRecordAction.doAction: new record can only be inserted",
+				null
+				);
+			}
+			
+			if(!gr.get(params.sys_id) || !gr.isValidRecord()) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Invalid action sys_id: {0}",params.sys_id),
+					"CMPDoOperationOnActionRecordAction.doAction: Invalid action sys_id: " + params.sys_id,
+					null
+				);
+			}
+			
+			if (params.operation == "update") {
+				for(field in data) {
+					gr[field] = data[field];
+				}
+				return gr.update();
+			}
+			
+			if(params.operation == "delete") 
+				return gr.deleteRecord();
+			
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Invalid action: unknown error or unknown operation"),
+				"CMPDoOperationOnActionRecordAction.doAction: Invalid action: unknown error or unknown operation",
+				null
+			);
+			
+	
+		}catch(error){
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to do operation on policy action record"),
+			"CMPDoOperationOnActionRecordAction.doAction(): Failed to do operation on policy action record",
+			error
+			);
+		}
+	},
+	
+	type: 'CMPDoOperationOnActionRecordAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-02 05:34:23</sys_created_on>
+        <sys_id>016d468887410300bf4a471c97cb0bf4</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPDoOperationOnActionRecordAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_016d468887410300bf4a471c97cb0bf4</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-05 19:02:57</sys_updated_on>
+    </sys_script_include>
+</record_update>

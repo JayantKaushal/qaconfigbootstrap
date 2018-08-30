@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_pol_template">
+    <sn_cmp_pol_template action="INSERT_OR_UPDATE">
+        <logic_name>rule</logic_name>
+        <name>rule</name>
+        <sys_class_name>sn_cmp_pol_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-18 07:26:15</sys_created_on>
+        <sys_id>03d2694b5b103200a821273a41f91aad</sys_id>
+        <sys_mod_count>25</sys_mod_count>
+        <sys_name>rule</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_pol_template_03d2694b5b103200a821273a41f91aad</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-04 14:17:22</sys_updated_on>
+        <template>/* ${rule}*/&#13;
+function ${rule}() {&#13;
+	var rule = {};&#13;
+	rule.id = '${ruleid}';&#13;
+	rule.name = '${rule}';&#13;
+	rule.input = JSON.parse(JSON.stringify(outputMap.inputMap));&#13;
+	rule.conditions = [];&#13;
+	rule.actions = [];&#13;
+	var condition = {};&#13;
+	var ruleActions = "${ruleActions}";&#13;
+         var lastAction = "${lastActionId}";&#13;
+        gs.info( 'inside rule ${ruleid} skipRules =  ' + skipRules + '  lastAction = ' +  lastAction);&#13;
+	if( skipRules == "true"){&#13;
+	   if(ruleActions.indexOf( lastActionId) != -1){&#13;
+	   // do nothing. action should be executed next&#13;
+	   }else{&#13;
+	          return outputMap.logs.isSuccessful;&#13;
+	   }&#13;
+	}&#13;
+	condition.isSuccessful = false;&#13;
+	rule.conditions[rule.conditions.length] = condition;&#13;
+	try {&#13;
+              var conditionSuccessful = "false";&#13;
+              try{&#13;
+                if (${conditions}) {&#13;
+                     conditionSuccessful = "true";&#13;
+                }&#13;
+              }catch( error){&#13;
+              }&#13;
+		if (conditionSuccessful == "true") {&#13;
+			condition.isSuccessful = true;&#13;
+			${actions}&#13;
+			outputMap.logs.isSuccessful = true;&#13;
+                        rule.message = 'Rule ${rule} executed successfully';&#13;
+			outputMap.logs.message = 'Rule ${rule} executed successfully';&#13;
+		}&#13;
+		rule.modified = JSON.parse(JSON.stringify(outputMap.inputMap));&#13;
+		condition.condition = "${conditions}";&#13;
+		rule.isSuccessful=true;&#13;
+		outputMap.logs.rules[outputMap.logs.rules.length] = rule;&#13;
+		outputMap.logs.output = JSON.parse(JSON.stringify(outputMap.inputMap));&#13;
+	} catch (err) {&#13;
+		outputMap.logs.isError = true;&#13;
+		outputMap.logs.errorMessage = err.message;&#13;
+		rule.isSuccessful=false;&#13;
+	}&#13;
+	return outputMap.logs.isSuccessful;&#13;
+}&#13;
+</template>
+    </sn_cmp_pol_template>
+</record_update>

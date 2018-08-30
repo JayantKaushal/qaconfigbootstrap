@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Stack Items" max_length="40" name="sn_cmp_stack_item" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Alias" max_length="1000" name="alias" type="string"/>
+        <element label="CI Instance Id" max_length="32" name="ci_instance_id" reference="cmdb_ci" type="reference"/>
+        <element label="Logical Datacenter" max_length="32" name="ldc" reference="cmdb_ci_logical_datacenter" type="reference"/>
+        <element label="Parent Resource Block" max_length="32" name="parent_block_id" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Parent CI Instance Id" max_length="32" name="parent_ci_instance_id" reference="cmdb_ci" type="reference"/>
+        <element label="Resource Block" max_length="32" name="resource_block_id" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element label="Stack" max_length="32" name="stack" reference="sn_cmp_stack" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="Status" max_length="40" name="status" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Processing" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Processed" sequence="2" value="2"/>
+                <element inactive_on_update="false" label="Error" sequence="3" value="3"/>
+            </choice>
+        </element>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <index name="index">
+            <element name="stack"/>
+        </index>
+        <index name="index2">
+            <element name="parent_ci_instance_id"/>
+        </index>
+        <index name="index3">
+            <element name="resource_block_id"/>
+        </index>
+        <index name="index4">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index5">
+            <element name="ci_instance_id"/>
+        </index>
+        <index name="index6">
+            <element name="parent_block_id"/>
+        </index>
+        <index name="index7">
+            <element name="ldc"/>
+        </index>
+    </element>
+</database>

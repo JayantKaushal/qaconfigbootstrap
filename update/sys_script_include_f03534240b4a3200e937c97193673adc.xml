@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.ResourceBlockServiceHelper</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>ResourceBlockServiceHelper</name>
+        <script><![CDATA[var ResourceBlockServiceHelper = Class.create();
+ResourceBlockServiceHelper.prototype = {
+    initialize: function() {
+    },
+ getNonTLRResourceBlocks: function() {
+		var resourceBlockDTOs = [];
+		var resourceGlide = new GlideRecord("sn_cmp_rb_resourceblock");
+		resourceGlide.addQuery("is_tlr", false);
+        var activeFieldQuery = resourceGlide.addNullQuery("active");
+        activeFieldQuery.addOrCondition("active", true);
+		resourceGlide.orderBy("name");
+		resourceGlide.query();
+		while (resourceGlide.next()) {
+			var resourceBlockDTO = this.convertResourceBlockGlideRecordToDTO(resourceGlide);
+			resourceBlockDTOs.push(resourceBlockDTO);
+		}
+		return resourceBlockDTOs;
+	}, 
+	
+	 getHostsForResource: function(resourceBlockId){
+		var resourceHostDTOs = [];
+		var resourceHostGR = new GlideRecord("sn_cmp_rb_resourcehost");
+		resourceHostGR.addQuery("guestresource", resourceBlockId);
+		resourceHostGR.query();
+		while (resourceHostGR.next()) {
+			var resourceBlockById = this.getResourceBlockById(resourceHostGR.getValue("hostresource"));
+			if (!gs.nil(resourceBlockById)) {
+				var resourceHostDTO = {};
+				resourceHostDTO['name'] = resourceBlockById.name;
+				resourceHostDTOs.push(resourceHostDTO);
+			}
+		}
+		return resourceHostDTOs;
+	},
+	
+	  getResourceBlockById : function(id) {
+		var resourceBlockDTO = "";
+		var resourceRecord = new GlideRecord("sn_cmp_rb_resourceblock");
+		if (resourceRecord.get(id)) {
+			resourceBlockDTO = this.convertResourceBlockGlideRecordToDTO(resourceRecord);
+		}
+		return resourceBlockDTO;
+	},
+	
+	searchResourceBlocksByName: function(layer,status,resouceBlockName,currentPage,limit) {
+	  var resourceBlocksWithTotalRows = this.searchResourceBlocksByNameWithTotalRows(layer,status,resouceBlockName,currentPage,limit, false);
+      return resourceBlocksWithTotalRows['resourceBlockDTOs'];
+	},
+
+	searchResourceBlocksByNameWithTotalRows: function(layer, status, resourceBlockName, currentPage, limit, forceTotalCount) {
+			var resourceBlockDTOs = [];
+		var currentRecordIndex = parseInt(currentPage, 10);
+		 var limitRecordIndex = parseInt(limit, 10);
+		var resourceGlide = new GlideRecord("sn_cmp_rb_resourceblock");
+		 var notLayerList = ['TLR', 'ARM Template', 'CloudFormation Template', 'ServiceNow Blueprint', 'ConfigProvider'];
+		if (!gs.nil(layer) && notLayerList.indexOf(layer) == '-1')
+			resourceGlide.addQuery("layer", layer);
+		if (!gs.nil(status))
+			resourceGlide.addQuery("status", status);
+		if (!gs.nil(resourceBlockName))
+			resourceGlide.addQuery("name", "CONTAINS", resourceBlockName);
+		if (!gs.nil(layer) && layer == 'TLR')
+			resourceGlide.addQuery("is_tlr", true);
+
+		if(layer == 'ARM Template' || layer == 'CloudFormation Template' || layer == 'ServiceNow Blueprint') {
+			var grTemplateType = new GlideRecord('sn_cmp_cloud_template_type');
+			grTemplateType.addQuery("name", layer);
+			grTemplateType.query();
+			var getTemplateTypeSysId;
+			if(grTemplateType.next()) {
+				getTemplateTypeSysId = grTemplateType.getValue('sys_id');
+			}
+			if(layer == 'ServiceNow Blueprint') { //Cloud Agnostic Blocks
+				resourceGlide.addQuery("is_tlr", false);
+				//Not equal to Logical DataCenter
+				resourceGlide.addQuery("layer", '!=', '4');
+				//Resource template is empty
+				resourceGlide.addNullQuery('resource_template');
+				//hostinterface is not empty
+				resourceGlide.addNotNullQuery('hostinterface');
+			} else {
+				resourceGlide.addQuery("type", getTemplateTypeSysId);
+			}
+		}
+
+		 //Fetch Config provider resources
+		 if(layer == 'ConfigProvider') {
+			 resourceGlide.addQuery("is_tlr", false);
+			 //Not equal to Logical DataCenter
+			 resourceGlide.addQuery("layer", '!=', '4');
+			 //Resource template is empty
+			 resourceGlide.addQuery('resource_template', '');
+			 //hostinterface is not empty
+			 resourceGlide.addQuery('hostinterface','');
+		 }
+
+        var activeFieldQuery = resourceGlide.addNullQuery("active");
+        activeFieldQuery.addOrCondition("active", true);
+
+		resourceGlide.chooseWindow(--currentRecordIndex, currentRecordIndex + limitRecordIndex, forceTotalCount);
+		//js_chooseWindow(--currentPage, currentPage + limit, false);
+		resourceGlide.orderBy("name");
+		resourceGlide.query();
+		while (resourceGlide.next()) {
+			var resourceBlockDTO = this.convertResourceBlockGlideRecordToDTO(resourceGlide);
+			resourceBlockDTOs.push(resourceBlockDTO);
+		}
+        var resourceBlockDTOsWithCount = {};
+        resourceBlockDTOsWithCount['resourceBlockDTOs'] = resourceBlockDTOs;
+        resourceBlockDTOsWithCount['totalRecordCount'] = resourceGlide.getRowCount();
+        return resourceBlockDTOsWithCount;
+	},
+	  getAllStepsByOpImp : function(opImplID) {
+
+		var operationImplStepDTOs = [];
+		var opImplStepRecord = new GlideRecord("sn_cmp_rb_op_impl_step");
+		opImplStepRecord.addQuery("operationimpl", opImplID);
+		opImplStepRecord.orderBy("order");
+		opImplStepRecord.query();
+		while (opImplStepRecord.next()) {
+			var operationImplStepDTO = this.convertGlideRecordToOpImplStepDTO(opImplStepRecord);
+			operationImplStepDTO['stepParameters']=this.getAllStepParamsByStep(operationImplStepDTO.getId());
+			operationImplStepDTOs.push(operationImplStepDTO);
+		}
+		return operationImplStepDTOs;
+	},
+	  getAllStepParamsByStep : function(stepId) {
+
+		var stepParamDTOs = [];
+		var opImplStepParamRecord = new GlideRecord("sn_cmp_rb_keyvalue");
+		opImplStepParamRecord.addQuery("step", stepId);
+		opImplStepParamRecord.query();
+		while (opImplStepParamRecord.next()) {
+			var stepParamDTO = this.convertGlideRecordToStepParamDTO(opImplStepParamRecord);
+			stepParamDTOs.push(stepParamDTO);
+		}
+		return stepParamDTOs;
+	},
+	 convertGlideRecordToStepParamDTO: function(opImplStepParamRecord) {
+		var expectedStepKeyValue = {};
+		expectedStepKeyValue['id']=opImplStepParamRecord.getValue("sys_id");
+		expectedStepKeyValue['name']=opImplStepParamRecord.getValue("key");
+		expectedStepKeyValue['value'] = opImplStepParamRecord.getValue("value");
+		expectedStepKeyValue['stepId']=opImplStepParamRecord.getValue("step");
+		expectedStepKeyValue['objectMapping']= opImplStepParamRecord.getValue("object_mapping") == 1?true:false;
+		return expectedStepKeyValue;
+	},
+
+
+	  convertGlideRecordToOpImplStepDTO : function(opImplStepGlide) {
+		var operationImplStepDTO = {};
+		operationImplStepDTO['id']= opImplStepGlide.getValue("sys_id");
+		operationImplStepDTO['name']= opImplStepGlide.getValue("name");
+		var ownerType = opImplStepGlide.getDisplayValue("owner_type");
+		operationImplStepDTO['condition'] = opImplStepGlide.getValue("condition");
+
+		if (ownerType == "CAPI") {
+			operationImplStepDTO['provider'] = opImplStepGlide.getValue("provider");
+			operationImplStepDTO['capiInterface'] = opImplStepGlide.getDisplayValue("capi_interface");
+			operationImplStepDTO['capiMethod'] = opImplStepGlide.getDisplayValue("capi_method");
+		}
+		if (ownerType == "ProductType") {
+			operationImplStepDTO['productType'] = opImplStepGlide.getValue("product_type");
+			operationImplStepDTO['capiInterface'] = opImplStepGlide.getDisplayValue("capi_interface");
+			operationImplStepDTO['capiMethod'] = opImplStepGlide.getDisplayValue("capiMethod");
+		}
+		if (ownerType == "Resource") {
+			operationImplStepDTO['resourceInterface']= opImplStepGlide.getDisplayValue("interface");
+			operationImplStepDTO['interfaceOperation']= opImplStepGlide.getDisplayValue("interface_operation");
+		}
+		operationImplStepDTO['operationImpl']= opImplStepGlide.getValue("operationimpl");
+		operationImplStepDTO['ownerType']= opImplStepGlide.getDisplayValue("owner_type");
+		operationImplStepDTO['enabled']= opImplStepGlide.getValue("enabled") == 1?true:false;
+		var order = opImplStepGlide.getIntValue("order");
+		if (order == -1)
+			order = 0;
+		operationImplStepDTO['order'] = order + "";
+		operationImplStepDTO['translators'] = this.getAllTranslatorByStep(operationImplStepDTO.getId());
+		operationImplStepDTO['parentStepId']=opImplStepGlide.getValue("parent_step");
+		return operationImplStepDTO;
+	},
+
+	 getAllTranslatorByStep : function(stepId) {
+		var translators = [];
+		var translatorGlide = new GlideRecord("sn_cmp_rb_step_translator");
+		translatorGlide.addQuery("step", stepId);
+		translatorGlide.orderBy("order");
+		translatorGlide.query();
+		while (translatorGlide.next()) {
+			var scriptById = this.getScriptById(translatorGlide.getValue("script"));
+			if (!gs.nil(scriptById))
+				translators.push(scriptById.name);
+		}
+		return translators;
+	},
+	  getScriptById : function(scriptId) {
+		var expectedScript = "";
+		var scriptRecord = new GlideRecord("sn_cmp_rb_resourcescript");
+		scriptRecord.addQuery("sys_id", scriptId);
+		scriptRecord.query();
+		while (scriptRecord.next()) {
+			expectedScript = this.convertGlideRecordToScriptDTO(scriptRecord);
+		}
+		return expectedScript;
+	},
+	getAllResourceBlocksForLDC : function(ciListString) {
+		var resourceBlocksForLDC = [];
+			if (!gs.nil(ciListString)) {
+				//var ciList = ciListString.split(",");
+					for (var ciType =0 ;ciType < ciListString.length; ciType++) {
+					/**
+					 * resourceBlockCIMap map contatins sysid of block as key and blockname[citype] as value.
+					 */
+					var allResourceBlocksByCI = this.getAllResourceBlocksByCI(ciListString[ciType]);
+						for(var i=0; i< allResourceBlocksByCI.length ; i++) {
+							resourceBlocksForLDC.push(allResourceBlocksByCI[i]);
+						}
+				}
+			}
+			return resourceBlocksForLDC;
+	},
+
+	 getAllResourceBlocksByCI : function(ciType) {
+		var resourceBlockDTOs = [];
+		var resourceGlide = new GlideRecord("sn_cmp_rb_resourceblock");
+		resourceGlide.addQuery("refcitype", ciType);
+        var activeFieldQuery = resourceGlide.addNullQuery("active");
+        activeFieldQuery.addOrCondition("active", true);
+		resourceGlide.query();
+		while (resourceGlide.next()) {
+			var resourceBlockDTO = this.convertResourceBlockGlideRecordToDTO(resourceGlide);
+			resourceBlockDTOs.push(resourceBlockDTO);
+		}
+		return resourceBlockDTOs;
+	},
+
+	getParentStepsById : function(stepId) {
+
+			var operationImplStepDTO = this.getStepById(stepId);
+			var operationImplStepDelete = [];
+			if (gs.nil(operationImplStepDTO))
+				throw new Exception("");
+			var operationImplSteps = this.getAllStepsByOpImp(operationImplStepDTO.operationImpl);
+			if (gs.nil(operationImplSteps) || ((!gs.nil(operationImplSteps)) && operationImplSteps.length == 1)) {
+				operationImplSteps = [];
+			} else {
+				for(var i=0; i<operationImplSteps.length; i++) {
+					if(operationImplSteps[i].id != stepId) {
+						operationImplStepDelete.push(operationImplSteps(i));
+					}
+				}
+			}
+		return operationImplStepDelete;
+
+	},
+	getStepById : function(opImplID) {
+		var operationImplStepDTO = "";
+		var opImplStepRecord = new GlideRecord("sn_cmp_rb_op_impl_step");
+		opImplStepRecord.addQuery("sys_id", opImplID);
+		opImplStepRecord.query();
+		while (opImplStepRecord.next()) {
+			operationImplStepDTO = this.convertGlideRecordToOpImplStepDTO(opImplStepRecord);
+			operationImplStepDTO['stepParameters']=this.getAllStepParamsByStep((operationImplStepDTO.id));
+		}
+		return operationImplStepDTO;
+	},
+
+  convertGlideRecordToScriptDTO : function(scriptRecord) {
+		var scriptDTO = {};
+		scriptDTO['id'] = scriptRecord.getValue("sys_id");
+		scriptDTO['name'] = scriptRecord.getValue("name");
+		scriptDTO['intent'] = scriptRecord.getValue("script_js");
+		scriptDTO['type'] = new CMPSysChoiceLabelResolver().fetchChoiceLabel(scriptRecord.getValue("type"),'sn_cmp_rb_resourcescript','type');
+		scriptDTO['resourceId'] = scriptRecord.getValue("resource");
+		scriptDTO['resourceName'] = scriptRecord.getDisplayValue("resource");
+		return scriptDTO;
+	},
+
+ convertResourceBlockGlideRecordToDTO : function(resourceGlide) {
+		var resourceBlockDTO = {};
+		resourceBlockDTO['name'] = resourceGlide.getValue("name");
+		resourceBlockDTO['id'] = resourceGlide.getValue("sys_id");
+		resourceBlockDTO['refCI'] = resourceGlide.getValue("refcitype");
+		resourceBlockDTO['description']= resourceGlide.getValue("description");
+		resourceBlockDTO['status'] = resourceGlide.getValue("status") == "1" ? 'Published' : 'Draft' ;
+		resourceBlockDTO['hostInterface'] = resourceGlide.getDisplayValue("hostinterface");
+		resourceBlockDTO['guestInterface']=resourceGlide.getDisplayValue("guestinterface");
+		resourceBlockDTO['layer']= resourceGlide.getDisplayValue("layer");
+		resourceBlockDTO['instanceSharing']= resourceGlide.getValue("instancesharing") == 1?true:false;
+		resourceBlockDTO['instanceView']= resourceGlide.getValue("instanceview")== 1?true:false;
+		resourceBlockDTO['type']=resourceGlide.getDisplayValue("type");
+		resourceBlockDTO['typeId']= resourceGlide.getValue("type");
+		resourceBlockDTO['tlr']=resourceGlide.getDisplayValue("is_tlr");
+	    resourceBlockDTO['createdBy']=resourceGlide.getValue("sys_created_by");
+	    resourceBlockDTO['active']=resourceGlide.getValue("active");
+		return resourceBlockDTO;
+	},
+
+	/**
+ 	* If resource block is being used at any blueprint, should not allow
+ 	* resource block deletion.
+ 	*/
+	validateResourceBlockDeletion : function(resourceblockId) {
+		var canResourceblockBeDeleted = true;
+		var bpStageResource = new GlideRecord("sn_cmp_bp_stage_resource");
+		bpStageResource.addQuery('resource_block',resourceblockId);
+		bpStageResource.query();
+		if(bpStageResource.hasNext()) {
+			canResourceblockBeDeleted = false;
+			}
+		return canResourceblockBeDeleted;
+	},
+
+    type: 'ResourceBlockServiceHelper'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-07 09:17:55</sys_created_on>
+        <sys_id>f03534240b4a3200e937c97193673adc</sys_id>
+        <sys_mod_count>51</sys_mod_count>
+        <sys_name>ResourceBlockServiceHelper</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_f03534240b4a3200e937c97193673adc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-14 20:21:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>name</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_Action_Script_Name_On_Change</name>
+        <order/>
+        <script><![CDATA[function onChange(control, oldValue, newValue, isLoading, isTemplate) {
+	if (isLoading || newValue == '')
+		return;
+	// workaround for the fact that oldValue always comes in as the ORIGINAL value...
+	g_form.clearMessages();
+	if (Window._lastNameChangedTo)
+		oldValue = Window._lastNameChangedTo;
+	Window._lastNameChangedTo = newValue;
+	g_form.clearMessages();
+	var script = '' + g_form.getValue('script');
+	if( validateName(newValue)){
+		return false;
+	}
+		
+	var nameWithoutSpace = newValue.replace(/ /g, '');
+	// if there's already a script here, just fix the names...
+	if (script == '') {
+		// fetchScriptTemplate
+		var ajax = new GlideAjax('PolicyOperationsUtil');
+		ajax.addParam('sysparm_name', 'fetchPolicyActionScriptTemplate');
+		ajax.getXML(function(serverResponse) {
+			console.info('server response ' + serverResponse);
+			var scriptStr = serverResponse.responseXML.getElementsByTagName('xml')[0].getAttribute('answer');
+			script = scriptStr.replace(new RegExp('CMPTemplateClass', 'g'), nameWithoutSpace);
+			g_form.setValue( 'script', script);
+		});
+	} else{
+		if(oldValue !== '')
+			script = script.replace(new RegExp(oldValue.replace(/ /g, ''), 'g'), nameWithoutSpace);
+		g_form.setValue( 'script', script);
+	}
+	
+}
+
+function validateName(name){
+	var regex = /^[a-zA-z]+[a-zA-Z0-9_ ]*$/;
+	var isValid = regex.test(name);
+	if( !isValid){
+		g_form.addErrorMessage( 'Invalid Name. Name can only be alphanumeric and start with an alphabet: ' + name);
+	}
+	return !isValid;
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-10 07:59:48</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>b5898c6e5b303200a821273a41f91ab8</sys_id>
+        <sys_mod_count>29</sys_mod_count>
+        <sys_name>Policy_Action_Script_Name_On_Change</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_b5898c6e5b303200a821273a41f91ab8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-15 02:24:42</sys_updated_on>
+        <table>sn_cmp_pol_action_script</table>
+        <type>onChange</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

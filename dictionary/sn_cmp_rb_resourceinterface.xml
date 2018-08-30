@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="ResourceInterface" max_length="40" name="sn_cmp_rb_resourceinterface" type="collection">
+        <element label="Extends From" max_length="32" name="extends_from" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element label="System Defined" max_length="40" name="is_system_defined" type="boolean"/>
+        <element label="Name" max_length="200" name="name" type="12"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Type" max_length="200" name="type" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Base Interface" sequence="1" value="Base"/>
+                <element inactive_on_update="false" label="Extension Interface" sequence="2" value="Extension"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="extends_from"/>
+        </index>
+    </element>
+</database>

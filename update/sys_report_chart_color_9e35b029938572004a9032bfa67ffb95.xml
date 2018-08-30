@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_report_chart_color">
+    <sys_report_chart_color action="INSERT_OR_UPDATE">
+        <color>#278ECF</color>
+        <color_name display_value="UI14 Chart 01">9bfe8711d7003100fa6c0c12ce61038c</color_name>
+        <display>background-color:#278ECF</display>
+        <element>stack.stack_status</element>
+        <name>sn_cmp_stack_item</name>
+        <sys_class_name>sys_report_chart_color</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-19 18:48:54</sys_created_on>
+        <sys_id>9e35b029938572004a9032bfa67ffb95</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>sn_cmp_stack_item</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_report_chart_color_9e35b029938572004a9032bfa67ffb95</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-22 20:37:41</sys_updated_on>
+        <value>1</value>
+    </sys_report_chart_color>
+</record_update>

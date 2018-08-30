@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $location,cloudEventScope, $timeout) {
+	var c = this;
+
+	var activeTabContent = c.data.active_tab_content;
+	c.data.loadingWidget = false;
+	c.data.cloudForm = false;
+	c.data.incForm = false;
+	
+	$scope.$watch('data.active_tab_content', function(){ 
+				c.data.loadingWidget = true;
+				$timeout(function(){
+					c.data.loadingWidget = false;
+				});
+	});	
+
+	cloudEventScope.registerListener('cloudResourceCardEvent', function(e,info) {
+		$location.search(info.url).search('spa', '1').replace();
+	}, $scope);
+
+	$scope.$on('$destroy', function(){
+		unSubLocationChangeSuccess();
+		unSubDataTableClick();
+	});
+
+	c.tabClicked = function(tabId) {
+			$location.search('record_table',null);
+			$location.search('record_id',null);
+			$location.search('form',null);
+			$location.search('new_inc',null);
+			$location.search('active_tab', tabId).search('spa', '1').replace();
+	};
+
+	var unSubDataTableClick = $scope.$on('data_table.click', function(e, parms) {
+		c.data.cloudForm = true;
+		$location.search('form','1').search('record_id',parms.sys_id).search('record_table',parms.table).search('spa','1').replace();
+		c.data.record_table = parms.table;
+		c.data.record_id = parms.sys_id;
+	});
+
+	var unSubLocationChangeSuccess = $scope.$on("$locationChangeSuccess", function(){
+		c.data.loadingWidget = true;
+		c.server.update().then(function(){
+			c.data.loadingWidget = false;
+			c.data.cloudForm = false;
+			c.data.incForm = false;
+		});
+	});
+
+	$scope.newRecord = function(){
+		c.data.incForm = true;
+		$location.search('new_inc',true).search('spa','1').replace();
+	};
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.panel-body {&#13;
+  height : calc(100vh - calc($cloud-stacks-details-header-height + $header-height + $panel-margin));&#13;
+}&#13;
+&#13;
+#tab_content {&#13;
+  height: calc(100% - 42px);&#13;
+}&#13;
+&#13;
+#tab_content &gt; div {&#13;
+  height: 100%;&#13;
+}&#13;
+&#13;
+#tab_content .panel {&#13;
+  height: 100%;&#13;
+}&#13;
+&#13;
+#tab_content .panel .panel-body {&#13;
+  height: calc(100% - 45px);&#13;
+  overflow : auto;&#13;
+}&#13;
+&#13;
+#tab_content .panel .stack-incident-panel-body {&#13;
+  height: 100%;&#13;
+  overflow:auto;&#13;
+  padding: 15px;&#13;
+}&#13;
+&#13;
+#tab_content .panel .cloud-tabs-form {&#13;
+  height : calc(100% - calc($header-height + $footer-height));&#13;
+  overflow : auto;&#13;
+  padding : 15px;&#13;
+}&#13;
+&#13;
+.panel-heading {&#13;
+  height: 52px;&#13;
+}&#13;
+&#13;
+li &gt; a {&#13;
+  color : #485563; &#13;
+  font-size : 14px;&#13;
+}&#13;
+&#13;
+li.active &gt; a,&#13;
+li.active &gt; a:focus,&#13;
+li.active &gt; a:hover {&#13;
+  color : #1570bd;&#13;
+  border : none;&#13;
+  border-bottom : 3px solid #1570bd;&#13;
+}&#13;
+&#13;
+.nav-tabs &gt; li.active &gt; a {&#13;
+  background-color : transparent; &#13;
+}&#13;
+&#13;
+.nav-tabs &gt; li &gt; a {&#13;
+	border-radius: 0;&#13;
+}&#13;
+&#13;
+.no-record {&#13;
+  font-size: 2em;&#13;
+  margin-left: 15%;&#13;
+}&#13;
+&#13;
+.m-l-xs {&#13;
+  margin-top: 6px;&#13;
+  margin-right: 15px;&#13;
+  font-size: 13px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-activities-tabs</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Stack Activities Tabs</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	
+	var active_tab = $sp.getParameter('active_tab');
+	var sys_id = $sp.getParameter('sys_id');
+	var stack_item_sys_id = $sp.getParameter('selected_card');
+	var category = $sp.getParameter('category');
+	var tabList = [];
+	
+	var stack = new GlideRecord("sn_cmp_stack");
+	stack.get(sys_id);
+
+	if(stack.isValidRecord() && stack.stack_status == '2')
+		data.active_stack = true;
+	else
+		data.active_stack = false;
+	
+	var ritm = stack.sc_req_item;
+	
+	var stack_item = new GlideRecord("sn_cmp_stack_item");
+	
+	var filterCI = "ci=" + sys_id;
+	var filterCmdbCI = "cmdb_ci=" + sys_id;
+	
+	if (sys_id != stack_item_sys_id) {
+		filterCmdbCI = "cmdb_ci=" + stack_item_sys_id;
+		
+		stack_item.get(stack_item_sys_id);
+		
+		if (stack_item.isValidRecord() && stack_item.ci_instance_id) {
+			filterCI = filterCI + "^ORci=" + stack_item.ci_instance_id ;
+			filterCmdbCI = filterCmdbCI + "^ORcmdb_ci=" + stack_item.ci_instance_id ;
+		}	
+	}
+	
+	
+	
+	var dt = new GlideDate();
+	dt.subtract(86400000);
+	
+	var tabOptions = {
+										tabs:[
+													{name : gs.getMessage('Change Requests'), table : 'change_request', fields: 'number,cmdb_ci,category,short_description,approval', filter: filterCmdbCI, tab_id: 'change_requests'},
+													{name : gs.getMessage('Incidents'), table : 'incident', fields: 'number,category,subcategory,short_description,cmdb_ci,impact,state,opened_by', filter: "category=Cloud Management^" + filterCmdbCI, tab_id: 'incidents' },
+													{name : gs.getMessage('Cloud Events'), table : 'sn_cmp_cloud_event', fields: '', filter : filterCI, tab_id: 'cloud_events' },
+													{name : gs.getMessage('Tasks'), table : 'sc_task', fields:'', filter: "request_item="+ ritm, tab_id: 'tasks'},
+													{name : gs.getMessage('Scheduled Operations'), table : 'sn_cmp_scheduled_operation', filter: "target="+sys_id+"^operation_time>="+dt+"^ORDERBYoperation_time", tab_id: 'scheduled_operations' }
+												],
+										form: { category: category, sys_id: sys_id, stack_item_id:stack_item_sys_id } // not being used in this widget
+									};
+		
+	data.active_tab = active_tab;
+
+	for(var i in tabOptions.tabs) {
+		var tab = {name : tabOptions.tabs[i].name, table: tabOptions.tabs[i].table, filter: tabOptions.tabs[i].filter, fields: tabOptions.tabs[i].fields, tab_id: tabOptions.tabs[i].tab_id};
+		tabList.push(tab);
+	}
+
+	data.tabList = tabList;	
+	
+	if (!input) 
+		data.active_tab_content = getWidget(data.active_tab);
+	else if (input.incForm)
+		data.active_tab_content = $sp.getWidget('cloud_stack_incident_form', data); 
+	else if (input.cloudForm)
+		data.active_tab_content = $sp.getWidget('cloud-tabs-form', {table: input.record_table, sys_id: input.record_id, hideRelatedLists: true, disableUIActions: true, view: 'User_Portal',showBack : true});
+	else 
+		data.active_tab_content = getWidget(data.active_tab);
+
+	function getWidget(active_tab){
+		var content;
+		for(var i in tabOptions.tabs){
+			if(active_tab == tabOptions.tabs[i].tab_id){
+				content = getTableWidget(tabOptions.tabs[i].table, tabOptions.tabs[i].filter, tabOptions.tabs[i].fields);
+			}
+		}
+		if(!content){
+			data.active_tab = tabOptions.tabs[0].tab_id;
+			content = getTableWidget(tabOptions.tabs[0].table, tabOptions.tabs[0].filter, tabOptions.tabs[0].fields);
+		}
+		return content;
+	}
+
+	// Populate data in table
+	function getTableWidget(table,filter,fields){
+		var dataTableOptions = { table: table};
+		dataTableOptions.view = $sp.getParameter('view');
+		if (!table) {
+			dataTableOptions.invalid_table = true;
+			dataTableOptions.table_label = "";
+			return;
+		}
+
+		var gr = new GlideRecordSecure(dataTableOptions.table);
+		if (!gr.isValid()) {
+			dataTableOptions.invalid_table = true;
+			dataTableOptions.table_label = data.table;
+			return;
+		}
+		
+		dataTableOptions.table_label = gr.getLabel();
+		dataTableOptions.fields = fields || $sp.getListColumns(data.table, data.view);
+		dataTableOptions.title = gr.getLabel();
+		dataTableOptions = copyParameters(dataTableOptions, ['p', 'o', 'd']);
+		dataTableOptions = copyParameters(dataTableOptions, ['relationship_id', 'apply_to', 'apply_to_sys_id']);
+		dataTableOptions.show_keywords  = true;
+		dataTableOptions.show_breadcrumbs = false;
+		dataTableOptions.o = 'sys_created_on';
+		dataTableOptions.filter = filter;
+		dataTableOptions.show_new = false;
+		dataTableOptions.hide_header = true;
+
+		return $sp.getWidget('cloud-datatable', dataTableOptions);
+
+	}
+	
+	function copyParameters(dataTableOptions, names) {
+		names.forEach(function(name) {
+			dataTableOptions[name] = $sp.getParameter(name);
+		});
+		
+		return dataTableOptions;
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-23 09:48:58</sys_created_on>
+        <sys_id>7f6d4cf20bf72200eff7ef9bb4673a5b</sys_id>
+        <sys_mod_count>370</sys_mod_count>
+        <sys_name>Cloud Stack Activities Tabs</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_7f6d4cf20bf72200eff7ef9bb4673a5b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 23:18:45</sys_updated_on>
+        <template><![CDATA[<div class="panel b">
+  <div class="panel-heading">
+    <h2 class="panel-title" style="padding-top:8px;">${Activities}</h2>
+  </div>
+  <div class="panel-body" style="padding: 0;">
+    <ul id="tabs" class="nav nav-tabs" role="tablist">
+      <li ng-class="{'active': item.tab_id == data.active_tab }" ng-repeat="item in data.tabList" ng-click="c.tabClicked(item.tab_id)"
+          role="tab" aria-selected="{{item.tab_id == data.active_tab}}" data-toggle="tab" tabindex="0">
+        <a href="javascript:void(0)" tabindex="-1">{{item.name}}</a>
+      </li>
+      <button name="new" ng-if="data.active_tab=='incidents' && data.active_stack" class="btn btn-primary btn-sm m-l-xs pull-right" 
+      	  ng-click="newRecord()" title="${Create New Incident}" aria-label="${Create New Incident}">${New}</button>
+    </ul>
+    <div id="tab_content" class="tab-content" ng-if= "!data.loadingWidget">
+          <sp-widget widget="data.active_tab_content"></sp-widget>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

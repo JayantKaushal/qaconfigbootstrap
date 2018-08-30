@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ws_query_parameter_map">
+    <sys_ws_query_parameter_map action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_ws_query_parameter_map</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-12 21:43:53</sys_created_on>
+        <sys_id>aca621900ba132003ad5c73ef6673aef</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>961a90bb0b9132003ad5c73ef6673a25</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ws_query_parameter_map_aca621900ba132003ad5c73ef6673aef</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-12 21:43:53</sys_updated_on>
+        <web_service_operation display_value="Get cloud service">cb5574440be132003ad5c73ef6673aa3</web_service_operation>
+        <web_service_query_parameter display_value="cat_id">961a90bb0b9132003ad5c73ef6673a25</web_service_query_parameter>
+    </sys_ws_query_parameter_map>
+</record_update>

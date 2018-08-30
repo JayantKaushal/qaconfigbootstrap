@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudPatternInvocation</api_name>
+        <client_callable>false</client_callable>
+        <description>This script include  handle a cloud discovery by using a pattern.&#13;
+This file encapsulate all the logic of garnering the required data for the pattern invocation and in the end responsible for invoke itself.&#13;
+The main use for this script is for the Event Based Discovery</description>
+        <name>CloudPatternInvocation</name>
+        <script><![CDATA[var CloudPatternInvocation = Class.create();
+CloudPatternInvocation.prototype = {
+    isDebug: false,
+    debugCounter: 1,
+    eventId: '',
+    deleteStrategy: {
+        KEEP: '1',
+        DELETE: '2',
+        ABSENT: '3',
+        DELETE_RELATED: '4'
+    },
+
+    _debug: function(msg, obj) {
+        if (this.isDebug) {
+            gs.info('@@@CloudPatternInvocation[{0}][{1}]->{2}   data->{3}', this.debugCounter, this.eventId, msg, JSON.stringify(obj, null, 2));
+            this.debugCounter++;
+        }
+    },
+
+    initialize: function() {},
+
+    _printEventError: function(errorMsg, configObj, response) {
+        var msg =  '@@@CloudPatternInvocation->' +errorMsg + " event configObj- " + JSON.stringify(configObj, null, 2);
+        response.state = 'error';
+        response.error_message = msg;
+        gs.error(msg);
+    },
+
+    _validateConfiguratione: function(configObj, response) {
+        //Validate mandatory inputs on the configObj
+        var errMessage = 'Error: invokeQuickDiscovery -> ';
+
+        if (!configObj || typeof configObj !== 'object') {
+            errMessage += 'expect to get configuration object as an argument:';
+            this._printEventError(errMessage, configObj, response);
+            return false;
+        } else {
+            var mandatoryParams = ["changeType", "classType", "accountId", "ldc", "inputObjectId", "cloudId", "patternId", "eventId", "eventType", "eventData"];
+            for (var i = 0; i < mandatoryParams.length; i++) {
+                if (!configObj[mandatoryParams[i]]) {
+                    errMessage += 'expect to get mandatory parameter within the object argument: ' + mandatoryParams[i];
+                    this._printEventError(errMessage, configObj, response);
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
+
+    /* This method expect to get an object of configuration with some mandatory data e.g.
+     *	@Param configObj = {
+     *  changeType: String,
+     *  classType: String,
+     *  accountId: String,
+     *  ldc: String,
+     *  inputObjectId: String,
+     *  cloudId: String,
+     *  patternId, String
+     *  eventData: String
+     * }
+     * @Param response- holds the object for the response (e.g. response.state, response.error_message, response.discovery_status...)
+     * return true if pattern was launched and  'Discovery Status Id' exists or false in any case of error.getContentType
+     *		 Detailed of the invocation is returned through the response obj
+     */
+    eventBasedDiscovery: function(configObj, response) {
+        this._debug("Start eventBasedDiscovery", configObj);
+        if (!this._validateConfiguratione(configObj, response)) {
+            return false;
+        }
+        this.eventId = configObj.eventId;
+
+        //Retrieving the actuall sysIds from the 'strings'
+        var serviceAccountSysId = this.getServiceAccountSysId(configObj.accountId, response);
+		if (!serviceAccountSysId){
+			return false;
+		}
+		
+		var ldcsMap = this.getServiceAccountLDCs(serviceAccountSysId);
+		if (Object.keys(ldcsMap).length < 1){
+			return false;
+		}
+		
+        var currentLdcSysId = this.getLdcSysId(ldcsMap, configObj.ldc, response);
+		if (!currentLdcSysId && configObj.eventType === "AWS"){
+			return false;
+		}
+		
+        //Enrich the config with necessary data for the discovery invocation
+        configObj.serviceAccountSysId = serviceAccountSysId;
+        configObj.ldcSysId = currentLdcSysId;
+		configObj.ldcsMap = ldcsMap;
+
+        if (configObj.changeType.toUpperCase().trim() === "DELETE") {
+            return this.handleDelete(configObj, response);
+        } else {
+            //Invoke the Discovery on the AWS resource we got in the event with its correlated pattern
+            var statusId = this.invokeQuickDiscovery(configObj, response);
+            response.discovery_status = statusId;
+            gs.info("'@@@CloudPatternInvocation->eventBaseDiscovery() -> pattern invocation ended with statusId - " + statusId);
+            return (statusId)? true : false;
+        }
+    },
+
+    deleteCi: function(ci_sys_id, chosenStrategy, response) {
+        var successFlag = false;
+        var ciGr = new GlideRecord("cmdb_ci");
+        ciGr.addQuery("sys_id", ci_sys_id);
+        ciGr.query();
+
+        if (ciGr.next()) {
+            switch (chosenStrategy) {
+                case this.deleteStrategy.DELETE:
+                    this._debug("deleteCi-> delete the CI -" + ci_sys_id, chosenStrategy);
+                    //The delete can work only from scope Global-> so the implementation will be in cloudApplicationDiscovery
+                    var cloudApplicationDiscovery = new global.CloudApplicationDiscovery();
+                    successFlag = cloudApplicationDiscovery.deleteCiById(ci_sys_id);
+                    break;
+                case this.deleteStrategy.KEEP:
+                    this._debug("deleteCi-> Do nothing SKIP the CI ", chosenStrategy);
+                    successFlag = true;
+                    break;
+                case this.deleteStrategy.ABSENT:
+                    this._debug("deleteCi-> set the state to absent  ", chosenStrategy);
+                    ciGr.setValue('install_status', chosenStrategy);
+                    ciGr.update();
+                    successFlag = true;
+                    break;
+                case this.deleteStrategy.DELETE_RELATED:
+                    this._printEventError("deleteCi -> delete 'related strategy' is not currently supported. Should be one of the others strategies - " + JSON.stringify(this.deleteStrategy, null, 2), chosenStrategy, response);
+                    successFlag = false;
+                    break;
+                default:
+                    this._printEventError("deleteCi -> Unexpected delete strategy. Should be one of the strategies except 'related strategy' - " + JSON.stringify(this.deleteStrategy, null, 2), chosenStrategy, response);
+                    successFlag = false;
+            }
+        } else {
+            this._printEventError(gs.getMessage('deleteCi -> did not find any CI in cmdb_ci that comply the given sys_id'), ci_sys_id, response);
+            return false;
+        }
+        return successFlag;
+    },
+
+    /**
+     *	Find the unique target CI in the relation table(should be from a specific type, have a relation of host on that should be pointed to the LDC)
+     *	@Param listOfSydIds - array of suspected Cis which all comply to the same name of the objectId
+     *	@Param chosenStrategy - The current chosen delete strategy
+     *	return boolean - True if succeeded to delete the CI
+     **/
+    searchAndDeleteCi: function(configObj, response, listOfSydIds, chosenStrategy) {
+        var successFlag = false;
+        this._debug("Start searchAndDeleteCi", listOfSydIds);
+        //The CI is always dependent on the LDC and hosted on it(so the LDC is the child)
+        var relCiGr = new GlideRecord("cmdb_rel_ci");
+        relCiGr.addQuery("parent", "IN", listOfSydIds.toString());
+        relCiGr.addQuery("child", configObj.ldcSysId);
+        relCiGr.addQuery('type', '5f985e0ec0a8010e00a9714f2a172815'); // Hosted-on relation
+        relCiGr.query();
+
+        if (relCiGr.next()) {
+            var relParent = relCiGr.getValue("parent");
+            var relChild = relCiGr.getValue("child");
+            var relSysId = relCiGr.getUniqueValue();
+            var relMsg = "parent[" + relParent + "], child-[" + relChild + "], rel_ci_sys_id[" + relSysId + "]";
+            this._debug("searchAndDeleteCi-> Preparing to delete CI according the relation in cmdb_rel_ci ", relMsg);
+            successFlag = this.deleteCi(relParent, chosenStrategy, response);
+        } else {
+            this._printEventError(gs.getMessage('searchAndDeleteCi -> did not find any objectId under a specific LDC'), configObj, response);
+            successFlag = false;
+        }
+        return successFlag;
+    },
+
+    handleDelete: function(configObj, response) {
+        var successFlag = false;
+        this._debug("Start handleDelete", configObj);
+        //Retrieve the default pattern delete strategy setting
+        var chosenStrategy = gs.getProperty("service.watch.cloud.pattern.invocation.default.delete.strategy", this.deleteStrategy.ABSENT);
+
+        //Try to retrieve a specific delete stratefy if exists for this CI
+        var patternCiStrategy = new GlideRecord('sa_ci_to_pattern');
+        patternCiStrategy.addQuery("pattern", configObj.patternId);
+        patternCiStrategy.addQuery('is_main_ci', true);
+        patternCiStrategy.query();
+
+        if (patternCiStrategy.next()) {
+            this._debug("handleDelete-> Found a configured delete strategy -", patternCiStrategy.getValue("deletion_strategy"));
+            //Direct change to the CMDB set the CI according to the pattern delete strategy (deleted=1/keep=2/absent=3)
+            var deletion_strategy = patternCiStrategy.getValue("deletion_strategy");
+            chosenStrategy = (deletion_strategy) ? deletion_strategy : chosenStrategy;
+        } else {
+            this._debug("handleDelete-> no delete strategy was found", {});
+        }
+
+        //Serch for a specific unique CI acording to objectID within a specific LDC whith a relation of host on
+        var cmdbCloudCi = new GlideRecord(configObj.classType);
+        cmdbCloudCi.addQuery("object_id", configObj.inputObjectId);
+        cmdbCloudCi.query();
+        var listOfSydIds = [];
+        while (cmdbCloudCi.next()) {
+            listOfSydIds.push(cmdbCloudCi.getUniqueValue());
+        }
+
+        this._debug("handleDelete-> Found a list of suspected object Ids - ", listOfSydIds);
+        switch (listOfSydIds.length) {
+            case 0:
+                this._debug('handleDelete-> deleteCi expect to get at least one sysId of a CI that resides within a specific LDC', configObj);
+				response.state = 'skipped';
+				response.error_message = gs.getMessage('This event tried without a success to delete the CI with object_id[{0}] and class type[{1}]', [configObj.inputObjectId,configObj.classType]);
+                successFlag = false;
+				break;
+            case 1:
+                successFlag = this.deleteCi(listOfSydIds[0], chosenStrategy, response); //Only one sys_id, so no need to search
+                break;
+            default:
+                successFlag = this.searchAndDeleteCi(configObj, response, listOfSydIds, chosenStrategy);
+        }
+		response.state = (successFlag)? 'processed' : response.state;
+        return successFlag;
+    },
+
+    invokeQuickDiscovery: function(configObj, response) {
+        this._debug("Start invokeQuickDiscovery", configObj);
+        if (configObj.serviceAccountSysId && configObj.ldcSysId) {
+            var discoveryStatusId = this.createDiscoveryStatus(configObj);
+            configObj.discoveryStatusId = discoveryStatusId;
+            if (discoveryStatusId) {
+                this._debug("Start pattern invocation", {});
+                var cloudApplicationDiscovery = new global.CloudApplicationDiscovery();
+                var result = cloudApplicationDiscovery.discoverSpecificResourceByPattern(configObj);
+                this._debug("End pattern invocation", result);
+
+				if (result){
+					return discoveryStatusId;
+				}else {
+					this._printEventError(gs.getMessage('invokeQuickDiscovery did not succeed to invoke the pattern:'), configObj, response);
+					return null;
+				}
+            } else {
+                this._printEventError(gs.getMessage('invokeQuickDiscovery did not succeed to create a discovery status:'), configObj, response);
+                return null;
+            }
+        } else {
+            this._printEventError(gs.getMessage('invokeQuickDiscovery expect to get all sysIds out of the string names from the mandatory parameters: '), configObj, response);
+            return null;
+        }
+
+        return null; //We should not reach to this point!
+    },
+
+    getServiceAccountSysId: function(serviceAccountIdStr, response) {
+		this._debug("Start getServiceAccountSysId", serviceAccountIdStr);
+        var serviceAccountGr = new GlideRecord('cmdb_ci_cloud_service_account');
+        if (!serviceAccountGr.get('account_id', serviceAccountIdStr)) {
+            this._printEventError("invokeQuickDiscovery-> getServiceAccountSysId() - can not find account -", serviceAccountIdStr, response);
+            return null;
+        }
+
+        var sysId = serviceAccountGr.getUniqueValue();
+		this._debug("End getServiceAccountSysId", sysId);
+        return (sysId) ? sysId : null;
+    },
+
+	getServiceAccountLDCs: function(serviceAccountSysId, response) {
+		this._debug("Start getServiceAccountLDCs", serviceAccountSysId);
+		//The LDC is always dependent on the Account and hosted on it(so the Account is the child and all the parrent should be the LDC)
+        var relCiGr = new GlideRecord("cmdb_rel_ci");
+        relCiGr.addQuery("child", serviceAccountSysId);
+        relCiGr.addQuery('type', '5f985e0ec0a8010e00a9714f2a172815'); // Hosted-on relation
+        relCiGr.query();
+
+		//Garner all ldcs Ids
+		var listOfLDCSydIds = [];
+        while (relCiGr.next()) {
+			listOfLDCSydIds.push(relCiGr.getValue("parent"));
+		}
+		this._debug("listOfLDCSydIds", listOfLDCSydIds);
+
+		if (listOfLDCSydIds.length < 1) {
+			this._printEventError("AzureAlertHandlerV2-> getServiceAccountRegions() - No LDCs were found under the account", serviceAccountSysId, response);
+            return null;
+        }
+
+		var dataCenterGr = new GlideRecord('cmdb_ci_logical_datacenter');
+		dataCenterGr.addQuery("sys_id", "IN", listOfLDCSydIds.toString());
+        dataCenterGr.query();
+
+		//Build a map of ldcs and their sys_ids
+		var ldcsMap = {};
+        while (dataCenterGr.next()) {
+			var region = dataCenterGr.getValue("region");
+			var ldcSysId = dataCenterGr.getUniqueValue();
+			ldcsMap[region] = ldcSysId;
+		}
+		this._debug("End getServiceAccountLDCs", ldcsMap);
+        return ldcsMap;
+    },
+
+    getLdcSysId: function(ldcsMap, ldcStr, response) {
+		this._debug("Start getLdcSysId ldc-"+ldcStr, ldcsMap);
+        if (!ldcsMap[ldcStr]) {
+            this._printEventError("invokeQuickDiscovery-> getServiceAccountSysId() - can not find LDC -", ldcStr, response);
+            return null;
+        } else {
+			this._debug("End getLdcSysId", ldcsMap[ldcStr]);
+			return ldcsMap[ldcStr];
+		}
+    },
+
+    createDiscoveryStatus: function(configObj) {
+        var newStatus = new GlideRecord("discovery_status");
+        newStatus.setValue("description", configObj.eventType+"-"+configObj.eventId);
+        newStatus.setValue("source", "cloud_quick_discovery_upon_event");
+        newStatus.setValue("discover", "Cloud");
+
+        var statusId = newStatus.insert();
+        return (statusId) ? statusId : null;
+    },
+
+    type: 'CloudPatternInvocation'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>roy.wallerstein@servicenow.com</sys_created_by>
+        <sys_created_on>2017-12-19 08:25:09</sys_created_on>
+        <sys_id>aaa7ba329f4303006abc19eb552e7060</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CloudPatternInvocation</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_aaa7ba329f4303006abc19eb552e7060</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-20 13:55:10</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Discovery Config - Logical Datacenter" max_length="40" name="cmp_discovery_ldc_config" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element label="Discovery schedule" max_length="32" name="discovery_schedule" reference="discovery_schedule" reference_cascade_rule="delete" type="reference"/>
+        <element label="Logical Datacenter" max_length="32" name="ldc" reference="cmdb_ci_logical_datacenter" reference_cascade_rule="delete" type="reference"/>
+        <element label="Service account" max_length="32" name="service_account" reference="cmdb_ci_cloud_service_account" type="reference"/>
+        <index name="index">
+            <element name="service_account"/>
+        </index>
+        <index name="index2">
+            <element name="ldc"/>
+        </index>
+        <index name="index3">
+            <element name="discovery_schedule"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope) { 
+	var c = this; 
+	$scope.$on('view_changed', function(e,info) {
+		c.server.update().then(function(){
+		});
+	});
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css/>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>iframe-resizer</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 135) + 'px';
+		$(elem).find('#dashboard').css('height',panel_height);
+	}
+
+}]]></link>
+        <name>iframe_resizer</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	data.is_group_admin = false;
+	data.is_admin = false ;
+
+	var gr1 = new GlideRecord('sys_user_has_role');
+	gr1.addQuery('user',gs.getUserID());
+	gr1.addEncodedQuery('role.name=sn_cmp.cloud_group_admin');
+	gr1.query();
+	if(gr1.next()){
+		data.is_group_admin = true;
+	}
+
+	var gr2 = new GlideRecord('sys_user_has_role');
+	gr2.addQuery('user',gs.getUserID());
+	gr2.addEncodedQuery('role.name=admin^ORrole.name=sn_cmp.cmp_root_admin');
+	gr2.query();
+	if(gr2.next()){
+		data.is_admin = true;
+	}
+	
+	// Recall the name of the user's last loaded dashboard
+	var lastDashName = "Cloud Billing";
+	var dashboardPref = gs.getUser().getPreference('com.snc.pa.ui.preferences_dashboards');
+	if (!gs.nil(dashboardPref)) {
+		dashboardPref = global.JSON.parse(dashboardPref);
+		if (dashboardPref.hasOwnProperty("last")) {
+			var dashGr = new GlideRecord("pa_dashboards");
+			if (dashGr.get(dashboardPref.last)) {
+				lastDashName = dashGr.getValue("name");
+			}
+		}
+	}
+
+	data.gv = gs.getUser().getPreference('cloud_user_portal_view') || 'mine';
+
+	if((!data.is_group_admin && !data.is_admin) || ((data.is_admin || data.is_group_admin) && data.gv == 'mine')){
+		var dashID = getDashboardByNameAndGroup(lastDashName, "Cloud User", "9e8d3f0f931432004a9032bfa67ffb70");
+		data.src = "$cmp_dashboard.do?sysparm_dashboard="+dashID+"&sysparm_cancelable=true&sysparm_editable=false&sysparm_active_panel=false&sysparm_group=Cloud%20User&sysparm_ignore_default_filter=false"
+	}
+	else if((data.is_admin || data.is_group_admin) && data.gv == 'group'){
+		var groupDashID = getDashboardByNameAndGroup(lastDashName, "Cloud Group", "81c0fbf693b732004a9032bfa67ffb64");
+		data.src = "$cmp_dashboard.do?sysparm_dashboard="+groupDashID+"&sysparm_cancelable=true&sysparm_editable=false&sysparm_active_panel=false&sysparm_group=Cloud%20Group&sysparm_ignore_default_filter=false"
+	}
+	else if(data.is_admin && data.gv == 'all'){
+		var adminDashID = getDashboardByNameAndGroup(lastDashName, "Cloud Management", "9cdb337293db22004a9032bfa67ffb98");
+		data.src = "$cmp_dashboard.do?sysparm_dashboard="+adminDashID+"&sysparm_cancelable=true&sysparm_editable=false&sysparm_active_panel=false&sysparm_group=Cloud%20Management&sysparm_ignore_default_filter=false"
+	}
+	
+	function getDashboardByNameAndGroup(dashName, groupName, defaultDash) {
+		var dashGr = new GlideRecord("pa_dashboards");
+		dashGr.addQuery("name", dashName);
+		dashGr.addQuery("group.name", groupName);
+		dashGr.query();
+		if (dashGr.next()) {
+			return dashGr.getUniqueValue();
+		}
+		return defaultDash;
+	}
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-27 07:12:02</sys_created_on>
+        <sys_id>a9097ff167a032007f4eff5617415a40</sys_id>
+        <sys_mod_count>81</sys_mod_count>
+        <sys_name>iframe_resizer</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_a9097ff167a032007f4eff5617415a40</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-19 05:12:52</sys_updated_on>
+        <template><![CDATA[<div>
+  <iframe id="dashboard" ng-src="{{data.src}}" scrolling="no" frameborder="0" height="750px" width="100%"></iframe>
+</div>]]></template>
+    </sp_widget>
+</record_update>

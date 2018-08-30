@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPRemoveEdgeAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPRemoveEdgeAction</name>
+        <script><![CDATA[var CMPRemoveEdgeAction = Class.create();
+CMPRemoveEdgeAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			if (!params.layer_id || !params.edge_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPRemoveEdgeAction.doAction: Undefined element type, name, and/or layer id",
+					null
+				);
+			}
+			
+			//this will take the checkpoints if passed.
+			var versionObj =new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			
+			var newRelationship = versionObj.removeRelationship(params.edge_id);
+			
+			var blueprintServiceScript=new sn_cmp_api.BlueprintServiceScript();
+			var stageModelJSON = blueprintServiceScript.getStageModelForBlueprint(params.blueprintId);
+			var stageModel = JSON.parse(stageModelJSON);
+			//delete stage resource deployment model
+			var stageResDepGR = new GlideRecord('sn_cmp_bp_stage_resource_dep');
+			if(params.relType == 'Hosted on'){
+				stageResDepGR.addQuery("guest_association_name", params.source);
+				stageResDepGR.addQuery("host_association_name", params.target);
+				stageResDepGR.addQuery("bp_stage_model", stageModel.id);
+				stageResDepGR.query();
+				if(stageResDepGR.next()){
+					stageResDepGR.deleteRecord();
+				}
+			}else if(params.relType == 'Implement End Point To'){
+				var endpoint;
+				stageResDepGR.addQuery("guest_association_name", params.target);
+				stageResDepGR.addQuery("host_association_name", params.source);
+				stageResDepGR.addQuery("bp_stage_model", stageModel.id);
+				stageResDepGR.query();
+				if(stageResDepGR.next()){
+						var removeEndpointParams = {
+						"blueprintId":params.blueprintId,
+						"source" : params.source,
+						"target" : params.target,
+						"endpoint" : stageResDepGR.endpoint
+					   };
+					new sn_cmp.CMPRemoveEndpointAction().doAction(removeEndpointParams);
+					stageResDepGR.deleteRecord();
+				}
+				
+			}
+			
+			//delete added steps from bp operations.
+			if(params.source != "Blueprint Container Resource" && params.relType == 'Hosted on'){
+				
+				var stageResOpGR = new GlideRecord('sn_cmp_bp_stage_resource_op');
+				stageResOpGR.addQuery("bp_stage_resource.alias_name", params.source);
+				stageResOpGR.addQuery("bp_stage_resource.bp_stage_model", stageModel.id);
+				stageResOpGR.query();
+				while(stageResOpGR.next()){
+					var stageOPGR = new GlideRecord('sn_cmp_bp_stage_op');
+					stageOPGR.addQuery('name',stageResOpGR.getDisplayValue("rb_operation_impl"));
+					stageOPGR.addQuery('blueprint_stage_model',stageModel.id);
+					stageOPGR.query();
+					if(stageOPGR.next())
+					   stageResOpGR.deleteRecord();
+				}
+				
+			}
+			
+			var dtoTranslator = new CMPGraphDTOTranslator();
+			var newVersion = versionObj.getNewVersion();
+			return dtoTranslator.getGraphDTO(newVersion);
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to remove the relationship"),
+				"CMPRemoveEdgeAction.doAction(): Failed to remove the resource block connection",
+				error
+			);
+		}
+	},
+	
+	removeConnection : function(blueprintId,source,target,relType){
+		var bpGR = new GlideRecord('sn_cmp_bp_blueprint');
+		bpGR.addQuery('sys_id',blueprintId);
+		bpGR.query();
+		if(bpGR.next()){
+			var versionObj = new sn_smd.SMSvcDefinition(bpGR.svc_layer, null, null);
+			var rlns = versionObj.getRelationships();
+			for (var j = 0; j < rlns.length; j++) {
+				if(rlns[j].getTarget().getName() == target && rlns[j].getSource().getName() == source){
+					var params = {
+						"layer_id": bpGR.svc_layer,
+						"edge_id" : rlns[j].getId(),
+						"blueprintId" : blueprintId,
+						"source" : source,
+						"target" : target,
+						"relType" : relType
+						
+					};
+					this.doAction(params);
+				}
+			}
+			
+		}
+	},
+
+    type: 'CMPRemoveEdgeAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-29 10:32:53</sys_created_on>
+        <sys_id>c5c0f04f0b5322003bace58525673a20</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPRemoveEdgeAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c5c0f04f0b5322003bace58525673a20</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-01-12 11:30:04</sys_updated_on>
+    </sys_script_include>
+</record_update>

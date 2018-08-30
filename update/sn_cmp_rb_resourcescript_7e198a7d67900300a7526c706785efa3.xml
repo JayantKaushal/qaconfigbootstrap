@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_resourcescript">
+    <sn_cmp_rb_resourcescript action="INSERT_OR_UPDATE">
+        <name>List_Server_Arrays_Response_Processor</name>
+        <resource display_value="AWS Datacenter">0279b35e0be622009e620bcb15673a2e</resource>
+        <script/>
+        <script_js><![CDATA[function processResponse(response, cloudServiceAccountId, ldc, correlationId, step, requestorContext, stackId) {
+	
+	var cloudModelString = [];
+	var serverArrayResponse = global.JSON.parse(response);
+	
+	//Checking whether CAPI returned valid Response
+	if(!(isEmpty(serverArrayResponse))){
+		var healthCheck_map = { "EC2":"1", "ELB":"2"};
+
+		for(var i=0;i<serverArrayResponse.length;i++){
+			var enabledLoadBal = false;
+			var enabledMetrics = false;
+			var enabledScalingPolicies = false;
+			var enabledAvailabilityZones = false;
+			var enabledVPC = false;
+			var enabledVMs = false;
+
+			//Checking If VPCZoneIdentifier is Null or not
+			if(!(isEmpty(serverArrayResponse[i].VPCZoneIdentifier)))
+				enabledVPC = true;
+			//Checking If each AutoScaling Entity of CAPI Response consists any Load Balancers
+			if(!(isEmpty(serverArrayResponse[i].LoadBalancerNames)))
+				enabledLoadBal = true;
+			if(!(isEmpty(serverArrayResponse[i].EnabledMetrics)))
+				enabledMetrics = true;
+			//Checking If each AutoScaling Entity of CAPI Response consists any Availability Zones
+			if(!(isEmpty(serverArrayResponse[i].AvailabilityZones)))
+				enabledAvailabilityZones = true;
+			//Checking If each AutoScaling Entity of CAPI Response consists any VMs
+			if(!(isEmpty(serverArrayResponse[i].Instances)))
+				enabledVMs = true;
+			//Checking If each AutoScaling Entity of CAPI Response consists any Scaling Policies
+			if(!(isEmpty(serverArrayResponse[i].Policies)))
+				if(!(isEmpty(serverArrayResponse[i].Policies.DescribePoliciesResult)))
+					if(!(isEmpty(serverArrayResponse[i].Policies.DescribePoliciesResult.ScalingPolicies)))
+						enabledScalingPolicies = true;
+
+			var serverArrayInfo ={
+				"cmdb_ci_sa_server_array": {
+					"identification": {
+						"cmdb_ci_cloud_service_account": {
+							"criterion": {
+								"object_id": cloudServiceAccountId
+							}
+						},
+						"cmdb_ci_aws_datacenter": {
+							"criterion": {
+								"object_id": ldc
+							}
+						},
+						"cmdb_ci_sa_server_array": {
+							"criterion": {
+								"object_id": serverArrayResponse[i].AutoScalingGroupName
+							}
+						}
+					},
+					"attributes": {
+						"name": serverArrayResponse[i].AutoScalingGroupName,
+						"object_id": serverArrayResponse[i].AutoScalingGroupName,
+						"autoscaling_group_arn":serverArrayResponse[i].AutoScalingGroupARN,
+						"max_size": serverArrayResponse[i].MaxSize,
+						"min_size": serverArrayResponse[i].MinSize,
+						"default_cooldown": serverArrayResponse[i].DefaultCooldown,
+						"default_group_size": serverArrayResponse[i].DesiredCapacity,
+						"target_group_arn": serverArrayResponse[i].TargetGroupARNs,
+						"health_check_type": healthCheck_map[serverArrayResponse[i].HealthCheckType],
+						"health_check_grace_period": serverArrayResponse[i].HealthCheckGracePeriod,
+						"suspend_process_status": serverArrayResponse[i].SuspendedProcesses,
+						"enabled_metric": enabledMetrics,
+						"enable_loadbalancing": enabledLoadBal,
+						"instance_protection": serverArrayResponse[i].NewInstancesProtectedFromScaleIn,
+						"enable_scaling_policies": enabledScalingPolicies
+					},
+					"references": {
+						"cmdb_ci_sa_launch_config": {
+							"identification": {
+								"cmdb_ci_cloud_service_account": {
+									"criterion": {
+										"object_id": cloudServiceAccountId
+									}
+								},
+								"cmdb_ci_aws_datacenter": {
+									"criterion": {
+										"object_id": ldc
+									}
+								},
+								"cmdb_ci_sa_launch_config": {
+									"criterion": {
+										"object_id": serverArrayResponse[i].LaunchConfigurationName
+									}
+								}
+							},
+							"attributes": {
+								"object_id": serverArrayResponse[i].LaunchConfigurationName
+							}
+						}
+					},
+					"relationships" : {}
+				}
+			};
+
+			if(enabledVPC){
+				serverArrayInfo.cmdb_ci_sa_server_array.references['cmdb_ci_cloud_subnet'] = {};
+				var zoneMap = {
+					"identification": {
+							"cmdb_ci_cloud_service_account": {
+								"criterion": {
+									"account_id": cloudServiceAccountId
+								}
+							},
+							"cmdb_ci_aws_datacenter": {
+								"criterion": {
+									"region": ldc
+								}
+							},
+							"cmdb_ci_network": {
+								"criterion": {
+									"object_id": getNetworkID(serverArrayResponse[i].VPCZoneIdentifier)
+								}
+							},
+							"cmdb_ci_cloud_subnet": {
+								"criterion": {
+									"object_id": serverArrayResponse[i].VPCZoneIdentifier
+								}
+							}
+						},
+						"attributes": {
+							"object_id": serverArrayResponse[i].VPCZoneIdentifier,
+						}
+				};
+				serverArrayInfo.cmdb_ci_sa_server_array.references.cmdb_ci_cloud_subnet = zoneMap;
+			}
+			
+			if(enabledScalingPolicies){
+				var metricType = "";
+				var targetValue = "";
+				var disableScaleIn = "";
+				var scalingPolicies = convertMapToList(serverArrayResponse[i].Policies.DescribePoliciesResult.ScalingPolicies.member);
+				serverArrayInfo.cmdb_ci_sa_server_array.relationships['cmdb_ci_sa_simple_policy'] = [];
+				serverArrayInfo.cmdb_ci_sa_server_array.relationships['cmdb_ci_sa_dynamic_policy'] = [];
+				var metricType_map = { "ASGAverageCPUUtilization":"1", "ASGAverageNetworkIn":"3", "ASGAverageNetworkOut":"4", "ASGApplicationLoadBalancerRequestCountPerTarge":"1"};
+				var policyType_map = { "TargetTrackingScaling" : "1","SimpleScaling" : "1", "StepScaling" : "2"};
+
+				//Below Module Populates Simple and Dynamic Scaling Policies
+				for(var j=0;j<scalingPolicies.length;j++){
+					var policyMapping = {};
+					//Checking If "TargetTrackingConfiguration" object exists in the CAPI response
+					if(!(isEmpty(scalingPolicies[j].TargetTrackingConfiguration))){
+						//Checking If "PredefinedMetricSpecification" Object exisits in "TargetTrackingConfiguration" object of CAPI response
+						if(!(isEmpty(scalingPolicies[j].TargetTrackingConfiguration.PredefinedMetricSpecification))){
+							//Checking If "PredefinedMetricType" Object exisits in CAPI response
+							if(!(isEmpty(scalingPolicies[j].TargetTrackingConfiguration.PredefinedMetricSpecification.PredefinedMetricType)))
+								metricType = scalingPolicies[j].TargetTrackingConfiguration.PredefinedMetricSpecification.PredefinedMetricType;
+						}
+						//Checking If "TargetValue" Object exisits in CAPI response
+						if(!(isEmpty(scalingPolicies[j].TargetTrackingConfiguration.TargetValue)))
+							targetValue = scalingPolicies[j].TargetTrackingConfiguration.TargetValue;
+						//Checking If "DisableScaleIn" Object exisits in CAPI response
+						if(!(isEmpty(scalingPolicies[j].TargetTrackingConfiguration.DisableScaleIn)))
+							disableScaleIn = scalingPolicies[j].TargetTrackingConfiguration.DisableScaleIn;
+					}
+
+					if((scalingPolicies[j].PolicyType == "TargetTrackingScaling") || (scalingPolicies[j].PolicyType == "SimpleScaling")){
+						policyMapping = {
+								"identification": {
+									"cmdb_ci_cloud_service_account": {
+										"criterion": {
+											"object_id": cloudServiceAccountId
+										}
+									},
+									"cmdb_ci_aws_datacenter": {
+									  "criterion": {
+										"object_id": ldc
+									  }
+									},
+									"cmdb_ci_sa_server_array": {
+										"criterion": {
+											"object_id": scalingPolicies[j].AutoScalingGroupName
+										}
+									},
+									"cmdb_ci_sa_simple_policy": {
+									  "criterion": {
+										"object_id": scalingPolicies[j].PolicyName
+									  }
+									}
+								},
+								"attributes": {
+									"name": scalingPolicies[j].PolicyName,
+									"object_id": scalingPolicies[j].PolicyName,
+									"policy_type": policyType_map[scalingPolicies[j].PolicyType],
+									"metric_type": metricType_map[metricType],
+									"target_value": Math.floor(targetValue),
+									"disable_scale_in": disableScaleIn
+								}
+						};
+						serverArrayInfo.cmdb_ci_sa_server_array.relationships.cmdb_ci_sa_simple_policy.push(policyMapping);
+					}
+					else {
+						policyMapping = {
+								"identification": {
+									"cmdb_ci_cloud_service_account": {
+										"criterion": {
+											"object_id": cloudServiceAccountId
+										}
+									},
+									"cmdb_ci_aws_datacenter": {
+									  "criterion": {
+										"object_id": ldc
+									  }
+									},
+									"cmdb_ci_sa_server_array": {
+										"criterion": {
+											"object_id": scalingPolicies[j].AutoScalingGroupName
+										}
+									},
+									"cmdb_ci_sa_dynamic_policy": {
+									  "criterion": {
+										"object_id": scalingPolicies[j].PolicyName
+									  }
+									}
+								},
+								"attributes": {
+									"name": scalingPolicies[j].PolicyName,
+									"object_id": scalingPolicies[j].PolicyName,
+									"policy_type": policyType_map[scalingPolicies[j].PolicyType]
+								}
+						};
+						serverArrayInfo.cmdb_ci_sa_server_array.relationships.cmdb_ci_sa_dynamic_policy.push(policyMapping);
+					}		
+				}
+			}
+
+			//Below Module Populates Availability Zones Information
+			if(enabledAvailabilityZones){
+				serverArrayInfo.cmdb_ci_sa_server_array.relationships['cmdb_ci_availability_zone'] = [];
+				var availabilityZonesArr = convertMapToList(serverArrayResponse[i].AvailabilityZones.member);
+				for(var p=0; p<availabilityZonesArr.length; p++){
+					var availabilityZonesMap = {
+						"identification": {
+							"cmdb_ci_cloud_service_account": {
+								"criterion": {
+									"object_id": cloudServiceAccountId
+								}
+							},
+							"cmdb_ci_aws_datacenter": {
+								"criterion": {
+									"object_id": ldc
+								}
+							},
+							"cmdb_ci_availability_zone": {
+								"criterion": {
+									"object_id": availabilityZonesArr[p]
+								}
+							}
+						},
+						"attributes": {
+							"object_id": availabilityZonesArr[p]
+						}
+					};
+					serverArrayInfo.cmdb_ci_sa_server_array.relationships.cmdb_ci_availability_zone.push(availabilityZonesMap);
+				}
+			}
+
+			//Below Module Populates VMs Information
+			if(enabledVMs){
+				serverArrayInfo.cmdb_ci_sa_server_array.relationships['cmdb_ci_vm_instance'] = [];
+				var vmsArr = convertMapToList(serverArrayResponse[i].Instances.member);
+				for(var q=0; q<vmsArr.length; q++){
+					var vmsMap = {
+						"identification": {
+								"cmdb_ci_cloud_service_account": {
+									"criterion": {
+										"object_id": cloudServiceAccountId
+									}
+								},
+								"cmdb_ci_aws_datacenter": {
+									"criterion": {
+										"object_id": ldc
+									}
+								},
+								"cmdb_ci_vm_instance": {
+									"criterion": {
+										"object_id": vmsArr[q].InstanceId
+									}
+								}
+							},
+							"attributes": {
+								"object_id": vmsArr[q].InstanceId
+							}
+					};
+					serverArrayInfo.cmdb_ci_sa_server_array.relationships.cmdb_ci_vm_instance.push(vmsMap);
+				}
+			}
+
+			//Below Module Populates Load Balancer Information
+			if(enabledLoadBal){
+				serverArrayInfo.cmdb_ci_sa_server_array.relationships['cmdb_ci_cloud_load_balancer'] = [];
+				var loadBalDataArr = convertMapToList(serverArrayResponse[i].LoadBalancerNames.member);
+				for(var k=0; k<loadBalDataArr.length; k++){
+					var loadBalDataMap = {
+						"identification": {
+							"cmdb_ci_cloud_service_account": {
+								"criterion": {
+									"object_id": cloudServiceAccountId
+								}
+							},
+							"cmdb_ci_aws_datacenter": {
+								"criterion": {
+									"object_id": ldc
+								}
+							},
+							"cmdb_ci_cloud_load_balancer": {
+								"criterion": {
+									"object_id": loadBalDataArr[k]
+								}
+							}
+						},
+						"attributes": {
+							"object_id": loadBalDataArr[k]
+						}
+					};
+					serverArrayInfo.cmdb_ci_sa_server_array.relationships.cmdb_ci_cloud_load_balancer.push(loadBalDataMap);
+				}	
+			}
+			cloudModelString.push(serverArrayInfo);
+		}
+		return global.JSON.stringify(cloudModelString);
+	}
+	
+ }
+
+//Following Function converts Map to List
+function convertMapToList(value){
+	if(!(Array.isArray(value))){
+		//Converting to List to Map
+		var loadList = [];
+		loadList.push(value);
+		return loadList;
+	}
+	else
+		return value;
+}
+
+//Following function provides Network ObjectID when Subnet's ObjectID is provided which we get from CAPI Response
+function getNetworkID(subnetID){
+	var subnetGR = new GlideRecord('cmdb_ci_cloud_subnet');
+	subnetGR.addQuery('object_id',subnetID);
+	subnetGR.query();
+	if (subnetGR.next()){ 
+		var networkGR = new GlideRecord('cmdb_rel_ci');
+		networkGR.addQuery('child',subnetGR.getValue('sys_id'));
+		networkGR.query();
+		while(networkGR.next()){
+			var nwGR = new GlideRecord('cmdb_ci_network');
+			nwGR.addQuery('sys_id',networkGR.getValue('parent'));
+			nwGR.query();
+			if(nwGR.next())
+				return nwGR.getValue('object_id');
+		}
+	}
+}
+
+//This will return true if value is 'undefined'/ 'null' / '[]' / "" (Empty String)
+function isEmpty(value){
+  return (value == null || value.length === 0);
+}]]></script_js>
+        <sys_class_name>sn_cmp_rb_resourcescript</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-01 08:58:11</sys_created_on>
+        <sys_id>7e198a7d67900300a7526c706785efa3</sys_id>
+        <sys_mod_count>60</sys_mod_count>
+        <sys_name>List_Server_Arrays_Response_Processor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourcescript_7e198a7d67900300a7526c706785efa3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-23 07:44:56</sys_updated_on>
+        <type>7</type>
+    </sn_cmp_rb_resourcescript>
+</record_update>

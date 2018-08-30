@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Orchestration Resource Graph" max_length="40" name="sn_cmp_order_resource_graph" type="collection">
+        <element label="ExecutionID" max_length="32" name="order" reference="sn_cmp_order" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Nodes" max_length="4000" name="resource_nodes" type="string"/>
+        <index name="index">
+            <element name="order"/>
+        </index>
+    </element>
+</database>

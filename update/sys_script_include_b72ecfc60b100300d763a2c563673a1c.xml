@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetTotalDcCapacity</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetTotalDcCapacity</name>
+        <script><![CDATA[var CMPGetTotalDcCapacity = Class.create();
+var vCPUs_Count = '5a359cc10b232200e586a2c563673aa1';
+var StorageVolume_Size  = '78241cc10b232200e586a2c563673ab3';
+CMPGetTotalDcCapacity.prototype = {
+    initialize: function() {
+    },
+	// Get vCPU's Capacity of All the Data centers 
+getVcpuCapacity: function()
+{ 
+	var totalCapacity = 0;
+	var i = 0;
+	var capacity = new GlideAggregate('sn_cmp_ca_assc_dc_quota_type');	
+	capacity.addAggregate('sum','limit');
+    capacity.addQuery('quota_type',vCPUs_Count);	
+	capacity.query();
+	while (capacity.next()) {
+	   totalCapacity = totalCapacity+(parseFloat(capacity.getAggregate('sum','limit')));
+	   i++;
+	}
+	var obj = {
+				"Total_vCPU_Capacity" : totalCapacity,
+		        "Number_of_Data_Centers"      : i,
+		        "Consumption" : parseFloat(new sn_cmp_api.QuotaServiceScript().getActiveInstance('vCPUs_Count'))
+		};
+	return obj;
+},	
+// Get Storage Capacity of All the Data centers
+getStorageCapacity: function()
+{ 
+	var i = 0;
+	var totalCapacity = 0;
+	var unit = "GB";
+	var teraByte = 1024;     // This is 1024 GB
+	var petaByte = 1048576; // This is 1024*1024 GB
+	var capacity = new GlideAggregate('sn_cmp_ca_assc_dc_quota_type');	
+	capacity.addAggregate('sum','limit');
+    capacity.addQuery('quota_type',StorageVolume_Size );	
+	capacity.query();
+	while (capacity.next()) {
+	   totalCapacity = totalCapacity+(parseFloat(capacity.getAggregate('sum','limit')));
+	   i++;
+	}
+	
+	var consumption = parseFloat(new sn_cmp_api.QuotaServiceScript().getActiveInstance('StorageVolume_Size'));	
+	
+	if (consumption >= petaByte && totalCapacity >= petaByte) {
+		totalCapacity = totalCapacity/petaByte; //Converting GB to PB
+	    consumption = consumption/petaByte;
+		unit = "PB";
+	}
+	else if (consumption >= teraByte && totalCapacity >= teraByte) {   	
+	         totalCapacity = totalCapacity/teraByte; //Converting GB to TB
+	         consumption = consumption/teraByte;
+		     unit = "TB";
+	}
+	var obj = {
+				"Total_Storage_Capacity" : Math.round(totalCapacity),
+		        "Number_of_Data_Centers" : i,
+		        "Unit"                   : unit,
+		        "Consumption"            : Math.round(consumption)
+		};
+	return obj;
+},
+
+    type: 'CMPGetTotalDcCapacity'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-02 08:44:43</sys_created_on>
+        <sys_id>b72ecfc60b100300d763a2c563673a1c</sys_id>
+        <sys_mod_count>23</sys_mod_count>
+        <sys_name>CMPGetTotalDcCapacity</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_b72ecfc60b100300d763a2c563673a1c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-22 11:43:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

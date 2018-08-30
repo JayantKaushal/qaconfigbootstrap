@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Tag Value Set" max_length="40" name="sn_cmp_tag_value_set" type="collection">
+        <element attributes="readonly_clickthrough=true" label="Application" max_length="32" name="application" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="Business service" max_length="32" name="business_service" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="Cost center" max_length="32" name="cost_center" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Custom values" max_length="1000" name="custom_values" type="string"/>
+        <element attributes="readonly_clickthrough=true" label="Project" max_length="32" name="project" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="ServiceNow instance" max_length="32" name="sn_instance" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="Stack" max_length="32" name="stack" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Tag ID" max_length="40" name="tag_id" type="string"/>
+        <element attributes="readonly_clickthrough=true" label="Time provisioned" max_length="32" name="time_provisioned" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="User" max_length="32" name="user" reference="sn_cmp_tag_value" type="reference"/>
+        <element attributes="readonly_clickthrough=true" label="User group" max_length="32" name="user_group" reference="sn_cmp_tag_value" type="reference"/>
+        <index name="index">
+            <element name="stack"/>
+        </index>
+        <index name="index2">
+            <element name="user_group"/>
+        </index>
+        <index name="index3">
+            <element name="application"/>
+        </index>
+        <index name="index4">
+            <element name="cost_center"/>
+        </index>
+        <index name="index5">
+            <element name="time_provisioned"/>
+        </index>
+        <index name="index6">
+            <element name="project"/>
+        </index>
+        <index name="index7">
+            <element name="business_service"/>
+        </index>
+        <index name="index8">
+            <element name="user"/>
+        </index>
+        <index name="index9">
+            <element name="sn_instance"/>
+        </index>
+    </element>
+</database>

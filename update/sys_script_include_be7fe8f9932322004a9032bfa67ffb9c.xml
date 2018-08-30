@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.AzureBillingCSVProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description>This script processes a line from a CSV formatted Azure daily billing report.</description>
+        <name>AzureBillingCSVProcessor</name>
+        <script><![CDATA[var AzureBillingCSVProcessor = Class.create();
+/**
+ * Data handler for Azure billing CSV download.
+ */
+ /* eslint-disable no-undef */
+AzureBillingCSVProcessor.prototype = Object.extendsObject(CmpBillingCSVProcessor, {
+/* eslint-enable no-undef */	
+
+	// Do not waste cycles updating cost or quantity if both are lower than the threshold
+	PROVIDER:'Azure',
+	TAG:'[AzureBillingCSVProcessor] ',
+	DATE_COLUMN:'date',
+	ACCOUNT_COLUMN:'subscription_guid',
+	MASTER_COLUMN:'enrollment_number',
+	accountNum:'',
+	year:'',
+	month:'',
+	lastPersistedDates:{},
+			
+	setData:function(header, value, lineNumber, colNum) {
+
+		// if the current line is not  valid, don't proceed.
+		if(!this.isCurrentLineValid())
+			return;
+		
+		// find the column name by the passed header
+		var colName = this.getColumnNameByHeader(header);
+
+		// If headers are localized to another language, use the English name within the parentheses
+		if (gs.nil(colName)) {
+			var headerParen = header.split(/[()]/)[1];
+			if (!gs.nil(headerParen))
+				colName = this.getColumnNameByHeader(headerParen);
+			if (gs.nil(colName) && colNum < AzureBillingColumnDefaults.prototype.columns.length)
+				colName = AzureBillingColumnDefaults.prototype.columns[colNum];
+			if (!gs.nil(colName))
+				this.headerColMap[header] = colName;
+		}	
+		
+		if (colName=='date') {
+			// if value is empty, then this is not a valid record.
+			
+			if (gs.nil(value)) {
+				this.setCurrentLineInvalid();
+				return ;
+			}
+			
+			// convert to GlideDateTime so it remains UTC
+			// otherwise it'll be treated as local time
+			var normDate = new GlideDateTime();
+			normDate.setValueUTC(value.substring(0,10)+' 12:00:00',
+							 "MM/dd/yyyy HH:mm:ss");
+			value = normDate;
+			
+			// if timestamp is invalid, or if the line is from date earlier than the
+			// last persisted day but later than the first of the month, don't include it.
+			var subscriptionId = this.gr.getValue(this.ACCOUNT_COLUMN);
+			if(!value.isValid() || gs.nil(subscriptionId)
+				|| (!gs.nil(this.lastPersistedDates[subscriptionId])
+					&& value.compareTo(this.lastPersistedDates[subscriptionId]) < 0 )
+					&& value.getDayOfMonthUTC() > 1) {
+				this.setCurrentLineInvalid();
+				return ;
+			}
+		}
+		
+		var valueExists = !gs.nil(value); 
+		
+		if (gs.nil(colName)) {		
+			if (lineNumber == 1) { // Log only for the first line else we get too much log			
+				gs.info(this.TAG + "Line " + lineNumber + ": Could not find header: " + header + "; value = " + value + "; column = " + colName);
+			}
+		
+			this.setCurrentLineInvalid();
+			return;
+		
+		}
+				
+		if(!gs.nil(colName) && valueExists){
+			this.gr.setValue(colName,value);
+		}
+	},
+
+	
+	/**
+ 	* The envent for the line processing started.
+ 	*/
+	beginLine:function(lineCnt) {
+		CmpBillingCSVProcessor.prototype.beginLine.apply(this, [lineCnt]);		
+
+		this.gr.enrollment_number = this.accountNum;
+	},	
+	
+	/**
+ 	* The event for the line processing ended.
+ 	*/
+	endLine:function(lineCnt) {
+		// don't proceed if this line is invalid or has an insignificant cost
+		if (!this.isCurrentLineValid() || Math.abs(this.gr.extended_cost) < this.UPDATE_THRESHOLD) {
+			return;
+		}
+		// Don't track individual resource if cost is low
+		if (Math.abs(this.gr.extended_cost) < this.RESOURCE_ID_THRESHOLD || gs.nil(this.gr.instance_id)) {
+			this.gr.instance_id = 'Misc. '+this.gr.consumed_service;
+		}
+
+		// insert the collected data.
+		this.insertLine(lineCnt);
+	},
+		
+	type: 'AzureBillingCSVProcessor'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-07 23:28:07</sys_created_on>
+        <sys_id>be7fe8f9932322004a9032bfa67ffb9c</sys_id>
+        <sys_mod_count>21</sys_mod_count>
+        <sys_name>AzureBillingCSVProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_be7fe8f9932322004a9032bfa67ffb9c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-11 05:05:02</sys_updated_on>
+    </sys_script_include>
+</record_update>

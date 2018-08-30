@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cost_import_map">
+    <sn_cmp_cost_import_map action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <condition table="sn_cmp_imp_aws_cost">usage_typeLIKEDataTransfer^ORusage_typeLIKE-In-Bytes^ORusage_typeLIKE-Out-Bytes^ORusage_typeLIKE-Regional-Bytes^EQ<item endquery="false" field="usage_type" goto="false" newquery="false" operator="LIKE" or="false" value="DataTransfer"/>
+            <item endquery="false" field="usage_type" goto="false" newquery="false" operator="LIKE" or="true" value="-In-Bytes"/>
+            <item endquery="false" field="usage_type" goto="false" newquery="false" operator="LIKE" or="true" value="-Out-Bytes"/>
+            <item endquery="false" field="usage_type" goto="false" newquery="false" operator="LIKE" or="true" value="-Regional-Bytes"/>
+            <item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/>
+        </condition>
+        <order>200</order>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <source_table>sn_cmp_imp_aws_cost</source_table>
+        <sys_class_name>sn_cmp_cost_import_map</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-09 18:43:27</sys_created_on>
+        <sys_id>88d127ac930b22004a9032bfa67ffb3b</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cost_import_map_88d127ac930b22004a9032bfa67ffb3b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-18 22:04:20</sys_updated_on>
+        <target_field>usage_category</target_field>
+        <target_table>sn_cmp_usage_profile</target_table>
+        <target_value>Data Transfer</target_value>
+    </sn_cmp_cost_import_map>
+</record_update>

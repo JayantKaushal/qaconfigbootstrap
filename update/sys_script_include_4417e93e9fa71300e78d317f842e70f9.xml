@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPStackUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPStackUtil</name>
+        <script><![CDATA[var CMPStackUtil = Class.create();
+
+CMPStackUtil.prototype = {
+    initialize: function(checkACL) {
+		if (checkACL)
+			this.stackGr = new GlideRecordSecure(CloudConstants.STACK_TABLE);
+		else
+			this.stackGr = new GlideRecord(CloudConstants.STACK_TABLE);
+    },
+	
+	getStackById: function(stackId) {
+		if (!stackId)
+			return null;
+
+		this.stackGr.initialize();
+
+		if (this.stackGr.get(stackId) && this.stackGr.isValidRecord())
+			return this.stackGr;
+
+		return null;
+	},
+	
+    type: 'CMPStackUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-07-30 18:38:30</sys_created_on>
+        <sys_id>4417e93e9fa71300e78d317f842e70f9</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>CMPStackUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_4417e93e9fa71300e78d317f842e70f9</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-23 21:50:56</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>sys_created_on</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>Policy_on_load</name>
+        <order/>
+        <script><![CDATA[var BLUEPRINT_PROVISION = "2";
+var BLUEPRINT_APPROVAL = "4";
+var CATALOG_ITEM_LAUNCH = "6";
+var CATALOG_ITEM_REQUEST_START = "8";
+var CATALOG_ITEM_REQUEST_END = "9";
+var CLOUD_EVENT = "7";
+var RESOURCE_OPERATION = "3";
+var STACK_APPROVAL = "5";
+var STACK_RESOURCE_OPERATION_APPROVAL = "10";
+var ON_TASK_CLEANUP = "13";
+var PUBLISHED_STATUS = "1";
+var DRAFT_STATUS = "2";
+var loadingDialog = new GlideDialogWindow("dialog_loading", false);
+function onLoad() {
+	//Add loading dialog box
+	loadingDialog.setPreference('table', 'loading');
+	var loadTitle = 'Loading operations...';
+	loadingDialog.setTitle(loadTitle); //Set the loading dialog title here...
+	loadingDialog.render();
+	try{
+		if(g_form.getViewName('sysparm_view') == 'policies_from_card') {
+			var bttn = nowapi.g_document.getElement('.btn.btn-default.icon-chevron-left.navbar-btn');
+			bttn.onclick = function(event) {
+				nowapi.g_navigation.open('/$cmp_policy_container.do');
+			};
+		}
+		g_form.setDisplay("operation_id", false);
+		g_form.setDisplay("operation_name", false);
+		var targetEntityId = g_form.getValue("target_entity_id");
+		var targetEntityInstanceId = g_form.getValue("target_entity_instance_id");
+		initializeUIDisplay();
+		fetchPolicyOperations(targetEntityId, targetEntityInstanceId);
+		initializeExistingUIAttributes(targetEntityId);
+		disableFieldsForPublishedPolicies();
+		addLookupOnclickEvent();
+		attachEntityIdChangeEvent();
+		disableEntityFields();
+	}catch( e){
+		//destroy loading dialog incase of any error.
+		loadingDialog.destroy();
+	}
+}
+function disableFieldsForPublishedPolicies(){
+	g_form.setDisabled( "status", true);
+	g_form.setDisabled( "target_entity_instance_id", false);
+	g_form.setReadonly( "target_entity_instance_id", false);
+	if( g_form.getValue( "status") == PUBLISHED_STATUS){
+		g_form.setDisabled( "name", true);
+		g_form.setDisplay("operation_id", false);
+		g_form.setDisabled( "group_id", true);
+		g_form.setDisabled( "target_entity_type", true);
+		g_form.setDisabled( "target_entity_table", true);
+		g_form.setDisabled( "target_entity_instance_id", true);
+		g_form.setReadonly( "target_entity_instance_id", true);
+		g_form.setDisabled( "operation_name", true);
+		g_form.setDisabled( "policy_order", true);
+		g_form.setDisabled( "start_date", true);
+		g_form.setDisabled( "end_date", true);
+		g_form.setReadonly( "target_entity_type", true);
+		g_form.setDisabled( "name", true);
+		g_form.setDisabled( "policy_order", true);
+		g_form.setDisabled( "target_entity_id", true);
+		g_form.setDisabled( "description", true);
+		g_form.setReadOnly("operation_id", true);
+		g_form.setReadOnly("moment",true);
+	}
+}
+function disableEntityFields(){
+        if( !g_form.isNewRecord()){
+		var ajax = new GlideAjax("PolicyOperationsUtil");
+		var policyId = g_form.getUniqueValue();
+		ajax.addParam("sysparm_name", "checkPolicyContainsRules");
+		ajax.addParam("policy", policyId);
+		ajax.getXML(function(serverResponse) {
+			var optionsObj = JSON.parse(serverResponse.responseXML.getElementsByTagName("xml")[0].getAttribute("answer"));
+			if (optionsObj) {
+			  g_form.setDisabled("operation_name", true);
+                          g_form.setDisabled("target_entity_instance_id", true);
+                          g_form.setDisabled("target_entity_id", true);
+			}
+		});
+        }
+}
+function fetchPolicyOperations(targetEntityId, targetEntityInstanceId){
+	g_form.setDisplay("operation_id", false);
+	g_form.setDisplay("operation_name", false);
+	if ( targetEntityId != "") {
+		g_form.clearOptions("operation_name");
+		var ajax = new GlideAjax("PolicyOperationsUtil");
+		ajax.addParam("sysparm_name", "fetchPolicyOperations");
+		ajax.addParam("triggerType", targetEntityId);
+		ajax.addParam("targetEntityId", targetEntityInstanceId);
+		ajax.getXML(function(serverResponse) {
+			console.info(serverResponse);
+			try{
+			var optionsObj = JSON.parse(serverResponse.responseXML.getElementsByTagName("xml")[0].getAttribute("answer"));
+			if (typeof optionsObj != "undefined") {
+				if(targetEntityId != 2 && targetEntityId != 4)
+				  g_form.addOption("operation_name", "", "All");
+				  for (var i = 0; i < optionsObj.length; i++) {
+					g_form.addOption("operation_name", optionsObj[i].id, optionsObj[i].label);
+				  }
+			   g_form.setValue("operation_name", g_form.getValue("operation_id"));
+			}
+			}catch(e){
+				console.error(e);
+			}
+			//destroy loading dialog box.
+			loadingDialog.destroy();
+		});
+	}else{
+		loadingDialog.destroy();
+	}
+}
+function initializeUIDisplay(){
+	if( g_form.isNewRecord()){
+		g_form.setValue( "status", DRAFT_STATUS);
+		g_form.setValue( "policy_order", "1");
+		g_form.setDisabled( "status", true);
+	}else{
+		g_form.setDisabled( "status", false);
+	}
+	g_form.setDisplay("operation_id", false);
+	g_form.setDisplay("operation_name", false);
+	g_form.setDisplay("script", false);
+	g_form.setDisplay("target_entity_table", false);
+	g_form.setDisplay( "target_entity_instance_id", false);
+	g_form.setDisplay("moment", false);
+	g_form.setMandatory("moment", false);
+	g_form.setMandatory("target_entity_instance_id", false);
+	g_form.setMandatory("operation_name", false);		
+	
+	
+}
+function initializeExistingUIAttributes(targetEntityId){
+	if( !g_form.isNewRecord()){
+		switch(targetEntityId){
+			case BLUEPRINT_PROVISION:
+			cloudBlueprint();
+			break;
+			case RESOURCE_OPERATION:
+			cloudResource();
+			break;
+			case BLUEPRINT_APPROVAL:
+			cloudBlueprintApproval();
+			break;
+			case STACK_APPROVAL:
+			cloudStackApproval();
+			break;
+			case CATALOG_ITEM_LAUNCH:
+			cloudCatalogItem();
+			break;
+			case CLOUD_EVENT:
+			cloudEvent();
+			break;
+			case CATALOG_ITEM_REQUEST_START:
+			case CATALOG_ITEM_REQUEST_END:
+			cloudCatalogItemRequest();
+			break;
+			case STACK_RESOURCE_OPERATION_APPROVAL:
+			cloudStackResourceApproval();
+			break;
+			case ON_TASK_CLEANUP:
+			cloudTaskCleanup();
+			break;
+			default:
+		}
+	}
+}
+function cloudTaskCleanup(){
+	g_form.setDisplay("target_entity_instance_id", false);
+	g_form.setDisplay("operation_name", false);
+}
+function cloudBlueprint(){
+	setBlueprintLabel();
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("target_entity_instance_id", true);
+}
+function cloudResource(){
+	setResourceLabel();
+	displayOperationHelpText();	
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("moment", true);
+	g_form.setMandatory("moment", true);
+	g_form.setMandatory("target_entity_instance_id", true);
+	g_form.setMandatory("operation_name", true);		
+}
+function cloudBlueprintApproval(){
+	setBlueprintLabel();
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("target_entity_instance_id", true);
+}
+function cloudCatalogItem(){
+	setCatalogLabel();
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", false);
+}
+function cloudStackApproval(){
+	setStackLabel();
+	displayHelpText( 'blueprint', 'blueprint');	
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("target_entity_instance_id", true);
+}
+function cloudCatalogItemRequest(){
+	g_form.setDisplay("operation_name", true);
+	g_form.setDisplay("target_entity_instance_id", true);
+	setBlueprintLabel();
+}
+function cloudStackResourceApproval(){
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", true);
+	setResourceLabel();
+	displayHelpText( 'resource', 'resource');
+}
+function cloudEvent(){
+	g_form.setDisplay("target_entity_instance_id", true);
+	g_form.setDisplay("operation_name", false);
+	setCloudResourceType();
+}
+function setCatalogLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_cat_item", getMessage("CatalogItem"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Catalog Item"));
+	g_form.setLabelOf("target_entity_table", getMessage("Catalog Item table"));
+	displayHelpText( 'catalog', 'catalog item');		
+}
+function setStackLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_blueprint", getMessage("Blueprint"));
+	g_form.setLabelOf("target_entity_table", getMessage("Stack table"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Stack"));
+}
+function setBlueprintLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_bp_blueprint", getMessage("Blueprint"));
+	g_form.setLabelOf("target_entity_table", getMessage("Blueprint table"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Blueprint"));
+	displayHelpText( 'blueprint', 'blueprint');	
+}
+function setResourceLabel(){
+	g_form.setValue("target_entity_table", "sn_cmp_rb_resourceblock", getMessage("ResourceBlock"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Resource Block"));
+	g_form.setLabelOf("target_entity_table", getMessage("Resource block table"));
+}
+function setCloudResourceType(){
+	g_form.setValue("target_entity_table", "sn_capi_resource_type", getMessage("Cloud Resource"));
+	g_form.setLabelOf("target_entity_instance_id", getMessage("Cloud Resource"));
+	g_form.setLabelOf("target_entity_table", getMessage("Cloud Resource"));
+}
+function addLookupOnclickEvent(){
+	if(g_form.getControl( 'target_entity_instance_id')!= null && g_form.getControl( 'target_entity_instance_id').parentElement != null){
+		var targetEntityInstanceIdEle = g_form.getControl( 'target_entity_instance_id');
+		var links = targetEntityInstanceIdEle.parentElement.getElementsByTagName('a');
+		if( links){
+			for( var i=0;i<links.length;i++){
+				if( links[i].id != null && links[i].id == 'lookup.sn_cmp_pol_policy.target_entity_instance_id'){
+					attachEvent(links[i]);
+				}
+			}
+		}
+	}
+}
+function attachEvent( link){
+	Event.observe(link, 'click', function(event) {
+		var loadingInterval = setInterval(function() {
+			var documentSelector = g_form.getControl("target_entity_id").ownerDocument.getElementById("document_selector");
+			if(documentSelector) {
+				documentSelector.style.display = "none";
+				var documentModal = g_form.getControl("target_entity_id").ownerDocument.getElementById("document_selector_title");
+				var headerElement = documentModal.parentElement;
+				if( headerElement) {
+					headerElement.style.borderBotton = "0px";
+					if( headerElement.children[0] != null){
+						headerElement.children[0].style.display = "none";
+					}
+				}
+				documentIDPopup(loadingInterval,documentSelector);
+			}
+		}, 100);
+	});
+}
+function documentIDPopup(loadingInterval,documentSelector){
+	var found = false;
+	var retryCount = 0;
+	var labelId = g_form.getValue( "target_entity_id");
+	var documentKey = g_form.getControl("target_entity_id").ownerDocument.getElementById("document_key");
+	if( documentKey != null){
+		var documentKeyDiv = documentKey.parentElement;
+		if( documentKeyDiv != null){
+			if( documentKeyDiv.previousSibling != null){
+				documentKeyDiv.previousSibling.style.display = "none";
+				clearInterval(loadingInterval);
+				documentSelector.style.display = 'block';
+			}
+			var documentKeyLabels = documentKeyDiv.getElementsByTagName("label");
+			if( documentKeyLabels !== undefined && documentKeyLabels.length > 0){
+				documentKeyLabels[0].textContent = fetchLabel(labelId);
+			}
+			found=true;
+		}
+	}
+	retryCount++;
+}
+function fetchLabel( id){
+	var label = getMessage("Blueprint:");
+	switch( id){
+		case BLUEPRINT_PROVISION:
+		break;
+		case RESOURCE_OPERATION:
+		label = getMessage("Resource:");
+		break;
+		case BLUEPRINT_APPROVAL:
+		label = getMessage("Blueprint:");
+		break;
+		case STACK_APPROVAL:
+		label = getMessage("Blueprint:");
+		break;
+		case CATALOG_ITEM_LAUNCH:
+		label = getMessage("Catalog Item:");
+		break;
+		case CLOUD_EVENT:
+		label = getMessage("Cloud Resource:");
+		break;
+		case CATALOG_ITEM_REQUEST_START:
+		label = getMessage("Blueprint:");
+		break;
+		case CATALOG_ITEM_REQUEST_END:
+		label = getMessage("Blueprint:");
+		break;
+		case STACK_RESOURCE_OPERATION_APPROVAL:
+		label = getMessage("Resource:");
+		break;
+		case ON_TASK_CLEANUP:
+		break;
+		default:
+	}
+	return label;
+}
+function attachEntityIdChangeEvent(){
+	var targetEntityInstanceIdEle = g_form.getControl( 'target_entity_instance_id');
+	var inputTags = targetEntityInstanceIdEle.parentElement.getElementsByTagName('input');
+	if( targetEntityInstanceIdEle.getAttribute('hasTriggerEventChange') != null){
+		return;
+	}
+	if( inputTags != null){
+		for( var i=0;i<inputTags.length;i++){
+			if( inputTags[i].id != null && inputTags[i].id == 'sys_display.sn_cmp_pol_policy.target_entity_instance_id'){
+				targetEntityInstanceIdEle.setAttribute('hasTriggerEventChange', true);
+				Event.observe(inputTags[i], 'change', triggerChangeEvent);
+				break;
+			}
+		}
+	}
+}
+function triggerChangeEvent(event) {
+	if( event.target.value == ''){
+		var eventTar = event.target;
+		g_form.setValue('target_entity_instance_id', '');
+		if( eventTar.parentElement != null &&
+		   eventTar.parentElement.parentElement != null &&
+		   eventTar.parentElement.parentElement.parentElement != null &&
+		   eventTar.parentElement.parentElement.parentElement.getElementsByTagName('a') != null){
+			var tag = eventTar.parentElement.parentElement.parentElement.getElementsByTagName('a');
+			if(tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'] != null && tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'].getAttribute('data-sysid') != null){
+				tag['sn_cmp_pol_policy.target_entity_instance_id.ui_policy_sensitive'].setAttribute('data-sysid', '');
+				g_form.clearOptions('operation_name');
+				displayHelpText( 'instance', 'value');
+			}
+		}
+	}
+}		
+
+function displayHelpText( type, label){
+	if( !type)
+		type = 'instance';
+	if( !label)
+		label = 'value';
+	if( g_form.getValue('target_entity_instance_id') == ''){
+ 	   g_form.hideFieldMsg( 'target_entity_instance_id',true);	
+		g_form.showFieldMsg('target_entity_instance_id', getMessage('Policy is executed on every '+ type + ', when ' + label + ' is empty.'), 'info', true);
+	}
+	displayOperationHelpText();
+}
+
+function displayOperationHelpText(){
+	if( g_form.getValue('operation_name').trim() == ""){
+		g_form.hideFieldMsg( 'operation_name',true);	
+		if( g_form.getValue("target_entity_id") != RESOURCE_OPERATION){
+			g_form.showFieldMsg('operation_name', getMessage('Policy is executed on every operation, when operation is empty.'), 'info', true);			
+		}
+	}	
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-06 21:28:57</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>79a33ed75b403200a821273a41f91a6b</sys_id>
+        <sys_mod_count>282</sys_mod_count>
+        <sys_name>Policy_on_load</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_79a33ed75b403200a821273a41f91a6b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-01 13:04:51</sys_updated_on>
+        <table>sn_cmp_pol_policy</table>
+        <type>onLoad</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

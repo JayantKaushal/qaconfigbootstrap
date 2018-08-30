@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope,$location,$rootScope,spUtil) { 
+	var c = this;
+	var table = $location.search().resource_table;
+	spUtil.recordWatch($scope, table,"",function(name,data){
+		spUtil.update($scope);
+	});
+	
+	$scope.isShowPass = false;
+	$scope.showPassword = function(password) {
+		$scope.isShowPass = true;
+	}
+	
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.card-default {&#13;
+  padding-left: 5px;&#13;
+  padding-top: 5px;&#13;
+  padding-bottom: 5px;&#13;
+  padding-right: 5px;&#13;
+  margin: 0px 25px 12px 25px;&#13;
+  border-width: 1px 1px 1px 5px;&#13;
+  border-style: solid;&#13;
+  border-left-color: #428bca;&#13;
+}&#13;
+&#13;
+.card-default:hover {&#13;
+  background-color: #ffffff;&#13;
+}&#13;
+&#13;
+.card-default .title {&#13;
+  font-size: 16px;&#13;
+  color: #000000;&#13;
+}&#13;
+&#13;
+.card-default .task {&#13;
+  padding-top: 0px;&#13;
+  font-size: 13px;&#13;
+  color: #828890;&#13;
+}&#13;
+&#13;
+.card-default .additional-info {&#13;
+  padding-top: 0px;&#13;
+  font-size: 12px;&#13;
+}&#13;
+&#13;
+.card-default .additional-info .right{&#13;
+  float: right;&#13;
+}&#13;
+&#13;
+.card-default .additional-info .circle {&#13;
+  font-size: 5px;&#13;
+  vertical-align: middle;&#13;
+}&#13;
+&#13;
+.card-not-selected {&#13;
+  border-color: #bdc0c4;&#13;
+  border-left-color: #FCC742;&#13;
+}&#13;
+&#13;
+.card-selected {&#13;
+  border-color: #428bca;&#13;
+  border-top-width : 2px;&#13;
+  border-bottom-width : 2px;&#13;
+  border-right-width : 2px;&#13;
+}&#13;
+&#13;
+.card-failed{&#13;
+  border-left-color: #F00;&#13;
+}&#13;
+&#13;
+.card-complete{&#13;
+  border-left-color: #008000;&#13;
+}&#13;
+&#13;
+.card-progress{&#13;
+  border-left-color: #FFA500;&#13;
+}&#13;
+&#13;
+.selectable-card {&#13;
+  background-color: #ffffff;&#13;
+  cursor: pointer;&#13;
+}&#13;
+&#13;
+.non-selectable-card {&#13;
+  background-color: #ffffff;&#13;
+  cursor: default;&#13;
+}&#13;
+&#13;
+.panel-heading {&#13;
+  height: 52px;&#13;
+}&#13;
+&#13;
+.panel-body {&#13;
+  padding: 0px;&#13;
+  min-height: 395px;&#13;
+  max-height: 395px;&#13;
+  overflow-y: auto;&#13;
+}&#13;
+&#13;
+.list-group-item:hover {&#13;
+  cursor: pointer;  &#13;
+}&#13;
+&#13;
+.list-group-item { &#13;
+  border: none;&#13;
+}&#13;
+&#13;
+.properties {&#13;
+  width: 100%;&#13;
+   margin-top: 25px;&#13;
+  margin-left: 20px;&#13;
+  line-height: 1.8;&#13;
+}&#13;
+&#13;
+.property-key {&#13;
+  width: 30%;&#13;
+  text-align: right;&#13;
+  white-space: nowrap;&#13;
+}&#13;
+&#13;
+.text-blue {&#13;
+  color: #1570bd !important;&#13;
+}&#13;
+&#13;
+.property-value {&#13;
+  color: black;&#13;
+  width: 75%;&#13;
+  text-align: left;&#13;
+  padding-left: 20px;&#13;
+  white-space: nowrap;&#13;
+}&#13;
+&#13;
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-resource-properties</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 312) + 'px';
+		$(elem).find('.panel-body').css('height',panel_height);
+		$(elem).find('.panel-body').css('max-height',panel_height);
+	}
+	
+}]]></link>
+        <name>Cloud Resource Properties</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	var table = $sp.getParameter('resource_table');
+
+	var properties = new sn_cmp_api.CloudModelProcessorScript();
+	data.attributes = global.JSON.parse(properties.getCIAttributes(table,$sp.getParameter('sys_id')));
+	data.attributes.sort(function(a, b) {
+		var textA = a.key.toUpperCase();
+		var textB = b.key.toUpperCase();
+		return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+	});
+	//	data.att_length = Object.keys(data.obj).length;
+	data.tags = [];
+
+	var tagsGr = new GlideRecordSecure('sn_cmp_rsrc_tag_history');
+	tagsGr.addQuery('current', true);
+	tagsGr.addQuery('cmdb_ci', $sp.getParameter('sys_id'));
+	tagsGr.query();
+	if (tagsGr.next()) {
+		var tagDefGr = new GlideRecordSecure('sn_cmp_tag_name');
+		tagDefGr.addQuery('visible', true);
+		var qc = tagDefGr.addQuery('tag_type', 'ServiceNow');
+		qc.addOrCondition('tag_type', 'Custom');
+		tagDefGr.orderBy('label');
+		tagDefGr.query();
+		while (tagDefGr.next()) {
+			if (!gs.nil(tagsGr.tag_values[tagDefGr.name])) {
+				var kvPair = {
+					'key': tagDefGr.getValue('label'),
+					'value': tagsGr.tag_values[tagDefGr.name].getDisplayValue()
+				};
+				data.tags.push(kvPair);
+			}
+		}	
+	}
+
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-28 07:51:18</sys_created_on>
+        <sys_id>3872a9900b4c3200eff7ef9bb4673a2f</sys_id>
+        <sys_mod_count>250</sys_mod_count>
+        <sys_name>Cloud Resource Properties</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_3872a9900b4c3200eff7ef9bb4673a2f</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-17 19:04:59</sys_updated_on>
+        <template><![CDATA[<div class="panel b" >
+  <div class="panel-heading">
+    <h2 class="panel-title" style="padding-top:8px;">${Properties}</h2>
+  </div>
+  <div class="panel-body">
+    <div ng-show="data.attributes.length">
+      <table class="properties">  
+        <tr ng-repeat="attribute in data.attributes">
+          <td class="property-key" >{{attribute.key}}</td>
+          <td >
+            <span ng-if="attribute.key == 'Password' && !isShowPass" class="property-value text-blue" ng-click="showPassword(attribute.value)" >${Show Password}</span>
+            <span class="property-value" ng-if="attribute.key != 'Password' || isShowPass" class="property-value">{{attribute.value}}</span>
+          </td>
+        </tr>
+         
+      </table>
+    </div>
+    <div style="margin-top : 25px;" ng-show="data.tags.length">
+      <div ng-class="{'card-default' : 2,'selectable-card' : false, 'non-selectable-card': true}">
+        <div class="title">
+          ${Tags}
+        </div>
+        <div ng-repeat="tag in data.tags" class="task">
+          <span>{{tag.key}}
+          </span><span style="color:black">&nbsp;{{tag.value}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

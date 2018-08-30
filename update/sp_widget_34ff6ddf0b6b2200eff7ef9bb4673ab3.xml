@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($scope, $location, spUtil, cloudEventScope) {
+
+	var c = this;
+	
+	updateBreadcrumb($location.search());
+
+	function updateBreadcrumb(queryParams, currentLabel) {
+		var breadcrumbList = [{ label: "${Cloud Resources}", url: '?id=cloud_resources&category=cloud_resources' }];
+		if (queryParams.table || c.data.table)
+			breadcrumbList.push({ label: currentLabel || c.data.tableLabel, url: '#' });
+		
+		cloudEventScope.broadcast('sp.update.breadcrumbs', breadcrumbList);
+	}
+
+	cloudEventScope.registerListener('cloudResourcesEvent', function(e, item) {
+		$location.search('table', item.id).search('spa', '1').replace();
+		c.data.table = item.id;
+		c.data.dataTableWidget = null;
+		
+		updateBreadcrumb($location.search(), item.label);
+		c.server.update();
+	}, $scope);
+	
+
+	$scope.$on('view_changed', function(e,info) {
+		c.data.dataTableWidget = null;
+		c.server.update();
+	});
+
+	$scope.$on('data_table.click', function(e, parms){
+		var p = $scope.data.page_id || 'cloud_resource_details';
+		var s = {id: p,category:"cloud_resources",sys_id: parms.sys_id,resource_table: $scope.data.table};
+		$location.search(s).search('spa', '1').search('active_tab','changeRequests').replace();
+	});
+	
+	cloudEventScope.broadcast('cmp.right_content_widget_loaded');
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.table-container {&#13;
+	border: 1px solid #dee5e7;&#13;
+  	border-radius: 4px;&#13;
+  	box-shadow: 0 1px 1px rgba(0, 0, 0, .05);"&#13;
+}&#13;
+&#13;
+#datatable-container .panel-heading {	&#13;
+	height: 52px;	&#13;
+	padding-top: 15px;	&#13;
+}</css>
+        <data_table>sp_instance_table</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list>title,table,filter,maximum_entries,order_direction,glyph,field_list,color,order_by,sp_page</field_list>
+        <has_preview>false</has_preview>
+        <id>cloud-resource-datatable-instance</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Resource Datatable Instance</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {	
+	if(!input)
+		return;
+	
+	var table = $sp.getParameter('table') || input.table;
+
+	var userPortalHelper = new CMPUserPortalHelper();
+	var view = $sp.getParameter('view') || CMPUserPortalHelper.USER_PORTAL_VIEW_NAME;
+	
+	var tableGr = new GlideRecord(table);
+	if (!tableGr.isValid()) 
+		return;
+	
+	var tableOptions = {};
+	tableOptions.table_label = tableGr.getLabel();
+	data.dataTableWidget = userPortalHelper.getTableWidget(table, view, tableOptions);
+	data.tableLabel = tableOptions.table_label;
+	
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-12 20:00:40</sys_created_on>
+        <sys_id>34ff6ddf0b6b2200eff7ef9bb4673ab3</sys_id>
+        <sys_mod_count>175</sys_mod_count>
+        <sys_name>Cloud Resource Datatable Instance</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_34ff6ddf0b6b2200eff7ef9bb4673ab3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-23 20:44:59</sys_updated_on>
+        <template><![CDATA[<div>
+<div ng-if="data.dataTableWidget" id="datatable-container">
+  <sp-widget widget="data.dataTableWidget"></sp-widget>
+</div>  
+</div>]]></template>
+    </sp_widget>
+</record_update>

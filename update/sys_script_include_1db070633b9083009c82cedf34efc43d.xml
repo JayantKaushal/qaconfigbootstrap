@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetDatacenterCredentialsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetDatacenterCredentialsAction</name>
+        <script><![CDATA[var CMPGetDatacenterCredentialsAction = Class.create();
+CMPGetDatacenterCredentialsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			
+			if (gs.nil(params.providerType)) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetDatacenterCredentialsAction.doAction: Undefined provider type",
+					null
+				);
+			}
+			var providerType = params.providerType;
+			var  discoveryCredentialList = [];
+			var provCredMappingGr = new GlideRecord('sn_cmp_prov_cred_mapping');
+			provCredMappingGr.addQuery('provider', providerType);
+			provCredMappingGr.query();
+			if(provCredMappingGr.next()){
+				var credentialClassName = provCredMappingGr.getValue('credential');
+				var  dcRecord = new GlideRecord("discovery_credentials");
+				dcRecord.addQuery("sys_class_name", credentialClassName);
+				dcRecord.orderBy('name');
+				dcRecord.query();
+				while (dcRecord.next()) {
+					discoveryCredentialList.push(this.getDatacenterCredentialsBySysId(dcRecord, credentialClassName));
+				}
+			}
+			return discoveryCredentialList; 
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to get datacenter credentials"),
+			"CMPGetDatacenterCredentialsAction.doAction(): Failed to datacenter credentials",
+			error
+			);
+		}
+    },
+
+
+	  getDatacenterCredentialsBySysId : function(dcRecordObj, tableName) {
+		  
+		var cloudAccountServiceScript = new sn_cmp_api.CloudAccountServiceScript();
+		var credentialSysId = dcRecordObj.getUniqueValue();
+		var dcDTO = {};
+		dcDTO['id'] = credentialSysId;
+		dcDTO['name'] = dcRecordObj.getValue("name");
+		dcDTO['type'] = dcRecordObj.getValue("type");
+		dcDTO['user_name'] = dcRecordObj.getValue("user_name");
+		dcDTO['password'] = (!gs.nil(dcRecordObj.getValue("password"))) ?  cloudAccountServiceScript.getDecryptedString(dcRecordObj.getValue("password")) : '';
+		dcDTO['active'] = (dcRecordObj.getValue("active") == '1') ? true : false;
+		dcDTO['applies_to'] = dcRecordObj.getValue("applies_to");
+		dcDTO['mid_list'] = dcRecordObj.getValue("mid_list");
+		dcDTO['order'] = dcRecordObj.getValue("order");
+		dcDTO['authentication_key'] = dcRecordObj.getValue("authentication_key");
+		dcDTO['privacy_key'] = dcRecordObj.getValue("privacy_key");
+		
+		var credentialRecord = new GlideRecord(tableName);
+		credentialRecord.addQuery("sys_id", credentialSysId);
+		credentialRecord.query();
+		while (credentialRecord.next()) {
+			if(tableName == 'aws_credentials') {
+				dcDTO['access_key'] = credentialRecord.getValue("access_key");
+				dcDTO['secret_key'] = (!gs.nil(credentialRecord.getValue("secret_key"))) ?  cloudAccountServiceScript.getDecryptedString(credentialRecord.getValue("secret_key")): '';
+			}
+			if(tableName == 'azure_service_principal') {
+				dcDTO['client_id'] = credentialRecord.getValue("client_id");
+				dcDTO['tenant_id'] = credentialRecord.getValue("tenant_id");
+				dcDTO['auth_method'] = credentialRecord.getValue("auth_method");
+				dcDTO['secret_key'] = (!gs.nil(credentialRecord.getValue("secret_key"))) ?  cloudAccountServiceScript.getDecryptedString(credentialRecord.getValue("secret_key")): '';
+			}
+			if(tableName == 'openstack_credentials') {
+				dcDTO['project_name'] = credentialRecord.getValue("project_name");
+			}
+		}
+		return dcDTO;
+	},
+
+    type: 'CMPGetDatacenterCredentialsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-06 13:49:05</sys_created_on>
+        <sys_id>1db070633b9083009c82cedf34efc43d</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>CMPGetDatacenterCredentialsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1db070633b9083009c82cedf34efc43d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-20 08:10:31</sys_updated_on>
+    </sys_script_include>
+</record_update>

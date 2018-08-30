@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sc_cat_item" label="Blueprint Catalog Item" max_length="40" name="sn_cmp_bp_cat_item" type="collection">
+        <element label="Blue print" mandatory="true" max_length="32" name="blue_print" read_only="true" reference="sn_cmp_bp_blueprint" reference_cascade_rule="delete" type="reference"/>
+        <element choice="1" label="Catalog Type" max_length="40" name="catalog_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Provision" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="LifeCycle" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="blue_print"/>
+        </index>
+    </element>
+</database>

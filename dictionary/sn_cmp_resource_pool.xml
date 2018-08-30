@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource Pool" max_length="40" name="sn_cmp_resource_pool" type="collection">
+        <element label="System Defined" max_length="40" name="is_system_defined" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Lookup label field(s)" max_length="80" name="lookup_label" type="string"/>
+        <element attributes="allow_public=true,base_start=true" label="Lookup Table" mandatory="true" max_length="80" name="lookup_table" type="table_name"/>
+        <element dependent="lookup_table" label="Lookup Field" mandatory="true" max_length="80" name="lookup_value" type="field_name"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Pool Name" mandatory="true" max_length="40" name="name" type="string"/>
+        <element choice="1" default="static" label="Type" mandatory="true" max_length="40" name="type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Static" sequence="1" value="static"/>
+                <element inactive_on_update="false" label="Diminishing" sequence="2" value="diminishing"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="name"/>
+        </index>
+    </element>
+</database>

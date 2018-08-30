@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_instance">
+    <sp_instance action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <class_name/>
+        <color>default</color>
+        <css>h2 {&#13;
+  color: #fff;&#13;
+  text-align: center;&#13;
+  font-size: 45px;&#13;
+  font-weight: 300;&#13;
+  padding: 20px;&#13;
+}&#13;
+&#13;
+.home-content {&#13;
+	padding-top: 0px !important;&#13;
+}</css>
+        <glyph/>
+        <id/>
+        <order>1</order>
+        <roles/>
+        <short_description/>
+        <size>md</size>
+        <sp_column display_value="1">8c9b19220b532200eff7ef9bb4673a8f</sp_column>
+        <sp_widget display_value="HTML">8679ef89cb21120000f8d856634c9c4f</sp_widget>
+        <sys_class_name>sp_instance</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 00:20:41</sys_created_on>
+        <sys_id>2b9b19220b532200eff7ef9bb4673adc</sys_id>
+        <sys_mod_count>9</sys_mod_count>
+        <sys_name>TRT: Welcome to Cloud Portal</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_instance_2b9b19220b532200eff7ef9bb4673adc</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-06 04:54:20</sys_updated_on>
+        <title>Welcome to Cloud Portal</title>
+        <url/>
+        <widget_parameters><![CDATA[{
+	"html": {
+		"value": "<h2>${Welcome to the Cloud User Portal}</h2>",
+		"displayValue": "<h2>${Welcome to the Cloud User Portal}</h2>"
+	}
+}]]></widget_parameters>
+    </sp_instance>
+    <sys_translated_text action="delete_multiple" query="documentkey=2b9b19220b532200eff7ef9bb4673adc"/>
+</record_update>

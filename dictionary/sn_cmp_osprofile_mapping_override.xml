@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="OS Profile Mapping Overrides" max_length="40" name="sn_cmp_osprofile_mapping_override" type="collection">
+        <element label="Mapping" max_length="32" name="os_profile_mapping" reference="sn_cmp_bp_osprofile_mapping" reference_cascade_rule="cascade" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="1000" name="parameter_name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="4000" name="parameter_value" type="string"/>
+        <index name="index">
+            <element name="os_profile_mapping"/>
+        </index>
+        <index name="index2">
+            <element name="parameter_name"/>
+        </index>
+    </element>
+</database>

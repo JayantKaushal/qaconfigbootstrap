@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateResourceBlockStatusAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateResourceBlockStatusAction</name>
+        <script><![CDATA[var CMPUpdateResourceBlockStatusAction = Class.create();
+CMPUpdateResourceBlockStatusAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+	
+	doAction: function(params) {
+		try {
+			if (!params.rb_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPUpdateResourceBlockStatusAction.doAction: Undefined resource block id",
+					null
+				);
+			}
+			
+			var gr = new GlideRecord('sn_cmp_rb_resourceblock');
+			if(params.rb_id || params.rb_id != "")
+				gr.addQuery("sys_id", params.rb_id);
+			if(params.rb_name || params.rb_name != "")
+				gr.addQuery("name","CONTAINS", params.rb_name);
+			
+			gr.query();
+			if(gr.next()) {
+				gr.setValue('status', params.rb_status);
+			}
+			gr.update();
+			return {status : ((params.rb_status == '1') ? 'Published' : 'Draft')};
+			
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update the resource block status"),
+				"CMPUpdateResourceBlockStatusAction.doAction: Failed to update resource block status",
+				error
+			);
+		}
+	},
+
+    type: 'CMPUpdateResourceBlockStatusAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-20 07:00:29</sys_created_on>
+        <sys_id>1dfa5f6d3b813200a856cedf34efc4bd</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPUpdateResourceBlockStatusAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1dfa5f6d3b813200a856cedf34efc4bd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-20 11:03:27</sys_updated_on>
+    </sys_script_include>
+</record_update>

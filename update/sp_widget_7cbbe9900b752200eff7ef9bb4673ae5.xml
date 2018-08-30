@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($location, $rootScope, $timeout,$scope, spUtil) {
+	var c = this;
+	c.filterText = "";
+	c.showFilter = false;
+	
+	var failedStages = ['quota_check_failed', 'deployment_failed', 'Deployment Cancelled', 'Request Cancelled', 'Task Created for User'];
+	var inProgressStages = ['waiting_for_approval', 'request_approved', 'fulfillment', 'delivery', 'deploying stack', 'Apply cloud service policy', 'Task Created for Operator'];
+	var completedStages = ['Deployment Successful'];
+	
+	var searchObj = $location.search();
+	if (searchObj.filterText)
+		this.filterText = searchObj.filterText;
+	
+	c.isItemSelected = function(sys_id) {
+		return c.data.request_sys_id == sys_id;
+	};
+	
+	c.getItemClass = function(item) {
+		var classNames = [];
+		
+		if(c.isItemSelected(item.sys_id))
+			classNames.push('state-selected');
+		
+		if(failedStages.indexOf(item.stage) >= 0)
+			classNames.push('card-failed');
+		
+		else if(inProgressStages.indexOf(item.stage) >= 0)
+			classNames.push('card-progress');
+		
+		else if(completedStages.indexOf(item.stage) >= 0)
+			classNames.push('card-complete');
+		
+		return classNames.join(' ');
+	};
+
+	c.onClick = function($event, data) {
+		var obj = {
+			sys_id: data.sys_id,
+			number: data.request_id,
+			cat_name: data.display_field
+		};
+		$rootScope.$broadcast("cloudRequestClickEvent", obj);
+		c.data.request_sys_id = data.sys_id;
+	};
+	
+	c.filterKeyPress = function handleFilterKey($event) {
+		if ($event.keyCode != 13)
+			return;
+		
+		$event.stopPropagation();
+		$event.preventDefault();
+		if (searchObj.sys_id)
+			searchObj.sys_id = null;
+		if (!this.filterText)
+			searchObj.filterText = null;
+		else if (this.filterText != searchObj.filterText)
+			searchObj.filterText = this.filterText;
+		$location.search(searchObj).replace();	
+	};
+	
+	spUtil.recordWatch($scope, "sc_req_item","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	spUtil.recordWatch($scope, "sc_request","",function(name,data){
+		spUtil.update($scope);
+	});
+
+	$scope.setPageNum = function(num) {
+		c.data.p = num;
+		c.data.request_sys_id = '';
+		c.server.update().then(function() {
+			var obj = {
+				sys_id: c.data.request_sys_id,
+				number: c.data.request_id,
+				cat_name: c.data.display_field
+			};
+			$rootScope.$broadcast("cloudRequestClickEvent",obj);
+		});
+	};
+
+	$scope.mathMin = function(v1,v2) {
+		return Math.min(v1,v2);
+	};
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.search-request-field {	&#13;
+  color: #595959;&#13;
+  width: 100%;&#13;
+  height: 26px;&#13;
+  border-radius: 20px;&#13;
+  border: 1px solid #ddd;&#13;
+  padding-left: 10px;&#13;
+  padding-right: 10px;&#13;
+  background-image: url("/styles/thirdparty/select2/select2x2.png") !important;&#13;
+  background-repeat: no-repeat;&#13;
+  background-size: 70px 38px;&#13;
+  background-position: 100% -20px; &#13;
+}&#13;
+&#13;
+.panel-heading{ &#13;
+  border-top-right-radius: 0px;&#13;
+  border-top-left-radius: 0px;&#13;
+}&#13;
+&#13;
+.panel-body {&#13;
+  padding: 10px;&#13;
+  overflow: auto;&#13;
+  min-height: 219px;&#13;
+}&#13;
+&#13;
+.search-request-field:focus {&#13;
+  border : 1px solid #278efc;&#13;
+}&#13;
+&#13;
+.panel .panel-heading {&#13;
+  background-color: #ffffff;&#13;
+  border-bottom: 0px;&#13;
+  padding-bottom: 7px;&#13;
+  padding-top: 7px;&#13;
+  border-top-width: 0px;&#13;
+  padding-left: 5px;&#13;
+  padding-right: 5px;&#13;
+}&#13;
+&#13;
+.requested-filter-container {&#13;
+  background-color: #e7e9eb;&#13;
+  border-width: 0px 0 1px 0;&#13;
+  border-color: #bdc0c4;&#13;
+  border-style: solid;&#13;
+}&#13;
+&#13;
+.filter-cards {&#13;
+  display: flex;&#13;
+  flex-direction: column;&#13;
+  height: calc(100vh - 135px);&#13;
+}&#13;
+&#13;
+.card-complete .sn-card-component_accent-bar {&#13;
+	background-color: #6CE474; /* green */&#13;
+}&#13;
+&#13;
+.card-failed .sn-card-component_accent-bar {&#13;
+	background-color: #FC4E4B; /* red */&#13;
+}&#13;
+&#13;
+.card-progress .sn-card-component_accent-bar {&#13;
+	background-color: #278EFC; /* blue */&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-requests</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,el, attrs, ctrl) {
+	$(document).ready(function(){
+		resize_window();
+
+		$('.btn-group > button').click(function () {
+			$(".panel-body").animate({
+				scrollTop: 0
+			},300);
+			return false;
+		});
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var page_offset = {
+			'cloud_activities' : 327,
+			'cap_activities': 220
+		};
+
+		var panel_height = ($(document).height() - page_offset[ctrl.data.page_id]) + 'px';
+		$(el).find('.panel-body').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Requests</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {	
+	data.filterText = $sp.getParameter("filterText");
+	data.sys_id = $sp.getParameter("sys_id");
+	data.p = 1;
+	data.page_id = $sp.getParameter('id');
+
+	if(input && input.p)
+		data.p = input.p;
+
+	data.p = parseInt(data.p);
+	data.window_size = 10;
+	data.page_index = data.p - 1;
+	data.window_start = parseInt(data.page_index * data.window_size);
+	data.window_end = parseInt((data.page_index + 1) * data.window_size);
+	data.list = [];
+	var rownumber = 0;
+	
+	if(!gs.nil(options.is_admin))
+		data.is_admin = options.is_admin;
+	else if(input && input.is_admin)
+		data.is_admin = input.is_admin;
+	else if(!gs.nil(options.is_group_admin))
+		data.is_group_admin = options.is_group_admin;
+	else if(input && input.is_group_admin)
+		data.is_group_admin = input.is_group_admin;
+
+	data.gv = gs.getUser().getPreference('cloud_user_portal_view') || 'mine';
+
+	data.group_ids = [];
+	if(data.is_group_admin|| data.is_admin){
+		var grm_rec = new GlideRecord('sys_user_grmember');  
+		grm_rec.addQuery('user',gs.getUserID());  
+		grm_rec.query();  
+		while(grm_rec.next()){  
+			data.group_ids.push(grm_rec.group.sys_id);  
+		}  
+	}
+
+	var gr = new GlideRecord('sc_req_item');
+	options.title = options.title || gr.getLabel();
+	data.display_field = 'sys_created_on';
+	data.secondary_fields = ['number','sys_created_on'];
+
+	gr.addQuery('cat_item.sc_catalogs','CONTAINS','b029d6da0b212200eff7ef9bb4673a42');
+	gr.addQuery('cat_item.workflow','CONTAINS','2cbfd46eeb352200979aa5115206fe99');
+
+	if(data.page_id == 'cloud_activities'){
+		setRequestsFilter();
+	}
+	gr.chooseWindow(data.window_start, data.window_end);
+	
+	if(data.sys_id)
+		gr.addQuery("sys_id", data.sys_id);
+	else if (data.filterText)
+		gr.addQuery('number', 'CONTAINS', data.filterText);
+	gr.orderByDesc('sys_created_on');
+	gr.query();
+	data.count = gr.getRowCount();
+	data.num_pages = Math.ceil(data.count / data.window_size);
+
+	while (gr.next()) {
+		if(!(gs.nil(gr.getDisplayValue('cat_item'))) && gr.canRead()) {
+			var record = {};
+			record.sys_id = gr.getValue('sys_id');
+			record.request_id = gr.getDisplayValue("request");
+			record.display_field = gr.cat_item.getDisplayValue() || gr.getDisplayValue("short_description");
+			record.secondary_fields = [];
+			data.secondary_fields.forEach(function(f) {
+				record.secondary_fields.push(getField(gr,gr, f));
+			});
+			record.selected = false;
+			record.stack_name = gr.getDisplayValue('variables.StackName')
+			var stage = gr.stage+"";
+			record.stage = stage.trim();
+			record.url = {id: 'cloud_activities', category:'cloud_activities', sub_category: 'request', sys_id: record.sys_id, selected_card : record.sys_id};
+			
+			// for card layout
+			record.title = record.display_field;
+			record.headline = record.stack_name;
+			record.summary = gs.getMessage('Request ID') + ': ' + record.request_id;
+			record.summary2 = gs.getMessage('Request Item ID') + ': ' + record.secondary_fields[0].display_value;
+			record.meta = gs.getMessage('Created') + ' ' + record.secondary_fields[1].value;
+			record.showTimeAgo = true;
+			record.showAccentBar = true;
+			
+			data.list.push(record);
+		}		
+	}
+
+	if(!input || !input.request_sys_id){
+		data.request_sys_id = data.list[0].sys_id;
+		data.request_id = data.list[0].request_id;
+		data.display_field = data.list[0].display_field;
+	}
+	else if(input && input.request_sys_id){
+		data.request_sys_id = input.request_sys_id;
+		data.request_id = input.request_id;
+		data.display_field = input.display_field;
+	}
+
+	function getField(gr,ritm,name) {
+		var f = {};
+		f.display_value = ritm.getDisplayValue("number");
+		f.value = gr.getValue(name);
+		var ge = gr.getElement(name);
+		f.type = ge.getED().getInternalType();
+		f.label = ge.getLabel();
+		return f;
+	}
+	
+	function setRequestsFilter(){
+		if((!data.is_group_admin && !data.is_admin) || ((data.is_admin || data.is_group_admin) && data.gv == 'mine')){
+			gr.addEncodedQuery("request.requested_for="+ gs.getUserID()+"^ORrequest.opened_by"+ gs.getUserID());
+		}
+		else if((data.is_admin || data.is_group_admin) && data.gv == 'group'){
+			gr.addEncodedQuery("request.requested_for="+ gs.getUserID()+"^ORrequest.opened_by"+ gs.getUserID()+"^ORconfiguration_item.ref_sn_cmp_stack.owner_groupIN"+data.group_ids.join(','));
+		}
+	}
+})()
+]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-09-07 12:10:27</sys_created_on>
+        <sys_id>7cbbe9900b752200eff7ef9bb4673ae5</sys_id>
+        <sys_mod_count>637</sys_mod_count>
+        <sys_name>Cloud Requests</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_7cbbe9900b752200eff7ef9bb4673ae5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 12:20:08</sys_updated_on>
+        <template><![CDATA[<div class="panel b">
+  <div class="requested-filter-container">
+    <div class="panel-heading" >
+      <div style="padding-top:5px;">
+        <label for="req-items-search" class="sr-only">${Filter Request Items}</label>
+        <input id="req-items-search" ng-model="c.filterText" sn-focus="c.showFilter" class="search-request-field" 
+               placeholder="${Filter Request Items}" ng-keypress="c.filterKeyPress($event)">
+      </div>
+    </div>
+  </div>
+  <div class="panel-body" ng-style="{height: body_height}">
+    <cloud-card data="item" card-class="c.getItemClass(item)" card-click="c.onClick($event, item)"
+                ng-repeat="item in c.data.list | filter:c.filterText" />
+  </div>
+  <div class="panel-footer" style="padding-bottom:8px">
+    <div class="btn-toolbar m-r pull-left">
+      <div class="btn-group">
+        <button ng-disabled="data.p == 1" ng-click="setPageNum(data.p - 1)" class="btn btn-default btn-sm" aria-label="${Previous page}"><i class="fa fa-chevron-left"></i></button>
+      </div>
+      <div class="btn-group">
+        <button ng-disabled="data.p == data.num_pages" ng-click="setPageNum(data.p + 1)" class="btn btn-default btn-sm" aria-label="${Next page}"><i class="fa fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="m-t-xs panel-title">${{{data.window_start + 1}} - {{ mathMin(data.window_end,data.count) }} of {{data.count}}}</div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

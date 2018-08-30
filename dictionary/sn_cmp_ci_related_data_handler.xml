@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="CI Related Data Handler" max_length="40" name="sn_cmp_ci_related_data_handler" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="512" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="100" name="name" type="string" unique="true"/>
+        <element label="Script" max_length="8000" name="script" type="script_plain"/>
+        <element label="Script to run" max_length="8000" name="script_to_run" type="script_plain"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+    </element>
+</database>

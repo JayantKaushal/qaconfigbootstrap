@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_step_translator">
+    <sn_cmp_rb_step_translator action="INSERT_OR_UPDATE">
+        <order>1</order>
+        <script display_value="List_Nodes_Response_Processor">4e79b35e0be622009e620bcb15673a5d</script>
+        <step display_value="Compute Interface.ListNodes">dca9f5720b9803003ffe0bcb15673a18</step>
+        <sys_class_name>sn_cmp_rb_step_translator</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-04 10:47:10</sys_created_on>
+        <sys_id>44ee39f20b9803003ffe0bcb15673a81</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_step_translator_44ee39f20b9803003ffe0bcb15673a81</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-08 16:09:28</sys_updated_on>
+    </sn_cmp_rb_step_translator>
+</record_update>

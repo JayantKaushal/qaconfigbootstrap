@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Response Value Mapping" max_length="40" name="sn_cmp_response_value_mapping" type="collection">
+        <element display="true" label="Key" mandatory="true" max_length="32" name="key" reference="sn_cmp_response_value_map_key" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Source value" mandatory="true" max_length="100" name="source_value" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Translated value" mandatory="true" max_length="100" name="translated_value" type="string"/>
+        <index name="index">
+            <element name="key"/>
+        </index>
+    </element>
+</database>

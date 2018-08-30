@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Resource Profile" max_length="40" name="sn_cmp_resource_profile" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Profile Mapping Table Name" max_length="40" name="profile_mapping_table_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Profile Name" max_length="40" name="profile_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Profile Table Name" max_length="40" name="profile_table_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Template Name" max_length="40" name="template_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Template Table Name" max_length="40" name="template_table_name" type="string"/>
+    </element>
+</database>

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGraphDTOTranslator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGraphDTOTranslator</name>
+        <script><![CDATA[var CMPGraphDTOTranslator = Class.create();
+CMPGraphDTOTranslator.prototype = {
+	currentVersion:null,
+	model:null,
+	
+	initialize: function() {
+		
+	},
+	
+	/**
+ 	* Returns the graph representation of the Service Model
+ 	*
+ 	* @param: versionObj SDSvcModelVersion instance
+ 	*/
+	getGraphDTO: function(versionObj) {
+		this.currentVersion = versionObj;
+		var chkPt = versionObj.getCheckpoint();
+		this.model = versionObj.getModel();
+		try {
+			if(gs.nil(chkPt))
+				throw 'No checkpoint to load graph';
+			
+			var layerInstance = versionObj.getLayer();
+			var graphDTO = {};
+				graphDTO = this._createGraphDTO(versionObj, chkPt, false);
+				graphDTO.version = chkPt.getVersion();
+				graphDTO.isCheckedOut = versionObj.isCheckedout();
+				graphDTO.isReadOnly = this._isReadOnly(graphDTO.isCheckedOut, chkPt.getCreatedBy());
+				
+				graphDTO.checkpointId = versionObj.getCheckpointId();
+				graphDTO.isCheckedOut = versionObj.isCheckedout();
+				
+				return graphDTO;
+			}
+			catch(error) {
+				var displayMessage = gs.getMessage('Failed to load graph data');
+				var internalMessage = 'Error in CMPGraphDTOTranslator.getGraphDTO()';
+				var errObj = sn_smd.SMErrorHelper.createScriptAPIError(displayMessage, internalMessage, error);
+				errObj.setErrorLevel(sn_smd.SMErrorLevel.FATAL);
+				throw errObj;
+			}
+		},
+		
+		_createGraphDTO: function(versionObj, activeChkPt) {
+			var bp = {};
+				bp.createdBy = activeChkPt.getCreatedBy();
+				bp.creationTime = '' + activeChkPt.getCreationTime().getDisplayValue();
+				var layoutType = versionObj.getModel().getParameterBag().get(sn_smd.SMConstants.LAYOUT_TYPE);
+				bp.layoutType = layoutType ? layoutType.getValue(): sn_smd.SMConstants.HIERARCHY_LAYOUT;
+				if (activeChkPt) {
+					var elems  = versionObj.getElements();
+					var rlns = versionObj.getRelationships();
+					
+					var nodes = [];
+					var edges = [];
+					var nodeRelMap={};
+						
+						for (var j = 0; j < rlns.length; j++) {
+							var edgeDTO=this._getEdgeDTO(rlns[j]);
+							if(nodeRelMap[edgeDTO.sourceId]){
+								nodeRelMap[edgeDTO.sourceId].push(edgeDTO);
+							}
+							else{
+								nodeRelMap[edgeDTO.sourceId]=[];
+								nodeRelMap[edgeDTO.sourceId].push(edgeDTO);
+							}
+							edges.push(edgeDTO);
+						}
+						
+						for (var i = 0; i < elems.length; i++) {
+							var nodeDTO=this._getNodeDTO(elems[i]);
+							var rels=nodeRelMap[nodeDTO.id];
+							if(rels)
+								nodeDTO.relationships=rels;
+							nodes.push(nodeDTO);
+						}
+						
+						
+						
+						bp.nodes = nodes;
+						bp.edges = edges;
+					}
+					return bp;
+				},
+				
+				_isReadOnly: function(isCheckedout, createdBy) {
+					if (!isCheckedout)
+						return true;
+					
+					return !(gs.getUserName() === 'admin' || gs.getUser().hasRole('sn_cmp.cmp_root_admin') || createdBy === gs.getUserName());
+				},
+				
+				/*
+ 				* @param element - an element object from service model api
+ 				* @param nodeNestingMap - a map with key as source id and values as an array of nested targets
+ 				*/
+				_getNodeDTO: function(element) {
+					var resourceBlockServiceScript=new sn_cmp_api.ResourceBlockServiceScript();
+					var elemId = element.getId();
+					var isTLR  = false;//TODO???
+					var nodeDTO = {};
+						var relationships=[];
+						var allowedHosts=[];
+						var hosts = [];
+					    var bindings=[];
+
+						nodeDTO.id = element.getId();
+						nodeDTO.type = element.getCiType();
+						var ciType = CMPUtil.getCITypeInfo(element.getCiType());
+						nodeDTO.ciTypeName = ciType.label;
+						nodeDTO.name = element.getName() || nodeDTO.ciTypeName;
+						nodeDTO.icon = CMPUtil.getIconPath(ciType.sys_id);
+						nodeDTO.groupType = "inclusion";
+						nodeDTO.relationships=[];
+						nodeDTO.allowedHosts=[];
+						nodeDTO.constraints = [];
+
+					    var resBlockID=element.getParameterBag().get("resourceBlockID");
+						if(resBlockID){
+							var resSysId = resBlockID.getValue();
+							nodeDTO.resourceBlockID = resSysId;
+							var implementedEP = this._getEndpointMapping(resSysId,'1');
+							nodeDTO.implementedEndpoints = implementedEP;
+							var usedEP = this._getEndpointMapping(resSysId,'2');
+							nodeDTO.usedEndpoints = usedEP;
+					   }
+						
+						var resBlockName=element.getParameterBag().get("resourceBlockName");
+						if(resBlockName)
+							nodeDTO.resourceBlockName = resBlockName.getValue();
+						
+						var nodeHosts=element.getParameterBag().get("hosts");
+						if(nodeHosts)
+							nodeDTO.hosts = new global.JSON().decode(nodeHosts.getValue());
+
+					    var bindingObj=element.getParameterBag().get("bindings");
+						if(bindingObj)
+							nodeDTO.bindings = new global.JSON().decode(bindingObj.getValue());
+
+						var nodeX = element.getParameterBag().get(sn_smd.SMConstants.NODE_POSITION_X);
+						var nodeY = element.getParameterBag().get(sn_smd.SMConstants.NODE_POSITION_Y);
+						if (nodeX && nodeY) {
+							nodeDTO.savedX = nodeX.getValue();
+							nodeDTO.savedY = nodeY.getValue();
+						}
+						
+						var constraints = element.getConstraints();
+						for (var i =0; i < constraints.length; i++){
+							var constraint = {name: constraints[i].getName(),
+								id:constraints[i].getStableId(),
+								rb_id: constraints[i].getValueOrDefault("rbId", ""),
+								ci_type: constraints[i].getCiType()
+							};
+							nodeDTO.constraints.push(constraint);
+						}
+						
+						if('cmdb_ci_logical_datacenter' === element.getCiType()){
+							//we will use this method in case of scoped app
+							//var orch =new GlideTableHierarchy('cmdb_ci_logical_datacenter').getTableExtensions();
+							var ciListString = new GlideTableHierarchy("cmdb_ci_logical_datacenter").getTableExtensions();
+							var childCIList = new ResourceBlockServiceHelper().getAllResourceBlocksForLDC(ciListString);
+							//var childCIList=new global.JSON().decode(childCIListStr);
+
+							//var childCIListStr = resourceBlockServiceScript.getAllResourceBlocksForLDC(ciListString);
+							//var childCIList=new global.JSON().decode(childCIListStr);
+
+							var ldcChildList=[];
+							for(var i=0;i<childCIList.length;i++){
+								var resourceBlock=childCIList[i];
+								var refCIType = CMPUtil.getCITypeInfo(childCIList[i].refCI);
+								var ladcChildMap={
+									id:resourceBlock.id,
+									name:resourceBlock.name,
+									label:resourceBlock.name+"["+refCIType.label+"]",
+									ciType:resourceBlock.refCI
+								};
+								ldcChildList.push(ladcChildMap);
+							}
+							nodeDTO.allowedHosts=ldcChildList;
+						}
+
+						return nodeDTO;
+					},
+
+					_getEdgeDTO: function(epElem) {
+						var edgeDTO = {};
+							edgeDTO.targetId = epElem.getTarget().getId();
+							edgeDTO.sourceId = epElem.getSource().getId();
+							edgeDTO.name = '';//epElem.getName();
+							edgeDTO.id = epElem.getId();
+						    edgeDTO.relType = epElem.getType();
+							return edgeDTO;
+						},
+
+					_getEndpointMapping: function(resourceBlockId,relType) {
+						  var endPoints = [];
+						  var gr = new GlideRecord('sn_cmp_rb_ep_mapping');
+						  gr.addQuery("resource_block",resourceBlockId);
+						  gr.addQuery("relation_type",relType);
+						  gr.query();
+						  while(gr.next()){
+							  var ciType = CMPUtil.getCITypeInfo(gr.getValue("endpoint"));
+
+							  endPoints.push({name:ciType.label,id:gr.getValue("sys_id")});
+
+						  }
+						return endPoints;
+						},
+
+						type: 'CMPGraphDTOTranslator'
+					};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-25 04:47:04</sys_created_on>
+        <sys_id>e070fe699f132200a0d5b10f842e70ab</sys_id>
+        <sys_mod_count>58</sys_mod_count>
+        <sys_name>CMPGraphDTOTranslator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e070fe699f132200a0d5b10f842e70ab</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-09 06:34:04</sys_updated_on>
+    </sys_script_include>
+</record_update>

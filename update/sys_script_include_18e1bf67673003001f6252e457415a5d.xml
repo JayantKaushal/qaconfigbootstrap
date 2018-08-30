@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPExportPolicyAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPExportPolicyAction</name>
+        <script><![CDATA[var CMPExportPolicyAction = Class.create();
+CMPExportPolicyAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try{
+			if (!params.policy_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter:policy_id"),
+				"CMPExportPolicyAction.doAction: Undefined element policy_id",
+				null
+				);
+			}
+			var policyGr = new GlideRecord("sn_cmp_pol_policy");
+			policyGr.get(params.policy_id);
+			var policyName = policyGr.getValue("name") + "";
+			var policyServiceScript = new sn_cmp_api.PolicyServiceScript();
+			return policyServiceScript.exportPolicy(policyName);
+		}catch(error){
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to export policy"),
+			"CMPExportPolicyAction.doAction(): Failed to export policy",
+			error
+			);
+		}
+	},
+	
+	type: 'CMPExportPolicyAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-31 23:51:51</sys_created_on>
+        <sys_id>18e1bf67673003001f6252e457415a5d</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPExportPolicyAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_18e1bf67673003001f6252e457415a5d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-05 17:47:59</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Blueprint Catalog Association" max_length="40" name="sn_cmp_bp_cat_assoc" type="collection">
+        <element label="BLueprint" max_length="32" name="blueprint" reference="sn_cmp_bp_blueprint" type="reference"/>
+        <element label="Catalog" max_length="32" name="bp_catalog" reference="sn_cmp_bp_cat_item" type="reference"/>
+        <element label="Blueprint Stage Operation" max_length="32" name="bp_stage_operation" reference="sn_cmp_bp_stage_op" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Blueprint version Id" max_length="200" name="bp_version" type="string"/>
+        <index name="index">
+            <element name="blueprint"/>
+        </index>
+        <index name="index2">
+            <element name="bp_catalog"/>
+        </index>
+        <index name="index3">
+            <element name="bp_stage_operation"/>
+        </index>
+    </element>
+</database>

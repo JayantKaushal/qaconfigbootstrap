@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function($scope){
+	var c = this;
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.highcharts-yaxis-grid .highcharts-grid-line {
+  display: none;
+}
+
+a {
+  cursor: pointer;
+}
+
+.cap-half-chart-size {
+  height: 140px;
+  margin: 0 auto;
+}
+
+.widgetIcon {
+	margin-right: 5px;
+}
+
+.no-data {
+  text-align: center;
+  position: relative;
+  top: 60px;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-admin-half-chart</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attrs,ctrl) {
+	$(document).ready(function(){
+		setTimeout(function () {
+			drawQuotaChart();
+		}, 0)
+	});
+
+	function drawQuotaChart(){
+		var gaugeOptions = {
+			chart: {
+				marginTop: -15,
+				marginBottom: 0,
+				spacingTop: 0,
+				spacingBottom: 0,
+				type: 'solidgauge'
+			},
+
+			title: null,
+
+			pane: {
+				center: ['50%', '80%'],
+				size: '100%',
+				startAngle: -90,
+				endAngle: 90,
+				background: {
+					backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+					innerRadius: '70%',
+					outerRadius: '100%',
+					shape: 'arc'
+				}
+			},
+
+			tooltip: {
+				enabled: false
+			},
+
+			// the value axis
+			yAxis: {
+				stops: [
+					[0.1, '#55BF3B'], // green
+					[0.5, '#DDDF0D'], // yellow
+					[0.9, '#DF5353'] // red
+				],		
+				minorTickInterval: null,
+				tickAmount: 1,
+				labels: { 
+					y: 15,
+					distance: -13
+				}
+			},
+
+			plotOptions: {
+				solidgauge: {
+					innerRadius: '70%',
+					dataLabels: {
+						y: 25,
+						borderWidth: 0,
+						useHTML: true
+					}
+				}
+			}
+		};
+
+		// The gauge
+		$('#'+ctrl.data.containerId).highcharts(Highcharts.merge(gaugeOptions, {
+			yAxis: {
+				labels: {
+					formatter: function(){
+						return this.value;
+					}            
+				},
+				min: 0,
+				max: parseFloat(parseFloat(ctrl.data.total).toFixed(2)),
+				tickPositions: [0,parseFloat(parseFloat(ctrl.data.total).toFixed(2))]
+			},
+
+			credits: {
+				enabled: false
+			},
+
+			series: [{
+				name: ctrl.data.name,
+				data: [parseFloat(parseFloat(ctrl.data.used).toFixed(2))],
+				dataLabels: {
+					format: '<div style="text-align:center"><span style="font-size:14px;color:' +
+					((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+					'<span style="color: #717171;font-weight: normal;font-size: 12px;">'+ctrl.data.unit+'<br/>${Used}</span></div>'
+				}
+			}]
+		}));
+		$(".highcharts-container").removeAttr('tabIndex');
+		$(".highcharts-root").attr({
+			role:"img", 
+			focusable:"false"
+		});
+	}
+}]]></link>
+        <name>cloud admin half Chart</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {  /* populate the 'data' object */  /* e.g., data.table = $sp.getValue('table'); */
+	data.name = options.name;
+	data.containerId = options ? options.containerId : '';
+	data.total = options ? options.total : '';
+	data.used = options ? options.used : '';
+	data.link = options ? options.link : '';
+	data.unit = options ? options.unit : '';
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-06-12 10:18:05</sys_created_on>
+        <sys_id>6dfbf4710b9732003bace58525673a0b</sys_id>
+        <sys_mod_count>125</sys_mod_count>
+        <sys_name>cloud admin half Chart</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_6dfbf4710b9732003bace58525673a0b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-07 11:10:35</sys_updated_on>
+        <template><![CDATA[<div class="panel panel-default b widget-container">  
+  <div class="panel-heading">
+    <h4 class="panel-title"><i class="fa fa-pie-chart widgetIcon"></i>{{data.name}}</h4>
+  </div>
+  <div class="panel-body">
+    <div ng-if="!c.data.total" class="no-data">${No Data Available}</div>
+    <div ng-if="c.data.total" id="{{c.data.containerId}}" class="cap-half-chart-size"></div>
+  </div>
+  <div class="panel-footer" ng-if="c.data.link && c.data.total">
+    <a class="pull-right" href="{{c.data.link}}">${Manage}</a>   
+    &nbsp;
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

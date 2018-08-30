@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_angular_provider">
+    <sp_angular_provider action="INSERT_OR_UPDATE">
+        <name>resize</name>
+        <script><![CDATA[function($window) {
+	return function (scope, element, attr) {
+
+		var w = angular.element($window);
+		scope.$watch(function () {
+			return {
+				'h': w.height(), 
+				'w': w.width()
+			};
+		}, function (newValue, oldValue) {
+			scope.resizeWithOffset = function (offsetH) {
+				return { 
+					'height': (newValue.h - offsetH) + 'px'                    
+				};
+			};
+
+		}, true);
+
+		w.bind('resize', function () {
+			scope.$apply();
+		});
+	};
+}]]></script>
+        <sys_class_name>sp_angular_provider</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-17 10:54:02</sys_created_on>
+        <sys_id>1bb43cb067c132007f4eff5617415a36</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>resize</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_angular_provider_1bb43cb067c132007f4eff5617415a36</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-20 07:07:56</sys_updated_on>
+        <type>directive</type>
+    </sp_angular_provider>
+</record_update>

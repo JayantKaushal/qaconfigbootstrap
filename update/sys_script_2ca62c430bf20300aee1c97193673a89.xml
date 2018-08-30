@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script">
+    <sys_script action="INSERT_OR_UPDATE">
+        <abort_action>false</abort_action>
+        <access>package_private</access>
+        <action_delete>true</action_delete>
+        <action_insert>false</action_insert>
+        <action_query>false</action_query>
+        <action_update>false</action_update>
+        <active>true</active>
+        <add_message>false</add_message>
+        <advanced>true</advanced>
+        <change_fields>false</change_fields>
+        <client_callable>false</client_callable>
+        <collection>sn_cmp_rb_resourceblock</collection>
+        <condition/>
+        <description/>
+        <execute_function>false</execute_function>
+        <filter_condition/>
+        <is_rest>false</is_rest>
+        <message/>
+        <name>Validate deletion of resource block</name>
+        <order>100</order>
+        <priority>100</priority>
+        <rest_method/>
+        <rest_method_text/>
+        <rest_service/>
+        <rest_service_text/>
+        <rest_variables/>
+        <role_conditions/>
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+	//Can't delete resource block if the resource block is used in any blueprint
+	if(current.is_system_defined) {
+		current.setAbortAction(true);
+		var deleteSystemMessage = gs.getMessage("Cannot delete system defined resource blocks");
+		gs.addErrorMessage(deleteSystemMessage);
+	} else {
+		var canResourceblockDeleted = new ResourceBlockServiceHelper().validateResourceBlockDeletion(current.getUniqueValue());
+		if(canResourceblockDeleted === false) {
+			current.setAbortAction(true);
+			var duplicateDeleteMessage = gs.getMessage("Cannot delete resource block as it is being used in one or more Blueprints.");
+			gs.addErrorMessage(duplicateDeleteMessage);
+		}
+	}
+	})(current, previous);]]></script>
+        <sys_class_name>sys_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-07 05:48:34</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>2ca62c430bf20300aee1c97193673a89</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>Validate deletion of resource block</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_2ca62c430bf20300aee1c97193673a89</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-05 14:26:44</sys_updated_on>
+        <template/>
+        <when>before</when>
+    </sys_script>
+    <sys_translated_text action="delete_multiple" query="documentkey=2ca62c430bf20300aee1c97193673a89"/>
+</record_update>

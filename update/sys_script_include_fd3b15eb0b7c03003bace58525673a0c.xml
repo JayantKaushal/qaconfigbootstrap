@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPAddEntitiesAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPAddEntitiesAction</name>
+        <script><![CDATA[/*
+*  CMPAddEntitiesAction is used for adding, getting, delete, update the pack
+*  @Author thiyagu
+*/
+var CMPAddEntitiesAction = Class.create();
+CMPAddEntitiesAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+				
+			var CMPPackUtilsObj = new CMPPackUtils();
+			CMPPackUtilsObj.saveDependentEntities(params.packSysId, JSON.parse(params.entitiesList));
+			return true;
+		}catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Fails to do action for adding the entites."),
+				"CMPAddEntitiesAction.doAction(): Fails to do action for adding the entites.",
+				error
+			);
+		}
+    },
+
+    type: 'CMPAddEntitiesAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-31 12:47:44</sys_created_on>
+        <sys_id>fd3b15eb0b7c03003bace58525673a0c</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>CMPAddEntitiesAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fd3b15eb0b7c03003bace58525673a0c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-06 12:04:13</sys_updated_on>
+    </sys_script_include>
+</record_update>

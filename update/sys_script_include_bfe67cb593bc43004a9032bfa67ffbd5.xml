@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBillingRollupUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CmpBillingRollupUtil</name>
+        <script><![CDATA[var CmpBillingRollupUtil = Class.create();
+/* eslint-disable no-dupe-keys, no-new-wrappers */
+CmpBillingRollupUtil.prototype = {
+
+	COST_BASE_TABLE: 'sn_cmp_cost',
+	COST_DAILY_TABLE: 'sn_cmp_cost_daily',
+	COST_MONTHLY_TABLE: 'sn_cmp_cost_monthly',
+	TAG:'[CmpBillingRollupUtil]',
+	
+    initialize: function() {
+	},
+	
+	/**
+	* Rollup base table into daily and monthly reporting tables
+	*/
+	rollupAll: function(fromDate, provider) {
+		var fromGDT = new GlideDateTime(fromDate);
+		var toGDT = new GlideDateTime(fromDate);
+		toGDT.setDayOfMonthUTC(1);
+		toGDT.addMonthsUTC(1);
+		
+		this.rollupDaily(fromGDT, toGDT, provider);
+		
+		fromGDT.setDayOfMonthUTC(1);
+		this.rollupMonthly(fromGDT, toGDT, provider);
+	},
+
+	/**
+	* Rollup base table into daily reporting table. Aggregate costs across resources
+	* and usage profiles, while grouping by usage date, tags, resources type, and datacenter.
+	*/
+	rollupDaily: function(fromDate, toDate, provider) {
+		gs.info(this.TAG+'Starting daily billing rollups...');
+		var gr = new GlideRecord(this.COST_DAILY_TABLE);
+		gr.addQuery('usage_date', '>=', fromDate);
+		gr.addQuery('usage_date', '<', toDate);
+		gr.addQuery('provider', provider);
+		gr.query();
+		gr.deleteMultiple();
+
+		var ga = new GlideAggregate(this.COST_BASE_TABLE);
+		ga.addQuery('usage_date', '>=', fromDate);
+		ga.addQuery('usage_date', '<', toDate);
+		ga.addQuery('resource.resource_type.product.provider', provider);
+		ga.groupBy('usage_date');
+		ga.groupBy('tag_values');
+		ga.groupBy('resource.datacenter');
+		ga.groupBy('resource.resource_type.product');
+		ga.addAggregate('MIN', 'resource.resource_type.product.category.sys_id');
+		ga.addAggregate('MIN', 'resource.datacenter.sys_id');
+		ga.addAggregate('MIN', 'resource.datacenter.account_id');
+		ga.addAggregate('MIN', 'resource.datacenter.region');
+		ga.addAggregate('SUM', 'cost');
+		ga.query();
+
+		var postCount = ga.getRowCount();
+		while (ga.next()) {
+			gr = new GlideRecord(this.COST_DAILY_TABLE);
+			gr.usage_date = ga.usage_date;
+			gr.tag_values = ga.tag_values;
+			gr.category = ga.getAggregate('MIN', 'resource.resource_type.product.category.sys_id');
+			gr.provider = provider;
+			gr.datacenter = ga.getAggregate('MIN', 'resource.datacenter.sys_id');
+			gr.account_id = ga.getAggregate('MIN', 'resource.datacenter.account_id');
+			gr.region = ga.getAggregate('MIN', 'resource.datacenter.region');
+			gr.cost = ga.getAggregate('SUM', 'cost');
+			gr.insert();
+		}
+		gs.info(this.TAG+'Completed daily billing rollups. Inserted '+postCount+' rows.');
+	},
+
+	/**
+	* Rollup base table into monthly reporting table. Aggregate costs across resources
+	* and dates within the same month, while grouping by tags and resource.
+	*/
+	rollupMonthly: function(fromDate, toDate, provider) {
+		gs.info(this.TAG+'Starting monthly billing rollups...');
+		var gr = new GlideRecord(this.COST_MONTHLY_TABLE);
+		gr.addQuery('usage_date', '>=', fromDate);
+		gr.addQuery('usage_date', '<', toDate);
+		gr.addQuery('provider', provider);
+		gr.query();
+		gr.deleteMultiple();		
+		
+		var ga = new GlideAggregate(this.COST_BASE_TABLE);
+		ga.addQuery('usage_date', '>=', fromDate);
+		ga.addQuery('usage_date', '<', toDate);
+		ga.addQuery('resource.resource_type.product.provider', provider);
+		ga.groupBy('tag_values');
+		ga.groupBy('resource');
+		ga.addAggregate('MIN', 'usage_date');
+		ga.addAggregate('SUM', 'cost');
+		ga.query();
+		var postCount = ga.getRowCount();
+		while (ga.next()) {
+			gr = new GlideRecord(this.COST_MONTHLY_TABLE);
+			gr.usage_date = ga.getAggregate('MIN', 'usage_date');
+			gr.tag_values = ga.tag_values;
+			gr.resource = ga.resource;
+			gr.category = ga.resource.resource_type.product.category;
+			gr.provider = provider;
+			gr.datacenter = ga.resource.datacenter;
+			gr.account_id = ga.resource.datacenter.account_id;
+			gr.region = ga.resource.datacenter.region;
+			gr.cost = ga.getAggregate('SUM', 'cost');
+			gr.insert();
+		}
+		gs.info(this.TAG+'Completed monthly billing rollups. Inserted '+postCount+' rows.');
+	},
+
+    type: 'CmpBillingRollupUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-25 23:30:19</sys_created_on>
+        <sys_id>bfe67cb593bc43004a9032bfa67ffbd5</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>CmpBillingRollupUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_bfe67cb593bc43004a9032bfa67ffbd5</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:14</sys_updated_on>
+    </sys_script_include>
+</record_update>

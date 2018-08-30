@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_message">
+    <sys_ui_message action="INSERT_OR_UPDATE">
+        <application/>
+        <key>Policy Rule Action Help Text</key>
+        <language>en</language>
+        <message>If you want to override values in a catalog item, select &lt;b&gt;Set Property Override&lt;/b&gt;  as the Action type. These value types are supported:&#13;
+	&lt;ul&gt;&#13;
+		&lt;li&gt;&lt;b&gt;Static Values:&lt;/b&gt; a constant value that is assigned to the selected property.&lt;/li&gt;&#13;
+		&lt;li&gt;&lt;b&gt;Expressions:&lt;/b&gt; a value based on other objects in the system. You can do the following&#13;
+			&lt;ol&gt;&#13;
+				&lt;li&gt; Set form data values using definition expressions. For example: ${parameter.formData.CatalogAttributeType}&lt;/li&gt;&#13;
+				&lt;li&gt; Assign user data values using definition expressions. For example: ${parameter.userData.userId}&lt;/li&gt;&#13;
+				&lt;li&gt;Set Stack/table values using runtime expressions. For example: &#13;
+ $(ci.sn_cmp_ip_pool[subnet=${parameter.formData.SubnetId}])&lt;/li&gt;	&#13;
+				&lt;li&gt;Set Stack/table values using runtime expressions. For example: ${randomNumber}&lt;/li&gt;&#13;
+			&lt;/ol&gt;&#13;
+		&lt;/li&gt;&#13;
+	&lt;/ul&gt;&#13;
+You can also concatenate a static value with an expression.</message>
+        <sys_class_name>sys_ui_message</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-01 19:53:20</sys_created_on>
+        <sys_id>15fcc8ba5b313200ca17273a41f91ad6</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>Policy Rule Action Help Text</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_message_15fcc8ba5b313200ca17273a41f91ad6</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-14 00:14:12</sys_updated_on>
+    </sys_ui_message>
+</record_update>

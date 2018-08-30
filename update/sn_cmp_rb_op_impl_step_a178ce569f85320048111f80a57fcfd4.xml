@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_impl_step">
+    <sn_cmp_rb_op_impl_step action="INSERT_OR_UPDATE">
+        <capi_interface display_value="Azure Extensions Interface">9cfd79879f40320048111f80a57fcf5d</capi_interface>
+        <capi_method display_value="DeleteResource">92a6ef429f14320048111f80a57fcf3b</capi_method>
+        <capi_version/>
+        <condition/>
+        <depends_on/>
+        <enabled>true</enabled>
+        <flow_type/>
+        <force_async>false</force_async>
+        <interface/>
+        <interface_operation/>
+        <name>Azure Extensions Interface.DeleteResource</name>
+        <operationimpl display_value="Delete Resource">7af70e569f85320048111f80a57fcf4e</operationimpl>
+        <order>1</order>
+        <owner_type>1</owner_type>
+        <parent_step/>
+        <parentstep/>
+        <product_type/>
+        <provider>azure-compute</provider>
+        <provider_type/>
+        <sys_class_name>sn_cmp_rb_op_impl_step</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-22 08:48:34</sys_created_on>
+        <sys_id>a178ce569f85320048111f80a57fcfd4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>Azure Extensions Interface.DeleteResource</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_impl_step_a178ce569f85320048111f80a57fcfd4</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-02-22 08:48:34</sys_updated_on>
+        <target_entity_flow/>
+    </sn_cmp_rb_op_impl_step>
+</record_update>

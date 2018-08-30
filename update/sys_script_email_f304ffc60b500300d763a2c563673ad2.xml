@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_email">
+    <sys_script_email action="INSERT_OR_UPDATE">
+        <name>sn_cmp_user_budget_consumption_script_1</name>
+        <new_lines_to_html>false</new_lines_to_html>
+        <script><![CDATA[var gr2 = new GlideRecord('sn_cmp_user_budget_consumption');
+var gr1 = new GlideRecord('sn_cmp_budget_notification');
+var type = null;
+gr2.addQuery('sys_id', event.parm2);
+gr2.query();
+while (gr2.next()) {
+	gr1.addQuery('budget_configuration', gr2.getValue('budget_configuration'));
+	gr1.orderByDesc('threshold');
+	gr1.query();
+	while (gr1.next()) {
+		if (parseInt(gr2.getValue('consumption')) >= (parseInt(gr1.getValue('threshold')))) {
+		     type = gr1.getValue('type');
+			 break;
+	     }
+	}
+    
+	template.print('<p><font size="3" color="#000000" face="helvetica"><strong>');	
+	template.print(type+'!Your budget threshold has reached with the group,' + gr2.getDisplayValue('budget_configuration') + '.' +'<br><br> The budget limit is ' +gr2.getDisplayValue('budget_configuration.user_limit')+'.' +'You have spent $'+gr2.getValue('consumed')+'.');
+	template.print('</strong></font></p>');
+}]]></script>
+        <sys_class_name>sys_script_email</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-02 11:23:42</sys_created_on>
+        <sys_id>f304ffc60b500300d763a2c563673ad2</sys_id>
+        <sys_mod_count>17</sys_mod_count>
+        <sys_name>sn_cmp_user_budget_consumption_script_1</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_email_f304ffc60b500300d763a2c563673ad2</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-09 12:18:33</sys_updated_on>
+    </sys_script_email>
+</record_update>

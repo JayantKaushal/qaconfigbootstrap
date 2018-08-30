@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_properties">
+    <sys_properties action="INSERT_OR_UPDATE">
+        <choices/>
+        <description>Set this property to "true" to access Cloud Solution Deployer under Manage module in Cloud Admin Portal. </description>
+        <ignore_cache>false</ignore_cache>
+        <is_private>false</is_private>
+        <name>sn_cmp.show_csd</name>
+        <read_roles/>
+        <suffix>show_csd</suffix>
+        <sys_class_name>sys_properties</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-10-16 07:27:02</sys_created_on>
+        <sys_id>10eb0d9e0b710300f0e0403f15673a6b</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>sn_cmp.show_csd</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_properties_10eb0d9e0b710300f0e0403f15673a6b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-10-16 07:47:03</sys_updated_on>
+        <type>boolean</type>
+        <value>false</value>
+        <write_roles/>
+    </sys_properties>
+    <sys_translated_text action="delete_multiple" query="documentkey=10eb0d9e0b710300f0e0403f15673a6b"/>
+</record_update>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sn_cmp_rb_resourceblock">
+    <sn_cmp_rb_resourceblock action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <guestinterface display_value="Subnet Interface">fd4bc4fa67532200ff506c706785eff9</guestinterface>
+        <hostinterface display_value="Network Interface">1a9359bc67532200ff506c706785eff7</hostinterface>
+        <is_system_defined>true</is_system_defined>
+        <is_tlr>false</is_tlr>
+        <layer>3</layer>
+        <name>Subnet</name>
+        <refcitype>cmdb_ci_cloud_subnet</refcitype>
+        <resource_template/>
+        <status>1</status>
+        <sys_class_name>sn_cmp_rb_resourceblock</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 13:08:10</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_id>f54b003e67532200ff506c706785eff8</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>Subnet</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_resourceblock_f54b003e67532200ff506c706785eff8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-02 09:04:16</sys_updated_on>
+        <type display_value="ServiceNow Blueprint">ab1f81e49f00320048111f80a57fcf30</type>
+    </sn_cmp_rb_resourceblock>
+</record_update>

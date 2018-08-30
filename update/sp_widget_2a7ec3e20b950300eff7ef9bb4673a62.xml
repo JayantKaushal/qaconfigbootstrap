@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function requestedItemsController($scope,spUtil) {
+	
+	var c = this;
+	$scope.spUtil = spUtil;
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.requested-items-flex-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+}
+
+.panel-title{
+  margin-top:8px;
+}
+
+.list-group{
+  min-height: 208px;
+  overflow:auto;
+}
+
+.list-group-item {
+  padding: 5px 15px;
+  border: none;
+}
+
+.stage-on IMG, .stage-off IMG{ margin-right:6px; }
+.stage-on, .stage-off { margin-bottom: 6px; }
+.stage-on{
+  //font-weight:700;
+}
+
+.stage-off{/*color:#999;*/ font-weight:300;}
+
+.l-h-40 {
+  line-height: 40px;
+}
+
+.list-action {
+  display:block;
+  padding:0 6px;
+  cursor: pointer;
+}
+
+.list-action:hover {
+  background-color: #fff;
+}</css>
+        <data_table>sp_instance_vlist</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list>title,order,color,display_field,filter,table,sp_page,order_direction,maximum_entries,order_by</field_list>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-trail-status</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope) {
+	scope.spUtil.recordWatch(scope, "sn_cmp_order_step_status", "type=2^runtime_step_type=2");
+	scope.spUtil.recordWatch(scope, "sn_cmp_order", "");
+	scope.spUtil.recordWatch(scope, "sc_req_item", "");
+	scope.spUtil.recordWatch(scope, "sn_cmp_cloud_trail", "message_type=4^milestone=1");
+}]]></link>
+        <name>Cloud Stack Trail Status</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+
+	data.resultList = [];
+	data.trailList = [];
+	data.errorList = [];
+	data.error = false;
+
+	var reqItemSysId = $sp.getParameter("req_item_sys_id");
+	var reqItemGR = new GlideRecordSecure("sc_req_item");
+	if (!reqItemGR.get(reqItemSysId)) {
+		data.error = true;
+		data.errorMessage = gs.getMessage('Requested Item does not exist or cannot be read : ' + reqItemSysId);
+		return;
+	}
+
+	data.req_item_sys_id = reqItemSysId;
+	data.req_item_stage = reqItemGR.getValue('stage');
+
+	//TODO: Why is there a space at the end of Operator???
+	var FAILED_STAGES = ['deployment_failed', 'Task Created for User', 'Task Created for Operator	'];
+	if (data.req_item_stage && FAILED_STAGES.indexOf(data.req_item_stage) >= 0)
+		handleFailedRequests();
+	else
+		handleNormalRequests();
+
+	function handleFailedRequests() {
+		var obj;
+		var trailsGR = new GlideRecord('sn_cmp_cloud_trail');
+		trailsGR.addQuery('req_item', reqItemSysId);
+		trailsGR.addQuery('message_type', 4);
+		trailsGR.addQuery('milestone', 1);
+		trailsGR.query();
+		while (trailsGR.next()) {
+			obj = {};
+			obj.message = trailsGR.getValue('status_message');
+			obj.date_details = trailsGR.getDisplayValue('sys_updated_on');
+			data.trailList.push(obj);
+		}
+
+		var taskGR = new GlideRecord("sc_task");
+		taskGR.addQuery("request_item", reqItemSysId);
+		taskGR.query();
+		while (taskGR.next()) {
+			obj = {};
+			obj.message = taskGR.getValue('description');
+			obj.date_details = taskGR.getDisplayValue('sys_updated_on');
+			data.errorList.push(obj);
+		}		
+	}
+	
+	function handleNormalRequests() {
+		var obj = {};
+		var stackOrderGR = new GlideRecordSecure("sn_cmp_order");
+		stackOrderGR.addQuery("sc_req_item", reqItemSysId);
+		stackOrderGR.query();
+		if (!stackOrderGR.next()) {
+			data.error = true;
+			data.errorMessage = gs.getMessage('No order found for request item : ' + reqItemGR.getValue('number'));
+			return;
+		}
+
+		data.stack_order_sys_id = stackOrderGR.getUniqueValue();
+		data.stack_name = stackOrderGR.stack.getDisplayValue();
+		data.blueprint_name = stackOrderGR.context_instance.getDisplayValue();
+
+		if (stackOrderGR.status == 8) {
+		    // Used for showing the error message in the stack status at the end.
+		    var errObj = {};
+		    errObj.message = stackOrderGR.getValue('status_msg');
+		    errObj.date_details = stackOrderGR.getValue('order_date');
+		    data.errorList.push(errObj);
+		}
+
+		var orderStatus = {
+			1 : CloudConstants.STATUS_NOT_STARTED,
+			2 : CloudConstants.STATUS_PENDING,
+			3 : CloudConstants.STATUS_SUCCESS,
+			4 : CloudConstants.STATUS_PENDING,
+			5 : CloudConstants.STATUS_SUCCESS,
+			6 : CloudConstants.STATUS_FAILURE,
+			7 : CloudConstants.STATUS_FAILURE,
+			8 : CloudConstants.STATUS_FAILURE
+		};
+
+		var stackOrderStepGR = new GlideRecordSecure("sn_cmp_order_step_status");
+		stackOrderStepGR.addQuery("order", data.stack_order_sys_id);
+		stackOrderStepGR.addQuery("type", 2);
+		stackOrderStepGR.addQuery("runtime_step_type", "IN", "2,4,6");
+		stackOrderStepGR.orderBy("execution_order");
+		stackOrderStepGR.query();
+		
+		var stepNameCache = {};
+		while (stackOrderStepGR.next()) {
+			var parentStepName = stackOrderStepGR.getValue('parent_step');
+			var interfaceName;
+			var orderStepName;
+
+			// some special case requires additional lookup for the step name (when it's an extension)
+			if (stepNameCache[parentStepName])
+				interfaceName = stepNameCache[parentStepName];
+			else {
+				var interfaceNameGR = new GlideRecord("sn_cmp_order_step_status");
+				interfaceNameGR.addQuery("order", data.stack_order_sys_id);
+				interfaceNameGR.addQuery("name", parentStepName);
+				interfaceNameGR.query();
+				if (interfaceNameGR.next())
+					interfaceName = JSON.parse(interfaceNameGR.getDisplayValue("api_step")).interfaceName;
+				stepNameCache[parentStepName] = interfaceName;
+			}
+
+			orderStepName = stackOrderStepGR.getValue('name');
+			if (!gs.nil(interfaceName))
+				orderStepName = "[" + interfaceName + "] " + orderStepName;
+
+			var orderSteps = {};
+			orderSteps.name = orderStepName;
+			orderSteps.date_details = stackOrderStepGR.getDisplayValue('sys_updated_on');
+			orderSteps.execution_order = stackOrderStepGR.execution_order.getDisplayValue();
+			orderSteps.status_type = orderStatus[stackOrderStepGR.getValue('status')];
+			orderSteps.status_value = stackOrderStepGR.getDisplayValue('status');
+			data.resultList.push(orderSteps);
+		}
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-22 14:59:16</sys_created_on>
+        <sys_id>2a7ec3e20b950300eff7ef9bb4673a62</sys_id>
+        <sys_mod_count>65</sys_mod_count>
+        <sys_name>Cloud Stack Trail Status</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_2a7ec3e20b950300eff7ef9bb4673a62</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-28 14:20:05</sys_updated_on>
+        <template><![CDATA[<div class="panel b">
+  <div class="panel-heading">
+    <h3 class="panel-title">${Stack Status}</h3>
+  </div>
+  <div classs="list-group" ng-if="data.error">
+    <div class="alert alert-info">
+    	{{data.errorMessage}}  
+    </div>
+  </div>
+  <div class="list-group" ng-if="!data.error">
+    <div ng-if="data.resultList.length == 0 && data.trailList.length == 0 && data.errorList.length == 0" class="panel-body">
+      <div class="alert alert-info">
+      	${No Data Available}  
+      </div>
+    </div>
+    <div ng-if="data.resultList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.resultList">
+            <div class="stage-on">  
+              <img ng-if="item.status_type == 'Success'" src="/images/icon-check-circle.png" />   
+              <img ng-if="item.status_type == 'Not Started'" src="/images/icon-empty-circle.png" />   
+              <img ng-if="item.status_type == 'Failure'" src="/images/icon-cross-circle.png"/>
+              <img ng-if="item.status_type == 'Pending'" src="/images/icon-ellipsis.png" />
+              {{item.date_details}} : {{item.name}} - {{item.status_value}}
+            </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+    <div ng-if="data.trailList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.trailList">
+            <div class="stage-on">   
+              <img src="/images/icon-cross-circle.png"/>
+              {{item.date_details}} : {{item.message}}
+            </div> 
+          </div>
+        </div>
+      </div>
+    </div> 
+    <div ng-if="data.errorList.length > 0" class="block list-group-item">
+      <div class="requested-items-flex-container">
+        <div class="flex-item">
+          <div ng-repeat="item in data.errorList">
+            <div class="stage-on">   
+              <img src="/images/icon-cross-circle.png"/>
+              {{item.date_details}} : {{item.message}}
+            </div> 
+          </div> 
+        </div>
+      </div>
+    </div> 
+  </div>
+</div>
+]]></template>
+    </sp_widget>
+</record_update>

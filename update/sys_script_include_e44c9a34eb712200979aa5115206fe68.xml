@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintSCItemCreator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintSCItemCreator</name>
+        <script><![CDATA[var BlueprintSCItemCreator = Class.create();
+BlueprintSCItemCreator.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	VALIDATION_SCRIPT_DESCRIPTION    : 'Validate Blue Print Parameter',
+	TABLE_BLUEPRINT_TO_VARIABLESET    : 'sn_cmp_bp_to_variableset',
+	TABLE_VARIABLE_SET               : 'item_option_new_set',
+	TABLE_IO_SET_ITEM               : 'io_set_item',
+	TABLE_BLUEPRINT_PARAMS : 'sn_cmp_bp_blueprint_provision_param',
+	TABLE_VARIABLE : 'item_option_new',
+	TABLE_CATALOG_CLIENT_SCRIPT : 'catalog_script_client',
+	TABLE_RESOURCE_POOL : 'sn_cmp_resource_pool',
+	AJAX_PROCESSOR : 'BlueprintSCAjax',
+	AJAX_DYNAMIC_FORM : 'DynamicFormAjax',
+	SERVICE_CATALOG: 'SERVICE_CATALOG',
+	OPERATION_CATALOG : 'OPERATION_CATALOG',
+
+	SCRIPTED_OPERATION_MAP : {
+		"ModifySchedule" : "modifySchedule",
+		"ModifyLease" : "modifyLease"
+	},
+
+	/*
+	*  createCatItem is used to create catalog item
+	*  @param: formBehaviorGR: glide record for formbehaviour
+	*  @param: context: Is used while creating cat item from bluerint Catalog page
+	*                   If your sending the context then the catalog name will take it as a form name
+	*  Updated Author: thiyagu
+	*/
+	createCatItem : function (formBehaviorGR, context){
+		// Getting blueprint information
+		var blueprint = new sn_cmp_api.BlueprintServiceScript().getBlueprint(formBehaviorGR.bp_association);
+
+		var blueprintGr = new global.JSON().decode(blueprint);
+		var catItemTable = 'sn_cmp_bp_cat_item';
+		var catItemGr = new GlideRecord(catItemTable);
+		catItemGr.workflow            = '2cbfd46eeb352200979aa5115206fe99'; //blueprint request WF
+		catItemGr.no_cart             = false;
+		catItemGr.no_proceed_checkout = true;
+		catItemGr.no_quantity         = true;
+		catItemGr.use_sc_layout       = false; // in order to turn on no_quantity, this need to be turned off
+		catItemGr.active              = true; //by default show the catalog item to user as soon as it is created
+
+		/*Start Changes made to generate unique cat_item for BP opertion everytime
+		  For provision :- {BP Name}
+		  Other Operation :- {Operation Name}
+		*/
+
+		var catNameArray = [];
+		var glideFormCatItem = new GlideRecord('sn_cmp_bp_cat_item');
+		glideFormCatItem.addQuery('blue_print',blueprintGr.id);
+		glideFormCatItem.query();
+		var countForCatItem=0;
+		var name="";
+		while (glideFormCatItem.next()) {
+			name = glideFormCatItem.getValue('name').toUpperCase();
+			//if (catNameArray.indexOf(name) == -1) {
+				catNameArray.push(name.toUpperCase());
+			//}
+		}
+		var operationName = formBehaviorGR.getDisplayValue('stage_operation');
+		var newName="";
+		var type= "2";
+		if (operationName == 'Provision') {
+			 type= "1";
+			 newName = context ? formBehaviorGR.alias_name : blueprintGr.name;
+			 catItemGr.short_description   = blueprintGr.name+" description...";
+			 catItemGr.sc_catalog        = CloudConstants.CLOUD_SERVICE_CATALOG; // Cloud Service Catalog
+			 catItemGr.category            = this._getSCCategory(blueprintGr.category, this.SERVICE_CATALOG); 
+		} else {
+			catItemGr.sc_catalog         = CloudConstants.CLOUD_OPERATION_CATALOG; // Cloud Operation Catalog
+			catItemGr.category            = this._getSCCategory(blueprintGr.category, this.OPERATION_CATALOG);
+			catItemGr.active              = true;
+			if (!this.SCRIPTED_OPERATION_MAP.hasOwnProperty(operationName)) {
+				// Only include this message for operations with no parameters
+				catItemGr.short_description   = "Are you sure you want to perform this operation?";
+			}
+			newName= context ? formBehaviorGR.alias_name : operationName;
+			catItemGr.workflow            = 'c61355e3875032003273f4bbe3e3ec2d'; //Cloud Resource Operation Request WF
+		}
+		var catName= newName;
+
+		if (!context) {
+			while(true) {
+				if (catNameArray.indexOf(catName.toUpperCase()) == -1) {
+					catNameArray.push(catName);
+					break;
+				} else {
+					countForCatItem+=1;
+				}
+				catName=newName+" "+"["+countForCatItem+"]";
+			}
+		}
+		catItemGr.description         = 'CMP Blueprint';
+		/*End of Changes made to generate unique cat_item for BP opertion everytime*/
+
+		// set name
+		catItemGr.name                = catName;
+		catItemGr.blue_print = blueprintGr.id;
+		catItemGr.catalog_type = type;
+		var catItemSysId = catItemGr.insert();
+
+
+		var formBehaviorId = formBehaviorGR.sys_id;
+		new sn_cmp_api.BlueprintServiceScript().updateFormBehForCatItem(catItemSysId,formBehaviorId);
+		this.insertCloudWorkflowVariable(catItemGr);
+		// we need this for both Provision and life cycle operation
+		new global.CmpSCUtil().upsertPrifillCatItemOnLoadClientScript(catItemSysId);
+
+		// If operation is not provision, then
+		// 1. Generate variable set which is needed for processing operation specific cat items
+		// 2. Do not generate other variable sets as they are not required hence return immediately.
+		if (operationName != 'Provision') {
+			this.generateVariablesForOperationCatItem(blueprintGr, catItemGr, formBehaviorId);
+			var stackIDPresent = false;
+
+			var setToItemMap = new GlideRecord("io_set_item");
+			setToItemMap.addQuery("sc_cat_item", catItemGr.sys_id);
+			setToItemMap.query();
+			while(setToItemMap.hasNext()) {
+			  setToItemMap.next();
+
+			  var variable = new GlideRecord("item_option_new");
+					variable.addQuery('variable_set', '' + setToItemMap.variable_set);
+					variable.addQuery('name', 'StackID');
+					variable.query();
+			   if(variable.next()) {
+				    new global.CmpSCUtil().insertVariableSetUIPolicyAction(setToItemMap.variable_set, variable.sys_id, 'Hide StackID');
+					break;
+			   }
+			}
+
+			return catItemGr;
+		}
+
+		var body = new sn_cmp_api.BlueprintServiceScript().generateBlueprintForCatalog(blueprintGr.name,formBehaviorId);
+
+		var templateJSON = new global.JSON().decode(body);
+		var parameters = templateJSON.OperationAttributes;
+		var varSetList =  this.getVariableSets(templateJSON.FormUIGroups, blueprintGr,catItemGr);
+		var varSet;
+		for (var i in parameters) {
+			for (var j = 0; j < varSetList.length; j++) {
+				if (varSetList[j].uiGroup == parameters[i].formUIGroup) {
+					varSet = varSetList[j].varSet;
+					break;
+				}
+			}
+			var variable = this._upsertVariableWithParameter(varSet, parameters[i]);
+			varSet = '';
+		}
+
+		new global.CmpSCUtil().addVariableSetToCatalogItem(catItemGr, varSetList);
+		for (i = 0; i < varSetList.length; i++) {
+			this._upsertOnSubmitClientScript(varSetList[i].varSet);
+		}
+		return catItemGr;
+	},
+
+
+	insertCloudWorkflowVariable : function (catItemGr) {
+		var variable = new GlideRecord(this.TABLE_VARIABLE);
+		variable.initialize();
+		variable.name          = 'cloudTaskWorkflowInput';
+		variable.type          = '6';
+		//variable.order         = '' + parameter.displayOrder;
+		//variable.variable_set  = '' + variableSet.sys_id;
+		variable.question_text = 'cloudTaskWorkflowInput';
+		variable.visibility = 1;
+		variable.visible_bundle = false;
+		variable.visible_guide = false;
+		variable.visible_standalone = false;
+		variable.visible_summary =false;
+		variable.cat_item = catItemGr.sys_id;
+		var script =  new global.CmpSCUtil();
+		script.insertVariable(variable);// variable.insert();
+		script.insertUIPolicyAction(catItemGr, variable.name);
+	},
+
+
+	/**
+	* Function will get all the variables for a catalog item
+	* O(n3)
+	**/
+	getAllVarialblesFormCatalog : function(catalogItemId) {
+		var variableArray = {};
+		var setItemGr = new GlideRecord("io_set_item");
+		setItemGr.addQuery("sc_cat_item", catalogItemId);
+		setItemGr.query();
+		while(setItemGr.next()) {
+			var setItemId = setItemGr.sys_id+"";
+			var itemOptionNewGr = new GlideRecord("item_option_new_set");
+			itemOptionNewGr.addQuery("sys_id", setItemGr.variable_set);
+			itemOptionNewGr.query();
+			while(itemOptionNewGr.next()) {
+				var variableGr = new GlideRecord("item_option_new");
+				variableGr.addQuery("variable_set", itemOptionNewGr.getUniqueValue());
+				variableGr.query();
+				while(variableGr.next()) {
+				var variableProperties = {};
+				var variableName = variableGr.name+"";
+					variableProperties.name = variableGr.name;
+					variableProperties.sysId = variableGr.getUniqueValue();
+					variableProperties.defaultValue = variableGr.default_value;
+					variableProperties.displayName = variableGr.variable_name;
+					variableProperties.helpText = variableGr.help_text;
+					variableProperties.mandatory = variableGr.mandatory;
+					variableProperties.displayOrder = variableGr.order;
+					variableProperties.uiDataType = variableGr.type;
+					variableProperties.formUiGrp = variableGr.variable_set;
+					variableProperties.formUiGrpName = variableGr.getDisplayValue("variable_set");
+				variableArray[variableName] = variableProperties;
+			}
+			}
+		}
+		return variableArray;
+	},
+
+	/**
+	*Get all the variable sets for the catalog item
+	**/
+	getAllUiGroupsForCatItem : function(catItemId) {
+		var uiGrpsForCatItem = {};
+		var setItemGr = new GlideRecord("io_set_item");
+		setItemGr.addQuery("sc_cat_item", catItemId);
+		setItemGr.query();
+		while(setItemGr.next()) {
+			var setItemId = setItemGr.sys_id+"";
+			var itemOptionNewGr = new GlideRecord("item_option_new_set");
+			itemOptionNewGr.addQuery("sys_id", setItemGr.variable_set);
+			itemOptionNewGr.query();
+			while(itemOptionNewGr.next()) {
+				var catUiGrpName = itemOptionNewGr.getDisplayValue("name");
+				uiGrpsForCatItem[catUiGrpName] =  itemOptionNewGr.getUniqueValue();
+			}
+		}
+		return uiGrpsForCatItem;
+	},
+
+
+
+	/**
+	* Publish the form behavior changes to the catalog
+	* On publish catalog changes will be preserved and any updation done at the form level will be updated to catalog item.
+	**/
+	updateCatItemFromFormBehavior : function (formBehaviorGR){
+
+		// Getting blueprint information
+		var blueprint = new sn_cmp_api.BlueprintServiceScript().getBlueprint(formBehaviorGR.bp_association);
+		var catalogItem = formBehaviorGR.cat_item_association;
+
+		if(catalogItem == '' || catalogItem == undefined ) {
+			gs.addErrorMessage(gs.getMessage("No Cat Item associated with this form behavior"));
+			return formBehaviorGR;
+		}
+
+		var variablesFromCatalog = this.getAllVarialblesFormCatalog(catalogItem);
+		var allUiGrpsForCatItem = this.getAllUiGroupsForCatItem(catalogItem);
+		var bpStageOpId = formBehaviorGR.stage_operation+"";
+		var bpStageResourceOperations = new BlueprintServiceHelper().getStepsForBPOperation(bpStageOpId);
+		var allInputParamsForBPOperation = {};
+		for(var i=0; i<bpStageResourceOperations.length; i++) {
+			var stageResourceOpId = bpStageResourceOperations[i].id;
+			var stageResourceAliasName = bpStageResourceOperations[i].stageResource;
+			var isNotTLRResource = stageResourceAliasName != 'Blueprint Container Resource';
+			var stageResourceOpAttr = new BlueprintServiceHelper().getStageResourceOperationAttributes(stageResourceOpId);
+			for(var j=0; j<stageResourceOpAttr.length; j++) {
+				var attributeName = stageResourceOpAttr[j].name;
+				if(isNotTLRResource) {
+					stageResourceAliasName = stageResourceAliasName.replace(" ","_");
+					attributeName = stageResourceAliasName+"_"+attributeName;
+				}
+				// map will contain attribute with its state (Either true/false), which will decide wether to keep this property or remove it from catalog.
+				allInputParamsForBPOperation[attributeName] = stageResourceOpAttr[j].useInOperation;
+			}
+		}
+
+		var blueprintGr = new global.JSON().decode(blueprint);
+ 		var formBehaviorId = formBehaviorGR.sys_id;
+
+		var body = new sn_cmp_api.BlueprintServiceScript().generateBlueprintForCatalog(blueprintGr.name,formBehaviorId);
+
+		var templateJSON = new global.JSON().decode(body);
+		var parameters = templateJSON.OperationAttributes;
+		var uiGrpFromForm = templateJSON.FormUIGroups;
+
+
+		var variablesFromForm = {};
+		//Creating the new ui group if not present at catalog.
+		for (var index in uiGrpFromForm) {
+			//if formUI grp is not found in catalog itemset that means it is a new UI grp came
+			// from form and need to create an item set at catalog level.
+			var formUiGroupObject = uiGrpFromForm[index];
+			var formUIGrp = formUiGroupObject.name;
+			if(gs.nil(allUiGrpsForCatItem[formUIGrp])) {
+				//creating the new variable set
+				var createVariableSet = new global.CmpSCUtil().createVariableSet("", formUIGrp, formUiGroupObject.displaySequence, "");
+				var variableSetId = createVariableSet.sys_id;
+				//associating the variable set created with the catalog item
+				new global.CmpSCUtil().addItemSetToCatalogItemWithOrder(catalogItem, variableSetId, formUiGroupObject.displaySequence);
+				allUiGrpsForCatItem[formUIGrp] = variableSetId;
+			} else
+				new global.CmpSCUtil().updateVariableSetWithOrder(catalogItem, formUiGroupObject.name, formUiGroupObject.displaySequence);
+
+		}
+
+		for (var formVar in parameters) {
+			var variableName = parameters[formVar].name+"";
+			variablesFromForm[variableName] = parameters[formVar];
+		}
+
+		//Updating the uiGrp of variable set if changed
+		for(var catalogKey in variablesFromCatalog) {
+			if(catalogKey  in variablesFromForm) {
+				var formUiGrp = variablesFromForm[catalogKey].formUIGroup;
+				var oldUiGrp = variablesFromCatalog[catalogKey].formUiGrpName;
+				if(formUiGrp != oldUiGrp) {
+					var newUiGrpId = allUiGrpsForCatItem[formUiGrp];
+					var oldUiGrpId = variablesFromCatalog[catalogKey].formUiGrp;
+					new global.CmpSCUtil().updateItemSetInVariable(catalogKey ,newUiGrpId, oldUiGrpId);
+				}
+			}
+		}
+
+		//Inserting and updating the variable set of the catalog item
+		for(var formKey in variablesFromForm) {
+			var varSet = {};
+			var variableUIGrpName = variablesFromForm[formKey].formUIGroup;
+				for (var uiGrp in allUiGrpsForCatItem) {
+				if (!gs.nil(allUiGrpsForCatItem[variableUIGrpName])) {
+					varSet.sys_id = allUiGrpsForCatItem[variableUIGrpName];
+					break;
+				}
+			}
+			if(!gs.nil(varSet.sys_id))
+				this._upsertVariableWithParameter(varSet, variablesFromForm[formKey]);
+
+		}
+		//detaching the variable
+		for(var catalogVar in variablesFromCatalog) {
+			// if the catalog variable show in form is false - that means it is not a customized variable and created at catalog level.
+			if(catalogVar in allInputParamsForBPOperation) {
+				var visibleInForm = allInputParamsForBPOperation[catalogVar];
+				//if visible in form is undefined that means that variable show in form is false
+				if (!visibleInForm && gs.nil(variablesFromForm[catalogVar])) {
+					//detach it from catalog
+					this.detachVariableFromCatItem(catalogVar, variablesFromCatalog);
+				}
+			}
+		}
+		return formBehaviorGR;
+	},
+
+	/**
+	* Deleting a variable from the catalog item set
+	* also deleting a client script associated with it
+	**/
+	detachVariableFromCatItem : function(catalogVar, variablesFromCatalog) {
+		var uiGrpId = variablesFromCatalog[catalogVar].formUiGrp;
+		var variableId = "IO:"+variablesFromCatalog[catalogVar].sysId;
+		new global.CmpSCUtil().deleteCatalogClientScript(variableId,uiGrpId);
+		new global.CmpSCUtil().deleteItemFromSet(catalogVar,uiGrpId);
+	},
+
+	/**
+	* Getting all the variable set for the catalog item.
+	*/
+	getVariableSets : function(FormUIGroups, blueprintGr , catlog_item_gr) {
+		var variableSets = [];
+		for (var i in FormUIGroups) {
+			var groupInfo = FormUIGroups[i];
+			var obj = {};
+			obj.uiGroup = groupInfo.name;
+			obj.varSet = this._getBlueprintVariableSet(blueprintGr, groupInfo.name, groupInfo.displaySequence,catlog_item_gr);
+			variableSets.push(obj);
+		}
+		return variableSets;
+	},
+
+	addVariableSetToCatalogItem : function(catItemGr, variableSetList) {
+		for (var i = 0; i < variableSetList.length; i++) {
+			var setGr = new GlideRecord('io_set_item');
+			setGr.initialize();
+			setGr.variable_set = '' + variableSetList[i].varSet.sys_id;  // VMware provisioning variables
+			setGr.sc_cat_item = catItemGr.sys_id;
+			setGr.insert();
+		}
+	},
+
+	// get variable set associated with blueprint record. if not found, create new one
+	// This should be fetched in context of cat_item not with blueprint , blueprint can have multiple cat item.
+	_getBlueprintVariableSet : function(blueprintGr, groupName, order,catlog_item_gr){
+		if ( gs.nil(catlog_item_gr) || gs.nil(catlog_item_gr.sys_id)){
+			gs.info('the cat_item_gr or sys id is empty');
+			return null;
+		}
+		var io_set_item_gr = new GlideRecord(this.TABLE_IO_SET_ITEM);
+		io_set_item_gr.addQuery('sc_cat_item', '' + catlog_item_gr.sys_id);
+		io_set_item_gr.addQuery('variable_set.name', '' + groupName);
+		io_set_item_gr.setLimit(1);
+		io_set_item_gr.query();
+		var variableSet = null;
+		var blueprintToVariableSet = new GlideRecord(this.TABLE_BLUEPRINT_TO_VARIABLESET);
+		if(io_set_item_gr.next()) {
+			var variable_set_gr = new GlideRecord(this.TABLE_VARIABLE_SET);
+		    variable_set_gr.addQuery('sys_id', '' + io_set_item_gr.variable_set);
+	    	variable_set_gr.setLimit(1);
+	    	variable_set_gr.query();
+	    	if ( variable_set_gr.next() ){
+    		    variableSet = new global.CmpSCUtil().updateVariableSet('' + variable_set_gr.sys_id, order);
+    		} else {
+				// this is when io_set_item exist but variable set does not exist.
+	    	    // create new one
+	    	    variableSet = new global.CmpSCUtil().createVariableSet(blueprintGr, groupName,order);
+	    	    blueprintToVariableSet.initialize();
+	    	    blueprintToVariableSet.blue_print         = '' + blueprintGr.id;
+	    	    blueprintToVariableSet.variable_set     = '' + variableSet.sys_id;
+		        blueprintToVariableSet.insert();
+		    }
+
+			// we should delete this from here as later will create fresh record for this.
+			io_set_item_gr.deleteRecord();
+		}else{
+
+			// this is when variable set is not there need to create it.
+			// create new one
+	    	    variableSet = new global.CmpSCUtil().createVariableSet(blueprintGr, groupName,order);
+			    gs.info("Check this out "+variableSet.id+" Use this - "+variableSet.sys_id);
+	    	    blueprintToVariableSet.initialize();
+	    	    blueprintToVariableSet.blue_print         = '' + blueprintGr.id;
+	    	    blueprintToVariableSet.variable_set     = '' + variableSet.sys_id;
+		        blueprintToVariableSet.insert();
+		}
+		return variableSet;
+	},
+
+	_upsertVariableWithParameter : function(variableSet, parameter){
+		var variable = new GlideRecord(this.TABLE_VARIABLE);
+		variable.initialize();
+		variable.addQuery('variable_set', '' + variableSet.sys_id);
+		variable.addQuery('name',  parameter.name);
+		variable.query();
+
+		var update = variable.next();
+
+		variable.name          = parameter.name;
+		variable.type          = this._getVariableTypeForParameterType(parameter.uiDataTypeId, parameter.parameterTypeId, parameter.dataSource);
+		variable.order         = '' + parameter.displayOrder;
+		variable.variable_set  = '' + variableSet.sys_id;
+		variable.question_text = parameter.displayName;
+
+		if (variable.type == 5) {
+			//this.populateSelectBoxTable(parameter, variable);
+		}
+
+		if (variable.type == 18) {
+			this.populateReferenceFields(parameter, variable);
+		}
+		//Add password confirmation
+		if (variable.type == 25) {
+			variable.mask_use_confirmation = true;
+			variable.mask_use_encryption = true;
+		}
+		if (variable.type == 8) {// reference
+			variable.reference = parameter.datasourceValue;
+		}
+		if (parameter.uiDataTypeId == 12 && parameter.dataSourceId == 4) {// list collector
+			variable.list_table = parameter.datasourceValue;
+		}
+
+		var isMandatory = parameter.mandatory;
+		variable.mandatory = isMandatory;
+
+		var helpText = parameter.helpText;
+		if (gs.nil(helpText))
+			variable.show_help = false;
+		else
+			variable.show_help = true;
+
+		variable.help_text = helpText;
+		variable.default_value = parameter.defaultValue;
+
+		var regex = parameter.regex;
+		if (regex)
+			variable.regex = regex;
+
+        if(parameter.uiDataTypeId ==  '1') {//grid
+            variable.type = 17;// macro with label
+            variable.variable_name = parameter.datasourceValue;
+            variable.default_value = parameter.defaultValue;
+            var mcroGR = new GlideRecord("sys_ui_macro");
+            mcroGR.addQuery("name", 'catalog_item_grid');
+			mcroGR.query();
+			if( mcroGR.next() ) {
+                variable.macro = mcroGR.sys_id;//'catalog_item_grid';//Macro
+                variable.summary_macro = mcroGR.getUniqueValue();// 'catalog_item_grid';//Macro
+            }
+
+            mcroGR = new GlideRecord("sp_widget");
+            mcroGR.addQuery("name", 'MyGrid');
+			mcroGR.query();
+			if( mcroGR.next()) {
+                variable.sp_widget = mcroGR.getUniqueValue();//'MyGrid';//Widget
+            }
+        } else {
+		variable.sp_widget = '';// explicitly un-set the sp_widget. some recent changes in the catalog area is not un-setting it automatically.
+	}
+
+
+		var result = false;
+		if ( update ){
+			result = new global.CmpSCUtil().updateVariable(variable); //variable.update();
+		} else{
+			result = new global.CmpSCUtil().insertVariable(variable);// variable.insert();
+			this._upsertOnChangeonLoadClientScript(variable, variableSet, 'onChange', parameter);
+		}
+
+		if ( !result ){
+			gs.info("Cannot update/insert variable with parameter " + new global.JSON().encode(parameter) );
+			return null;
+		}
+
+		return variable;
+	},
+	populateSelectBoxTable :  function(parameter, variable) {
+		if (parameter.dataSource) {
+			if (parameter.dataSource == 'Pools') {
+				var filter = this.getFilter(parameter.datasourceValue);
+				var rpGr = new GlideRecord(this.TABLE_RESOURCE_POOL);
+				rpGr.addQuery("name", filter.resourcePool);
+				rpGr.query();
+				if (rpGr.next()) {
+					if(rpGr.lookup_value == 'sys_id') {
+						variable.choice_table = rpGr.lookup_table;
+						variable.choice_field = rpGr.lookup_value;
+						variable.lookup_table = rpGr.lookup_table;
+						variable.lookup_value = rpGr.lookup_value;
+						variable.lookup_label = rpGr.lookup_label;
+					}
+				}
+			}
+		}
+		variable.include_none = true;
+	},
+	populateReferenceFields : function(parameter, variable) {
+		if (parameter.dataSource == 'Pools') {
+			var filter = this.getFilter(parameter.datasourceValue);
+			var rpGr = new GlideRecord(this.TABLE_RESOURCE_POOL);
+			rpGr.addQuery("name", filter.resourcePool);
+			rpGr.query();
+			if (rpGr.next()) {
+				variable.lookup_table = rpGr.lookup_table;
+				variable.lookup_value = rpGr.lookup_value;
+				variable.lookup_label = rpGr.lookup_label;
+			}
+			variable.include_none = true;
+			variable.use_reference_qualifier = "advanced";
+			variable.reference_qual = false;
+			if(filter.name != null && filter.name.toLowerCase() == "all") {
+				// do not set the reference qualifier.
+				// test out more and this pathway might be the most apt for all cases.
+			}else {
+				// This creates too much problem and shows up all the data. variable.reference_qual = 'javascript:new RefQualsPoolFilter().getQualifiedRecords("' +  filter.resourcePool +  '","' + filter.name +'");';
+			}
+		}
+
+
+	},
+
+	getFilter : function (dataSource) {
+		var filter = {};
+		var token = dataSource.split("::");
+		if (token && token[1] && token[2] && token[1].toLowerCase() == "pools") {
+			 var pool = token[2].split(".");
+			 filter.resourcePool = pool[0];
+			 filter.name = pool[1];
+		}
+		return filter;
+	},
+
+	_getVariableTypeForParameterType : function(uiDataTypeId,parameterTypeId,dataSource){
+		if (dataSource != null && dataSource == "CSVList")
+			return 5; // selectBox
+		if(parameterTypeId == '1')          //"String"
+			return this._getVariableType(uiDataTypeId);
+		else if (parameterTypeId == '2')  //"Password"
+			return 25;
+		else if (parameterTypeId == '6')    //"Integer"
+		    return 6;
+		else if (parameterTypeId == '5')    //"Boolean"
+			return 1;
+		else
+			return 2;
+	},
+
+	_getVariableType : function(uiDataTypeId){
+	  var ret;
+		switch (uiDataTypeId){
+			case '2':       // 'Date':
+				ret = 9;break;
+			case '3':		  //'DateTime':
+				ret =  10;break;
+			case '12':      //'list collector':
+				ret =  21;break;
+			case '6':       //'Password':
+				ret =  25;break;
+			case '8':       //'TextArea':
+				ret =  2;break;
+			case '9':       //'TextBox':
+				ret =  6;break;
+			case '10':      //'LookupSelect':
+				ret =  18;break;
+			case '11':      //'Reference':
+				ret =  8;break;
+			case '7':       // select
+				ret =  18;break;
+			default:
+				ret =  5;
+		}
+		return ret;
+	},
+
+	_upsertOnChangeonLoadClientScript: function(variable, variableSet, type){
+
+		var catalogClientScript = new global.CmpSCUtil().getVariableValidationScriptGr(variable, variableSet, type);
+		var update = catalogClientScript.next();
+		if(type === 'onChange') {
+			new global.CmpSCUtil()._setCatalogClientScript(catalogClientScript, variable, variableSet, 'onChange',
+				this._generateOnChangeClientScript(variable, variableSet));
+		}
+
+		var result = false;
+		if ( update ){
+			result = new global.CmpSCUtil().upsertSCClientScript(catalogClientScript, true);
+		} else{
+			result = new global.CmpSCUtil().upsertSCClientScript(catalogClientScript, false);
+		}
+
+		if ( !result ){
+			gs.info("Cannot update/insert catalog client script onLoad/onChange for validation with variable " + variable.name );
+			return null;
+		}
+
+		return catalogClientScript;
+
+	},
+
+	_upsertOnSubmitClientScript: function(variableSet){
+		var catalogClientScript = new global.CmpSCUtil().getVariableSetScriptGr(variableSet);
+		var update = catalogClientScript.next();
+		new global.CmpSCUtil()._setCatalogClientScript(catalogClientScript, null, variableSet, 'onSubmit',this._generateOnSubmitClientScript(variableSet));
+
+		var result = false;
+		if ( update ){
+			result = new global.CmpSCUtil().upsertSCClientScript(catalogClientScript, true);
+		} else{
+			result = new global.CmpSCUtil().upsertSCClientScript(catalogClientScript, false);
+		}
+
+		if ( !result ){
+			gs.info("Cannot update/insert catalog client onSubmit script for validation with variable set " + variableSet.name );
+			return null;
+		}
+
+		return catalogClientScript;
+
+	},
+
+	_upsertUIPolicyHideVariable : function(variable, variableSet){
+		var UIPolicy = new global.CmpSCUtil().getUIPolicyHideVariableGr(variable, variableSet);
+		new global.CmpSCUtil().upsertuiPolicyAction(variable, variableSet, UIPolicy, 'false', 'false', 'ignore');
+	},
+
+	_generateOnChangeClientScript: function(variable, variableSet){
+		var script = [];
+		script.push( gs.getMessage('// System generated script, please do not change'));
+		script.push( 'function onChange(control, oldValue, newValue, isLoading) {');
+		script.push( 'var varName = \''+variable.name+'\';');
+		script.push( ' BlueprintSCClient.validateCatItemParameterVariables(\'sn_cmp.' + this.AJAX_PROCESSOR + '\',"' + variable.sys_id + '", oldValue, newValue, isLoading, g_form);' );
+		script.push( ' BlueprintSCClient.executeFieldChange(\'sn_cmp.' + this.AJAX_DYNAMIC_FORM + '\',"' + variable.sys_id + '", oldValue, newValue, isLoading, g_form,g_form.getUniqueValue());' );
+		script.push('}');
+
+		return script.join('\n');
+	},
+
+	_generateOnSubmitClientScript: function(variableSet){
+		var script = [];
+		script.push( gs.getMessage('// System generated script, please do not change'));
+		script.push( 'function onSubmit() {');
+		script.push( ' return BlueprintSCClient.beforeSubmitCloudRsrcTemplate(g_form);' );
+		script.push('}');
+
+		return script.join('\n');
+	},
+
+	_upsertBlueprintParams : function(parameters, blueprintSysId) {
+		if (gs.nil(blueprintSysId)) {
+			return;
+		}
+
+		if (parameters) {
+			var processedParams = [];
+
+			var i = 0;
+			for (var index in parameters) {
+				// check if parameter already exists
+				var parameter = parameters[index];
+				var blueprintParamGr = new GlideRecord(this.TABLE_BLUEPRINT_PARAMS);
+				blueprintParamGr.addQuery('blue_print', blueprintSysId);
+				blueprintParamGr.addQuery('name', parameter.name);
+				blueprintParamGr.query();
+				var update = blueprintParamGr.next();
+
+				this._saveParamAttributes(blueprintParamGr, parameter);
+				if (update) {
+					blueprintParamGr.update();
+				} else {
+					blueprintParamGr.name     = parameter.name;
+					blueprintParamGr.setValue('blue_print', blueprintSysId);
+					blueprintParamGr.insert();
+				}
+				processedParams.push(parameter.name);
+				i++;
+			}
+
+			// delete any parameters that are no longer in the blueprint
+			var gr = new GlideRecord(this.TABLE_BLUEPRINT_PARAMS);
+			gr.addQuery('blue_print', blueprintSysId);
+			gr.addQuery('name', 'NOT IN', processedParams);
+			gr.query();
+			gr.deleteMultiple();
+		} else {
+			// delete all parameters if there were any
+			var paramGr = new GlideRecord(this.TABLE_BLUEPRINT_PARAMS);
+			paramGr.addQuery('blue_print', blueprintSysId);
+			paramGr.query();
+			paramGr.deleteMultiple();
+		}
+	},
+
+	_saveParamAttributes : function(blueprintParamGr, parameter){
+		blueprintParamGr.name = parameter.name;
+		blueprintParamGr.display_name = parameter.displayName;
+		blueprintParamGr.default_value = parameter.value;
+		if (parameter.allowedValues)
+			blueprintParamGr.allowed_values = new global.JSON().encode(parameter.allowedValues);
+		else
+			blueprintParamGr.allowed_values = '';
+		var regexType = parameter.regexType;
+		if (regexType == 'Regular')
+			blueprintParamGr.regex_type = 'regular';
+		else if (regexType == 'Math')
+			blueprintParamGr.regex_type = 'math';
+		else
+			blueprintParamGr.regex_type = '';
+		blueprintParamGr.regex = parameter.regex;
+		blueprintParamGr.parameter_type = parameter.parameterType;
+		blueprintParamGr.constraint_description = parameter.constraintDescription;
+		blueprintParamGr.mandatory = parameter.isMandatory;
+	},
+
+	_getValue : function(value){
+		return gs.nil(value) ? '' : '' + value;
+	},
+	
+	_getSCCategory: function(capiCategory, catalog) {
+		var category = '';
+		var gr = new GlideRecord('sn_capi_service_category');
+		gr.addQuery('name', capiCategory);
+		gr.query();
+		gr.next();
+		if (catalog == this.SERVICE_CATALOG) {
+			category = gr.getValue('provision_category') || '8641fe260b212200eff7ef9bb4673a3d'; //Defaults to compute category under cloud service catalog
+		}
+		else if (catalog == this.OPERATION_CATALOG) 
+			category =  gr.getValue('operation_category') || '86d85478678232005ca552e457415a79';//Defaults to compute category under cloud operation catalog
+	    return category;		
+	},
+
+	// Create variables 'resourceId' and 'operatioName' specific to operation catalog item
+	generateVariablesForOperationCatItem : function(blueprintGr, catItemGr, formBehaviorId) {
+		var variableSet = new global.CmpSCUtil().createVariableSet(blueprintGr, 'Lifecycle Operation Parameters', '2000', false);
+		var variable = new GlideRecord(this.TABLE_VARIABLE);
+		variable.initialize();
+		variable.question_text = 'resourceId';
+		variable.name = 'resourceId';
+		variable.type = '6'; // Single line text
+		variable.variable_set = variableSet.sys_id + '';
+		new global.CmpSCUtil().insertVariable(variable); //variable.insert();
+
+		variable.initialize();
+		variable.question_text = 'operationName';
+		variable.name = 'operationName';
+		variable.type = '6'; // Single line text
+		variable.variable_set = variableSet.sys_id + '';
+		new global.CmpSCUtil().insertVariable(variable); //variable.insert();
+
+		var body = new sn_cmp_api.BlueprintServiceScript().generateBlueprintForCatalog(blueprintGr.name,formBehaviorId);
+		var templateJSON = new global.JSON().decode(body);
+		var parameters = templateJSON.OperationAttributes;
+		for (var i in parameters)
+			variable = this._upsertVariableWithParameter(variableSet, parameters[i]);
+
+		var blueprintToVariableSet = new GlideRecord(this.TABLE_BLUEPRINT_TO_VARIABLESET);
+		blueprintToVariableSet.initialize();
+		blueprintToVariableSet.blue_print         = '' + blueprintGr.id;
+		blueprintToVariableSet.variable_set     = '' + variableSet.sys_id;
+		blueprintToVariableSet.insert();
+
+		var script = this.generateClientScript(['resourceId', 'operationName']);
+		new global.CmpSCUtil().setCatalogClientScript('Hide operation variables',variableSet, script);
+
+		// Create scripted step of any stack operation that requires one
+		var opName = catItemGr.getValue('name');
+		if (this.SCRIPTED_OPERATION_MAP.hasOwnProperty(opName)) {
+			var opImplGr = new GlideRecord('sn_cmp_rb_op_impl');
+			opImplGr.addQuery('operation.name', opName);
+			opImplGr.addQuery('resource.name', blueprintGr.tlr);
+			opImplGr.query();
+			if (opImplGr.next()) {
+
+				var stepGr = new GlideRecord('sn_cmp_rb_op_impl_step');
+				stepGr.owner_type = 5;
+				stepGr.name = "CmpBusinessScheduleUtil."+this.SCRIPTED_OPERATION_MAP[opName];
+				stepGr.enabled = true;
+				stepGr.operationimpl = opImplGr.getUniqueValue();
+				stepGr.insert();
+			}
+		}
+
+		var variableSets = [];
+		var obj = {};
+		obj.uiGroup = '';
+		obj.varSet = variableSet;
+		variableSets.push(obj);
+
+		new global.CmpSCUtil().addVariableSetToCatalogItem(catItemGr, variableSets);
+	},
+
+	// Generate a client script which hides given variable set
+	generateClientScript: function(variables){
+		var script = [];
+		script.push( gs.getMessage('// System generated script, please do not change'));
+		script.push( 'function onLoad() {');
+		for (var i=0; i<variables.length; i++)
+			script.push( '  g_form.setDisplay(\''+ variables[i] + '\', false);');
+		script.push( '}');
+
+		return script.join('\n');
+	},
+
+    type: 'BlueprintSCItemCreator'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-09-09 10:46:48</sys_created_on>
+        <sys_id>e44c9a34eb712200979aa5115206fe68</sys_id>
+        <sys_mod_count>375</sys_mod_count>
+        <sys_name>BlueprintSCItemCreator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_e44c9a34eb712200979aa5115206fe68</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-10 17:13:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

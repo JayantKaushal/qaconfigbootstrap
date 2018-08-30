@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description>Validate catalog name if the user tries to change it from list tabular view.</description>
+        <field>name</field>
+        <global>true</global>
+        <isolate_script>true</isolate_script>
+        <messages/>
+        <name>Validate catalog name on cell edit</name>
+        <order/>
+        <script><![CDATA[function onCellEdit(sysIDs, table, oldValues, newValue, callback) {
+	
+	var saveAndClose = true;
+	var catalogName = newValue;
+	//Regex to validate catalog should contain only alphanumerics, spaces, and []
+	var regexVal=/^[a-zA-Z0-9 [\]]*$/;
+	if(!regexVal.test(catalogName)) {
+		var g_form=new GlideForm();
+		g_form.addErrorMessage("Catalog name should not contain special characters.Only alphanumeric and [ ] characters are allowed.");
+		saveAndClose = false;
+	}
+
+ callback(saveAndClose);
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-04-25 10:58:11</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>bd942dfb0bed1300e937c97193673ad8</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Validate catalog name on cell edit</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_bd942dfb0bed1300e937c97193673ad8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-25 16:06:38</sys_updated_on>
+        <table>sn_cmp_bp_cat_item</table>
+        <type>onCellEdit</type>
+        <ui_type>0</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

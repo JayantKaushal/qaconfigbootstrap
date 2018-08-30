@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_scope_privilege">
+    <sys_scope_privilege action="INSERT_OR_UPDATE">
+        <operation>execute</operation>
+        <source_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</source_scope>
+        <status>allowed</status>
+        <sys_class_name>sys_scope_privilege</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-05 08:44:22</sys_created_on>
+        <sys_id>2a846ab4673032007f4eff5617415af1</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>ResourceBlockServiceScript.getPublicOperationsForResource</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_scope_privilege_2a846ab4673032007f4eff5617415af1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-02-05 08:44:22</sys_updated_on>
+        <target_name>ResourceBlockServiceScript.getPublicOperationsForResource</target_name>
+        <target_scope display_value="Global">global</target_scope>
+        <target_type>scriptable</target_type>
+    </sys_scope_privilege>
+</record_update>

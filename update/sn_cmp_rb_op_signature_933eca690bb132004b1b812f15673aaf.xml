@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rb_op_signature">
+    <sn_cmp_rb_op_signature action="INSERT_OR_UPDATE">
+        <access_type>1</access_type>
+        <applicable_to/>
+        <interface display_value="Router Interface">2805c6e50b632200e937c97193673a15</interface>
+        <name>Router Detach External Network</name>
+        <operation_type display_value="DETACH">adc74cea0b7032009e620bcb15673a29</operation_type>
+        <sys_class_name>sn_cmp_rb_op_signature</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-29 08:04:55</sys_created_on>
+        <sys_id>933eca690bb132004b1b812f15673aaf</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>Router Detach External Network</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rb_op_signature_933eca690bb132004b1b812f15673aaf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-27 10:44:11</sys_updated_on>
+    </sn_cmp_rb_op_signature>
+</record_update>

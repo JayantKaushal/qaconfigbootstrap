@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getBySecurityGroupType</name>
+        <resource_pool display_value="SecurityGroupPool">be4396d00b003200e937c97193673abd</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var relations = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		//If SecurityGroupType is selected as "EC2"
+		if(map.SecurityGroupType=="EC2"){
+			var ec2NetworkGR = new GlideRecord('cmdb_ci_network');
+			ec2NetworkGR.addQuery('name','ec2-classic');
+			ec2NetworkGR.query();
+			if(ec2NetworkGR.next())
+				relations = new sn_cmp_api.ExpressionResolverUtilScript().getMetadataRelations(ec2NetworkGR.getValue('sys_id'), 'Contains', 'cmdb_ci_compute_security_group', 'flat', 1);
+			
+		}else{
+			//If SecurityGroupType is selected as "VPC"
+			var vpcNetworkGR = new GlideRecord('cmdb_ci_network');
+			vpcNetworkGR.addQuery('object_id', 'DOES NOT CONTAIN', 'ec2-classic');
+			vpcNetworkGR.query();
+			var networkArr = [];
+			while(vpcNetworkGR.next()){
+				var temp = new sn_cmp_api.ExpressionResolverUtilScript().getMetadataRelations(vpcNetworkGR.getValue('sys_id'), 'Contains', 'cmdb_ci_compute_security_group', 'flat', 1);
+				//Decode JSON to Javascript Object
+				var decodeRes = new global.JSON().decode(temp);
+				for(var i=0;i<decodeRes.length;i++){
+					var resObj = {"label":decodeRes[i].label,"value":decodeRes[i].value};
+					networkArr.push(resObj);
+				}
+			}
+			relations = new global.JSON().encode(networkArr);
+		}
+	}
+	return relations;
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 08:47:28</sys_created_on>
+        <sys_id>ca869f6e67e80300a7526c706785ef3c</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>getBySecurityGroupType</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_ca869f6e67e80300a7526c706785ef3c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-16 20:27:52</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

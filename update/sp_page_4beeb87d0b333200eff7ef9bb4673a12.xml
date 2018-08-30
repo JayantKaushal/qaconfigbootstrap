@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_page">
+    <sp_page action="INSERT_OR_UPDATE">
+        <category/>
+        <css/>
+        <draft>false</draft>
+        <dynamic_title_structure/>
+        <id>cap_guided_setup</id>
+        <internal>false</internal>
+        <public>false</public>
+        <roles/>
+        <short_description/>
+        <sys_class_name>sp_page</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-07 07:02:26</sys_created_on>
+        <sys_id>4beeb87d0b333200eff7ef9bb4673a12</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>cap_guided_setup</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_page_4beeb87d0b333200eff7ef9bb4673a12</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-09 14:42:13</sys_updated_on>
+        <title>Guided Setup</title>
+    </sp_page>
+    <sys_translated_text action="delete_multiple" query="documentkey=4beeb87d0b333200eff7ef9bb4673a12"/>
+</record_update>

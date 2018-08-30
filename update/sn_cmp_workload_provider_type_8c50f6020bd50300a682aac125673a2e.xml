@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_workload_provider_type">
+    <sn_cmp_workload_provider_type action="INSERT_OR_UPDATE">
+        <config_ci>sn_cfg_ansible_tower</config_ci>
+        <credential_resolver display_value="AnsibleTowerCredentialResolver">f887cb390b510300a682aac125673a3f</credential_resolver>
+        <credential_type>sn_cfg_ansible_credentials</credential_type>
+        <name>Ansible Tower</name>
+        <product_type display_value="Ansible-Tower">c8f172a50b110300a682aac125673a0e</product_type>
+        <provider_version>3.1.2</provider_version>
+        <server_type>Opensource,Licenced</server_type>
+        <sys_class_name>sn_cmp_workload_provider_type</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-20 23:31:11</sys_created_on>
+        <sys_id>8c50f6020bd50300a682aac125673a2e</sys_id>
+        <sys_mod_count>7</sys_mod_count>
+        <sys_name>Ansible Tower</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_workload_provider_type_8c50f6020bd50300a682aac125673a2e</sys_update_name>
+        <sys_updated_by>jayant.kaushal</sys_updated_by>
+        <sys_updated_on>2018-03-05 12:23:22</sys_updated_on>
+    </sn_cmp_workload_provider_type>
+</record_update>

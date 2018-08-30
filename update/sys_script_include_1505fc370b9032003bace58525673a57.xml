@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPScheduleDiscoverAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPScheduleDiscoverAction</name>
+        <script><![CDATA[var CMPScheduleDiscoverAction = Class.create();
+CMPScheduleDiscoverAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		
+		var operation = params.oper;
+		var responseObj = null;
+		
+		try {
+			switch(operation) {
+				case 'create':
+					responseObj = this.createSchedule(params);
+					break;
+
+				case 'update':
+					responseObj = this.updateSchedule(params);
+					break;
+
+				default:
+					throw gs.getMessage("Invalid operation for discovery schedule.");
+			}
+			return responseObj;
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to create or update discovery schedule."),
+				"CMPScheduleDiscoverAction.doAction(): Failed to create or update discovery schedule.",
+				error
+			);
+		}
+    },
+	
+	createSchedule: function(params) {
+		var scheduleGr = new GlideRecord('discovery_schedule');
+		scheduleGr.initialize();
+		scheduleGr.name = params.cloudAccountName+ ' - ' + params.name;
+		this._setScheduleFields(scheduleGr, params);
+		var scheduleId = scheduleGr.insert();
+		if(!scheduleId)
+			throw 'Failed to create schedule';
+
+		var ldcsGr = new GlideRecord('sn_cmp_ca_assc_datacenter');
+		ldcsGr.addQuery('cloud_account', params.sys_id);
+		ldcsGr.addQuery('status', "1"); //published ldc only
+		ldcsGr.query();
+
+		while (ldcsGr.next()) {
+			var ldcgr = new GlideRecord('cmp_discovery_ldc_config');
+			ldcgr.initialize();
+			ldcgr.ldc = ldcsGr.ldc_id;
+			ldcgr.discovery_schedule = scheduleId;
+			ldcgr.insert();
+		}
+
+		return {
+			sys_id: scheduleGr.sys_id+''
+		};
+	},
+	
+	updateSchedule: function(params) {
+		var scheduleGr = new GlideRecord('discovery_schedule');
+		if(scheduleGr.get(params.schedule_id)) {
+			scheduleGr.name = params.name;
+			this._setScheduleFields(scheduleGr, params);
+			var updated = scheduleGr.update();
+			if(!updated)
+				throw 'Failed to updated schedule';
+		}
+		
+		return {
+			sys_id: params.schedule_id
+		};
+	},
+	
+	_setScheduleFields: function(scheduleGr, params) {
+		scheduleGr.discover = 'Cloud Resources';
+		scheduleGr.active = params.active;
+		scheduleGr.ci_id = params.sys_id;
+		scheduleGr.disco_run_type = params.disco_run_type;
+		scheduleGr.max_run = params.max_run;
+		scheduleGr.run_time = params.run_time;
+	},
+
+    type: 'CMPScheduleDiscoverAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-20 12:31:07</sys_created_on>
+        <sys_id>1505fc370b9032003bace58525673a57</sys_id>
+        <sys_mod_count>22</sys_mod_count>
+        <sys_name>CMPScheduleDiscoverAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_1505fc370b9032003bace58525673a57</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-07 23:31:52</sys_updated_on>
+    </sys_script_include>
+</record_update>

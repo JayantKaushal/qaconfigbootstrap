@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOperationAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOperationAction</name>
+        <script><![CDATA[var CMPCreateOperationAction = Class.create();
+CMPCreateOperationAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		try {
+			if (!params.operationName || !params.operationType) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPCreateOperationAction.doAction: Undefined element type, operation name, and/or operation type",
+				null
+				);
+			}
+
+			var blueprintServiceScript = new sn_cmp_api.BlueprintServiceScript();
+			var opGR = this.getBlueprintOperation(params.bpSysId, params.operationName);
+			if(opGR == null){
+			var newOperationObj = blueprintServiceScript.createBlueprintOperation(params.bpSysId, params.operationName,params.operationType,params.attributes);
+
+			var newOperation = new global.JSON().decode(newOperationObj);
+			return newOperation;
+			}else{
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Operation {0} already exists.",params.operationName),
+				"Operation "+params.operationName+" already exists.",
+				null
+				);
+			}
+
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			gs.getMessage("Failed to create the operation"),
+			"CMPCreateOperationAction.doAction(): Failed to create new operation",
+			error
+			);
+		}
+    },
+	getBlueprintOperation: function(bpSysId,name){
+		var opGR = new GlideRecord('sn_cmp_bp_stage_op');
+		opGR.addQuery('name',name);
+		opGR.addQuery('blueprint_stage_model.blueprint',bpSysId);
+		opGR.query();
+		if(opGR.next())
+			return opGR;
+
+	},
+
+    type: 'CMPCreateOperationAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-13 11:10:20</sys_created_on>
+        <sys_id>fda21ca30b3032003bace58525673ad0</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>CMPCreateOperationAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fda21ca30b3032003bace58525673ad0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-10 19:34:01</sys_updated_on>
+    </sys_script_include>
+</record_update>

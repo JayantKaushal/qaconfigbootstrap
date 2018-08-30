@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" audit="true" extends="sys_metadata" label="ServiceNow Cloud Templates" max_length="40" name="sn_cmp_cloud_template" type="collection">
+        <element label="Upload File" max_length="40" name="attachment" type="file_attachment"/>
+        <element attributes="edge_encryption_enabled=true" label="Body" mandatory="true" max_length="307200" name="body" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Cloud Template URL" max_length="1024" name="cloud_template_url" type="url"/>
+        <element label="Format" max_length="32" name="format" read_only="true" reference="sn_cmp_cloud_template_format" reference_qual="javascript:new sn_cmp.BlueprintTemplateUtil().getFormatForType(current.type);" type="reference"/>
+        <element choice="3" default="body" label="Ingestion Method" max_length="40" name="ingestion_method" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Use Template body" sequence="1" value="body"/>
+                <element inactive_on_update="false" label="Upload a File" sequence="2" value="upload"/>
+                <element inactive_on_update="false" label="Import from URL" sequence="3" value="url"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="127" name="name" type="string" unique="true"/>
+        <element label="Published" max_length="40" name="published" read_only="true" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Short description" max_length="127" name="short_description" type="string"/>
+        <element choice="1" default="none" label="Status" max_length="40" name="status" read_only="true" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Failed" sequence="1" value="failed"/>
+                <element inactive_on_update="false" label="Success" sequence="2" value="success"/>
+                <element inactive_on_update="false" label="None" sequence="3" value="none"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Status Message" max_length="1024" name="status_message" read_only="true" type="string"/>
+        <element default="global" label="Domain" max_length="32" name="sys_domain" type="domain_id"/>
+        <element active="false" attributes="edge_encryption_enabled=true" label="Template URL" max_length="1024" name="template_url" type="string"/>
+        <element attributes="ref_auto_completer=AJAXReferenceChoice" choice="1" label="Type" mandatory="true" max_length="32" name="type" reference="sn_cmp_cloud_template_type" type="reference">
+            <choice/>
+        </element>
+        <element active="false" default="true" label="Use template body" max_length="40" name="use_template_body" type="boolean"/>
+        <index name="index">
+            <element name="sys_domain"/>
+        </index>
+        <index name="index2">
+            <element name="name"/>
+        </index>
+        <index name="index3">
+            <element name="format"/>
+        </index>
+        <index name="index4">
+            <element name="type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetKeyValueMappingsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetKeyValueMappingsAction</name>
+        <script><![CDATA[var CMPGetKeyValueMappingsAction = Class.create();
+CMPGetKeyValueMappingsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.stepInputParamId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetKeyValueMappingsAction.doAction: Undefined step input parameter Id",
+					null
+				);
+			}
+			
+			var gr = new GlideRecord('sn_cmp_rb_keyvalue_mapping');
+			gr.addQuery("keyvalue", params.stepInputParamId);
+			gr.orderBy('parameter');
+			gr.query();
+			var keyValueMappingList = [];
+			while (gr.next()) {
+				
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.keyvalueId = gr.getValue('keyvalue');
+				rbObj.keyvalueName = gr.getDisplayValue('keyvalue');
+				rbObj.parameter = gr.getValue('parameter');
+				rbObj.parameter_source = gr.getValue('parameter_source');
+				rbObj.checked = false; //Using for delete option with checkbox in the grid
+				keyValueMappingList.push(rbObj);
+			}
+			return keyValueMappingList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get step input parameter keyvalue mappings."),
+				"CMPGetKeyValueMappingsAction.doAction(): Failed to get step input parameter keyvalue mappings",
+				error
+			);
+		}
+    },
+    type: 'CMPGetKeyValueMappingsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-14 12:10:50</sys_created_on>
+        <sys_id>cb45bd883b4403009c82cedf34efc43c</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>CMPGetKeyValueMappingsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_cb45bd883b4403009c82cedf34efc43c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-14 12:35:47</sys_updated_on>
+    </sys_script_include>
+</record_update>

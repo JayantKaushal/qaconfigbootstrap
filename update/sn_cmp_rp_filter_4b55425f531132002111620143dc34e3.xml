@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getByCAAndLDC</name>
+        <resource_pool display_value="OSProfilePool">35e7721e932322007472f23a767ffbcb</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var filteredRecords = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		 // TODO: write script to set filtered records
+        var cloudAccountId = map.CloudAccount;
+		var ldcId = map.Location;
+        
+		if(cloudAccountId != null && ldcId != null){
+			var osProfileMapping = new GlideRecord("sn_cmp_os_profile_mapping");
+			osProfileMapping.addQuery('cloud_account', cloudAccountId);
+			osProfileMapping.addQuery('location', ldcId);
+			osProfileMapping.query();
+			while (osProfileMapping.next()){
+				// get the profile here 
+				var profile = {};
+				var osProfileGr = new GlideRecord("sn_cmp_os_profile");
+				var profileId = osProfileMapping.getValue('profile');
+				osProfileGr.get(profileId);
+				profile.value = osProfileGr.getValue('name');
+				profile.label = osProfileGr.getValue('name');
+				filteredRecords.push(profile);
+			}
+		}
+		
+	 }
+     gs.info("Filtered records === "+filteredRecords);
+	//force to string
+	return new global.JSON().encode(filteredRecords);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-03-09 21:51:09</sys_created_on>
+        <sys_id>4b55425f531132002111620143dc34e3</sys_id>
+        <sys_mod_count>8</sys_mod_count>
+        <sys_name>getByCAAndLDC</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_4b55425f531132002111620143dc34e3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-03-09 22:59:23</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

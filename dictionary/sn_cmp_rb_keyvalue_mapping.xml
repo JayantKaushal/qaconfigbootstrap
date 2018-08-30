@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="KeyValue Mapping" max_length="40" name="sn_cmp_rb_keyvalue_mapping" type="collection">
+        <element label="KeyValue" max_length="32" name="keyvalue" reference="sn_cmp_rb_keyvalue" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Parameter" max_length="200" name="parameter" type="string"/>
+        <element choice="1" label="Parameter source" max_length="40" name="parameter_source" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Operation Parameter" sequence="1" value="1"/>
+                <element inactive_on_update="false" label="Global Attribute" sequence="2" value="2"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="keyvalue"/>
+        </index>
+    </element>
+</database>

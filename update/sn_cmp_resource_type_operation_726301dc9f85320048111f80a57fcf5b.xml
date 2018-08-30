@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_resource_type_operation">
+    <sn_cmp_resource_type_operation action="INSERT_OR_UPDATE">
+        <discovery_operation display_value="ListAvailabilityZones">dc993b5e0be622009e620bcb15673a4b</discovery_operation>
+        <discovery_step display_value="ITapp Azure Compute.List availability zones">52b137139fa0320048111f80a57fcf94</discovery_step>
+        <resource_type display_value="Microsoft.Compute/availabilitySets">d57bff939fa0320048111f80a57fcff1</resource_type>
+        <sys_class_name>sn_cmp_resource_type_operation</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-02-15 22:39:35</sys_created_on>
+        <sys_id>726301dc9f85320048111f80a57fcf5b</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>d57bff939fa0320048111f80a57fcff1</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_resource_type_operation_726301dc9f85320048111f80a57fcf5b</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-02-15 22:39:35</sys_updated_on>
+    </sn_cmp_resource_type_operation>
+</record_update>

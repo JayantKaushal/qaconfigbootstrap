@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Attribute Mapping" max_length="40" name="sn_cmp_ci_attribute_mapping" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Attribute" max_length="40" name="attribute" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Display Value" max_length="40" name="display_value" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource Type" max_length="40" name="resource_type" type="string"/>
+    </element>
+</database>

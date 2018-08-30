@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetOperationInputParamAction</api_name>
+        <client_callable>false</client_callable>
+        <description>Resource Block Operation Input Parameters</description>
+        <name>CMPGetOperationInputParamAction</name>
+        <script><![CDATA[var CMPGetOperationInputParamAction = Class.create();
+CMPGetOperationInputParamAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.op_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetOperationInputParamAction.doAction: Undefined operation Id",
+					null
+				);
+			}
+			
+			//Guset Interface operation list
+			var gr = new GlideRecord('sn_cmp_rb_op_impl_param');
+			if(params.op_id || params.op_id != "")
+				gr.addQuery("operation", params.op_id);
+			gr.orderBy('name');
+			gr.query();
+			var opInputParamsList = [];
+			
+			while (gr.next()) {
+				var getApplicableTo = '';
+				var rbObj = {};
+				rbObj.id = gr.getValue('sys_id');
+				rbObj.datasourcevalue = gr.getValue('datasourcevalue');
+				rbObj.defaultvalue = gr.getValue('defaultvalue');
+				rbObj.name = gr.getValue('name');
+				rbObj.visibilty = (gr.getValue('visibilty') == '1') ? true : false;
+				rbObj.ismandatory = (gr.getValue('ismandatory') == '1') ? true : false;
+				rbObj.datasource = gr.getValue('datasource');
+				rbObj.value = gr.getValue('value');
+				rbObj.checked = false; //Using for delete option with checkbox in the grid
+				/*rbObj.id = gr.getValue('sys_id');
+				rbObj.name = gr.getValue('name');
+				rbObj.sysModCount = gr.getValue('sys_mod_count');
+				rbObj.order = gr.getValue('order');
+				rbObj.type = gr.getValue('type');*/
+				rbObj.applicable_to = [];
+				getApplicableTo = (gr.getValue('applicable_to')) ? gr.getValue('applicable_to') : '' ;
+				if(typeof getApplicableTo != 'undefined' && getApplicableTo != '') {
+					var resourceBlockIds = getApplicableTo.split(",");
+					var rbLength = resourceBlockIds.length;
+					if(rbLength) {
+						for(var i=0; i < rbLength; i++) {
+							var grResourceBlock = new GlideRecord('sn_cmp_rb_resourceblock');
+							grResourceBlock.addQuery("sys_id", resourceBlockIds[i]);
+							grResourceBlock.query();
+							while (grResourceBlock.next()) {
+								var apptoObj = {};
+								apptoObj.value = grResourceBlock.getValue('sys_id');
+								apptoObj.displayValue = grResourceBlock.getValue('name');
+								rbObj.applicable_to.push(apptoObj);
+							}
+						}
+					}
+				}
+				
+				opInputParamsList.push(rbObj);
+			}
+			return opInputParamsList;
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get resource block operations input parameters"),
+				"CMPGetOperationInputParamAction.doAction(): Failed to get resource block operations input parameters",
+				error
+			);
+		}
+    },
+    type: 'CMPGetOperationInputParamAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-02-19 05:27:31</sys_created_on>
+        <sys_id>027c3d953b013200a856cedf34efc403</sys_id>
+        <sys_mod_count>16</sys_mod_count>
+        <sys_name>CMPGetOperationInputParamAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_027c3d953b013200a856cedf34efc403</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-05-30 08:57:55</sys_updated_on>
+    </sys_script_include>
+</record_update>

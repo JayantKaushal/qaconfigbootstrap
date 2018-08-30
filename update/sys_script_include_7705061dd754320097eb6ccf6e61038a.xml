@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.AWSEventHandler</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>AWSEventHandler</name>
+        <script><![CDATA[var AWSEventHandler = Class.create();
+AWSEventHandler.prototype = Object.extendsObject(CloudEventHandler, {
+
+    processEvent: function(headersStr, bodyStr, queryParamsStr, eventId) {
+        var response = {};
+        var json = new global.JSON();
+        var headers = json.decode(headersStr);
+        var body = json.decode(bodyStr);
+        var queryParams = json.decode(queryParamsStr);
+
+        // Format  arn:partition:service:region:account-id:resource
+        // Example arn:aws:sns:us-west-1:974065848211:TEST_ITOM2
+        var arr = body.TopicArn.split(":");
+        var ldc;
+        var serviceAccountId;
+        if (arr && arr.length >= 5) {
+            ldc = body.TopicArn.split(":")[3];
+            serviceAccountId = body.TopicArn.split(":")[4];
+        } else {
+            response.state = 'skipped';
+            response.error_message = gs.getMessage('Invalid TopicArn provided');
+            return response;
+        }
+
+        if (body.Subject)
+            response.subject = body.Subject;
+
+       if (!this._verifyLDC(serviceAccountId, ldc)) {
+            response.state = 'skipped';
+            response.error_message = gs.getMessage('LDC {1} is not set up in Service Account {0}', [serviceAccountId, ldc]);
+            return response;
+        }
+		
+        var type = body.Type;
+        if (type == 'SubscriptionConfirmation') { //auto subscribe
+            var request = new sn_ws.RESTMessageV2();
+            request.setEndpoint(body.SubscribeURL);
+            request.setHttpMethod('GET');
+            request.execute();
+
+            response.state = 'processed';
+            response.event_name = 'SubscriptionConfirmation';
+            response.event_time = this.getEventTime(body.Timestamp);
+        } else if (type == 'Notification') {
+            var message = json.decode(body.Message);
+            var eventName = message.messageType;
+            var notificationTime = message.notificationCreationTime;
+
+            response.event_name = eventName;
+            response.event_time = this.getEventTime(notificationTime);
+
+            if (eventName == 'ConfigurationItemChangeNotification') {
+                var resourceType = message.configurationItem.resourceType;
+                var invocationPatternId = this._getPatternId(resourceType);
+                var ciClassType = this._getClassTypeId(resourceType);
+                var processedPayload = {};
+                if (invocationPatternId) {
+                    //Initialize the response
+                    response.state = 'processing';
+                    response.discovery_status = null;
+                    response.error_message = "";
+
+                    //Prepare the mandatory parameters to pass to the pattern context
+                    var configObj = {
+                        changeType: message.configurationItemDiff.changeType,
+                        classType: ciClassType,
+                        accountId: serviceAccountId,
+                        ldc: ldc,
+                        inputObjectId: message.configurationItem.resourceName,
+                        cloudId: message.configurationItem.ARN,
+                        patternId: invocationPatternId,
+                        eventId: eventId,
+						eventType: "AWS",
+                        eventData: JSON.stringify(message)
+                    };
+
+                    var cloudPatternInvocation = new sn_cmp.CloudPatternInvocation();
+                    var result = cloudPatternInvocation.eventBasedDiscovery(configObj, response);
+
+                    if (result) {
+						//For sucess invocation the state will be update in HorizontalDiscoveryResultHandler.finalizeCloudChangeEvent() 
+						//Will be determine if the pattern is success or not
+                        var ciSysId = this._getCiId(ciClassType, message.configurationItem.resourceId);
+                        processedPayload = "{\"" + ciClassType + "\":\"" + ciSysId + "\"}";
+                    } else {
+                        response.state = (response.state) ? response.state : 'error';
+                        response.error_message = (response.error_message) ? response.error_message : gs.getMessage('Cannot invoke pattern discovery for: {0}', [JSON.stringify(configObj, null, 2)]);
+                    }
+                    this._updateResponse(response, resourceType, processedPayload);
+					return response;
+                } else {
+					var responseProcessor = new sn_cmp.ResponseProcessor(serviceAccountId,
+																		 ldc,
+																		 'Cloud Event');
+
+					var cloudModelObject = responseProcessor.processResponseArray([].concat(message.configurationItem),
+																				  resourceType,
+																				  null);
+
+					//this._debug('cloudModelObject:' + global.JSUtil.describeObject(cloudModelObject));
+					processedPayload = new sn_cmp_api.CloudModelProcessorScript().updateCIs(new global.JSON().encode(cloudModelObject));
+					this._debug('processedPayload:' + processedPayload);
+					this._updateResponse(response, resourceType, processedPayload);
+                }
+            }
+
+
+            var service = message.Service;
+            if (service == "AWS Auto Scaling") {
+                //logic to get instance detail.
+                var ownerInstanceId;
+                var scalingGroupName = message.AutoScalingGroupName;
+                var gr = new GlideRecord('cmdb_ci_sa_server_array');
+                gr.addQuery('object_id', scalingGroupName);
+                gr.query();
+                if (gr.next()) {
+                    ownerInstanceId = gr.getUniqueValue() + '';
+                }
+                var nodeId = message.EC2InstanceId;
+                this.refreshNode(serviceAccountId, ldc, nodeId, ownerInstanceId);
+
+            }
+
+            response.state = 'processed';
+        } else { //unsupported event type, skip it for now
+            response.state = 'skipped';
+            response.error_message = gs.getMessage('Unsupported event type: {0}', [type]);
+        }
+        //this._debug('response:' + global.JSUtil.describeObject(response));
+        return response;
+    },
+
+    refreshNode: function(serviceAccountId, ldc, instanceId, ownerInstanceId) {
+
+        var order = {
+            'ownerInstanceId': ownerInstanceId + '',
+            'resource': "Virtual Server Array",
+            'entityType': 'Resource',
+            'operationName': 'Virtual Server Array Interface.DescribeNode',
+            orderFormData: {
+                'CloudServiceAccountId': serviceAccountId + '',
+                'ObjectID': instanceId + '',
+                'Location': ldc + '',
+                'ownerInstanceId': ownerInstanceId + ''
+            }
+        };
+
+        var orderScript = new sn_cmp_api.OrderServiceScript();
+        orderScript.submitOrder(new global.JSON().encode(order));
+    },
+
+    getEventTime: function(eventTime) {
+        var re = /^(\d\d\d\d-\d\d-\d\d)T(\d\d:\d\d:\d\d)\.\d\d\dZ$/g;
+        var arr = re.exec(eventTime);
+        if (arr && arr.length == 3)
+            return new GlideDateTime(arr[1] + ' ' + arr[2]);
+        return '';
+    },
+
+    type: 'AWSEventHandler'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-12 23:21:02</sys_created_on>
+        <sys_id>7705061dd754320097eb6ccf6e61038a</sys_id>
+        <sys_mod_count>71</sys_mod_count>
+        <sys_name>AWSEventHandler</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_7705061dd754320097eb6ccf6e61038a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-20 00:04:24</sys_updated_on>
+    </sys_script_include>
+</record_update>

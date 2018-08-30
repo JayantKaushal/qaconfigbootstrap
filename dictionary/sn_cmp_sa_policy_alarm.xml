@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" label="Scaling Policy Alarm" max_length="40" name="sn_cmp_sa_policy_alarm" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Alarm ARN" max_length="40" name="alarm_arn" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Alarm Name" max_length="40" name="alarm_name" type="string"/>
+        <element label="Scaling Policy" max_length="32" name="policy" reference="sn_cmp_sa_policy_template" type="reference"/>
+        <index name="index">
+            <element name="policy"/>
+        </index>
+    </element>
+</database>

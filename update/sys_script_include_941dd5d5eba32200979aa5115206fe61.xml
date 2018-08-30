@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CloudResourceDiscoveryLaunch</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CloudResourceDiscoveryLaunch</name>
+        <script><![CDATA[var CloudResourceDiscoveryLaunch = Class.create();
+CloudResourceDiscoveryLaunch.prototype = Object.extendsObject(global.DiscoveryLaunch, {
+    initialize: function(status, schedule) {
+		global.DiscoveryLaunch.prototype.initialize.call(this, status, schedule);
+    },
+	
+	launch: function() {
+		// get resource types to be discovered
+		var resTypes = [];
+		var resGr = new GlideRecord('cmp_discovery_res_type_config');
+		resGr.addActiveQuery();
+		resGr.addQuery('discovery_schedule', ''+this.schedule.sysID);
+		resGr.query();
+		while (resGr.next()) {
+			resTypes.push(resGr.ci_type);
+		}
+		// get LDCs to be discovered
+		var ldcs = [];
+		var ldcGr = new GlideRecord('cmp_discovery_ldc_config');
+		ldcGr.addActiveQuery();
+		ldcGr.addQuery('discovery_schedule', ''+this.schedule.sysID);
+		ldcGr.query();
+		var ds = new sn_cmp_api.DiscoveryServiceScript();
+		while (ldcGr.next()) {
+			if (ldcGr.ldc.nil()) {
+				// no LDC specified, get all of them	
+				var ldcList = ds.getLdcs(ldcGr.service_account);
+				if (ldcList) {
+					for (var i=0; i<ldcList.length; i++) {
+						ldcs.push(''+ldcList[i]);
+					}
+				}
+			} else {
+				ldcs.push(''+ldcGr.ldc);
+			}
+		}
+		
+		// start discovery now
+		ds.discover(ldcs,resTypes,''+this.status.sysID);
+		
+	},
+
+    type: 'CloudResourceDiscoveryLaunch'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-06 13:32:36</sys_created_on>
+        <sys_id>941dd5d5eba32200979aa5115206fe61</sys_id>
+        <sys_mod_count>39</sys_mod_count>
+        <sys_name>CloudResourceDiscoveryLaunch</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_941dd5d5eba32200979aa5115206fe61</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-27 06:58:18</sys_updated_on>
+    </sys_script_include>
+</record_update>

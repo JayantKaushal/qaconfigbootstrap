@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_ci_related_data_handler">
+    <sn_cmp_ci_related_data_handler action="INSERT_OR_UPDATE">
+        <description>Sets the assigned to user and assignment group</description>
+        <name>SetCIUserAndGroup</name>
+        <script><![CDATA[var gr = new GlideRecord(ci_class);
+if (gr.get(ci_sys_id)) {
+	gr.assigned_to = gs.nil(related_data.user_id) ? '' : related_data.user_id;
+	gr.assignment_group = gs.nil(related_data.group_id) ? '' : related_data.group_id;
+	gr.update();
+}]]></script>
+        <script_to_run><![CDATA[var related_data = global.JSON.parse(data);
+var gr = new GlideRecord(ci_class);
+if (gr.get(ci_sys_id)) {
+	gr.assigned_to = gs.nil(related_data.user_id) ? '' : related_data.user_id;
+	gr.assignment_group = gs.nil(related_data.group_id) ? '' : related_data.group_id;
+	gr.update();
+}]]></script_to_run>
+        <sys_class_name>sn_cmp_ci_related_data_handler</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2017-01-27 00:10:48</sys_created_on>
+        <sys_id>0cb81ef99f60320048111f80a57fcf70</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>SetCIUserAndGroup</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_ci_related_data_handler_0cb81ef99f60320048111f80a57fcf70</sys_update_name>
+        <sys_updated_by>jimmy.yuan</sys_updated_by>
+        <sys_updated_on>2017-01-28 08:32:34</sys_updated_on>
+    </sn_cmp_ci_related_data_handler>
+</record_update>

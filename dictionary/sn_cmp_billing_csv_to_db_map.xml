@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Billing CSV to DB Map" max_length="40" name="sn_cmp_billing_csv_to_db_map" type="collection">
+        <element dependent="destination_table" label="Destination field" mandatory="true" max_length="80" name="destination_field" type="field_name"/>
+        <element attributes="base_start=true" label="Destination table" mandatory="true" max_length="80" name="destination_table" read_only="true" type="table_name"/>
+        <element hint="The cloud management provider" label="Provider" mandatory="true" max_length="32" name="provider" reference="sn_capi_provider" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" hint="The name of the field in the downloaded billing data" label="Source field" mandatory="true" max_length="40" name="source_field" type="string"/>
+        <index name="index">
+            <element name="provider"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpJSONUtil</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CmpJSONUtil</name>
+        <script><![CDATA[var CmpJSONUtil = Class.create();
+
+CmpJSONUtil.prototype = {
+	initialize: function() {
+	},
+	
+	isValidObject : function(stringValue) {
+		var str = ('' + stringValue).trim();
+		return  str.startsWith('{') && str.endsWith('}') && this.isJSONByParser(str);
+	},
+	
+	isValidArray : function(stringValue) {
+		var str = ('' + stringValue).trim();
+		return  str.startsWith('[') && str.endsWith(']') && this.isJSONByParser(str);
+	},
+	
+	isJSONByParser : function (json){
+		var isJson = true;
+		try {
+			new CmpJSONParser().parseJSON('' + json);
+		} catch(e){
+			isJson = false;
+		}
+		
+		return isJson;
+	},
+	/*
+ 	* This method is used to fix problem https://hi.service-now.com/nav_to.do?uri=problem.do?sys_id=a23f6e86bce75dc0c14de28282f8a8ca
+ 	* The JSON decode method will decode ['local.com'] to be ["local", "com"] as ['local.com'] is not valid json format. But JSONParse
+ 	* we used does not throw error and return valid javascript object with wrong value.
+ 	* There is another problem https://hi.service-now.com/nav_to.do?uri=problem.do?sys_id=ee15afe7d9235500b4302ee657a3c4c1 opened for platform team.
+ 	* Once that one is solved, we need to remove this method and modify validate methods to use that.
+ 	*/
+	isJSON : function(json) {
+		var str = '' + json;
+		if (str.trim().length == 0 ){
+			return false;
+		}
+		str = str.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@');
+		str = str.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']');
+		str = str.replace(/(?:^|:|,)(?:\s*\[)+/g, '');
+		return (/^[\],:{}\s]*$/).test(str);
+	},
+	isJSONEquals : function(json1, json2){
+		try{
+			var x = new global.JSON().decode(json1);
+			var y = new global.JSON().decode(json2);
+			return this.isEquals(x,y);
+		}catch(e){
+			gs.info("string is not in right json formation" + e.message);
+		}
+		return false;
+	},
+	
+	isEquals: function( x, y ) {
+		if ( x === y ) return true;
+			// if both x and y are null or undefined and exactly the same
+		if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
+		
+			// if they are not strictly equal, they both need to be Objects
+		if ( x.constructor !== y.constructor ) return false;
+		
+			// they must have the exact same prototype chain, the closest we can do is
+		// test there constructor.
+		for ( var p in x ) {
+			if ( ! x.hasOwnProperty( p ) ) continue;
+				// other properties were tested using x.constructor === y.constructor
+			
+			if ( ! y.hasOwnProperty( p ) ) return false;
+				// allows to compare x[ p ] and y[ p ] when set to undefined
+			if ( x[ p ] === y[ p ] ) continue;
+				// if they have the same strict value or identity then they are equal
+			if ( typeof( x[ p ] ) !== "object" ) return false;
+				// Numbers, Strings, Functions, Booleans must be strictly equal
+			if ( ! this.isEquals( x[ p ],  y[ p ] ) ) return false;
+				// Objects and Arrays must be tested recursively
+		}
+		
+		for ( p in y ) {
+			if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) return false;
+				// allows x[ p ] to be set to undefined
+		}
+		return true;
+	},
+	
+	type: 'CmpJSONUtil'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-11 19:58:27</sys_created_on>
+        <sys_id>306546d5eb832200979aa5115206fe37</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CmpJSONUtil</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_306546d5eb832200979aa5115206fe37</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-20 18:16:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

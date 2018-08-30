@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPTemplateClass</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPTemplateClass</name>
+        <script><![CDATA[var CMPTemplateClass = Class.create();
+CMPTemplateClass.prototype = Object.extendsObject(sn_cmp.PolicyExecutionBase, {
+	customScript : function(formData){
+		// Manipulation of form parameters are supported. Changes in any other attributes
+        // will be ignored.
+		// The data available for manipulation is as follows:
+		// Form Data -  for example: StackName can be accessed through formData.StackName
+		// formData.StackName = "MyStack";
+		// User Data  - for example: User Id can be accessed through this.parameters.userData
+		// if(this.parameter.userData.userId == 'servicenowuserId')
+		//this.info("id = " + formData.StackName);
+		
+		
+		return formData;
+	},
+	execute: function() {
+		if(this.parameters !=  null && this.parameters.formData != null){
+        	var inputData = JSON.parse(JSON.stringify(this.parameters.formData));
+		    var outputFormData = this.customScript(inputData);
+            if( outputFormData != null){
+                this.parameters.formData = outputFormData;
+            }
+       	}
+		var output = {};
+		output.answer = this.parameters;
+		return JSON.stringify(output);
+	},
+	type : 'CMPTemplateClass'
+});	
+
+var CMPTemplateClassObj = new CMPTemplateClass(inputAttributes);
+var outputParams = CMPTemplateClassObj.execute();
+gs.info( "Output of script is = " + outputParams);]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-15 00:29:47</sys_created_on>
+        <sys_id>dd92c0585bd10300ef3f273a41f91ad8</sys_id>
+        <sys_mod_count>10</sys_mod_count>
+        <sys_name>CMPTemplateClass</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_dd92c0585bd10300ef3f273a41f91ad8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-15 02:31:02</sys_updated_on>
+    </sys_script_include>
+</record_update>

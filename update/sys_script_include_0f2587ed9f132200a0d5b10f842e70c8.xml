@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetBlueprintGraphDTOAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetBlueprintGraphDTOAction</name>
+        <script><![CDATA[var CMPGetBlueprintGraphDTOAction = Class.create();
+CMPGetBlueprintGraphDTOAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		try {
+			
+			if (!params.layer_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetBlueprintGraphDTOAction.doAction: Undefined layer id",
+					null
+				);
+			}
+			var dtoTranslator = new CMPGraphDTOTranslator();
+			var versionObj = new sn_smd.SMSvcDefinition(params.layer_id, params.checkpoint_id, params.checkout_id);
+			return dtoTranslator.getGraphDTO(versionObj);
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get blueprint data"),
+				"CMPGetBlueprintGraphDTOAction.doAction(): Failed to get the bp DTO",
+				error
+			);
+		}
+	},
+
+    type: 'CMPGetBlueprintGraphDTOAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-25 05:38:26</sys_created_on>
+        <sys_id>0f2587ed9f132200a0d5b10f842e70c8</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>CMPGetBlueprintGraphDTOAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0f2587ed9f132200a0d5b10f842e70c8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-11-25 05:38:26</sys_updated_on>
+    </sys_script_include>
+</record_update>

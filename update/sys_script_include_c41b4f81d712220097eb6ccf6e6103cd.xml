@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.BlueprintSCValidator</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>BlueprintSCValidator</name>
+        <script><![CDATA[var BlueprintSCValidator = Class.create();
+BlueprintSCValidator.prototype = {
+	initialize: function() {
+	},
+
+	validateVariableValue : function(parameter_value, variable_sys_id) {
+		var variableGr = new GlideRecord('item_option_new');
+		variableGr.get(variable_sys_id);
+		var paramDisplayValue = variableGr.question_text;
+		var retVal = {name: '' + variableGr.name, isValid:true, message: [], msgtype: 'info'};
+		//validate if variable type is String, Password, Boolean
+		if (variableGr.type == 6 || variableGr.type == 25
+			|| variableGr.type == 2 || variableGr.type == 1 || variableGr.type == 5 || variableGr.type == 10 || variableGr.type == 18) {
+			var paramGr = this._getParameterFromVariable(variableGr);
+			if (paramGr)  {
+				var errmsg;
+				if (parameter_value)
+					errmsg = this._validateParamValue(parameter_value, paramGr, paramDisplayValue);
+
+				if (errmsg && errmsg.length > 0) {
+					retVal.isValid = false;
+					retVal.message = errmsg;
+					retVal.msgtype = 'error';
+				}
+
+			}
+		}
+		return retVal;
+	},
+
+	_validateParamValue : function(parameter_value, paramGr, paramDisplayValue){
+		var errmsg = [];
+		var paramtype = paramGr.getDisplayValue('parameter_type');
+		parameter_value = parameter_value +'';
+		if (paramtype === 'String' || paramtype === 'Password') {
+			this._validateAllowedValues(parameter_value, paramGr.allowed_values, errmsg);
+			this._validateAllowedPattern(parameter_value, paramGr.regex+'', errmsg, paramDisplayValue, paramGr.error_text);
+			if ('DateTime' == paramGr.getDisplayValue('ui_data_type'))
+				this._validateDateTime(parameter_value, errmsg);
+		} else if (paramtype === 'Integer') {
+			if (this._isInt(parameter_value)) {
+				var numValue = parseFloat(parameter_value);
+				this._validateAllowedValues(numValue, paramGr.allowed_values, errmsg);
+			} else {
+				errmsg.push(gs.getMessage("This is not a valid integer"));
+			}
+		} else if (paramtype === 'Boolean') {
+			if (!this._validateIsBoolStr(parameter_value)) {
+				errmsg.push(gs.getMessage("This is not a valid boolean"));
+			}
+		} else if (paramtype === 'Array') {
+			if (!new CmpJSONUtil().isValidArray(parameter_value))
+				errmsg.push(gs.getMessage("This is not a valid JSON array"));
+		} else if (paramtype === 'Object') {
+			if (!new CmpJSONUtil().isValidObject(parameter_value)) {
+				errmsg.push(gs.getMessage("This is not a valid JSON object"));
+			}
+		}
+
+		if (errmsg.length > 0) {
+			if (paramGr.constraint_description)
+				errmsg.splice(0, 0, '' + paramGr.constraint_description);
+		}
+		return errmsg;
+	},
+
+	_getParameterFromVariable : function(variableGr) {
+		if (!gs.nil(variableGr.variable_set)) {
+			var catItemGr = new GlideRecord('io_set_item');
+			catItemGr.addQuery('variable_set', variableGr.variable_set);
+			catItemGr.query();
+			if (catItemGr.next()) {
+				var formBehaviorGr = new GlideRecord('sn_cmp_bp_form_behavior');
+				formBehaviorGr.addQuery('cat_item_association', catItemGr.sc_cat_item.sys_id);
+				formBehaviorGr.query();
+				if (formBehaviorGr.next()) {
+					var parameterGr = new GlideRecord('sn_cmp_bp_catalog_prop');
+					parameterGr.addQuery('bp_cat_form_behavior', formBehaviorGr.sys_id);
+					parameterGr.addQuery('name', variableGr.name);
+					parameterGr.query();
+					if (parameterGr.next()) {
+						return parameterGr;
+					}
+				}
+			}
+		}
+		return null;
+	},
+
+	_validateAllowedValues : function(valueToCheck, allowedValues, errmsg) {
+		if (!gs.nil(allowedValues)) {
+			var allowedlist = new global.JSON().decode(allowedValues);
+			if (!new global.ArrayUtil().contains(allowedlist, valueToCheck)) {
+				errmsg.push(gs.getMessage("Allowed values for this are: "));
+				this.buildAllowedListToMsg(allowedlist, errmsg);
+			}
+		}
+	},
+
+	/**
+	 * For DateTime fields, make sure the date and time entered are not in the past.
+	 * A 60-second buffer is given to avoid failure if current time is entered but
+	 * a few seconds pass before validation.
+	 */
+	_validateDateTime : function(valueToCheck, errmsg) {
+		var dateValue = new GlideDateTime();
+		dateValue.setDisplayValue(valueToCheck);
+		dateValue.addSeconds(60);
+
+		var dateNow = new GlideDateTime();
+		if (dateNow.getValue() > dateValue.getValue())
+			errmsg.push(gs.getMessage("Date must not be in the past"));
+	},
+
+
+	buildAllowedListToMsg : function(allowedlist, errmsg, skip_split, line_seprator)
+	{
+		if ( gs.nil(line_seprator) ){
+			line_seprator = ' ...    ';
+		}
+		var MAXSIZE = 65;
+		var sizesofar = 0;
+		var listsofar = [];
+		var str = '   {  ';
+		for (var i=0; i < allowedlist.length; i++)  {
+			var item = '' + allowedlist[i];
+			if (skip_split || (sizesofar == 0) || ((sizesofar + item.length + 2) <= MAXSIZE)) {
+				listsofar.push(item);
+				sizesofar += (item.length + 2);
+			}
+			else {
+				errmsg.push(str + listsofar.join(', ') +
+				((i < (allowedlist.length-1)) ? ',' : ' }'));
+				str = line_seprator;
+				sizesofar = 0;
+				listsofar = [];
+			}
+		}
+		if (sizesofar > 0)
+			errmsg.push(str + listsofar.toString() + ' }');
+	},
+
+	_validateAllowedPattern : function(value_tocheck, allowed_pattern, errmsg, paraName, regex_error) {
+		if (!gs.nil(allowed_pattern)) {
+			//javascript regular expression check is not sticky match as default. and 'y' flag is not supported in our
+			//javascript engine. add ^ and $ if missed
+			var modified_pattern = ''+ allowed_pattern;
+			if ( modified_pattern[0] != '^' )
+				modified_pattern = '^' + modified_pattern;
+			if ( modified_pattern[modified_pattern.length-1] != '$')
+				modified_pattern = modified_pattern + "$";
+
+			var re = new RegExp(modified_pattern);
+			if (!re.test(value_tocheck)){
+				//errmsg.push(gs.getMessage("This should be in the format: {0}", [allowed_pattern]));
+				errmsg.push(gs.getMessage(regex_error));
+			}
+		}
+	},
+
+	_isInt : function(value) {
+		return !isNaN(parseInt(value, 10)) && (parseInt(value, 10) == parseFloat(value));
+	},
+
+	_validateIsBoolStr : function(value) {
+		if (typeof value === "string") {
+			value = value.toLowerCase();
+			if (value === "true" || value === "false" || value === "yes" || value === "no")
+				return true;
+		}else if (typeof value === "boolean")
+			return true;
+		return false; // not a valid bool string
+	},
+
+	type: 'BlueprintSCValidator'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-04 23:57:02</sys_created_on>
+        <sys_id>c41b4f81d712220097eb6ccf6e6103cd</sys_id>
+        <sys_mod_count>70</sys_mod_count>
+        <sys_name>BlueprintSCValidator</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c41b4f81d712220097eb6ccf6e6103cd</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-14 05:23:57</sys_updated_on>
+    </sys_script_include>
+</record_update>

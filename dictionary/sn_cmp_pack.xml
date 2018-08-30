@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="CMP Pack" max_length="40" name="sn_cmp_pack" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Author" max_length="40" name="author" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Description" max_length="2048" name="description" type="string"/>
+        <element label="Is Imported" max_length="40" name="is_imported" type="boolean"/>
+        <element attributes="edge_encryption_enabled=true" label="Name" max_length="128" name="name" type="string" unique="true"/>
+        <element attributes="edge_encryption_enabled=true" label="Source" max_length="128" name="source" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" label="Status" max_length="40" name="status" type="string">
+            <choice>
+                <element inactive_on_update="false" label="Published" sequence="1" value="Published"/>
+                <element inactive_on_update="false" label="Draft" sequence="2" value="Draft"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Tag" max_length="1024" name="tag" type="string"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+    </element>
+</database>

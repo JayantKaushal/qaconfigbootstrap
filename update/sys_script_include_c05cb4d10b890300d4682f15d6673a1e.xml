@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetRuleInfo</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetRuleInfo</name>
+        <script><![CDATA[var CMPGetRuleInfo = Class.create();
+CMPGetRuleInfo.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction: function(params) {
+		var result = {};
+		var ruleGr = new GlideRecord('sn_cmp_pol_rule');
+		ruleGr.get(params.rule_id);
+		var name = ruleGr.getValue('name');
+		var encodedQuery = ruleGr.getValue('condition');
+		result.name = name;
+		result.encodedQuery = encodedQuery;
+		result.publishedPolicy = new CloudPolicyUtil().isPolicyPublished(ruleGr);
+		var terms = new global.CmpSCUtil().getConditionsFromEncodedQuery(encodedQuery);
+		var referenceDisplayNamesMap = {};
+		var value;
+		if (terms) {
+			for (var i = 0 ; i < terms.length; i++) {
+				value = terms[i].value;
+				if (terms[i].term == 'user.group') {
+					referenceDisplayNamesMap[value] = this.getGroupName(value);
+				} else if(terms[i].term == 'user.role') {
+					referenceDisplayNamesMap[value] = this.getRoleName(value);
+				} else if (terms[i].term == 'budgetconsumption.user') {
+					referenceDisplayNamesMap[value] = this.getUserName(value);
+				} else if (terms[i].term == 'budgetconsumption.group') {
+					referenceDisplayNamesMap[value] = this.getGroupName(value);
+				} else if(terms[i].term.includes('user.')){
+					referenceDisplayNamesMap[value] = this.getUserAttributeName(terms[i].term, value);
+				}
+			}
+		}
+		var polGr = new GlideRecord('sn_cmp_pol_policy');
+		polGr.get(params.policy_id);
+		result.triggerId = polGr.getValue('target_entity_id');
+		result.triggerName = polGr.getDisplayValue('target_entity_id');
+		result.policyName = polGr.getDisplayValue();
+				
+		var criteriaNamesMap = {};
+		var polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+		polConditionType.query();
+		while(polConditionType.next()) {
+			criteriaNamesMap[polConditionType.name + ''] = polConditionType.name + '';
+		}
+					
+		var critLabelMap = {};
+		polConditionType = new GlideRecord('sn_cmp_pol_condition_type');
+		polConditionType.query();
+		while(polConditionType.next()) {
+			critLabelMap[polConditionType.name + ''] = polConditionType.label + '';
+		}
+		referenceDisplayNamesMap.criteriaNamesMap = criteriaNamesMap;
+		referenceDisplayNamesMap.critLabelMap = critLabelMap;
+		result.referenceDisplayNamesMap = referenceDisplayNamesMap;
+
+		return result;
+
+	},
+					
+	getUserAttributeName : function( attributeTerm, value){
+		var attrVal = '';
+		if( !gs.nil(attributeTerm)){
+			var attribute = attributeTerm.substring(attributeTerm.indexOf('.')+1);
+			var tableName = this.getTableName(attribute);
+			attrVal = this.getUserAttributeValue(tableName, value);
+		}
+		return attrVal;
+	},
+	getTableName : function( attribute){
+		var tableName = '';
+		if(!gs.nil(attribute)){
+			var policyConditions = new CMPGetAllPolicyConditionAttributeAction();
+			var policyConditionObject = policyConditions.FormUserObject();
+			if(policyConditionObject != null){
+				var attributeObj = policyConditionObject[attribute];
+				if( attributeObj != null){
+					tableName = attributeObj.reference;
+				}
+			}
+		}
+		return tableName;
+	},
+	getUserAttributeValue : function( tableName, id){
+		var name = '';
+		if( !gs.nil(tableName)){
+			var gr = new GlideRecord(tableName);
+			if( gr.get(id))
+				name = gr.getDisplayValue();
+		}
+		return name;
+	},
+	getGroupName : function(groupId) {
+		var gr = new GlideRecord('sys_user_group');
+		gr.get(groupId);
+		var name = gr.getValue('name');
+		return name;
+	},
+
+	getRoleName : function(roleId) {
+		var gr = new GlideRecord('sys_user_role');
+		gr.get(roleId);
+		var name = gr.getValue('name');
+		return name;
+	},
+
+	getUserName : function(userId) {
+		var gr = new GlideRecord('sys_user');
+		gr.get(userId);
+		var name = gr.getValue('name');
+		return name;
+	},
+	type: 'CMPGetRuleInfo'
+
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 21:04:55</sys_created_on>
+        <sys_id>c05cb4d10b890300d4682f15d6673a1e</sys_id>
+        <sys_mod_count>20</sys_mod_count>
+        <sys_name>CMPGetRuleInfo</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_c05cb4d10b890300d4682f15d6673a1e</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-12 01:17:29</sys_updated_on>
+    </sys_script_include>
+</record_update>

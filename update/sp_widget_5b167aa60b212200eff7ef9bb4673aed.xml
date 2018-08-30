@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script><![CDATA[function ($rootScope, $scope, spUtil,$location) {
+
+	var c = this;
+	var bc = [{label: '${Cloud Catalog}', url: '?id=cloud_catalog&category=cloud_catalog'}];
+	if($scope.data.category) {
+		//var bc = [{label: '${Cloud Catalog}', url: '?id=cloud_catalog&category=cloud_catalog'}];
+		bc[bc.length] = {label: $scope.data.category, url: '?id=cloud_catalog&category=cloud_category&sys_id='+$scope.data.category_id};
+	} else {
+		//var bc = [{label: '${Cloud Catalog}', url: '?id=cloud_catalog&category=cloud_catalog'}];
+		bc[bc.length] = {label: '${All Items}', url: '#'};
+	}
+	$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+	spUtil.setSearchPage('sc');
+
+	var unsub = $rootScope.$on('cloudCategoriesEvent', function(e,info) {
+		$location.search('sys_id', info.id).search('spa', '1').replace();
+		$scope.data.category_id = info.id;
+
+		if(info.id){
+			$scope.data.displayItems = $scope.data.catItems[info.id]['items'];
+			$scope.data.category = $scope.data.catItems[info.id]['title'];
+		}
+		else{
+			$scope.data.displayItems = $scope.data.items;
+			$scope.data.category = '${All Items}';
+		}
+		var bc = [{label: '${Cloud Catalog}', url: '?id=cloud_catalog&category=cloud_catalog'}];
+		bc[bc.length] = {label: $scope.data.category, url: '?id=cloud_catalog&category=cloud_category&sys_id='+$scope.data.category_id};
+
+		$rootScope.$broadcast('sp.update.breadcrumbs', bc);
+		spUtil.setSearchPage('sc');
+	});
+
+	$scope.checkPermission = function(item) {
+		if (!item.isAllowedToSubmitRequest)
+			spUtil.addErrorMessage('${You are not authorized to submit a request for provisioning the catalog}' + ': ' + item.name);
+	}
+
+	$scope.$on('$destroy', function(){
+		unsub();
+	});
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>.category-heading {
+  border: 1px solid #ddd;
+  background-color: #343D47;
+  color: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+  padding-top: 18px;
+  padding-right: 15px;
+  padding-bottom: 11px;
+  padding-left: 15px;
+  font-size: 16px;
+  height:54px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.category-page {
+  overflow-y: auto;
+}
+
+.panel-body {
+  height: 100px;
+}
+
+.item-name {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 38px;
+}
+
+.text-muted {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-category-page</id>
+        <internal>false</internal>
+        <link><![CDATA[function (scope,el,attr,ctrl) {
+	$(document).ready(function(){
+		resize_window();
+	});
+
+	$(window).resize(function(){
+		resize_window();
+	});
+
+	function resize_window(){
+		var panel_height = ($(document).height()- 245) + 'px';
+		$(el).find('.category-page').css('height',panel_height);
+	}
+}]]></link>
+        <name>Cloud Category Page</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	var category_ids = [];
+	data.category_id = $sp.getParameter("sys_id");
+	data.catalog = "b029d6da0b212200eff7ef9bb4673a42";//cloud service catalog
+
+	data.showPrices = $sp.showCatalogPrices();
+
+	data.sc_catalog_page = "cloud_category";
+	// Does user have permission to see this category?
+	if (!$sp.canReadRecord("sc_category", data.category_id)) {
+		data.error = "You are not authorized to view catalog items.";
+		return;
+	}
+
+	var items = data.items = [];
+	var catItems = data.catItems = {};
+	var sc = new GlideRecord('sn_cmp_bp_cat_item');
+	sc.addQuery('sc_catalogs','CONTAINS',data.catalog);
+	sc.addQuery('active', true);
+	sc.orderBy('order');
+	sc.orderBy('name');
+	sc.query();
+	var aclHelper = new global.LoggedInUserACLHelper();
+	while (sc.next()) {
+		var formBehaviourGr = new GlideRecord('sn_cmp_bp_form_behavior');
+		formBehaviourGr.addQuery('cat_item_association',sc.getUniqueValue());
+		formBehaviourGr.query();
+		if (!formBehaviourGr.hasNext())
+			continue;
+		var item = {};
+		// Does user have permission to see this item?
+		if (!$sp.canReadRecord(sc))
+			continue;
+		$sp.getRecordDisplayValues(item, sc, 'name,short_description,picture,price,sys_id');
+		item.sys_class_name = sc.sys_class_name + "";
+		item.page = 'cloud_cat_item';
+		var catalogFormLink = "?id=" + item.page + "&sys_id=" + item.sys_id + "&category=cloud_catalog";
+		item.isAllowedToSubmitRequest = aclHelper.isOperationAllowed('execute', 'sn_cmp_bp_cat_item', item.sys_id);
+		item.catalogFormUrl = item.isAllowedToSubmitRequest? catalogFormLink : '#';
+		items.push(item);
+		var category_id = sc.category;
+		if (category_id){
+			if(!catItems[category_id]){
+				catItems[category_id] = {'items':[]};
+				catItems[category_id]['title']= sc.category.getDisplayValue();
+			}
+			catItems[category_id]['items'].push(item);
+
+		}
+		data.displayItems = items;
+	}
+})()]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-09-02 07:06:12</sys_created_on>
+        <sys_id>5b167aa60b212200eff7ef9bb4673aed</sys_id>
+        <sys_mod_count>223</sys_mod_count>
+        <sys_name>Cloud Category Page</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_5b167aa60b212200eff7ef9bb4673aed</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-06-19 07:35:16</sys_updated_on>
+        <template><![CDATA[<div>
+  <h4 ng-if="data.error">{{data.error}}</h4>
+  <div ng-init="spSearch.targetCatalog()">
+    <div ng-if= "data.category" class="category-heading">{{data.category}}</div>
+    <div ng-if= "!data.category" class="category-heading">${All Items}</div>
+    <div class="row category-page">
+      <div class="col-sm-4 col-md-3" ng-repeat="item in data.displayItems">
+        <div class="panel panel-{{::options.color}} b">
+          <a ng-click="checkPermission(item)" href="{{item.catalogFormUrl}}" class="panel-body block">
+            <div>
+              <img ng-src="{{item.picture}}" ng-if="item.picture" class="m-r-sm item-image pull-left" height="60px"/>
+              <h4 class="item-name" title="{{item.name}}">{{item.name}}</h4>
+              <div class="text-muted item-short-desc" title="{{item.short_description}}">{{item.short_description}}</div>
+            </div>
+          </a>
+          <div class="panel-footer">
+            <a ng-click="checkPermission(item)" href="{{item.catalogFormUrl}}" class="pull-right">${Launch}</a>
+            &nbsp;
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

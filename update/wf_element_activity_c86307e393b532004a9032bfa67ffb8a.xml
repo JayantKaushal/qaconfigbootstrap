@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="wf_element_activity">
+    <wf_element_activity action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <attributes/>
+        <base_provider display_value="JavaScript Probe">5357c58637332100aa40cc9fbe41f1b4</base_provider>
+        <category>Cloud Management</category>
+        <checked_out_by/>
+        <default_height/>
+        <default_width/>
+        <description/>
+        <image>images/heisenberg_icons/workflow_ie8/provider_javascript.png</image>
+        <input_meta>{"name":"Input","type":"DATA_OBJECT","properties":[{"name":"probe_class","type":"STRING","mandatory":true},{"name":"credential","type":"STRING","mandatory":true},{"name":"account","type":"STRING","mandatory":false},{"name":"bucket","type":"STRING","mandatory":false},{"name":"endpoint","type":"STRING","mandatory":true},{"name":"year","type":"STRING","mandatory":true},{"name":"month","type":"STRING","mandatory":true},{"name":"chunk_size","type":"STRING","mandatory":true}]}</input_meta>
+        <input_process_script><![CDATA[// Set MID Server Script Include from probe_class input
+var midScriptGr = new GlideRecord('ecc_agent_script_include');
+if (midScriptGr.get('name', activityInput.probe_class))
+	executionParam.mid_script_include = midScriptGr.getUniqueValue();]]></input_process_script>
+        <input_transform>{"script_type":"mid_script_include_type","script":"","mid_script_include":"","source":"","midCapabilities":"","parameters":"[{\"name\":\"probe_class\",\"value\":\"${activityInput.probe_class}\"},{\"name\":\"credential\",\"value\":\"${activityInput.credential}\"},{\"name\":\"account\",\"value\":\"${activityInput.account}\"},{\"name\":\"bucket\",\"value\":\"${activityInput.bucket}\"},{\"name\":\"endpoint\",\"value\":\"${activityInput.endpoint}\"},{\"name\":\"year\",\"value\":\"${activityInput.year}\"},{\"name\":\"month\",\"value\":\"${activityInput.month}\"},{\"name\":\"chunk_size\",\"value\":\"${activityInput.chunk_size}\"}]"}</input_transform>
+        <local_variables/>
+        <name>Discover Cloud Billing Data</name>
+        <output_meta>{"name":"Output","type":"DATA_OBJECT","properties":[{"name":"ecc_queue","type":"STRING"},{"name":"error_messages","type":"STRING"}]}</output_meta>
+        <output_process_script/>
+        <output_transform>[{"toLink":"activityOutput.ecc_queue","description":"","to":"ecc_queue","toType":"string","toDestination":"activityOutput","sourceLabel":"executionResult.eccSysId","from":"${executionResult.eccSysId}","fromSource":"executionResult","type":"Direct","children":"[]","translation":""},{"toLink":"activityOutput.error_messages","description":"","to":"error_messages","toType":"string","toDestination":"activityOutput","sourceLabel":"executionResult.errorMessages","from":"${executionResult.errorMessages}","fromSource":"executionResult","type":"Direct","children":"[]","translation":""}]</output_transform>
+        <processing_script/>
+        <sample_payloads>{}</sample_payloads>
+        <short_description>Discover Cloud Billing Data</short_description>
+        <style/>
+        <sys_class_name>wf_element_activity</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-04 17:04:55</sys_created_on>
+        <sys_id>c86307e393b532004a9032bfa67ffb8a</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>Discover Cloud Billing Data</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>wf_element_activity_c86307e393b532004a9032bfa67ffb8a</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-04 22:45:54</sys_updated_on>
+        <version_container_id>45abc0d793ac32004a9032bfa67ffb36</version_container_id>
+    </wf_element_activity>
+    <sys_translated_text action="delete_multiple" query="documentkey=c86307e393b532004a9032bfa67ffb8a"/>
+    <wf_versionable action="INSERT_OR_UPDATE">
+        <checked_out/>
+        <checked_out_by/>
+        <published>false</published>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-04 17:04:55</sys_created_on>
+        <sys_id>486307e393b532004a9032bfa67ffb8b</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-04 22:45:54</sys_updated_on>
+        <valid_from>2017-04-04 17:05:31</valid_from>
+        <valid_to/>
+        <version>12</version>
+        <version_container_id>45abc0d793ac32004a9032bfa67ffb36</version_container_id>
+        <wf_element_definition display_value="Discover Cloud Billing Data">c86307e393b532004a9032bfa67ffb8a</wf_element_definition>
+    </wf_versionable>
+    <wf_condition_default action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Discover Cloud Billing Data">c86307e393b532004a9032bfa67ffb8a</activity_definition>
+        <condition/>
+        <derived_definition>c460d05b93ac32004a9032bfa67ffbc2</derived_definition>
+        <else_flag>true</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <name>Failure</name>
+        <order>20</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-04 17:04:55</sys_created_on>
+        <sys_id>c46307e393b532004a9032bfa67ffb8c</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-04 17:04:55</sys_updated_on>
+    </wf_condition_default>
+    <wf_condition_default action="INSERT_OR_UPDATE">
+        <activity_definition display_value="Discover Cloud Billing Data">c86307e393b532004a9032bfa67ffb8a</activity_definition>
+        <condition>gs.nil(activityOutput.error_messages)</condition>
+        <derived_definition>1eabc0d793ac32004a9032bfa67ffb4f</derived_definition>
+        <else_flag>false</else_flag>
+        <error>false</error>
+        <event>false</event>
+        <event_name/>
+        <name>Success</name>
+        <order>10</order>
+        <short_description/>
+        <skip_during_generate>false</skip_during_generate>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-04-04 17:04:55</sys_created_on>
+        <sys_id>c86347e393b532004a9032bfa67ffb47</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-04-04 17:04:55</sys_updated_on>
+    </wf_condition_default>
+    <wf_versionable action="update_multiple" query="version_container_id=45abc0d793ac32004a9032bfa67ffb36^sys_id!=486307e393b532004a9032bfa67ffb8b^version&lt;12">
+        <published>false</published>
+    </wf_versionable>
+    <wf_activity action="update_multiple" is_dot_walk_query="true" query="workflow_version.published=true^activity_definition.version_container_id=45abc0d793ac32004a9032bfa67ffb36">
+        <new_activity_definition>c86307e393b532004a9032bfa67ffb8a</new_activity_definition>
+        <out_of_date>true</out_of_date>
+        <notes>There is a newer version of this activity.
+
+To update the activity, check out the workflow, select the activity, right click
+and select 'Update activity' to use the latest version, then publish the workflow</notes>
+    </wf_activity>
+</record_update>

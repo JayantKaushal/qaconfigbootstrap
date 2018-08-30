@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_view">
+    <sys_ui_view action="INSERT_OR_UPDATE">
+        <group/>
+        <hidden>false</hidden>
+        <name>listv3_view</name>
+        <roles/>
+        <sys_class_name>sys_ui_view</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-05 18:31:16</sys_created_on>
+        <sys_id>eafb18d99f010300e78d317f842e7011</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>listV3_view</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_view_eafb18d99f010300e78d317f842e7011</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-05 18:31:16</sys_updated_on>
+        <title>listV3_view</title>
+        <user/>
+    </sys_ui_view>
+</record_update>

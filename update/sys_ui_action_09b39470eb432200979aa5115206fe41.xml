@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>true</client>
+        <client_script_v2/>
+        <comments/>
+        <condition>current.status =="success"  &amp;&amp; current.canWrite() &amp;&amp; !new BlueprintTemplateUtil().blueprintExists(current.name)&amp;&amp;current.body!=''</condition>
+        <form_action>true</form_action>
+        <form_button>false</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>true</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <keyboard_shortcut/>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <name>Create Blueprint and Catalog Item</name>
+        <onclick>createBlueprintAndCatItem()</onclick>
+        <order>100</order>
+        <script><![CDATA[function createBlueprintAndCatItem() {
+	if(g_form.modified) {
+		g_form.addErrorMessage('Please save the template first');
+		return;
+	}
+	
+	g_form.addInfoMessage(getMessage('Please wait while the resources are being generated..'));
+	var ga1 = new GlideAjax('sn_cmp.templateUtilAjax');
+	ga1.addParam('sysparm_name', 'createBlueprintAndCatItem');
+	ga1.addParam('sysparm_templateSysId', g_form.getUniqueValue() + '');
+	ga1.getXML(handleResponse);
+	
+	function handleResponse(response) {
+		var catItem = response.responseXML.documentElement.getAttribute('answer');
+		g_form.clearMessages();
+		if (catItem != '') {
+			g_form.addInfoMessage(getMessage('Catalog Item created successfully'));
+		} else {
+			g_form.addErrorMessage(getMessage('Resources could not be created'));
+		}
+	}
+	
+}]]></script>
+        <show_insert>false</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-09 22:22:04</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>09b39470eb432200979aa5115206fe41</sys_id>
+        <sys_mod_count>18</sys_mod_count>
+        <sys_name>Create Blueprint and Catalog Item</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_action_09b39470eb432200979aa5115206fe41</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-31 19:38:35</sys_updated_on>
+        <table>sn_cmp_cloud_template</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>false</ui16_compatible>
+    </sys_ui_action>
+</record_update>

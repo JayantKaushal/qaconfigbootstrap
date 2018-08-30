@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getNetworkByComputeFirewallNames</name>
+        <resource_pool display_value="NetworkPool">493012d00b003200e937c97193673adb</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var filteredRecords = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		
+		//Get "Contained By" relation Sys_ID
+		var containRelGR = new GlideRecord('cmdb_rel_type');
+		containRelGR.addQuery('name','Contains::Contained by');
+		containRelGR.query();
+		if(containRelGR.next()){
+			var secGrpRelGR = new GlideRecord('cmdb_rel_ci');
+			secGrpRelGR.addQuery('child',map.ComputeFirewallNames);
+			secGrpRelGR.addQuery('type',containRelGR.getValue('sys_id'));
+			secGrpRelGR.query();
+			while(secGrpRelGR.next()){
+				var resultGR = new GlideRecord('cmdb_ci_network');
+				resultGR.addQuery('sys_id',secGrpRelGR.getValue('parent'));
+				resultGR.query();
+				while(resultGR.next()){
+					var temp = {"label":resultGR.getValue('name'),"value":resultGR.getValue('sys_id')};
+					filteredRecords.push(temp);
+				}
+			}
+		}
+	}else{
+		gs.error("input json is blank - "+json);
+	}
+
+	//force to string
+	return new global.JSON().encode(filteredRecords);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-16 18:20:10</sys_created_on>
+        <sys_id>2a89957a67a00300a7526c706785efdf</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>getNetworkByComputeFirewallNames</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_2a89957a67a00300a7526c706785efdf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-08-18 17:39:25</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

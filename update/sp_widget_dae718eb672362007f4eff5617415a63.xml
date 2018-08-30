@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category/>
+        <client_script/>
+        <controller_as>c</controller_as>
+        <css>panel-title {&#13;
+  word-wrap: break-word;&#13;
+}&#13;
+&#13;
+&#13;
+.properties {&#13;
+	width: 100%;&#13;
+  //margin-top: 25px;&#13;
+  line-height: 1.8;&#13;
+  &#13;
+  .property-key {&#13;
+  	width: 30%;&#13;
+	text-align: right;&#13;
+	color: #595959;&#13;
+  }&#13;
+  &#13;
+  .property-value {&#13;
+  	color: black;&#13;
+    //width: 75%;&#13;
+    text-align: left;&#13;
+    padding-left: 20px;&#13;
+  }&#13;
+}&#13;
+&#13;
+.panel .panel {&#13;
+  height: auto !important;&#13;
+  overflow : auto;&#13;
+}&#13;
+&#13;
+.attachment-button {&#13;
+  .glyphicon-paperclip {&#13;
+    font-size: 18px;&#13;
+  }&#13;
+}&#13;
+&#13;
+.panel-body{&#13;
+overflow-y: auto;&#13;
+  padding: 5px;&#13;
+  min-height: 208px;&#13;
+}&#13;
+&#13;
+.panel-heading {&#13;
+  background-color: #343D47;&#13;
+  color: #fff;&#13;
+  padding-top:15px;&#13;
+}&#13;
+&#13;
+.panel-heading-cap {&#13;
+  background-color: #000;&#13;
+  color: #fff;&#13;
+  height: 42px;&#13;
+  padding: 10px 15px;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-request-form</id>
+        <internal>false</internal>
+        <link/>
+        <name>Cloud Request Form</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function($sp, input, data, options, gs) {
+	
+	data.page_id = $sp.getParameter('id');
+	data.info = {};
+	var label = "";
+	var value = "";
+	
+	data.table = options.table || input.table;
+	if (!data.table)
+		return;
+	
+	data.sys_id = options.sys_id || input.sys_id;
+	if (!data.sys_id)
+		return;
+	
+	data.view = options.view || input.view;
+	if (!data.view)
+		return;
+		
+	var tableGr = new GlideRecord(data.table);
+	if(!tableGr.isValid())
+		return;
+	
+	tableGr.get(data.sys_id);
+	if (!tableGr.isValidRecord()) {
+		data.isValid = false;
+		return;
+	}
+	data.isValid = true;
+	
+	
+	data.title = tableGr.cat_item.name + '';
+	
+	var fields = getFormFields(data.table, data.view);
+	
+	data.viewLength = fields.length ? true : false;
+	
+	for (var i = 0; i < fields.length; i++) {
+		var fieldLabel = tableGr.getElement(fields[i]).getLabel();
+		data.info[fieldLabel] = tableGr.getDisplayValue(fields[i]);
+	}	
+		
+	var variables = new global.CmpSCUtil().getVariablesForRequestItem(data.sys_id);
+	Object.keys(variables).forEach( function(key) { data.info[key] = variables[key]; });
+	
+	function getFormFields(table, view) {
+		var formFields = [];
+		var sectionIds = _getUISection(table, view);
+		
+		if (sectionIds.length > 0) {
+			var uiElemGr = new GlideRecord('sys_ui_element');
+			uiElemGr.addQuery('sys_ui_section', 'IN', sectionIds.join(','));
+			uiElemGr.addNullQuery('type').addOrCondition('type', '');
+			uiElemGr.query();
+			
+			while (uiElemGr.next())
+				formFields.push(uiElemGr.getValue('element'));
+		}
+			
+		return formFields;	
+	}
+	
+	function _getUISection(tableName, viewName) {
+		var formSections = [];
+		var secGr = new GlideRecord('sys_ui_section');
+		secGr.addQuery('name', tableName); 
+		secGr.addQuery("view.name", viewName); 
+		secGr.query(); 
+
+		while (secGr.next())
+			formSections.push(secGr.getUniqueValue());
+
+		return formSections;
+	}
+})($sp, input, data, options, gs);]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-13 08:15:08</sys_created_on>
+        <sys_id>dae718eb672362007f4eff5617415a63</sys_id>
+        <sys_mod_count>156</sys_mod_count>
+        <sys_name>Cloud Request Form</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_dae718eb672362007f4eff5617415a63</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-20 14:03:35</sys_updated_on>
+        <template><![CDATA[<div ng-if="!data.isValid" class="panel panel-default">
+  <div class="panel-body wrapper-lg text-center">
+    ${Record not found}
+  </div>
+</div>
+
+<div ng-if="data.isValid" class="panel-shift">
+  <div class="panel panel-default">
+    <div ng-class="data.isAdminPortal ? 'panel-heading-cap' : 'panel-heading'">
+      <span class="panel-title">{{data.title}}</span>
+    </div>
+    <div class="panel-body wrapper-lg text-center" ng-if="!data.viewLength">
+        ${No elements to display}
+    </div>
+    
+    <div resize class="panel-body" ng-style="data.page_id== 'cap_activities' ?  resizeWithOffset(226) : resizeWithOffset(338)" ng-if="data.viewLength" >
+      <div>
+        <table class="properties" >
+          <tr ng-repeat="(key, value) in data.info">
+            <td class="property-key"> {{key}} </td>
+            <td class="property-value"> {{value}} </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

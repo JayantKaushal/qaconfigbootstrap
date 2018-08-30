@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPSaveDatacenterAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPSaveDatacenterAction</name>
+        <script><![CDATA[var CMPSaveDatacenterAction = Class.create();
+CMPSaveDatacenterAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+    doAction: function(params) {
+		var errorMessage = gs.getMessage("Failed to add the datacenter");
+		try {
+			if (!params.cloudAccountId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Illegal parameter"),
+				"CMPSaveDatacenterAction.doAction: Undefined element params cloudAccountId",
+				null
+				);
+			}
+			var ldcInError = [];
+			var cloudAccountServiceScript=new sn_cmp_api.CloudAccountServiceScript();
+			var classNameObj = params.providerClassName;
+			var selectedLdcNew = global.JSON.parse(params.selectedLdc);
+			
+			for (var i=0;i<selectedLdcNew.length;i++) {
+            	var selectedLdcObj = selectedLdcNew[i];		          
+				try {
+					addedServiceAccount=cloudAccountServiceScript.createAndAssociatedVCenter(params.cloudAccountId,selectedLdcObj.id);
+				} catch (e) {
+					ldcInError.push(selectedLdcObj.name);
+				}
+			}
+			
+			if ( ldcInError.length > 0 ) {
+				errorMessage = gs.getMessage("Failed to add following datacenters: {0}", ldcInError.join(" "));
+				throw errorMessage;
+			}
+			
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+			errorMessage,
+			"CMPSaveDatacenterAction.doAction(): Failed to add datacenter",
+			error
+			);
+		}
+    },
+
+    type: 'CMPSaveDatacenterAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-19 11:08:45</sys_created_on>
+        <sys_id>d6916b170b1032003bace58525673a35</sys_id>
+        <sys_mod_count>32</sys_mod_count>
+        <sys_name>CMPSaveDatacenterAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_d6916b170b1032003bace58525673a35</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-08 16:56:15</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_price_attribute_mapping">
+    <sn_cmp_price_attribute_mapping action="INSERT_OR_UPDATE">
+        <mapping_key>instance_type</mapping_key>
+        <offer display_value="AmazonEC2">c67f5de00b900300a682aac125673ae9</offer>
+        <pricing_product>cmdb_ci_cmp_vm_instance_price</pricing_product>
+        <provider display_value="AWS">c9df10a0933622004a9032bfa67ffb0f</provider>
+        <source_key>instanceType</source_key>
+        <sys_class_name>sn_cmp_price_attribute_mapping</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-28 08:51:51</sys_created_on>
+        <sys_id>682061240b900300a682aac125673a25</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_price_attribute_mapping_682061240b900300a682aac125673a25</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-28 08:51:51</sys_updated_on>
+    </sn_cmp_price_attribute_mapping>
+</record_update>

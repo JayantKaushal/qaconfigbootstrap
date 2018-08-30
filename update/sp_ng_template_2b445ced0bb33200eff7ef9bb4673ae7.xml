@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_ng_template">
+    <sp_ng_template action="INSERT_OR_UPDATE">
+        <id>CAP-empty-state-list-form.html</id>
+        <sp_widget display_value="">f131a5f90b733200eff7ef9bb4673ac8</sp_widget>
+        <sys_class_name>sp_ng_template</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-07-06 09:22:51</sys_created_on>
+        <sys_id>2b445ced0bb33200eff7ef9bb4673ae7</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>CAP-empty-state-list-form.html</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_ng_template_2b445ced0bb33200eff7ef9bb4673ae7</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-07-07 10:12:33</sys_updated_on>
+        <template><![CDATA[<div class="empty-state">
+  <div class="empty-state-content">
+    <div class="empty-state-badge fa fa-list-ul" style="background-color: #31708f;"></div>
+    <h3 class="empty-state-header">${List and Form}</h3>
+    <p>${Select a record from the list to view its details in this pane.}</p>
+  </div>
+</div>]]></template>
+    </sp_ng_template>
+</record_update>

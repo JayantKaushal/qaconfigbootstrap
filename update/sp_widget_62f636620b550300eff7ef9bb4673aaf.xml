@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function ($scope, $location,cloudEventScope, $timeout) {
+	var c = this;
+	var search = $location.search();
+  
+	//In an ideal world, we should invoke server update. But this widget's parent is already
+	//listening to the 'locationChangeSuccess', so we would endup calling it multiple times
+	c.setActiveTab = function(tabName) {
+		$location.search('req_active_tab', tabName).search('spa', '1').search('is_form_load', null).search('taskname', null).search('task_sys_id', null).replace();
+		c.data.tabName = tabName;
+	};
+
+	c.isActiveTab = function(tabName) {
+		var activeSearch = $location.search();
+		return activeSearch.req_active_tab == tabName;
+	};
+
+	//set the default tab selection to 'status' tab
+	if (typeof search.req_active_tab == 'undefined' && search.id == "cloud_stack_details" && search.category == "cloud_stacks")
+		c.setActiveTab('status');
+
+	//In an ideal world, we should invoke server update. But this widget's parent is already
+	//listening to the 'locationChangeSuccess', so we would endup calling it multiple times
+	cloudEventScope.registerListener('cloudStackRequestTabEvent', function(e, info) {
+		$location.search(info.url).search('req_active_tab', 'status').search('spa', '1').replace();
+	}, $scope);
+
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css> .list-group {&#13;
+  height : calc(100vh - 389px);&#13;
+  overflow :auto;&#13;
+}&#13;
+&#13;
+.tab-content {&#13;
+  height : calc(100vh - calc($cloud-stacks-details-header-height + $panel-margin + $header-height + $tabs-height));&#13;
+}&#13;
+&#13;
+#request-details {&#13;
+  height : 100%;&#13;
+}&#13;
+&#13;
+#request-details &gt; div &gt; div {&#13;
+  height : 100%;&#13;
+}&#13;
+&#13;
+&#13;
+li &gt; a {&#13;
+  color : #485563; &#13;
+  font-size : 14px;&#13;
+}&#13;
+&#13;
+li.active &gt; a,&#13;
+li.active &gt; a:focus,&#13;
+li.active &gt; a:hover {&#13;
+  color : #1570bd;&#13;
+  border : none;&#13;
+  border-bottom : 3px solid #1570bd;&#13;
+}&#13;
+&#13;
+.l-h-40 {&#13;
+  line-height: 40px;&#13;
+}&#13;
+.list-action {&#13;
+  display:block;&#13;
+  padding:0 6px;&#13;
+  cursor: pointer;&#13;
+}&#13;
+.list-action:hover {&#13;
+  background-color: #fff;&#13;
+}&#13;
+&#13;
+.nav-tabs {&#13;
+  background-color: #f5f5f5;&#13;
+  border-radius: 0px;&#13;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .05);&#13;
+}&#13;
+&#13;
+.nav-tabs &gt; li.active &gt; a {&#13;
+  background-color : transparent; &#13;
+}&#13;
+&#13;
+.no-record {&#13;
+  font-size: 2em;&#13;
+  margin-left: 15%;&#13;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>false</has_preview>
+        <id>cloud-stack-requests-tabs</id>
+        <internal>false</internal>
+        <link><![CDATA[function(scope,elem, attrs, ctrl) {
+
+	$('#cloudStackRequestTabHeader a').click(function (e) {
+		e.preventDefault();
+		ctrl.setActiveTab($(this).attr("href").replace("#", ''));
+		$(this).tab('show');
+		$(this).parent('li').addClass('active');
+	});
+}]]></link>
+        <name>Cloud Stack Requests Tabs</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	
+	var activeTabName = (input && input.tabName) ? input.tabName : ($sp.getParameter('req_active_tab') || 'status');
+	getWidget(activeTabName);
+	
+	function getWidget(activeTabName) {
+		if (activeTabName == 'status') {
+			data.cloudRequestStatus = $sp.getWidget("cloud-request-status");
+			data.cloudStackTrailStatus = $sp.getWidget("cloud-stack-trail-status");
+		}
+		else if (activeTabName == 'requestDetails') {
+			var reqItemSysId = $sp.getParameter("req_item_sys_id");
+			var queryObj = {table: "sc_req_item", sys_id : reqItemSysId, view: "User_Portal"};
+			var helper = new sn_cmp.CMPPortalHelper();
+			var reqItemProperties = helper.getProperties(queryObj);
+			var reqItemVariables = helper.getReqItemVariables(reqItemSysId);					
+			data.widgetOptions = {  propertyData: [{title: gs.getMessage("Properties"), properties:reqItemProperties},
+												  {title: gs.getMessage("Request Item Variables"), properties:[reqItemVariables]}],
+									showHeading: false
+									};
+			data.requestDetails = $sp.getWidget('cmp_properties', data.widgetOptions);
+						
+						
+						
+		}
+	}
+				
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-09-22 13:16:35</sys_created_on>
+        <sys_id>62f636620b550300eff7ef9bb4673aaf</sys_id>
+        <sys_mod_count>75</sys_mod_count>
+        <sys_name>Cloud Stack Requests Tabs</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sp_widget_62f636620b550300eff7ef9bb4673aaf</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-08-21 23:32:34</sys_updated_on>
+        <template><![CDATA[<div>
+  <ul id="cloudStackRequestTabHeader" class="nav nav-tabs" role="tablist">
+    <li ng-class="{'active': c.isActiveTab('status')}">
+      <a id="status-tab" role="tab" aria-selected="{{c.isActiveTab('status')}}" href="#status" data-toggle="tab"
+         aria-controls="status">${Status}</a>
+    </li>
+    <li ng-class="{'active': c.isActiveTab('requestDetails')}">
+      <a id="req-details-tab" role="tab" aria-selected="{{c.isActiveTab('requestDetails')}}" href="#requestDetails" 
+         data-toggle="tab" aria-controls="requestDetails">${Request Details}</a>
+    </li>
+  </ul>
+  <div id="cloudStackRequestTabContent" class="tab-content">
+    <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('status')}" id="status" role="tabpanel" 
+         aria-labelledby="status-tab" tabindex="0">
+      <div class="row" ng-if="c.isActiveTab('status')">
+        <div class="col-md-4" style="padding-left: 0px;">
+          <sp-widget widget="data.cloudRequestStatus"></sp-widget>
+        </div>
+        <div class="col-md-8" style="padding-right: 0px;">
+          <sp-widget widget="data.cloudStackTrailStatus"></sp-widget>
+        </div>
+      </div>		
+    </div>
+    <div class="tab-pane fade" ng-class="{'active in': c.isActiveTab('requestDetails')}" id="request-details" 
+         role="tabpanel" aria-labelledby="req-details-tab" tabindex="0">
+      <div ng-if="c.isActiveTab('requestDetails')" class="height100">
+        <sp-widget widget="data.requestDetails"></sp-widget>
+      </div>
+    </div>
+  </div>
+</div>]]></template>
+    </sp_widget>
+</record_update>

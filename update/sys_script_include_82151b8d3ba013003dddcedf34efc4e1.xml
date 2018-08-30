@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetSelectedDiscoveryStatusAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetSelectedDiscoveryStatusAction</name>
+        <script><![CDATA[var CMPGetSelectedDiscoveryStatusAction = Class.create();
+CMPGetSelectedDiscoveryStatusAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (!params.dsId) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPGetSelectedDiscoveryStatusAction.doAction: Undefined discovery status Id",
+					null
+				);
+			}
+			var discoveryCompletedtStatus = false;
+			var discoveryStatusGR = new GlideRecord("discovery_status");
+			discoveryStatusGR.addQuery('sys_id', params.dsId);
+			discoveryStatusGR.addQuery('state', 'Completed');
+		    discoveryStatusGR.query();
+			if(discoveryStatusGR.next()) {
+				discoveryCompletedtStatus = true;
+			}
+			return { isDiscoveryCompleted : discoveryCompletedtStatus };
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get schedule discovery status"),
+				"CMPGetSelectedDiscoveryStatusAction.doAction(): Failed to get schedule discovery status",
+				error
+			);
+		}
+    },
+    type: 'CMPGetSelectedDiscoveryStatusAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-02-26 13:30:25</sys_created_on>
+        <sys_id>82151b8d3ba013003dddcedf34efc4e1</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>CMPGetSelectedDiscoveryStatusAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_82151b8d3ba013003dddcedf34efc4e1</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-26 14:42:16</sys_updated_on>
+    </sys_script_include>
+</record_update>

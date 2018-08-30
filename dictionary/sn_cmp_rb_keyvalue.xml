@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="KeyValue" max_length="40" name="sn_cmp_rb_keyvalue" type="collection">
+        <element label="Action" max_length="32" name="action" reference="sn_cmp_bp_action" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Key" max_length="200" name="key" type="string"/>
+        <element label="Object mapping" max_length="40" name="object_mapping" type="boolean"/>
+        <element dependent="owner_table" dependent_on_field="owner_table" label="Owner Instance" max_length="32" name="owner_instance" type="document_id"/>
+        <element attributes="base_start=true" label="Owning Entity" max_length="80" name="owner_table" type="table_name"/>
+        <element label="Step" max_length="32" name="step" reference="sn_cmp_rb_op_impl_step" reference_cascade_rule="delete" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Value" max_length="4000" name="value" type="string"/>
+        <index name="index">
+            <element name="owner_instance"/>
+        </index>
+        <index name="index2">
+            <element name="action"/>
+        </index>
+        <index name="index3">
+            <element name="step"/>
+        </index>
+    </element>
+</database>

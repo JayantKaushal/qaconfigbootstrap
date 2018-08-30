@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Usage Profile" max_length="40" name="sn_cmp_usage_profile" type="collection">
+        <element attributes="edge_encryption_enabled=true" display="true" label="Display Name" max_length="255" name="display_name" type="string"/>
+        <element attributes="scale=8" label="Hourly Rate" max_length="30" name="rate" type="decimal"/>
+        <element label="Usage Category" max_length="32" name="usage_category" reference="sn_cmp_usage_category" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Usage Unit" max_length="100" name="usage_unit" type="string"/>
+        <index name="index">
+            <element name="usage_category"/>
+        </index>
+    </element>
+</database>

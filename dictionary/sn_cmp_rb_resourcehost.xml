@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource Host" max_length="40" name="sn_cmp_rb_resourcehost" type="collection">
+        <element label="Guest Resource" max_length="32" name="guestresource" reference="sn_cmp_rb_resourceblock" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="guestresource"/>
+        </index>
+    </element>
+</database>

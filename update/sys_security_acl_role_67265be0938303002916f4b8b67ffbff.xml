@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_security_acl_role">
+    <sys_security_acl_role action="INSERT_OR_UPDATE">
+        <sys_class_name>sys_security_acl_role</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-12 10:15:18</sys_created_on>
+        <sys_id>67265be0938303002916f4b8b67ffbff</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>.sn_cmp.cloud_admin</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_security_acl display_value="sn_cmp_sec_grp_rule_template">87269be0938303002916f4b8b67ffbe4</sys_security_acl>
+        <sys_update_name>sys_security_acl_role_67265be0938303002916f4b8b67ffbff</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-12 10:15:18</sys_updated_on>
+        <sys_user_role display_value="sn_cmp.cloud_admin" name="sn_cmp.cloud_admin">a080274b0b083200e586a2c563673afc</sys_user_role>
+        <transaction_id/>
+    </sys_security_acl_role>
+</record_update>

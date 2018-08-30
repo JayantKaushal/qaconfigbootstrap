@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Discovery Config - Resource Type" max_length="40" name="cmp_discovery_res_type_config" type="collection">
+        <element default="true" label="Active" max_length="40" name="active" type="boolean"/>
+        <element attributes="allow_public=true,base_table=cmdb_ci,base_start=true" label="CI type" mandatory="true" max_length="80" name="ci_type" type="table_name"/>
+        <element label="Discovery schedule" max_length="32" name="discovery_schedule" reference="discovery_schedule" reference_cascade_rule="delete" type="reference"/>
+        <index name="index">
+            <element name="discovery_schedule"/>
+        </index>
+    </element>
+</database>

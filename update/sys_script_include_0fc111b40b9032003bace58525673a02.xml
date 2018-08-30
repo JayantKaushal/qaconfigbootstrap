@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPGetAllCloudAccountAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPGetAllCloudAccountAction</name>
+        <script><![CDATA[var CMPGetAllCloudAccountAction = Class.create();
+CMPGetAllCloudAccountAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+
+	CLOUD_ACCOUNT_TABLENAME: 'cmdb_ci_cmp_cloud_account',
+	statusLabels: {},
+
+	doAction: function(params) {
+		try {
+			var status = params.selected_status_id;
+			var searchName = params.search_name;
+			var currentPage = parseInt(params.current_page, 10);
+			var limit = parseInt(params.limit, 10);
+
+			var cloudAccountRecord = new GlideRecordSecure(this.CLOUD_ACCOUNT_TABLENAME);
+			if (!gs.nil(status))
+				cloudAccountRecord.addQuery('status', status);
+			if (!gs.nil(searchName))
+				cloudAccountRecord.addQuery('name', 'CONTAINS', searchName);
+			cloudAccountRecord.chooseWindow(--currentPage, currentPage + limit, false);
+			cloudAccountRecord.orderBy('name');
+			cloudAccountRecord.query();
+
+			var cloudAccounts = [];
+			while (cloudAccountRecord.next()) {
+				var cloudAccountData = this.constructCloudAccountData(cloudAccountRecord);
+				cloudAccounts.push(cloudAccountData);
+			}
+
+			var responseObj = {
+				cloudAccountList : cloudAccounts,
+				totalRecords : cloudAccountRecord.getRowCount()
+			};
+
+			return responseObj;
+		} catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to get all cloud accounts"),
+				"CMPGetAllCloudAccountAction.doAction(): Failed to get all cloud accounts",
+				error
+			);
+		}
+	},
+
+	constructCloudAccountData: function(cloudAccountRecord) {
+		var cloudAccountData = {};
+		cloudAccountData['id'] = cloudAccountRecord.getValue('sys_id');
+		cloudAccountData['short_description'] = cloudAccountRecord.getValue('short_description');
+		cloudAccountData['status'] = this.getStatusLabel(cloudAccountRecord);
+		cloudAccountData['name'] = cloudAccountRecord.getValue('name');
+		cloudAccountData['createdBy'] = cloudAccountRecord.getValue('sys_created_by');
+		this.setCloudAccountPermissions(cloudAccountData);
+		return cloudAccountData;
+	},
+	
+	getStatusLabel: function(cloudAccountRecord) {
+		var statusValue = cloudAccountRecord.getValue('status');
+		if (this.statusLabels.statusValue)
+			return this.statusLabels.statusValue;
+		
+		var statusLabel = cloudAccountRecord.getDisplayValue('status');
+		this.statusLabels[statusValue] = statusLabel;
+		return statusLabel;
+	},
+	
+	setCloudAccountPermissions: function(cloudAccountData) {
+		if (gs.getUserName() == 'admin' || gs.getUser().hasRole('sn_cmp.cmp_root_admin') || cloudAccountData['createdBy'] == gs.getUserName()) {
+			cloudAccountData['editPermission'] = true;
+			cloudAccountData['deletePermission'] = true;
+		} else {
+			var checkPermissionObj = new CMPCheckPermission();
+			var responseObj1 = checkPermissionObj.checkPermission(this.CLOUD_ACCOUNT_TABLENAME, cloudAccountData['id'], gs.getUserID(), 'write');
+			var responseObj2 = checkPermissionObj.checkPermission(this.CLOUD_ACCOUNT_TABLENAME, cloudAccountData['id'], gs.getUserID(), 'delete');
+			cloudAccountData['editPermission'] = responseObj1;
+			cloudAccountData['deletePermission'] = responseObj2;
+		}
+	},
+	
+    type: 'CMPGetAllCloudAccountAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-01-11 07:25:12</sys_created_on>
+        <sys_id>0fc111b40b9032003bace58525673a02</sys_id>
+        <sys_mod_count>27</sys_mod_count>
+        <sys_name>CMPGetAllCloudAccountAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_0fc111b40b9032003bace58525673a02</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-01 18:37:55</sys_updated_on>
+    </sys_script_include>
+</record_update>

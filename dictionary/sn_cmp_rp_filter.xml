@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Resource Pool Filter" max_length="40" name="sn_cmp_rp_filter" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Filter Name" mandatory="true" max_length="255" name="name" type="string"/>
+        <element label="Resource Pool" mandatory="true" max_length="32" name="resource_pool" reference="sn_cmp_resource_pool" type="reference"/>
+        <element hint="Filter Script" label="Script" max_length="4000" name="script" type="script_plain"/>
+        <element choice="1" default="query" label="Type" mandatory="true" max_length="40" name="type" type="choice">
+            <choice>
+                <element inactive_on_update="false" label="Query" sequence="1" value="query"/>
+                <element inactive_on_update="false" label="Script" sequence="2" value="script"/>
+            </choice>
+        </element>
+        <index name="index">
+            <element name="resource_pool"/>
+        </index>
+    </element>
+</database>

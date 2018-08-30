@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="ServiceNow Cloud Template Format" max_length="40" name="sn_cmp_cloud_template_format" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Name" mandatory="true" max_length="128" name="name" type="string" unique="true"/>
+        <element default="100" label="Order" mandatory="true" max_length="40" name="order" type="integer"/>
+        <element label="Parser Script" mandatory="true" max_length="4000" name="parser_script" type="script"/>
+        <index name="index">
+            <element name="name"/>
+        </index>
+    </element>
+</database>

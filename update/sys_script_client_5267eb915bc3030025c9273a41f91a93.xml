@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_script_client">
+    <sys_script_client action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <applies_extended>false</applies_extended>
+        <condition/>
+        <description/>
+        <field>sys_scope</field>
+        <global>true</global>
+        <isolate_script>false</isolate_script>
+        <messages/>
+        <name>CMPFormUIGroupOnLoad</name>
+        <order/>
+        <script><![CDATA[function onLoad() {
+   //Type appropriate comment here, and begin script below
+	var params = getParameters();
+	if(  params['sys_id'] != null && params['sys_id'] == -1 && params['sysparm_target_value'] != null){
+		var ajax = new GlideAjax("CMPFormBehaviorUtil");
+			ajax.addParam("sysparm_name", "fetchCatalogFormBehaviorByFormGroup");
+			ajax.addParam("formGroupId", params['sysparm_target_value']);
+			ajax.getXML(function(serverResponse1) {
+				g_form.clearValue('bp_cat_form_behavior');
+				var output = JSON.parse(serverResponse1.responseXML.getElementsByTagName("xml")[0].getAttribute("answer"));
+				if (typeof output != "undefined") {
+					g_form.setValue( 'bp_cat_form_behavior', output.formBehavior);
+				}
+			});			
+	}
+
+}
+
+function getParameters() {
+      var prmstr = location.search.substr(1);
+      return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr, "&") : {};
+}
+
+function transformToAssocArray( prmstr, splitChar ) {
+    var params = {};
+	if( splitChar == null){
+		splitChar = "&";
+	}
+    var prmarr = prmstr.split(splitChar);
+	var params2 = [];
+    for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+		if( tmparr[0] == 'sys_id' && typeof tmparr[1] != "undefined"){
+			params[tmparr[0]] = tmparr[1];
+		}
+		if( tmparr[0] == 'sysparm_referring_url'){
+			var referringUrl = unescape( tmparr[1]);
+			var params1 = transformToAssocArray( referringUrl.substring( referringUrl.indexOf("?")+1), "@99@" );
+			for(var key in params1) params[key] = params1[key];
+		}
+		if( tmparr[0] == 'sysparm_target_value'){
+			params[tmparr[0]] = tmparr[1];
+		}
+    }
+    return params;
+}]]></script>
+        <sys_class_name>sys_script_client</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-12-14 19:26:29</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>5267eb915bc3030025c9273a41f91a93</sys_id>
+        <sys_mod_count>51</sys_mod_count>
+        <sys_name>CMPFormUIGroupOnLoad</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_client_5267eb915bc3030025c9273a41f91a93</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-12-15 17:29:19</sys_updated_on>
+        <table>sn_cmp_bp_form_ui_group</table>
+        <type>onLoad</type>
+        <ui_type>10</ui_type>
+        <view/>
+    </sys_script_client>
+</record_update>

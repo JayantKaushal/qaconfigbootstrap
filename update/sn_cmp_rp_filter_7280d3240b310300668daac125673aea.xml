@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rp_filter">
+    <sn_cmp_rp_filter action="INSERT_OR_UPDATE">
+        <name>getObjectsByLDC</name>
+        <resource_pool display_value="CloudKeyPairPool">3cbf4fe00b310300668daac125673a1f</resource_pool>
+        <script><![CDATA[getFilteredRecords(json);
+//Do not remove function declaration
+/** Input parameters
+* @param json - map for properties which you need to run this script
+* @returns filtered records in the format [{"value"="lookupValue",label="displayValue"}]
+*/
+function getFilteredRecords(json) {
+	var filteredRecords = [];
+	if(json != null && json != ""){
+		var map = new global.JSON().decode(json);
+		var output = new sn_cmp_api.ExpressionResolverUtilScript().getMetadataRelations(map.Location, 'Hosts', 'cmdb_ci_cloud_key_pair', 'flat',1);
+		var keypairs = JSON.parse(output);
+		for(var i = 0; i < keypairs.length; i++){
+				var keypairGR = new GlideRecordSecure('cmdb_ci_cloud_key_pair');
+			    keypairGR.addQuery('sys_id', keypairs[i].value);
+			    keypairGR.addQuery('install_status', '1'); // status as 'installed'
+			    keypairGR.query();
+				if(keypairGR.next()){
+					var object_id = keypairGR.getValue('object_id');
+					filteredRecords.push({'label' : object_id,'value': object_id});
+			}
+		}
+	}
+
+	//force to string
+	return new global.JSON().encode(filteredRecords);
+}]]></script>
+        <sys_class_name>sn_cmp_rp_filter</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-10-11 06:32:05</sys_created_on>
+        <sys_id>7280d3240b310300668daac125673aea</sys_id>
+        <sys_mod_count>15</sys_mod_count>
+        <sys_name>getObjectsByLDC</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rp_filter_7280d3240b310300668daac125673aea</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-05-07 17:41:09</sys_updated_on>
+        <type>script</type>
+    </sn_cmp_rp_filter>
+</record_update>

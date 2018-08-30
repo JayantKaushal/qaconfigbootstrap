@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element extends="sn_cmp_instance_type" label="AWS Instance Type" max_length="40" name="sn_cmp_aws_instance_type" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Instance family" max_length="100" name="instance_family" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Instance size" max_length="100" name="instance_size" type="string"/>
+        <element label="Normalization factor" max_length="15" name="normalization_factor" type="decimal"/>
+    </element>
+</database>

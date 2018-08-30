@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_ng_pro_sp_widget">
+    <m2m_sp_ng_pro_sp_widget action="INSERT_OR_UPDATE">
+        <sp_angular_provider display_value="catalogWizard">8e1f9ef60bd32200eff7ef9bb4673a20</sp_angular_provider>
+        <sp_widget display_value="Cloud Catalog Item Wizard">bc5e56f60bd32200eff7ef9bb4673af2</sp_widget>
+        <sys_class_name>m2m_sp_ng_pro_sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-11-28 23:55:58</sys_created_on>
+        <sys_id>8b8f9af60bd32200eff7ef9bb4673ac3</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>catalogWizard.Cloud Catalog Item Wizard</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>m2m_sp_ng_pro_sp_widget_8b8f9af60bd32200eff7ef9bb4673ac3</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-01-16 07:02:11</sys_updated_on>
+    </m2m_sp_ng_pro_sp_widget>
+</record_update>

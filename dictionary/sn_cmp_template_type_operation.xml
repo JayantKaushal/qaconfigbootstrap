@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Template Type Operation" max_length="40" name="sn_cmp_template_type_operation" type="collection">
+        <element choice="1" label="Access type" max_length="40" name="access_type" type="integer">
+            <choice>
+                <element inactive_on_update="false" label="Public" value="2"/>
+                <element inactive_on_update="false" label="Private" sequence="1" value="1"/>
+            </choice>
+        </element>
+        <element choice="1" label="Format" mandatory="true" max_length="32" name="format" reference="sn_cmp_cloud_template_format" type="reference">
+            <choice/>
+        </element>
+        <element dependent="resource_interface" label="Interface operation" max_length="32" name="interface_operation" reference="sn_cmp_rb_op_signature" type="reference"/>
+        <element label="Operation output attribute script" max_length="8000" name="operation_output_attribute_script" type="script_plain"/>
+        <element label="Operation param script" max_length="8000" name="operation_param_script" type="script_plain"/>
+        <element label="Operation step param script" max_length="8000" name="operation_step_param_script" type="script_plain"/>
+        <element label="Parser script" max_length="32" name="parser_script" reference="sys_script_include" type="reference"/>
+        <element default="64271337d722220097eb6ccf6e6103f5" label="Interface" max_length="32" name="resource_interface" reference="sn_cmp_rb_resourceinterface" type="reference"/>
+        <element label="Template type" max_length="32" name="template_type" reference="sn_cmp_cloud_template_type" type="reference"/>
+        <element label="Template type operation" max_length="32" name="template_type_operation" reference="sn_cmp_template_operation" type="reference"/>
+        <element label="Validation script" max_length="8000" name="validation_script" type="script_plain"/>
+        <index name="index">
+            <element name="template_type"/>
+        </index>
+        <index name="index2">
+            <element name="resource_interface"/>
+        </index>
+        <index name="index3">
+            <element name="format"/>
+        </index>
+        <index name="index4">
+            <element name="parser_script"/>
+        </index>
+        <index name="index5">
+            <element name="template_type_operation"/>
+        </index>
+        <index name="index6">
+            <element name="interface_operation"/>
+        </index>
+        <index name="index7">
+            <element name="template_type"/>
+            <element name="format"/>
+            <element name="template_type_operation"/>
+        </index>
+    </element>
+</database>

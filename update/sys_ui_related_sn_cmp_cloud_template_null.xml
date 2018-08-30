@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update>
+    <sys_ui_related sys_domain="global" table="sn_cmp_cloud_template" version="2" view="">
+        <sys_ui_related_list_entry action="INSERT_OR_UPDATE">
+            <filter/>
+            <list_id display_value="ServiceNow Cloud Templates - Default view" name="sn_cmp_cloud_template" related_list="NULL" sys_domain="global" view="Default view">ff855c70eb432200979aa5115206fe2b</list_id>
+            <order_by/>
+            <position>0</position>
+            <related_list>sn_cmp_template_to_bp.template</related_list>
+            <sys_class_name>sys_ui_related_list_entry</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-09 22:29:32</sys_created_on>
+            <sys_id>bf855c70eb432200979aa5115206fe2c</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-11-09 22:29:32</sys_updated_on>
+        </sys_ui_related_list_entry>
+        <sys_ui_related_list action="INSERT_OR_UPDATE">
+            <calculated_name>ServiceNow Cloud Templates - Default view</calculated_name>
+            <filter/>
+            <name>sn_cmp_cloud_template</name>
+            <order_by/>
+            <position/>
+            <related_list/>
+            <sys_class_name>sys_ui_related_list</sys_class_name>
+            <sys_created_by>admin</sys_created_by>
+            <sys_created_on>2016-11-09 22:29:32</sys_created_on>
+            <sys_domain>global</sys_domain>
+            <sys_domain_path>/</sys_domain_path>
+            <sys_id>ff855c70eb432200979aa5115206fe2b</sys_id>
+            <sys_mod_count>0</sys_mod_count>
+            <sys_name>ServiceNow Cloud Templates - Default view</sys_name>
+            <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+            <sys_policy/>
+            <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+            <sys_update_name>sys_ui_related_sn_cmp_cloud_template_null</sys_update_name>
+            <sys_updated_by>admin</sys_updated_by>
+            <sys_updated_on>2016-11-09 22:29:32</sys_updated_on>
+            <sys_user/>
+            <view display_value="Default view" name="NULL">Default view</view>
+            <view_name/>
+        </sys_ui_related_list>
+    </sys_ui_related>
+</record_update>

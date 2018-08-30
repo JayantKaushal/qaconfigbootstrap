@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>sn_cmp.CmpBillingCSVProcessor</api_name>
+        <client_callable>false</client_callable>
+        <description>Parent class defines abstract methods for downloading billing data from a cloud provider.</description>
+        <name>CmpBillingCSVProcessor</name>
+        <script><![CDATA[var CmpBillingCSVProcessor = Class.create();
+/* eslint-disable no-redeclare */
+CmpBillingCSVProcessor.prototype = {  
+	// header , column name map.
+	headerColMap:null,
+	TAG:'[CmpBillingCSVProcessor] ',
+	CLEAR_DATA_PROP:'sn_cmp.billing.clear_existing_data',
+	UPDATE_THRESHOLD_PROP:'sn_cmp.billing.update_threshold',
+	RESOURCE_ID_THRESHOLD_PROP:'sn_cmp.billing.resource_id_threshold',
+	IMPORT_SET_SIZE_PROP:'sn_cmp.billing.import_set_size',
+	INCREMENTAL_LOOKBACK_PROP:'sn_cmp.billing.incremental_lookback',
+	LOG_FLUSH_COUNT:10000,
+	IMPORT_TABLE:'',
+	PROVIDER: '',
+	ACCOUNT_COLUMN:'',
+	MASTER_COLUMN:'',
+	DATE_COLUMN:'',
+	BILLING_PROVIDER_TABLE: 'sn_capi_provider',
+	CMP_COST_TABLE: 'sn_cmp_cost',
+	DB_MAPPINGS_TABLE: 'sn_cmp_billing_csv_to_db_map',
+	lineCount:0,
+	validRecord:true,
+	gr:null,
+	currentLine:null,
+	clearData:false,
+	
+	
+	initialize: function() {
+		this.UPDATE_THRESHOLD = parseFloat(gs.getProperty(this.UPDATE_THRESHOLD_PROP, 0.0000001));
+		this.RESOURCE_ID_THRESHOLD = parseFloat(gs.getProperty(this.RESOURCE_ID_THRESHOLD_PROP, 0.0001));
+		this.IMPORT_SET_SIZE = parseInt(gs.getProperty(this.IMPORT_SET_SIZE_PROP, 2500));
+		this.INCREMENTAL_LOOKBACK = parseInt(gs.getProperty(this.INCREMENTAL_LOOKBACK_PROP, 2));
+	},
+	
+	/**
+ 	* Calculate and return a comma-separated list of boolean values indicating
+	* whether each day of the month should be downloaded.
+ 	*/
+	getDaysToDownload: function(accountNum, year, month, clearData) {
+		this.commonConfig(accountNum, year, month, clearData);
+
+		// Initialize to the maximum of 31 days (extra true's at the end do no harm)
+		var days = new Array(31);
+		for (var i=0; i<days.length; i++)
+			days[i] = true;
+
+		// Determine earliest day of the month that may be unfinished
+		var earliestUnfinishedDay = 0;
+		for (var acctId in this.lastPersistedDates) {
+			var day = this.lastPersistedDates[acctId].getDayOfMonthUTC();
+			if (earliestUnfinishedDay == 0 || day < earliestUnfinishedDay)
+				earliestUnfinishedDay = day;
+		}
+		
+		// Skip everything before that day (except day 1)
+		if (earliestUnfinishedDay > 2) {
+			for (var j=2; j<earliestUnfinishedDay; j++)
+				days[j-1] = false;
+		}
+		return days.join(",");
+	},
+	
+	/**
+ 	* Sets the payer account, year, and month for this processor and runs some other setup.
+ 	*/
+	config: function(accountNum, year, month, clearData) {
+		this.commonConfig(accountNum, year, month, clearData);
+		this.createImportSet();
+		
+		// clear data for the most recently downloaded day for each acct
+		// because it will be recreated in this process, and we don't want to double-count it.
+		this.deleteOldData(this.CMP_COST_TABLE, 'usage_date', 'resource.datacenter.account_id');
+		this.deleteOldData(this.IMPORT_TABLE, this.DATE_COLUMN, this.ACCOUNT_COLUMN);
+	},
+
+	/**
+ 	* Setup that is needed both pre and post-download
+ 	*/
+	commonConfig: function(accountNum, year, month, clearData) {
+		this.accountNum = accountNum;
+		this.year = year;
+		this.month = month;
+		
+		this.headerColMap = this.getHeaderColumnMap();
+		if (clearData) {
+			this.clearData = true;
+		} else {
+			var clearDataStr = gs.getProperty(this.CLEAR_DATA_PROP, 'false').toLowerCase();
+			this.clearData = (clearDataStr === 'true');
+		}
+		
+		this.initLastPersistedDates();
+	},
+
+	/**
+ 	* Initializes the day of the last persisted event so that the processing can
+ 	* skip duplicated effort.
+ 	*/
+	initLastPersistedDates:function() {
+
+		// Store the last persisted day for each account
+		var ga = new GlideAggregate(this.IMPORT_TABLE);
+		ga.groupBy(this.ACCOUNT_COLUMN);
+		ga.addQuery(this.MASTER_COLUMN, this.accountNum);
+		ga.query();
+
+		while(ga.next()) {
+			var acctId = ga.getValue(this.ACCOUNT_COLUMN);
+			var day = '01';
+			
+			// if clearData=true, skip this query and start from day 1 for every acct
+			if (!this.clearData) {
+				var dayGr = new GlideRecord(this.IMPORT_TABLE);
+				dayGr.addQuery(this.ACCOUNT_COLUMN, acctId);
+				dayGr.addQuery(this.DATE_COLUMN, 'STARTSWITH', this.year + '-' + this.month);
+				dayGr.orderByDesc(this.DATE_COLUMN);
+				dayGr.query();
+				if (dayGr.next()) {
+					day = dayGr.getValue(this.DATE_COLUMN)+'';
+					day = day.substring(8,10);
+				}
+			}
+			
+			var lastDate = new GlideDateTime("2000-01-01 00:00:00");
+			lastDate.setYearUTC(this.year);
+			lastDate.setMonthUTC(this.month);		
+			
+			// Delete and reprocess the most-recent full days as well to avoid partial entries.
+			day = day-this.INCREMENTAL_LOOKBACK >= 1 ? day-this.INCREMENTAL_LOOKBACK : 1;
+			lastDate.setDayOfMonthUTC(day);
+
+			this.lastPersistedDates[acctId] = lastDate;
+			gs.info(this.TAG + 'Start at date '+lastDate.getDisplayValueInternal()+' for account '+ acctId);
+		}		
+	},
+	
+	
+	setProperties: function(obj) {
+		for (var prop in obj) {
+			if (obj.hasOwnProperty(prop)) {
+				this[prop] = obj[prop];
+			}
+		}
+	},
+	
+	/**
+	* Returns the column name found by the passed header.
+	*/
+	getColumnNameByHeader:function(header){
+		
+		if(!header)
+			return undefined;
+		
+		if(!this.headerColMap)
+			this.headerColMap = this.getHeaderColumnMap();
+		
+		return this.headerColMap[header];
+	},
+	
+	getHeaderColumnMap:function() {
+
+		var columnMap = {};
+
+		var provGr = new GlideRecord(this.BILLING_PROVIDER_TABLE);	
+
+		if (provGr.get('name', this.PROVIDER)) {
+			this.IMPORT_TABLE = new CmpBillingJobUtil().getProviderProperty(
+				provGr.sys_id, 'billing_import_table');
+			var mapGr = new GlideRecord(this.DB_MAPPINGS_TABLE);
+			mapGr.addQuery('provider', provGr.sys_id);
+			mapGr.query();
+
+			while(mapGr.next()) {
+				columnMap[mapGr.source_field+''] = mapGr.destination_field+'';
+			}
+		}
+		return columnMap;
+	},
+	
+	/**
+ 	* Process a csvChunk. Each chunk is assumed to contain the headers in the first line.
+ 	*/
+	process:function(csvChunk) {
+		
+		this.beginProcess();
+		var lineSet = csvChunk.split('\n');
+		var headers = this.parseRow(lineSet[0]);
+		if (gs.nil(headers) || headers.length == 0) {
+			throw 'Invalid billing headers: '+lineSet[0];
+		}
+		
+		for (var i=1; i<lineSet.length; i++) {
+			this.lineCount++;
+			this.beginLine(this.lineCount);
+			this.currentLine = lineSet[i];
+			var values = this.parseRow(this.currentLine);
+			for (var j=0; j<values.length; j++) {
+				this.setData(headers[j], values[j], this.lineCount, j);
+			}
+			
+			this.endLine(this.lineCount);
+		}
+		this.endProcess();
+	},
+
+	// Parse a CSV row, accounting for commas inside quotes                   
+	parseRow:function(row) {
+		row = row.trim().replace(/\\(?!\")/g,'\\\\');
+		row = row.replace(/""""/g,'\\"\\"');
+		while (row.search(/[^,\s]""[^"]|[^"]""[^,\s]/) > -1) {
+			row = row.replace(/[^,\s]""[^"]|[^"]""[^,\s]/, convertEscape);
+		}
+		if (row.endsWith(','))
+			row = row.substring(0,row.length-1);
+		row = "["+row+"]";
+		try {
+			var entries = global.JSON.parse(row);
+			return entries;
+		} catch (e) {
+			gs.warn(this.TAG + "Error parsing row: "+row);
+
+			// If bad tag values broke it, attempt to parse row without them
+			var firstBracket = row.indexOf(',"{');
+			if (firstBracket >= 0) {
+				try {
+					row = row.substring(0, firstBracket)+']';
+					var entries = global.JSON.parse(row);
+					return entries;
+				} catch (ex) {
+					// Do nothing if it still fails
+				}
+			}
+		}
+		return [];
+
+		function convertEscape(x) {
+			return x.replace('""','\\"');
+		}
+	},
+		
+	/**
+	* Tests if the current processed line is valid or not.
+	* If the line is invalid, this method indicates that no need to proceed the line.
+	*/
+	isCurrentLineValid:function() {
+		return this.validRecord;
+	},
+	
+	/**
+	* Sets the current line valid.
+	* This method should be called either in the beginLine or endLine method.
+	*/
+	setCurrentLineValid:function() {
+		this.validRecord = true;
+	},
+	
+	/**
+	* Invalidate the current line. After this call, there's no guarantee
+	* that setData method will get called. The flag has to be reset by calling setCurrentLineValid
+	* either from beginLine or endLine method.
+	*/
+	setCurrentLineInvalid:function() {
+		this.validRecord = false;
+	},
+
+	/**
+ 	* The event for the whole process starts.
+ 	*/
+	beginProcess:function() {},
+
+	/**
+ 	* The event for the whole processes ends.
+ 	*/
+	endProcess:function() {},
+		
+	/**
+ 	* The envent for the line processing started.
+ 	*/
+	beginLine:function(lineCnt) {
+		this._printLineStatus(lineCnt);
+		this.gr = new GlideRecord(this.IMPORT_TABLE);
+		this.gr.initialize();
+		this.setCurrentLineValid();
+	},
+	
+	/**
+ 	* The event for the line processing ended.
+ 	*/
+	endLine:function(lineCnt) {},
+	/* eslint-enable no-unused-vars */
+
+	/* eslint-disable no-unused-vars */	
+	setData:function(header, value, lineNum, colNum) {
+		throw 'Need to implement this method';
+	},
+	
+	/**
+ 	* Shows how many lines got processed.
+ 	*/
+	_printLineStatus:function(lineCnt) {
+		if (this._shouldLog(lineCnt))
+			gs.info(this.TAG + 'Processing ' + lineCnt + ' lines');
+	},
+	
+	_shouldLog:function(lineCnt) {
+		return lineCnt % this.LOG_FLUSH_COUNT == 0;
+	},
+	
+	createImportSet: function() {
+		this.importSet = new global.CmpImportHelper().createImportSet(this.IMPORT_TABLE);
+	},
+	
+	
+	/**
+	* Set the line item's import set, then insert line item into import table. 
+	*/
+	insertLine: function(lineCountStr) {
+		this.insertLineWithSkips(lineCountStr, lineCountStr, false);
+	},
+
+	/**
+	* Set the line item's import set, then insert/update line item in import table.
+	*     lineNumStr : The line number to assign this row.
+	*     lineCountStr: The total number of lines that have been put into import sets
+	*                   so far during this download.
+	*/
+	insertLineWithSkips: function(lineNumStr, lineCountStr, isUpdate) {
+
+		var lineNum = parseInt(lineNumStr);
+		this.gr.sys_import_row = lineNum;
+		if (!isUpdate) {
+			this.gr.sys_import_set = this.importSet;
+		}
+		
+		// Turn off business rule execution because import set creation and
+		// execution is already handled locally in bulk to help performance.
+		this.gr.setWorkflow(false);
+		this.gr.update();
+
+		var lineCount = parseInt(lineCountStr);
+		if (!isUpdate && lineCount % this.IMPORT_SET_SIZE == 0) {
+			// Start another new import set when import set size limit is reached
+			this.createImportSet();
+		}
+	},
+	
+
+	/** 
+	* For each account, clear all data in the given table with a usage
+	* date matching that account's most recent day. (This is the data that will
+	* be reprocessed.)
+	*/
+	deleteOldData : function(billingTable, dateField, acctColumn) {
+		
+		var ga = new GlideAggregate(this.IMPORT_TABLE);
+		ga.groupBy(this.ACCOUNT_COLUMN);
+		ga.addQuery(this.MASTER_COLUMN, this.accountNum);
+		ga.query();
+		
+		while(ga.next()) {
+			var acctId = ga.getValue(this.ACCOUNT_COLUMN);
+			// convert startDate always to be midnight time (yyyy-mm-dd 00:00:00)
+			var startDate = new GlideDateTime(this.lastPersistedDates[acctId]);
+			startDate.setValue(startDate.date);
+			
+			var endDate = new GlideDateTime(startDate);
+			var days = startDate.getDayOfMonthUTC();
+			endDate.addDaysUTC(startDate.getDaysInMonthUTC() - days + 1);
+
+			if (billingTable == this.CMP_COST_TABLE) {
+				// Adjust dates to just a second before the current UTC time to
+				// avoid off-by-one-day errors in query
+				startDate.subtract(startDate.getTZOffset()+1000);
+				endDate.subtract(endDate.getTZOffset()+1000);
+			}
+			
+			var gr = new GlideRecord(billingTable);
+			gr.initialize();
+			gr.addQuery(dateField, '>', startDate);
+			gr.addQuery(dateField, '<=', endDate);
+			gr.addQuery(acctColumn, acctId);
+			gr.query();
+			gr.deleteMultiple();
+			
+			// Always delete and reprocess the first day as well.
+			// Monthly entries like tax could be entered for day 1, then updated every day.
+			var dayOneStart = new GlideDateTime(this.lastPersistedDates[acctId].date);
+			dayOneStart.setDayOfMonthUTC('01');
+			var dayOneEnd = new GlideDateTime(dayOneStart);
+			dayOneEnd.setDayOfMonthUTC('02');
+
+			if (billingTable == this.CMP_COST_TABLE) {
+				dayOneStart.subtract(dayOneStart.getTZOffset()+1000);
+				dayOneEnd.subtract(dayOneEnd.getTZOffset()+1000);
+			}
+			
+			var dayOneGr = new GlideRecord(billingTable);
+			dayOneGr.addQuery(dateField, '>', dayOneStart);
+			dayOneGr.addQuery(dateField, '<=', dayOneEnd);
+			dayOneGr.addQuery(acctColumn, acctId);
+			dayOneGr.query();
+			dayOneGr.deleteMultiple();
+		}		
+	},		
+
+	/**
+	* Add two values and return. Round very small
+	* values to zero to avoid exponential-notation-related conversion
+	* errors later on.
+	*/
+	add: function(value1, value2) {
+		var answer = (1.0*value1) + (1.0*value2);
+		return (Math.abs(answer) >= 0.000001 ? answer : 0);
+	},
+		
+	type: 'CmpBillingCSVProcessor'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-10-26 22:47:41</sys_created_on>
+        <sys_id>49739c1093b622004a9032bfa67ffb1c</sys_id>
+        <sys_mod_count>141</sys_mod_count>
+        <sys_name>CmpBillingCSVProcessor</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_49739c1093b622004a9032bfa67ffb1c</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-21 04:43:49</sys_updated_on>
+    </sys_script_include>
+</record_update>

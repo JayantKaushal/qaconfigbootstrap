@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_rt_rb_m2m">
+    <sn_cmp_rt_rb_m2m action="INSERT_OR_UPDATE">
+        <resource_block display_value="Load Balancer">85e5010567203200790a6c706785ef4d</resource_block>
+        <resource_type display_value="Microsoft.Network/loadBalancers">9bd6e0369f84320048111f80a57fcfd4</resource_type>
+        <sys_class_name>sn_cmp_rt_rb_m2m</sys_class_name>
+        <sys_created_by>yuedong.huang@snc</sys_created_by>
+        <sys_created_on>2018-03-26 21:44:31</sys_created_on>
+        <sys_id>36591196dbcd1700c7473a2b7c9619f4</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_rt_rb_m2m_36591196dbcd1700c7473a2b7c9619f4</sys_update_name>
+        <sys_updated_by>yuedong.huang@snc</sys_updated_by>
+        <sys_updated_on>2018-03-26 21:44:31</sys_updated_on>
+    </sn_cmp_rt_rb_m2m>
+</record_update>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="Cloud Event" max_length="40" name="sn_cmp_cloud_event" type="collection">
+        <element label="Configuration Item" max_length="32" name="ci" reference="cmdb_ci" type="reference"/>
+        <element hint="when event was processed as pattern invocation" label="Discovery Status" max_length="32" name="discovery_status" reference="discovery_status" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Error message" max_length="1000" name="error_message" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Event name" max_length="255" name="event_name" type="string"/>
+        <element display="true" hint="event time stamp" label="Event time" max_length="40" name="event_time" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Headers" max_length="100000" name="headers" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Payload" max_length="1000000" name="payload" type="string"/>
+        <element hint="when event was processed" label="Processed" max_length="40" name="processed" type="glide_date_time"/>
+        <element attributes="edge_encryption_enabled=true" label="Query params" max_length="4000" name="query_params" type="string"/>
+        <element label="Resource block" max_length="32" name="resource_block" reference="sn_cmp_rb_resourceblock" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Resource ID" max_length="255" name="resource_id" type="string"/>
+        <element label="Resource type" max_length="32" name="resource_type" reference="sn_capi_resource_type" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Source" max_length="100" name="source" type="string"/>
+        <element attributes="edge_encryption_enabled=true" choice="1" default="ready" label="State" max_length="40" name="state" read_only="true" type="string">
+            <choice>
+                <element inactive_on_update="false" label="ready" sequence="1" value="ready"/>
+                <element inactive_on_update="false" label="processed" sequence="2" value="processed"/>
+                <element inactive_on_update="false" label="error" sequence="3" value="error"/>
+                <element inactive_on_update="false" label="processing" sequence="4" value="processing"/>
+                <element inactive_on_update="false" label="skipped" sequence="5" value="skipped"/>
+            </choice>
+        </element>
+        <element attributes="edge_encryption_enabled=true" label="Subject" max_length="512" name="subject" type="string"/>
+        <index name="index">
+            <element name="ci"/>
+        </index>
+        <index name="index2">
+            <element name="discovery_status"/>
+        </index>
+        <index name="index3">
+            <element name="resource_block"/>
+        </index>
+        <index name="index4">
+            <element name="resource_type"/>
+        </index>
+    </element>
+</database>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_db_view">
+    <sys_db_view action="INSERT_OR_UPDATE">
+        <description>View for security group templates  having associated locations</description>
+        <label>Security Group Template Location</label>
+        <name>sn_cmp_cmdb_ci_security_grp_template_location</name>
+        <plural>Security Group Template Locations</plural>
+        <sys_class_name>sys_db_view</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-03-09 04:44:15</sys_created_on>
+        <sys_id>24ac0ae46770130005d1ff5557415a92</sys_id>
+        <sys_mod_count>6</sys_mod_count>
+        <sys_name>sn_cmp_cmdb_ci_security_grp_template_location</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_db_view_24ac0ae46770130005d1ff5557415a92</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-03-09 04:52:20</sys_updated_on>
+    </sys_db_view>
+</record_update>

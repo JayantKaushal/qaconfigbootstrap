@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update sys_domain="global" table="sys_ui_action">
+    <sys_ui_action action="INSERT_OR_UPDATE">
+        <action_name/>
+        <active>true</active>
+        <client>false</client>
+        <client_script_v2/>
+        <comments/>
+        <condition>current.canWrite() &amp;&amp; new sn_cmp_api.DiscoveryServiceScript().getLdcs(current.sys_id).length&gt;0</condition>
+        <form_action>true</form_action>
+        <form_button>false</form_button>
+        <form_button_v2>false</form_button_v2>
+        <form_context_menu>false</form_context_menu>
+        <form_link>true</form_link>
+        <form_menu_button_v2>false</form_menu_button_v2>
+        <form_style/>
+        <hint/>
+        <isolate_script>false</isolate_script>
+        <keyboard_shortcut/>
+        <list_action>false</list_action>
+        <list_banner_button>false</list_banner_button>
+        <list_button>false</list_button>
+        <list_choice>false</list_choice>
+        <list_context_menu>false</list_context_menu>
+        <list_link>false</list_link>
+        <list_save_with_form_button>false</list_save_with_form_button>
+        <list_style/>
+        <name>Create Discovery Schedule</name>
+        <onclick/>
+        <order>100</order>
+        <script><![CDATA[// Check if there is an active V1 schedule with account having same name and don't allow it
+var createSchedule = true;
+var gr = new GlideRecord('dscy_sch_wb_srvc_acct_m2m');
+if (gr.isValid()) {
+	gr.addQuery('account.name', '' + current.name);
+	gr.addQuery('schedule.active', true);
+	gr.query();
+
+	if (gr.next()) {
+		var scheduleGr = new GlideRecord('discovery_schedule');
+		scheduleGr.get('' + gr.schedule.sys_id);
+		var msg = gs.getMessage('This account is being used in another active Discovery Schedule for the legacy version of Cloud Management. To prevent both versions of Cloud Management from running discovery on the account, disable this schedule: <a href="{0}">{1}</a>', [scheduleGr.getLink(true), gr.schedule.name]);
+		gs.addErrorMessage(msg);
+		createSchedule = false;
+		action.setRedirectURL(current);		
+	}
+}
+
+if (createSchedule) {
+
+	// First determine if a credential is required.  
+	// We need a credential in two cases:
+	//    1. the account is a master account
+	//    2. the account is a member account without a parent account
+	var credentialRequired = current.is_master_account || current.parent_account.nil();
+
+	// Validate there is a credential tied to this
+	if (current.discovery_credentials.nil() && credentialRequired) {
+		gs.addErrorMessage(gs.getMessage('Missing credential'));
+		action.setRedirectURL(current);
+	} else {
+		var gr = new GlideRecord('discovery_schedule');
+		gr.initialize();
+
+		gr.name = 'Cloud Service Account - ' + current.name;
+		gr.discover = 'Cloud Resources';
+		gr.insert();
+
+		var ldcgr = new GlideRecord('cmp_discovery_ldc_config');
+		ldcgr.initialize();
+		ldcgr.service_account = current.sys_id;
+		ldcgr.discovery_schedule = gr.sys_id;
+		ldcgr.insert();
+
+		var url = 'discovery_schedule.do?sys_id=' + gr.sys_id;
+		action.setRedirectURL(url);
+	}
+}]]></script>
+        <show_insert>false</show_insert>
+        <show_multiple_update>false</show_multiple_update>
+        <show_query>false</show_query>
+        <show_update>true</show_update>
+        <sys_class_name>sys_ui_action</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-06 13:03:14</sys_created_on>
+        <sys_domain>global</sys_domain>
+        <sys_domain_path>/</sys_domain_path>
+        <sys_id>a8cc8d11eb632200979aa5115206fe2a</sys_id>
+        <sys_mod_count>12</sys_mod_count>
+        <sys_name>Create Discovery Schedule</sys_name>
+        <sys_overrides/>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_ui_action_a8cc8d11eb632200979aa5115206fe2a</sys_update_name>
+        <sys_updated_by>vishal.rao</sys_updated_by>
+        <sys_updated_on>2018-02-15 08:09:59</sys_updated_on>
+        <table>cmdb_ci_cloud_service_account</table>
+        <ui11_compatible>true</ui11_compatible>
+        <ui16_compatible>false</ui16_compatible>
+    </sys_ui_action>
+</record_update>

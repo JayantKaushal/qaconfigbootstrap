@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateCatelogItemAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateCatelogItemAction</name>
+        <script><![CDATA[var CMPCreateCatelogItemAction = Class.create();
+CMPCreateCatelogItemAction.prototype = Object.extendsObject(sn_smd.SMBaseAction,{
+    doAction: function(params) {
+
+		try {
+			if (!params.blueprint_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateCatelogItemAction.doAction: Undefined sys id",
+					null
+				);
+			}
+
+			if (params.context == 'publish') {
+				//Checking if the execution plan is in sync else
+				var operationNotInSync =[];
+				var stageModelObj = new BlueprintServiceHelper().getStageModel(params.blueprint_id, "Default");
+				var stageModelId = stageModelObj["id"];
+				var bpStageop = new GlideRecord("sn_cmp_bp_stage_op");
+				bpStageop.addQuery("blueprint_stage_model",stageModelId);
+				bpStageop.query();
+				while(bpStageop.next()){
+					if(bpStageop.parallel_plan_generated) {
+						if(!bpStageop.is_plan_synced) {
+							operationNotInSync.push(bpStageop.name+"");
+						}
+					}
+				}
+
+				if(operationNotInSync.length >0 ) {
+					var responseObj = {
+						notSync : true,
+						message : 'Execution plan is not in sync for '+operationNotInSync.toString()+' operation(s).'
+					};
+					return responseObj;
+				}
+
+			}
+
+			var ldcGr = new GlideRecord("sn_cmp_bp_blueprint");
+			var sysId = "";
+			if(ldcGr.get(params.blueprint_id)){
+				var formBehaviorCreator = new BlueprintFormBehaviorCreator();
+
+				var formBehaviorObj = "";
+				var formBehaviorList;
+				if (params.operation_id) {
+				    formBehaviorList = formBehaviorCreator.createFormBehaviorForOperation(ldcGr, params.operation_id);
+				} else {
+					formBehaviorList = formBehaviorCreator.createFormBehavior(ldcGr);
+				}
+
+
+				var catItem = '', catSysId='';
+				//If selected option is 2 then
+				//DO create catelog item
+				//Else do create form behaviour
+				if (params.option == 2) {
+					for(var index_value in formBehaviorList){
+						formBehaviorObj = formBehaviorList[index_value];
+						var entitiesGenerator = new EntitiesGenerator();
+						var scItemCreator = new BlueprintSCItemCreator();
+
+						// creating catalog item for all the form behavior generated with parentFormBehaviour as formBehavior.sys_id
+						var formBehaviorGR = new GlideRecordSecure('sn_cmp_bp_form_behavior');
+						formBehaviorGR.get(formBehaviorObj.sys_id);
+						var dto = entitiesGenerator.generateEntities(formBehaviorGR);
+						catSysId = scItemCreator.createCatItem(formBehaviorGR);
+						if(formBehaviorGR.getDisplayValue('stage_operation') == 'Provision'){
+							catItem=catSysId;
+						}
+					}
+				}
+				sysId = params.option == 2 ? catItem.sys_id : formBehaviorObj.sys_id;
+				var responseObj = {
+					"sys_id" : sysId + ""
+				};
+				return responseObj;
+			}
+
+		}
+		catch (error) {
+
+			var errorMessage = error ? error : "Failed to create catelog item";
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage('{0}', errorMessage),
+				"CMPCreateCatelogItemAction.doAction: Failed to do create catelog item",
+				error
+			);
+		}
+
+    },
+
+    type: 'CMPCreateCatelogItemAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-27 10:33:12</sys_created_on>
+        <sys_id>2e3b34400bc032003bace58525673af8</sys_id>
+        <sys_mod_count>58</sys_mod_count>
+        <sys_name>CMPCreateCatelogItemAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_2e3b34400bc032003bace58525673af8</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-04-16 10:39:30</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPInterfaceExtension</api_name>
+        <client_callable>true</client_callable>
+        <description>This script handles CRUD operations for Interface Extensions.&#13; &#13; - Interface Extensions are
+			normal Resource Interfaces for all intents and purposes. They exist only to extend functionalities on
+			existing interfaces. A new resource block cannot implement an Interface Extension.&#13; - Interface
+			Extensions can either override or add new operations.&#13; - Each Interface Extension will have an 'alias'
+			or a name which will be unique across all Extensions of a particular Resource Interface.&#13;
+		</description>
+        <name>CMPInterfaceExtension</name>
+        <script><![CDATA[var CMPInterfaceExtension = Class.create();
+CMPInterfaceExtension.prototype = {
+	initialize: function() {
+	},
+	getInterfaceExtensions: function(resourceBlockId) {
+		var gr = new GlideRecord('sn_cmp_rb_guest_interface');
+		gr.addQuery("resource", resourceBlockId);
+		gr.addQuery("guestinterface.type", 'Extension');
+		gr.orderBy('guestinterface');
+		gr.query();
+		var guestExtInterfaceList = [];
+		while (gr.next()) {
+			var rbObj = {};
+				rbObj.id = gr.getValue('guestinterface');
+				rbObj.resource = gr.getDisplayValue('resource');
+				rbObj.name = gr.getDisplayValue('guestinterface');
+				guestExtInterfaceList.push(rbObj);
+			}
+			return guestExtInterfaceList;
+		},
+		
+		createExtension: function(iface_extn_alias, resource_name, base_interface_id){
+			var iface_extn_id = this._create(iface_extn_alias, base_interface_id);
+			
+			if(iface_extn_id != null){
+				gs.info('Created new Interface Extension for Interface :' + base_interface_id + ', with id : ' + iface_extn_id);
+		
+				//Add to resource if not already there
+				var rbgr = new GlideRecord('sn_cmp_rb_resourceblock');
+				rbgr.get('name',resource_name);
+				var resource_id = rbgr.getUniqueValue();
+			
+				this._addinterfaceExtensionToResource(resource_id,iface_extn_id);
+				gs.info('Added new Guest Interface Extension : ' + iface_extn_id + ', to Resource:  ' + resource_name);
+			}
+			return iface_extn_id;
+				
+		},
+		
+		overrideOperation: function(resource_name, operation_name, base_interface_id, extension_interface_id){
+			var extn_name;
+			var ext_gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+			ext_gr.get(extension_interface_id);
+			extn_name = ext_gr.getValue('name');
+			var base_interface_name;
+			ext_gr.get(base_interface_id);
+			base_interface_name = ext_gr.getValue('name');
+			
+			//create new operation signature
+			//read original attributes and add them to operation signature.
+			var override_op = {};
+			override_op['interface'] = extension_interface_id;
+			override_op.name = operation_name;
+				
+			var base_op_sig_sys_id;
+			var base_op_gr = new GlideRecord('sn_cmp_rb_op_signature');
+			base_op_gr.addQuery('name', operation_name);
+			base_op_gr.addQuery('interface', base_interface_id);
+			base_op_gr.query();
+			if(base_op_gr.next()){
+				base_op_sig_sys_id = base_op_gr.getUniqueValue();
+				override_op.operation_type = base_op_gr.getValue('operation_type');
+				override_op.access_type = base_op_gr.getValue('access_type');
+			}
+				
+			var attrs = [];
+				
+			var sigAttr;
+			var opSigAttrGR = new GlideRecord('sn_cmp_rb_op_param');
+			opSigAttrGR.addQuery('operation',base_op_sig_sys_id);
+			opSigAttrGR.addQuery('interface',base_interface_id);
+			opSigAttrGR.query();
+			while(opSigAttrGR.next()){
+				sigAttr = {};
+				sigAttr.name = opSigAttrGR.getValue('name');
+				sigAttr['interface'] = extension_interface_id;
+				sigAttr.order = opSigAttrGR.getValue('order');
+				sigAttr.type = opSigAttrGR.getValue('type');
+				attrs.push(sigAttr);
+			}
+					
+			//Create new operation and save attributes
+			var nu_op_sis_id = this._createOperationSignature(override_op);
+			this._createOperationSignatureAttributes(attrs, nu_op_sis_id);
+			var ext_op_impl_id = this._createOperationImplementation(operation_name, extn_name,resource_name);
+					
+			//Get Op Impl Parameters
+			var paramImpls = {};
+			var paramImpl;
+			var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			var opImplId = this.getOperationImplId(base_interface_name,resource_name,operation_name);
+			var paramGR = new GlideRecord('sn_cmp_rb_op_impl_param');
+			paramGR.addQuery('operation',opImplId);
+			paramGR.query();
+			while(paramGR.next()){
+				var opImplParamGR = this.getOpImplParam(ext_op_impl_id,paramGR.getValue('name'));
+				if(opImplParamGR && opImplParamGR != null){
+					opImplParamGR.datasource = paramGR.getValue('datasource');
+					opImplParamGR.datasourcevalue = paramGR.getValue('datasourcevalue');
+					opImplParamGR.ismandatory = paramGR.getValue('ismandatory');
+					opImplParamGR.visibilty = paramGR.getValue('visibilty');
+					opImplParamGR.defaultvalue = paramGR.getValue('defaultvalue');
+					opImplParamGR.value = paramGR.getValue('value');
+					opImplParamGR.regex = paramGR.getValue('regex');
+					opImplParamGR.error_text = paramGR.getValue('error_text');
+					opImplParamGR.order = paramGR.getValue('order');
+					opImplParamGR.help_text = paramGR.getValue('help_text');
+					opImplParamGR.applicable_to = paramGR.getValue('applicable_to');
+					opImplParamGR.operation = ext_op_impl_id;
+					//paramGR.sys_id = '';
+					opImplParamGR.setWorkflow(false);
+					opImplParamGR.update();
+			    	//paramImpls[paramGR.getValue('name')] = paramImpl;
+				}
+			}
+						
+		},
+					
+					
+		getOperationImplId:function(interfaceName,resourceName,baseOperationName){
+			var opImplGR = new GlideRecord('sn_cmp_rb_op_impl');
+			opImplGR.addQuery('interface.name',interfaceName);
+			opImplGR.addQuery('resource.name',resourceName);
+			opImplGR.addQuery('operation.name',baseOperationName);
+			opImplGR.query();
+			if(opImplGR.next())
+				return opImplGR.getValue("sys_id");
+						
+		},
+					
+		getOpImplParam:function(opImplId,paramName){
+			var opImplParamGR = new GlideRecord('sn_cmp_rb_op_impl_param');
+			opImplParamGR.addQuery('operation',opImplId);
+			opImplParamGR.addQuery('name',paramName);
+			opImplParamGR.query();
+			if(opImplParamGR.next())
+				return opImplParamGR;
+						
+		},
+					
+					
+		/** Private access **/
+		/** Creates an Extension Interface, given a base interface
+ 		* and the alias for the new Interface Extension.
+ 		**/
+		_create: function(alias,base_interface_id) {
+			var base_interface_name = '';
+			var parent_gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+			parent_gr.get(base_interface_id);
+						
+			//All extension interfaces can extend from a Base Interface only.
+		    //So if base interface here is an Extension -
+			//we attempt to figure out the eventual base interface and then
+			//pass it as the base interface to the extension.
+						
+			if(parent_gr.getValue('type') == 'Extension'){
+			    //get the eventual base interface
+				var baseInterfaceId = parent_gr.getValue('extends_from');
+				var eventual_parent_gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+				eventual_parent_gr.get(baseInterfaceId);
+				base_interface_name = eventual_parent_gr.getValue('name');
+				base_interface_id = eventual_parent_gr.getUniqueValue();
+			} else {
+				base_interface_name = parent_gr.getValue('name');
+			}
+						
+			var extn_name = this._generateExtensionName(alias, base_interface_name);
+			var ext_gr = new GlideRecord('sn_cmp_rb_resourceinterface');
+			ext_gr.initialize();
+			ext_gr.setValue('name', extn_name);
+			ext_gr.setValue('is_system_defined',false);
+			ext_gr.setValue('type','Extension');
+			ext_gr.setValue('extends_from',base_interface_id);
+			var ext_id = ext_gr.insert();
+			gs.info('Created Resource Interface Extension: ' + ext_id);
+			return ext_id;
+		},
+					
+		_addinterfaceExtensionToResource: function(resource_id, interface_extension_id){
+			var rb_gr = new GlideRecord('sn_cmp_rb_guest_interface');
+			rb_gr.initialize();
+			rb_gr.setValue('guestinterface',interface_extension_id);
+			rb_gr.setValue('resource',resource_id);
+			rb_gr.update();
+		},
+					
+		_createOperationImplementation: function(operation_name, extension_alias, resource){
+			//create op impl
+		    var resourceBlockServiceScript = new sn_cmp_api.ResourceBlockServiceScript();
+			op_impl = {};
+			op_impl.resourceInterface = extension_alias;
+			op_impl.resourceBlock = resource;
+			op_impl.operation = operation_name;
+			resourceBlockServiceScript.createOrUpdateOpImpl(new global.JSON().encode(op_impl));
+			return this.getOperationImplId(extension_alias,resource,operation_name);
+		},
+						
+		/** Generates the name for the Interface Extension
+ 		* using the alias and the parent Interface's name.
+ 		**/
+		_generateExtensionName : function(alias, base_interface_name) {
+			var ext_name = alias + '-' + base_interface_name + ' Extension';
+			return ext_name;
+		},
+						
+		_createOperationSignatureAttributes: function(attributes, operation_signature_id){
+			var attrGr;
+			var attr;
+			for(var i in attributes){
+				attr = attributes[i];
+				var doesItExistGR =new GlideRecord('sn_cmp_rb_op_param');
+				doesItExistGR.addQuery('name',attr.name);
+				doesItExistGR.addQuery('interface',attr['interface']);
+				doesItExistGR.addQuery('operation', operation_signature_id);
+				doesItExistGR.query();
+				if(doesItExistGR.hasNext()) {
+					// dont do anything, the parameter already exists.
+				} else {
+					attrGr = new GlideRecord('sn_cmp_rb_op_param');
+					attrGr.initialize();
+					attrGr.setValue('name',attr.name);
+					attrGr.setValue('interface',attr['interface']);
+					attrGr.setValue('operation', operation_signature_id);
+					attrGr.setValue('order',attr.order);
+					attrGr.setValue('type',attr.type);
+					attrGr.insert();
+				}
+			}
+		},
+						
+		_createOperationSignature: function(operation_signature){
+			var sigGr = new GlideRecord('sn_cmp_rb_op_signature');
+			sigGr.initialize();
+			sigGr.setValue('name', operation_signature.name);
+			sigGr.setValue('interface', operation_signature['interface']);
+			sigGr.setValue('operation_type', operation_signature.operation_type);
+			sigGr.setValue('access_type', operation_signature.access_type);
+			return sigGr.insert();
+		},
+						
+		type: 'CMPInterfaceExtension'
+	};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-23 11:06:53</sys_created_on>
+        <sys_id>df9da830537403009b77cdaf33dc34d0</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>CMPInterfaceExtension</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_df9da830537403009b77cdaf33dc34d0</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-02-09 06:38:35</sys_updated_on>
+    </sys_script_include>
+</record_update>

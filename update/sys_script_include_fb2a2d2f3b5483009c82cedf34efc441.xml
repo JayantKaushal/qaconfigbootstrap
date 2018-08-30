@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPCreateOrUpdateDcCredentialsAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPCreateOrUpdateDcCredentialsAction</name>
+        <script><![CDATA[var CMPCreateOrUpdateDcCredentialsAction = Class.create();
+CMPCreateOrUpdateDcCredentialsAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+     doAction: function(params) {
+		try{
+			if (gs.nil(params.providerType)) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPCreateOrUpdateDcCredentialsAction.doAction: Undefined provider type",
+					null
+				);
+			}
+			
+			
+			var cloudAccountServiceScript=new sn_cmp_api.CloudAccountServiceScript();
+			
+			var status, isDuplicationClientId = false;
+			var ErrMessage = '';
+			var azure_client_auth_method = 'Client Secret';
+			var providerType = params.providerType;
+			var credentialType = ['aws', 'azure', 'openstack', 'vmware'];
+			var ldcType = ['cmdb_ci_aws_datacenter', 'cmdb_ci_azure_datacenter','cmdb_ci_openstack_datacenter','cmdb_ci_vcenter_datacenter'];
+			var credentialTables = ['aws_credentials', 'azure_service_principal', 'openstack_credentials', 'vmware_credentials'];
+			var  getLdcTypeIndex = ldcType.indexOf(providerType);
+			var tableName = credentialTables[getLdcTypeIndex];
+			// Add/Update datacenter credentials
+			var getParams = JSON.parse(params.postData);
+			var getParamsLength = getParams.length;
+			if(getParamsLength) {
+				for(var i = 0; i < getParamsLength; i++) {
+					var duplicateName = false;
+					var gr = new GlideRecord('discovery_credentials');
+					if(!gs.nil(getParams[i].name))
+						gr.addQuery("name", getParams[i].name);
+					if(getLdcTypeIndex >=0)
+						gr.addQuery("type", credentialType[getLdcTypeIndex]);
+					gr.query();
+					var getSysId;
+					
+					if (gr.next()) {
+						getSysId = gr.getValue('sys_id');
+						
+						if(tableName == 'azure_service_principal') {
+							//Check Account Id duplication
+							var grAzureClientId = new GlideRecord(tableName);
+							grAzureClientId.addQuery("client_id", getParams[i].client_id);
+							grAzureClientId.addQuery('sys_id', '!=', getSysId);
+							grAzureClientId.query();
+							if(grAzureClientId.next()) {
+								isDuplicationClientId = true;
+								break;
+							}
+						}
+						
+						gr.setValue("active", true);
+						if(tableName == 'vmware_credentials' || tableName == 'openstack_credentials') {
+							gr.setValue("applies_to", getParams[i].applies_to);
+							gr.setValue("user_name", getParams[i].user_name);
+							gr.setValue("password", cloudAccountServiceScript.getEncryptedString(getParams[i].password));
+						}
+						gr.update();
+						
+						//Update data to credential table also. 
+						var dcCredentialUpdate = new GlideRecord(tableName);
+						dcCredentialUpdate.addQuery("sys_id", getSysId);
+						dcCredentialUpdate.query();
+						while (dcCredentialUpdate.next()) {
+							if(tableName == 'aws_credentials') {
+								dcCredentialUpdate.setValue("access_key", getParams[i].access_key);
+								dcCredentialUpdate.setValue("secret_key", cloudAccountServiceScript.getEncryptedString(getParams[i].secret_key));
+								
+							}
+							else if(tableName == 'azure_service_principal') {
+								
+								dcCredentialUpdate.setValue("client_id", getParams[i].client_id);
+								dcCredentialUpdate.setValue("tenant_id", getParams[i].tenant_id);
+								dcCredentialUpdate.setValue("auth_method",  azure_client_auth_method);
+								dcCredentialUpdate.setValue("secret_key", cloudAccountServiceScript.getEncryptedString(getParams[i].secret_key));
+								
+							}
+							else if(tableName == 'openstack_credentials') {
+								dcCredentialUpdate.setValue("project_name", getParams[i].project_name);
+							}
+							dcCredentialUpdate.update();
+						}
+						
+						
+					} else {
+						var grInsert = new GlideRecord('discovery_credentials');
+						grInsert.setValue("name", getParams[i].name);
+						grInsert.setValue("type", credentialType[getLdcTypeIndex]);
+						grInsert.setValue("classification", credentialType[getLdcTypeIndex]);
+						grInsert.setValue("sys_class_name", tableName);
+						grInsert.setValue("active", true);
+						
+						if(tableName == 'azure_service_principal') {
+							//Check Account Id duplication
+							var grClientId = new GlideRecord(tableName);
+							grClientId.addQuery("client_id", getParams[i].client_id);
+							grClientId.query();
+							if(grClientId.next()) {
+								isDuplicationClientId = true;
+								break;
+							}
+						}
+						
+						if(tableName == 'vmware_credentials' || tableName == 'openstack_credentials') {
+							grInsert.setValue("user_name", getParams[i].user_name);
+							grInsert.setValue("password", cloudAccountServiceScript.getEncryptedString(getParams[i].password));
+							grInsert.setValue("applies_to", getParams[i].applies_to);
+						}
+						var getDiscoveryCredenSysId = grInsert.insert();
+						
+						
+						//Insert credential table data
+						var dcCredentialInsert = new GlideRecord(tableName);
+						if(!gs.nil(getDiscoveryCredenSysId))
+							dcCredentialInsert.addQuery("sys_id", getDiscoveryCredenSysId);
+						dcCredentialInsert.query();
+						if(dcCredentialInsert.next()) {
+							if(tableName == 'aws_credentials') {
+								dcCredentialInsert.setValue("access_key", getParams[i].access_key);
+								dcCredentialInsert.setValue("secret_key", cloudAccountServiceScript.getEncryptedString(getParams[i].secret_key));
+							}
+							if(tableName == 'azure_service_principal') {
+								
+								
+								dcCredentialInsert.setValue("client_id", getParams[i].client_id);
+								dcCredentialInsert.setValue("tenant_id", getParams[i].tenant_id);
+								dcCredentialInsert.setValue("auth_method", azure_client_auth_method);
+								dcCredentialInsert.setValue("secret_key", cloudAccountServiceScript.getEncryptedString(getParams[i].secret_key));
+							}
+							if(tableName == 'openstack_credentials') {
+								dcCredentialInsert.setValue("project_name", getParams[i].project_name);
+							}
+							dcCredentialInsert.update();
+						}
+					}
+				}
+			}
+			return {status : true, isDuplicationClientId: isDuplicationClientId};
+			
+		} catch (error) {
+			var e = error;
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to add or update for datacenter credentials."),
+				"CMPCreateOrUpdateDcCredentialsAction.doAction(): Failed to add or update for datacenter credentials",
+				error
+			);
+		}
+    },
+    type: 'CMPCreateOrUpdateDcCredentialsAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2017-08-06 17:18:29</sys_created_on>
+        <sys_id>fb2a2d2f3b5483009c82cedf34efc441</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>CMPCreateOrUpdateDcCredentialsAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_fb2a2d2f3b5483009c82cedf34efc441</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2017-09-13 14:31:17</sys_updated_on>
+    </sys_script_include>
+</record_update>

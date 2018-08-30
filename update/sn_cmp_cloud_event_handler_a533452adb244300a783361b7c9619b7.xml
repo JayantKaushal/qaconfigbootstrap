@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cloud_event_handler">
+    <sn_cmp_cloud_event_handler action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <handler_script display_value="AzureAlertHandlerV2">985ff0e6db244300a783361b7c961990</handler_script>
+        <header_name>user-agent</header_name>
+        <header_value>IcMBroadcaster</header_value>
+        <name>Azure Alert Handler V2</name>
+        <run_handler_script>var handler = new sn_cmp.AzureAlertHandlerV2();
+handler.processEvent(headersStr, bodyStr, queryParamsStr, eventId);</run_handler_script>
+        <source>azure activity log</source>
+        <sys_class_name>sn_cmp_cloud_event_handler</sys_class_name>
+        <sys_created_by>yuedong.huang@snc</sys_created_by>
+        <sys_created_on>2017-08-15 22:03:42</sys_created_on>
+        <sys_id>a533452adb244300a783361b7c9619b7</sys_id>
+        <sys_mod_count>1</sys_mod_count>
+        <sys_name>Azure Alert Handler V2</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cloud_event_handler_a533452adb244300a783361b7c9619b7</sys_update_name>
+        <sys_updated_by>yuedong.huang@snc</sys_updated_by>
+        <sys_updated_on>2017-08-15 22:08:06</sys_updated_on>
+    </sn_cmp_cloud_event_handler>
+</record_update>

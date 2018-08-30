@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sn_cmp_cloud_template_type">
+    <sn_cmp_cloud_template_type action="INSERT_OR_UPDATE">
+        <cloud_product display_value="Azure ARM">9d921e66930b22004a9032bfa67ffb66</cloud_product>
+        <name>ARM Template</name>
+        <resource_block display_value="Azure Datacenter">ddf5cd6bd722220097eb6ccf6e610346</resource_block>
+        <script/>
+        <stack_ci_type>cmdb_ci_azure_deployment</stack_ci_type>
+        <sys_class_name>sn_cmp_cloud_template_type</sys_class_name>
+        <sys_created_by>jimmy.yuan</sys_created_by>
+        <sys_created_on>2016-12-29 01:05:33</sys_created_on>
+        <sys_id>612f41e49f00320048111f80a57fcf82</sys_id>
+        <sys_mod_count>3</sys_mod_count>
+        <sys_name>ARM Template</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sn_cmp_cloud_template_type_612f41e49f00320048111f80a57fcf82</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-07-10 21:31:38</sys_updated_on>
+    </sn_cmp_cloud_template_type>
+</record_update>

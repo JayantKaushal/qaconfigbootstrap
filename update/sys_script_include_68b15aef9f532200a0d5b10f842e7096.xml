@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>sn_cmp.CMPUpdateNodePositionAction</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>CMPUpdateNodePositionAction</name>
+        <script><![CDATA[var CMPUpdateNodePositionAction = Class.create();
+CMPUpdateNodePositionAction.prototype = Object.extendsObject(sn_smd.SMBaseAction, {
+	doAction : function(params) {
+		try {
+			if (!params.x || !params.y || !params.node_id  || !params.layer_id) {
+				throw sn_smd.SMErrorHelper.createScriptAPIError(
+					gs.getMessage("Illegal parameter"),
+					"CMPUpdateNodePositionAction.doAction: Undefined x, y, node id and or layer id",
+					null
+				);
+			}
+
+			var modelVersionObj = new sn_smd.SMSvcDefinition(params.layer_id, null, params.checkout_id);	
+			return this.editPosition(modelVersionObj, params.node_id, params.x, params.y);
+		}
+		catch (error) {
+			throw sn_smd.SMErrorHelper.createScriptAPIError(
+				gs.getMessage("Failed to update the node position"),
+				"CMPUpdateNodePositionAction.doAction: Failed to update the node position",
+				error
+			);
+		}
+	},
+	
+	editPosition: function(versionObj, nodeId, x, y) {
+		try {
+			var model = versionObj.getModel(true);
+			var elem =  model.findElement(nodeId);
+
+			var paramBag = elem.getParameterBag();
+
+			if (!gs.nil(x) && !gs.nil(y)) {
+				var posX = paramBag.getOrCreate(sn_smd.SMConstants.NODE_POSITION_X);
+				posX.setValue(x);
+				var posY = paramBag.getOrCreate(sn_smd.SMConstants.NODE_POSITION_Y);
+				posY.setValue(y);
+			}
+			var newVersion = versionObj.commit();
+			return {nodeId: nodeId, checkpointId: newVersion.getCheckpointId()};
+		}
+		catch(error) {
+			var displayMessage = gs.getMessage('Failed to edit the position of the node');
+			var internalMessage = 'Error in CMPUpdateNodePositionAction.editPosition()';
+			throw sn_smd.SMErrorHelper.createScriptAPIError(displayMessage, internalMessage, error);
+		}
+	},
+		
+	type: 'CMPUpdateNodePositionAction'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2016-12-01 06:59:26</sys_created_on>
+        <sys_id>68b15aef9f532200a0d5b10f842e7096</sys_id>
+        <sys_mod_count>2</sys_mod_count>
+        <sys_name>CMPUpdateNodePositionAction</sys_name>
+        <sys_package display_value="Cloud Management Platform" source="sn_cmp">80d50579eb203200979aa5115206fedd</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Cloud Management Platform">80d50579eb203200979aa5115206fedd</sys_scope>
+        <sys_update_name>sys_script_include_68b15aef9f532200a0d5b10f842e7096</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2016-12-01 07:05:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element attributes="update_synch=true" extends="sys_metadata" label="Policy Rule" max_length="40" name="sn_cmp_pol_rule" type="collection">
+        <element attributes="edge_encryption_enabled=true" label="Condition" max_length="4000" name="condition" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Condition Script" max_length="4000" name="condition_script" type="string"/>
+        <element attributes="edge_encryption_enabled=true" display="true" label="Rule Name" mandatory="true" max_length="100" name="name" type="string"/>
+        <element label="Order of Execution" mandatory="true" max_length="40" name="rule_order" type="integer"/>
+        <element label="Script" max_length="4000" name="script" type="script"/>
+        <index name="index">
+            <element name="name"/>
+            <element name="policy"/>
+        </index>
+        <index name="index2">
+            <element name="policy"/>
+            <element name="rule_order"/>
+        </index>
+    </element>
+</database>
